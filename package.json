@@ -5,13 +5,18 @@
   "author": "YOUR NAME HERE",
   "devDependencies": {
     "@automattic/calypso-build": "^4.2.1",
+    "@babel/core": "^7.6.4",
+    "@wordpress/blocks": "^6.7.2",
+    "@wordpress/components": "^8.3.2",
     "grunt": "~0.4.5",
     "grunt-wp-i18n": "~0.5.0",
     "grunt-wp-readme-to-markdown": "~1.0.0",
-    "npm-run-all": "^4.1.5"
+    "npm-run-all": "^4.1.5",
+    "prettier": "https://github.com/Automattic/wp-prettier/releases/download/wp-1.16.4/wp-prettier-1.16.4.tgz",
+    "webpack": "^4.41.2"
   },
   "scripts": {
-    "build:webpack": "calypso-build",
+    "build:webpack": "calypso-build --config='./webpack.config.js'",
     "build": "run-p \"build:*\"",
     "clean": "rm -rf assets/dist/"
   }
