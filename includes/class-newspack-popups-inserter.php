@@ -160,6 +160,7 @@ final class Newspack_Popups_Inserter {
 				justify-content: center;
 				left: 0;
 				margin: 0 !important;
+				opacity: 0;
 				position: fixed;
 				top: 0;
 				transform: translateX( -99999px );
@@ -177,8 +178,8 @@ final class Newspack_Popups_Inserter {
 				margin: 0;
 				padding: 0;
 				position: absolute;
-				right: 1.5em;
-				top: 1.5em;
+				right: 0.75em;
+				top: 0.75em;
 				transition: background-color 250ms;
 				width: 48px;
 			}
@@ -214,6 +215,7 @@ final class Newspack_Popups_Inserter {
 			<script type="application/json">
 				{
 					"duration": "0",
+					"duration": 125,
 					"fill": "both",
 					"iterations": "1",
 					"direction": "alternate",
@@ -221,6 +223,7 @@ final class Newspack_Popups_Inserter {
 						"selector": ".newspack-lightbox",
 						"delay": "<?php echo intval( $popup['options']['trigger_delay'] ) * 1000; ?>",
 						"keyframes": [{
+							"opacity": 1,
 							"transform": "translateX( 0 )",
 							"visibility": "visible"
 						}]
