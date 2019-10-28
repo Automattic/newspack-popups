@@ -326,7 +326,6 @@ final class Newspack_Popups {
 		</script>
 		<?php
 		wp_enqueue_script( 'amp-access' );
-		wp_enqueue_script( 'amp-analytics' );
 	}
 }
 Newspack_Popups::instance();
