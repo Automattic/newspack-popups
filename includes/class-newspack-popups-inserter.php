@@ -174,6 +174,7 @@ final class Newspack_Popups_Inserter {
 				border-radius: 4px;
 				box-shadow: none;
 				cursor: pointer;
+				font-size: inherit;
 				height: 48px;
 				margin: 0;
 				padding: 0;
