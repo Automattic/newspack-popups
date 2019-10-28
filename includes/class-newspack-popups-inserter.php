@@ -214,7 +214,6 @@ final class Newspack_Popups_Inserter {
 		<amp-animation id="showAnim" layout="nodisplay">
 			<script type="application/json">
 				{
-					"duration": "0",
 					"duration": 125,
 					"fill": "both",
 					"iterations": "1",
