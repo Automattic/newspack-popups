@@ -42,6 +42,8 @@ final class Newspack_Popups {
 		add_action( 'init', [ __CLASS__, 'register_meta' ] );
 		add_action( 'enqueue_block_editor_assets', [ __CLASS__, 'enqueue_block_editor_assets' ] );
 		add_action( 'the_content', [ __CLASS__, 'popup' ] );
+		add_action( 'wp_head', [ __CLASS__, 'popup_access' ] );
+		include_once dirname( __FILE__ ) . '/class-newspack-popups-api.php';
 	}
 
 	/**
@@ -106,9 +108,11 @@ final class Newspack_Popups {
 	 * @return string The content with popup inserted.
 	 */
 	public static function popup( $content = '' ) {
-		if ( ! in_the_loop() || ! is_main_query() ) {
+		/* From https://github.com/Automattic/newspack-blocks/pull/115 */
+		if ( is_user_logged_in() || ! is_single() ) {
 			return $content;
 		}
+		/* End */
 		$popup = self::retrieve_popup();
 		if ( $popup ) {
 			$markup  = self::generate_popup( $popup );
@@ -214,6 +218,7 @@ final class Newspack_Popups {
 	 * @return string The generated markup.
 	 */
 	public static function generate_popup( $popup ) {
+		$element_id = 'lightbox' . rand(); // phpcs:ignore WordPress.WP.AlternativeFunctions.rand_rand
 		ob_start();
 		?>
 		<style>
@@ -243,14 +248,14 @@ final class Newspack_Popups {
 				top: 1em;
 			}
 		</style>
-		<div class="newspack-lightbox" role="button" tabindex="0" id="newspack-lightbox">
+		<div amp-access="displayPopup" amp-access-hide class="newspack-lightbox" role="button" tabindex="0" id="<?php echo esc_attr( $element_id ); ?>">
 			<div class="newspack-popup">
 				<?php if ( ! empty( $popup['title'] ) ) : ?>
 					<h1><?php echo esc_html( $popup['title'] ); ?></h1>
 				<?php endif; ?>
 				<?php echo ( $popup['body'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 			</div>
-			<button on="tap:newspack-lightbox.hide" class="newspack-lightbox__close">x</button>
+			<button on="tap:<?php echo esc_attr( $element_id ); ?>.hide" class="newspack-lightbox__close">x</button>
 		</div>
 		<div id="newspack-lightbox-marker">
 			<amp-position-observer on="enter:showAnim.start;" once layout="nodisplay" />
@@ -264,7 +269,7 @@ final class Newspack_Popups {
 					"direction": "alternate",
 					"animations": [{
 						"selector": ".newspack-lightbox",
-						"delay": "<?php echo intval( $popup['options']['trigger_delay'] ); ?>",
+						"delay": "<?php echo intval( $popup['options']['trigger_delay'] ) * 1000; ?>",
 						"keyframes": [{
 							"transform": "translateX( 0 )",
 							"visibility": "visible"
@@ -302,6 +307,26 @@ final class Newspack_Popups {
 		);
 		\wp_style_add_data( 'newspack-popups', 'rtl', 'replace' );
 		\wp_enqueue_style( 'newspack-popups' );
+	}
+
+	/**
+	 * Add amp-access header code.
+	 */
+	public static function popup_access() {
+		$endpoint = str_replace( 'http://', '//', get_rest_url( null, 'newspack-popups/v1/reader' ) );
+		?>
+		<script id="amp-access" type="application/json">
+			{
+				"authorization": "<?php echo esc_url( $endpoint ); ?>?rid=READER_ID&url=CANONICAL_URL&RANDOM",
+				"pingback": "<?php echo esc_url( $endpoint ); ?>?rid=READER_ID&url=CANONICAL_URL&RANDOM",
+				"authorizationFallbackResponse": {
+					"displayPopup": true
+				}
+			}
+		</script>
+		<?php
+		wp_enqueue_script( 'amp-access' );
+		wp_enqueue_script( 'amp-analytics' );
 	}
 }
 Newspack_Popups::instance();
