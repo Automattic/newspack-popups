@@ -1,0 +1,14 @@
+.edit-post-pinned-plugins
+	.components-icon-button:not( .is-toggled )
+	svg
+	.newspack-popups-icon__background {
+	fill: #fff !important;
+}
+
+.edit-post-pinned-plugins
+	.components-icon-button.is-toggled:hover
+	svg
+	.newspack-popups-icon__background,
+.edit-post-pinned-plugins .components-icon-button.is-toggled svg .newspack-popups-icon__background {
+	fill: #36f !important;
+}

@@ -40,6 +40,14 @@ final class Newspack_Popups_Inserter {
 			$content = self::insert_popup( $content, $popup );
 			wp_enqueue_script( 'amp-animation' );
 			wp_enqueue_script( 'amp-position-observer' );
+			\wp_register_style(
+				'newspack-popups-view',
+				plugins_url( '../dist/view.css', __FILE__ ),
+				null,
+				filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/view.css' )
+			);
+			\wp_style_add_data( 'newspack-popups-view', 'rtl', 'replace' );
+			\wp_enqueue_style( 'newspack-popups-view' );
 		}
 		return $content;
 	}
@@ -145,59 +153,6 @@ final class Newspack_Popups_Inserter {
 		$element_id = 'lightbox' . rand(); // phpcs:ignore WordPress.WP.AlternativeFunctions.rand_rand
 		ob_start();
 		?>
-		<style>
-			.newspack-popup {
-				background: white;
-				min-width: 50%;
-				padding: 1.5em;
-				margin: 0.75em;
-			}
-			.newspack-lightbox {
-				align-items: center;
-				background: rgba( 0, 0, 0, 0.75 );
-				display: flex;
-				height: 100%;
-				justify-content: center;
-				left: 0;
-				margin: 0 !important;
-				opacity: 0;
-				position: fixed;
-				top: 0;
-				transform: translateX( -99999px );
-				visibility: hidden;
-				width: 100%;
-				z-index: 99999;
-			}
-			.newspack-lightbox__close {
-				background: rgba( 0, 0, 0, 0.5 );
-				border: 0;
-				border-radius: 4px;
-				box-shadow: none;
-				cursor: pointer;
-				font-size: inherit;
-				height: 48px;
-				margin: 0;
-				padding: 0;
-				position: absolute;
-				right: 0.75em;
-				top: 0.75em;
-				transition: background-color 250ms;
-				width: 48px;
-			}
-			.newspack-lightbox__close:focus,
-			.newspack-lightbox__close:hover {
-				background-color: rgba( 0, 0, 0, 0.75 );
-			}
-			.newspack-lightbox__close:focus {
-				outline: thin dotted white;
-				outline-offset: -4px;
-			}
-			.newspack-lightbox__close svg {
-				left: 12px;
-				position: absolute;
-				top: 12px;
-			}
-		</style>
 		<div amp-access="displayPopup" amp-access-hide class="newspack-lightbox" role="button" tabindex="0" id="<?php echo esc_attr( $element_id ); ?>">
 			<div class="newspack-popup">
 				<?php if ( ! empty( $popup['title'] ) ) : ?>
