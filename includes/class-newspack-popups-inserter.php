@@ -148,28 +148,52 @@ final class Newspack_Popups_Inserter {
 		<style>
 			.newspack-popup {
 				background: white;
-				padding: 2em;
 				min-width: 50%;
+				padding: 1.5em;
+				margin: 0.75em;
 			}
 			.newspack-lightbox {
-				background: rgba(0,0,0,.8);
-				width: 100%;
-				height: 100%;
-				position: absolute;
-				display: flex;
 				align-items: center;
+				background: rgba( 0, 0, 0, 0.75 );
+				display: flex;
+				height: 100%;
 				justify-content: center;
-				position: fixed;
-				z-index: 99999;
-				top: 0;
 				left: 0;
+				margin: 0 !important;
+				position: fixed;
+				top: 0;
 				transform: translateX( -99999px );
 				visibility: hidden;
+				width: 100%;
+				z-index: 99999;
 			}
 			.newspack-lightbox__close {
+				background: rgba( 0, 0, 0, 0.5 );
+				border: 0;
+				border-radius: 4px;
+				box-shadow: none;
+				cursor: pointer;
+				height: 48px;
+				margin: 0;
+				padding: 0;
 				position: absolute;
-				right: 1em;
-				top: 1em;
+				right: 1.5em;
+				top: 1.5em;
+				transition: background-color 250ms;
+				width: 48px;
+			}
+			.newspack-lightbox__close:focus,
+			.newspack-lightbox__close:hover {
+				background-color: rgba( 0, 0, 0, 0.75 );
+			}
+			.newspack-lightbox__close:focus {
+				outline: thin dotted white;
+				outline-offset: -4px;
+			}
+			.newspack-lightbox__close svg {
+				left: 12px;
+				position: absolute;
+				top: 12px;
 			}
 		</style>
 		<div amp-access="displayPopup" amp-access-hide class="newspack-lightbox" role="button" tabindex="0" id="<?php echo esc_attr( $element_id ); ?>">
@@ -179,7 +203,9 @@ final class Newspack_Popups_Inserter {
 				<?php endif; ?>
 				<?php echo ( $popup['body'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 			</div>
-			<button on="tap:<?php echo esc_attr( $element_id ); ?>.hide" class="newspack-lightbox__close">x</button>
+			<button on="tap:<?php echo esc_attr( $element_id ); ?>.hide" class="newspack-lightbox__close" aria-label="<?php esc_html_e( 'Close Pop-up', 'newspack-popups' ) ?>">
+				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0V0z"/><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+			</button>
 		</div>
 		<div id="newspack-lightbox-marker">
 			<amp-position-observer on="enter:showAnim.start;" once layout="nodisplay" />
