@@ -20,6 +20,9 @@
   "scripts": {
     "build:webpack": "calypso-build --config='./webpack.config.js'",
     "build": "run-p \"build:*\"",
-    "clean": "rm -rf dist/"
+    "clean": "rm -rf dist/",
+    "release:build-all": "composer install --no-dev && run-p \"build\"",
+    "release:archive": "mkdir -p release && zip -r release/newspack-popups.zip . -x node_modules/\\* .git/\\* .github/\\* .gitignore .DS_Store",
+    "release": "run-p \"release:build-all\" && run-p \"release:archive\""
   }
 }
