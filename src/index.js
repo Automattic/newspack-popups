@@ -11,10 +11,11 @@ import { compose } from '@wordpress/compose';
 import { Component, render, Fragment } from '@wordpress/element';
 import {
 	PanelBody,
+	Path,
 	RangeControl,
 	RadioControl,
+	SelectControl,
 	SVG,
-	Path,
 } from '@wordpress/components';
 import { registerPlugin } from '@wordpress/plugins';
 import { PluginSidebar, PluginSidebarMoreMenuItem } from '@wordpress/editPost';
@@ -39,7 +40,13 @@ class PopupSidebar extends Component {
 	 * Render
 	 */
 	render() {
-		const { onMetaFieldChange, trigger_scroll_progress, trigger_delay, trigger_type } = this.props;
+		const {
+			frequency,
+			onMetaFieldChange,
+			trigger_scroll_progress,
+			trigger_delay,
+			trigger_type,
+		} = this.props;
 		return (
 			<Fragment>
 				<PluginSidebarMoreMenuItem target="sidebar-name">
@@ -75,6 +82,17 @@ class PopupSidebar extends Component {
 								max={ 100 }
 							/>
 						) }
+						<SelectControl
+							label={ __( 'Frequency' ) }
+							value={ frequency }
+							onChange={ value => onMetaFieldChange( 'frequency', value ) }
+							options={ [
+								{ value: 0, label: __( 'Once per user' ) },
+								{ value: 5, label: __( 'Every 5 page views' ) },
+								{ value: 25, label: __( 'Every 25 page views' ) },
+								{ value: 100, label: __( 'Every 100 page views' ) },
+							] }
+						/>
 					</PanelBody>
 				</PluginSidebar>
 			</Fragment>
@@ -86,8 +104,9 @@ const popupSidebar = compose( [
 	withSelect( select => {
 		const { getEditedPostAttribute } = select( 'core/editor' );
 		const meta = getEditedPostAttribute( 'meta' );
-		const { trigger_scroll_progress, trigger_delay, trigger_type } = meta || {};
+		const { frequency, trigger_scroll_progress, trigger_delay, trigger_type } = meta || {};
 		return {
+			frequency,
 			trigger_scroll_progress,
 			trigger_delay,
 			trigger_type,

@@ -101,15 +101,18 @@ final class Newspack_Popups_Inserter {
 				$body .= render_block( $block );
 			}
 			$popup = [
+				'id'      => get_the_ID(),
 				'title'   => get_the_title(),
 				'body'    => $body,
 				'options' => wp_parse_args(
 					[
+						'frequency'               => get_post_meta( get_the_ID(), 'frequency', true ),
 						'trigger_type'            => get_post_meta( get_the_ID(), 'trigger_type', true ),
 						'trigger_delay'           => get_post_meta( get_the_ID(), 'trigger_delay', true ),
 						'trigger_scroll_progress' => get_post_meta( get_the_ID(), 'trigger_scroll_progress', true ),
 					],
 					[
+						'frequency'               => 0,
 						'trigger_type'            => 'time',
 						'trigger_delay'           => 0,
 						'trigger_scroll_progress' => 0,
@@ -207,12 +210,16 @@ final class Newspack_Popups_Inserter {
 	 * Add amp-access header code.
 	 */
 	public static function popup_access() {
+		$popup = self::retrieve_popup();
+		if ( ! $popup ) {
+			return null;
+		}
 		$endpoint = str_replace( 'http://', '//', get_rest_url( null, 'newspack-popups/v1/reader' ) );
 		?>
 		<script id="amp-access" type="application/json">
 			{
-				"authorization": "<?php echo esc_url( $endpoint ); ?>?rid=READER_ID&url=CANONICAL_URL&RANDOM",
-				"pingback": "<?php echo esc_url( $endpoint ); ?>?rid=READER_ID&url=CANONICAL_URL&RANDOM",
+				"authorization": "<?php echo esc_url( $endpoint ); ?>?popup_id=<?php echo ( esc_attr( $popup['id'] ) ); ?>&rid=READER_ID&url=CANONICAL_URL&RANDOM",
+				"pingback": "<?php echo esc_url( $endpoint ); ?>?popup_id=<?php echo ( esc_attr( $popup['id'] ) ); ?>&rid=READER_ID&url=CANONICAL_URL&RANDOM",
 				"authorizationFallbackResponse": {
 					"displayPopup": true
 				}
