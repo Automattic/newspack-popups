@@ -21,6 +21,14 @@
 		padding: 1.5em;
 		position: relative;
 		margin: 0.75em;
+
+		> *:first-child {
+			margin-top: 0;
+		}
+
+		> *:nth-last-child(2) { // Last child being .newspack-lightbox__close
+			margin-bottom: 0;
+		}
 	}
 
 	.newspack-lightbox__close {
