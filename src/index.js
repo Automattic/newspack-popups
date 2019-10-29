@@ -19,19 +19,10 @@ import {
 } from '@wordpress/components';
 import { registerPlugin } from '@wordpress/plugins';
 import { PluginSidebar, PluginSidebarMoreMenuItem } from '@wordpress/editPost';
-import './style.scss';
 
 const icon = (
-	<SVG width="24px" height="24px" viewBox="0 0 32 32">
-		<Path
-			d="M16 32c8.836 0 16-7.164 16-16S24.836 0 16 0 0 7.164 0 16s7.163 16 16 16z"
-			fill="#36F!important"
-		/>
-		<Path
-			d="M22.988 16.622h-1.72l-1.103-1.124h2.823v1.124zm0-3.31H18.02l-1.102-1.124h6.071v1.124zm0-3.31h-8.217l-1.103-1.125h9.32v1.125zm0 13.12L9.012 8.878v4.749l.069.071h-.07v9.426h3.451v-5.98l5.867 5.98h4.66z"
-			fill="#fff"
-			className="newspack-popups-icon__background"
-		/>
+	<SVG xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+		<Path d="M11.99 18.54l-7.37-5.73L3 14.07l9 7 9-7-1.63-1.27-7.38 5.74zM12 16l7.36-5.73L21 9l-9-7-9 7 1.63 1.27L12 16z"/>
 	</SVG>
 );
 
