@@ -65,11 +65,29 @@ final class Newspack_Popups_API {
 
 		$response['currentViews'] = (int) $data['count'];
 
-		$frequency = intval( $popup['options']['frequency'] );
-		if ( 0 === $frequency && $response['currentViews'] < 1 ) {
-			$response['displayPopup'] = true;
-		} elseif ( 0 === $response['currentViews'] % $frequency ) {
-			$response['displayPopup'] = true;
+		$frequency             = $popup['options']['frequency'];
+		$current_views         = (int) $response['currentViews'];
+		$last_view             = (int) $data['time'];
+		$response['frequency'] = $frequency;
+		switch ( $frequency ) {
+			case 'daily':
+				$response['displayPopup'] = $last_view < strtotime( '-1 day' );
+				break;
+			case 'once':
+				$response['displayPopup'] = $current_views < 1;
+				break;
+			case 'always':
+				$response['displayPopup'] = true;
+				break;
+			case '5':
+			case '25':
+			case '100':
+				$response['displayPopup'] = ( $current_views > 0 ) && ( 0 === $current_views % (int) $frequency );
+				break;
+			case 'never':
+			default:
+				$response['displayPopup'] = false;
+				break;
 		}
 		return rest_ensure_response( $response );
 	}
