@@ -18,13 +18,15 @@ const path = require( 'path' );
 /**
  * Internal variables
  */
-const index = path.join( __dirname, 'src' );
+const editor = path.join( __dirname, 'src', 'editor' );
+const view = path.join( __dirname, 'src', 'view' );
 
 const webpackConfig = getBaseWebpackConfig(
 	{ WP: true },
 	{
 		entry: {
-			editor: index
+			editor: editor,
+			view: view,
 		},
 		'output-path': path.join( __dirname, 'dist' ),
 	}

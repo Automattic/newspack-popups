@@ -40,6 +40,14 @@ final class Newspack_Popups_Inserter {
 			$content = self::insert_popup( $content, $popup );
 			wp_enqueue_script( 'amp-animation' );
 			wp_enqueue_script( 'amp-position-observer' );
+			\wp_register_style(
+				'newspack-popups-view',
+				plugins_url( '../dist/view.css', __FILE__ ),
+				null,
+				filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/view.css' )
+			);
+			\wp_style_add_data( 'newspack-popups-view', 'rtl', 'replace' );
+			\wp_enqueue_style( 'newspack-popups-view' );
 		}
 		return $content;
 	}
@@ -145,41 +153,16 @@ final class Newspack_Popups_Inserter {
 		$element_id = 'lightbox' . rand(); // phpcs:ignore WordPress.WP.AlternativeFunctions.rand_rand
 		ob_start();
 		?>
-		<style>
-			.newspack-popup {
-				background: white;
-				padding: 2em;
-				min-width: 50%;
-			}
-			.newspack-lightbox {
-				background: rgba(0,0,0,.8);
-				width: 100%;
-				height: 100%;
-				position: absolute;
-				display: flex;
-				align-items: center;
-				justify-content: center;
-				position: fixed;
-				z-index: 99999;
-				top: 0;
-				left: 0;
-				transform: translateX( -99999px );
-				visibility: hidden;
-			}
-			.newspack-lightbox__close {
-				position: absolute;
-				right: 1em;
-				top: 1em;
-			}
-		</style>
 		<div amp-access="displayPopup" amp-access-hide class="newspack-lightbox" role="button" tabindex="0" id="<?php echo esc_attr( $element_id ); ?>">
 			<div class="newspack-popup">
 				<?php if ( ! empty( $popup['title'] ) ) : ?>
 					<h1><?php echo esc_html( $popup['title'] ); ?></h1>
 				<?php endif; ?>
 				<?php echo ( $popup['body'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+				<button on="tap:<?php echo esc_attr( $element_id ); ?>.hide" class="newspack-lightbox__close" aria-label="<?php esc_html_e( 'Close Pop-up', 'newspack-popups' ) ?>">
+					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0V0z"/><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+				</button>
 			</div>
-			<button on="tap:<?php echo esc_attr( $element_id ); ?>.hide" class="newspack-lightbox__close">x</button>
 		</div>
 		<div id="newspack-lightbox-marker">
 			<amp-position-observer on="enter:showAnim.start;" once layout="nodisplay" />
@@ -187,7 +170,7 @@ final class Newspack_Popups_Inserter {
 		<amp-animation id="showAnim" layout="nodisplay">
 			<script type="application/json">
 				{
-					"duration": "0",
+					"duration": 125,
 					"fill": "both",
 					"iterations": "1",
 					"direction": "alternate",
@@ -195,6 +178,7 @@ final class Newspack_Popups_Inserter {
 						"selector": ".newspack-lightbox",
 						"delay": "<?php echo intval( $popup['options']['trigger_delay'] ) * 1000; ?>",
 						"keyframes": [{
+							"opacity": 1,
 							"transform": "translateX( 0 )",
 							"visibility": "visible"
 						}]
