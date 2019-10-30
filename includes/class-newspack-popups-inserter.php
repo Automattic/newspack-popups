@@ -115,11 +115,13 @@ final class Newspack_Popups_Inserter {
 				'options' => wp_parse_args(
 					[
 						'frequency'               => get_post_meta( get_the_ID(), 'frequency', true ),
+						'placement'               => get_post_meta( get_the_ID(), 'placement', true ),
 						'trigger_type'            => get_post_meta( get_the_ID(), 'trigger_type', true ),
 						'trigger_delay'           => get_post_meta( get_the_ID(), 'trigger_delay', true ),
 						'trigger_scroll_progress' => get_post_meta( get_the_ID(), 'trigger_scroll_progress', true ),
 					],
 					[
+						'placement'               => 'center',
 						'frequency'               => 0,
 						'trigger_type'            => 'time',
 						'trigger_delay'           => 0,
@@ -137,6 +139,9 @@ final class Newspack_Popups_Inserter {
 					$popup['options']['trigger_scroll_progress'] = 0;
 					break;
 			};
+			if ( ! in_array( $popup['options']['placement'], [ 'top', 'bottom', 'left', 'right' ] ) ) {
+				$popup['options']['placement'] = 'center';
+			}
 			$popup['markup'] = self::generate_popup( $popup );
 		}
 		wp_reset_postdata();
@@ -151,9 +156,10 @@ final class Newspack_Popups_Inserter {
 	 */
 	public static function generate_popup( $popup ) {
 		$element_id = 'lightbox' . rand(); // phpcs:ignore WordPress.WP.AlternativeFunctions.rand_rand
+		$classes    = [ 'newspack-lightbox', 'newspack-lightbox-placement-' . $popup['options']['placement'] ];
 		ob_start();
 		?>
-		<div amp-access="displayPopup" amp-access-hide class="newspack-lightbox" role="button" tabindex="0" id="<?php echo esc_attr( $element_id ); ?>">
+		<div amp-access="displayPopup" amp-access-hide class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>" role="button" tabindex="0" id="<?php echo esc_attr( $element_id ); ?>">
 			<div class="newspack-popup">
 				<?php if ( ! empty( $popup['title'] ) ) : ?>
 					<h1><?php echo esc_html( $popup['title'] ); ?></h1>
