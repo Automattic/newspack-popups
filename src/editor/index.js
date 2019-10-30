@@ -27,6 +27,36 @@ const icon = (
 	</SVG>
 );
 
+const iconCenter = (
+	<SVG xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+		<Path d="M19 9H5v6h14V9zm2-6H3c-1.1 0-2 .9-2 2v14c0 1.1.9 1.98 2 1.98h18c1.1 0 2-.88 2-1.98V5c0-1.1-.9-2-2-2zM3 19V5h18v14H3z" />
+	</SVG>
+);
+
+const iconBottom = (
+	<SVG xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+		<Path d="M21 13H3v6h18v-6zm0-10H3c-1.1 0-2 .9-2 2v14c0 1.1.9 1.98 2 1.98h18c1.1 0 2-.88 2-1.98V5c0-1.1-.9-2-2-2zM3 19V5h18v14H3z" />
+	</SVG>
+);
+
+const iconTop = (
+	<SVG xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+		<Path d="M21 5H3v6h18V5zm0-2H3c-1.1 0-2 .9-2 2v14c0 1.1.9 1.98 2 1.98h18c1.1 0 2-.88 2-1.98V5c0-1.1-.9-2-2-2zM3 19V5h18v14H3z" />
+	</SVG>
+);
+
+const iconLeft = (
+	<SVG xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+		<Path d="M12 5H3v14h9V5zm9-2H3c-1.1 0-2 .9-2 2v14c0 1.1.9 1.98 2 1.98h18c1.1 0 2-.88 2-1.98V5c0-1.1-.9-2-2-2zM3 19V5h18v14H3z" />
+	</SVG>
+);
+
+const iconRight = (
+	<SVG xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+		<Path d="M21 5h-9v14h9V5zm0-2H3c-1.1 0-2 .9-2 2v14c0 1.1.9 1.98 2 1.98h18c1.1 0 2-.88 2-1.98V5c0-1.1-.9-2-2-2zM3 19V5h18v14H3z" />
+	</SVG>
+);
+
 class PopupSidebar extends Component {
 	/**
 	 * Render
@@ -90,31 +120,31 @@ class PopupSidebar extends Component {
 							isCollapsed={ false }
 							controls={ [
 								{
-									icon: 'align-center',
+									icon: iconCenter,
 									title: __( 'Center' ),
 									isActive: [ 'bottom', 'top', 'left', 'right' ].indexOf( placement ) === -1,
 									onClick: () => onMetaFieldChange( 'placement', 'center' ),
 								},
 								{
-									icon: 'arrow-down-alt',
+									icon: iconBottom,
 									title: __( 'Bottom' ),
 									isActive: 'bottom' === placement,
 									onClick: () => onMetaFieldChange( 'placement', 'bottom' ),
 								},
 								{
-									icon: 'arrow-up-alt',
+									icon: iconTop,
 									title: __( 'Top' ),
 									isActive: 'top' === placement,
 									onClick: () => onMetaFieldChange( 'placement', 'top' ),
 								},
 								{
-									icon: 'align-left',
+									icon: iconLeft,
 									title: __( 'Left' ),
 									isActive: 'left' === placement,
 									onClick: () => onMetaFieldChange( 'placement', 'left' ),
 								},
 								{
-									icon: 'align-right',
+									icon: iconRight,
 									title: __( 'Right' ),
 									isActive: 'right' === placement,
 									onClick: () => onMetaFieldChange( 'placement', 'right' ),
