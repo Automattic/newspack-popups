@@ -1,3 +1,6 @@
+@import '../shared/sass/variables';
+@import '../shared/sass/mixins';
+
 .newspack-lightbox {
 	align-items: center;
 	background: rgba( black, 0.5 );
@@ -14,19 +17,24 @@
 	width: 100%;
 	z-index: 99999;
 
+	.newspack-popup-wrapper {
+		background: white;
+		margin: 0.75em;
+		position: relative;
+	}
+
 	.newspack-popup {
 		background: white;
+		margin: 0 auto;
 		max-width: 1200px;
 		min-width: 50%;
 		padding: 1.5em;
-		position: relative;
-		margin: 0.75em;
 
 		> *:first-child {
 			margin-top: 0;
 		}
 
-		> *:nth-last-child(2) { // Last child being .newspack-lightbox__close
+		> *:last-child {
 			margin-bottom: 0;
 		}
 	}
@@ -62,6 +70,97 @@
 			left: 12px;
 			position: absolute;
 			top: 12px;
+		}
+	}
+
+	/* Placements */
+	&.newspack-lightbox-placement-bottom,
+	&.newspack-lightbox-placement-top {
+		.newspack-popup-wrapper {
+			max-height: 100%;
+			width: 100%;
+		}
+
+		.newspack-popup {
+			@include media( desktop ) {
+				padding-left: 0;
+				padding-right: 0;
+			}
+		}
+
+		.newspack-lightbox__close {
+			right: 0.75em;
+		}
+	}
+
+	&.newspack-lightbox-placement-bottom {
+		align-items: flex-end;
+
+		.newspack-popup-wrapper {
+			margin: 0.75em 0 0;
+		}
+	}
+
+	&.newspack-lightbox-placement-top {
+		align-items: flex-start;
+
+		.newspack-popup-wrapper {
+			margin: 0 0 0.75em;
+		}
+
+		.newspack-lightbox__close {
+			bottom: -0.75em;
+			margin-bottom: -48px;
+			margin-top: 0;
+			top: auto;
+		}
+	}
+
+	&.newspack-lightbox-placement-left,
+	&.newspack-lightbox-placement-right {
+		@include media( narrowdesktop ) {
+			.newspack-popup-wrapper {
+				height: 100%;
+				margin: 0;
+				max-width: 65%;
+			}
+
+			.newspack-popup {
+				max-height: 100%;
+				max-width: 100%;
+				min-width: 100%;
+				overflow-y: auto;
+			}
+
+			.newspack-lightbox__close {
+				margin-top: 0;
+				top: 0.75em;
+			}
+		}
+
+		&.newspack-lightbox-placement-left {
+			justify-content: flex-start;
+
+			.newspack-lightbox__close {
+				margin-right: -48px;
+				right: -0.75em;
+			}
+		}
+
+		&.newspack-lightbox-placement-right {
+			justify-content: flex-end;
+
+			.newspack-lightbox__close {
+				left: -0.75em;
+				margin-left: -48px;
+				right: auto;
+			}
+		}
+
+		@include media( desktop ) {
+			.newspack-popup-wrapper {
+				max-width: 50%;
+			}
 		}
 	}
 }
