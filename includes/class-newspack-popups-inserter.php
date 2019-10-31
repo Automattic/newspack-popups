@@ -139,7 +139,7 @@ final class Newspack_Popups_Inserter {
 					$popup['options']['trigger_scroll_progress'] = 0;
 					break;
 			};
-			if ( ! in_array( $popup['options']['placement'], [ 'top', 'bottom', 'left', 'right' ] ) ) {
+			if ( ! in_array( $popup['options']['placement'], [ 'top', 'bottom' ] ) ) {
 				$popup['options']['placement'] = 'center';
 			}
 			$popup['markup'] = self::generate_popup( $popup );

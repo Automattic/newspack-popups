@@ -16,7 +16,6 @@ import {
 	RadioControl,
 	SelectControl,
 	SVG,
-	Toolbar,
 } from '@wordpress/components';
 import { registerPlugin } from '@wordpress/plugins';
 import { PluginSidebar, PluginSidebarMoreMenuItem } from '@wordpress/editPost';
@@ -24,24 +23,6 @@ import { PluginSidebar, PluginSidebarMoreMenuItem } from '@wordpress/editPost';
 const icon = (
 	<SVG xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
 		<Path d="M11.99 18.54l-7.37-5.73L3 14.07l9 7 9-7-1.63-1.27-7.38 5.74zM12 16l7.36-5.73L21 9l-9-7-9 7 1.63 1.27L12 16z" />
-	</SVG>
-);
-
-const iconCenter = (
-	<SVG xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-		<Path d="M19 9H5v6h14V9zm2-6H3c-1.1 0-2 .9-2 2v14c0 1.1.9 1.98 2 1.98h18c1.1 0 2-.88 2-1.98V5c0-1.1-.9-2-2-2zM3 19V5h18v14H3z" />
-	</SVG>
-);
-
-const iconBottom = (
-	<SVG xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-		<Path d="M21 13H3v6h18v-6zm0-10H3c-1.1 0-2 .9-2 2v14c0 1.1.9 1.98 2 1.98h18c1.1 0 2-.88 2-1.98V5c0-1.1-.9-2-2-2zM3 19V5h18v14H3z" />
-	</SVG>
-);
-
-const iconTop = (
-	<SVG xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-		<Path d="M21 5H3v6h18V5zm0-2H3c-1.1 0-2 .9-2 2v14c0 1.1.9 1.98 2 1.98h18c1.1 0 2-.88 2-1.98V5c0-1.1-.9-2-2-2zM3 19V5h18v14H3z" />
 	</SVG>
 );
 
@@ -104,27 +85,14 @@ class PopupSidebar extends Component {
 								{ value: 100, label: __( 'Every 100 page views' ) },
 							] }
 						/>
-						<Toolbar
-							isCollapsed={ false }
-							controls={ [
-								{
-									icon: iconCenter,
-									title: __( 'Center' ),
-									isActive: [ 'bottom', 'top', 'left', 'right' ].indexOf( placement ) === -1,
-									onClick: () => onMetaFieldChange( 'placement', 'center' ),
-								},
-								{
-									icon: iconBottom,
-									title: __( 'Bottom' ),
-									isActive: 'bottom' === placement,
-									onClick: () => onMetaFieldChange( 'placement', 'bottom' ),
-								},
-								{
-									icon: iconTop,
-									title: __( 'Top' ),
-									isActive: 'top' === placement,
-									onClick: () => onMetaFieldChange( 'placement', 'top' ),
-								},
+						<SelectControl
+							label={ __( 'Placement' ) }
+							value={ placement }
+							onChange={ value => onMetaFieldChange( 'placement', value ) }
+							options={ [
+								{ value: 'center', label: __( 'Center' ) },
+								{ value: 'top', label: __( 'Top' ) },
+								{ value: 'bottom', label: __( 'Bottom' ) },
 							] }
 						/>
 					</PanelBody>
