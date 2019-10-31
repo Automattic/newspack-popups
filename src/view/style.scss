@@ -19,7 +19,6 @@
 
 	.newspack-popup-wrapper {
 		background: white;
-		margin: 0.75em;
 		position: relative;
 	}
 
@@ -57,14 +56,18 @@
 		.newspack-popup-wrapper {
 			max-height: 90%;
 			max-height: calc(100% - 1.5em);
+			min-width: 100%;
 			overflow-y: auto;
+
+			@media only screen and (min-width: 780px) {
+				min-width: 780px;
+			}
 		}
 	}
 
 	&.newspack-lightbox-placement-bottom,
 	&.newspack-lightbox-placement-top {
 		.newspack-popup-wrapper {
-			margin: 0;
 			max-height: 100%;
 			overflow-y: auto;
 			width: 100%;
