@@ -178,19 +178,32 @@ final class Newspack_Popups_Inserter {
 		<amp-animation id="showAnim" layout="nodisplay">
 			<script type="application/json">
 				{
-					"duration": 125,
+					"duration": "125ms",
 					"fill": "both",
 					"iterations": "1",
 					"direction": "alternate",
-					"animations": [{
-						"selector": ".newspack-lightbox",
-						"delay": "<?php echo intval( $popup['options']['trigger_delay'] ) * 1000; ?>",
-						"keyframes": [{
-							"opacity": 1,
-							"transform": "translateX( 0 )",
-							"visibility": "visible"
-						}]
-					}]
+					"animations": [
+						{
+							"selector": ".newspack-lightbox",
+							"delay": "<?php echo intval( $popup['options']['trigger_delay'] ) * 1000 + 500; ?>",
+							"keyframes": {
+								"opacity": ["0", "1"]
+							}
+						},
+						{
+								"selector": ".newspack-popup-wrapper",
+								"delay": "<?php echo intval( $popup['options']['trigger_delay'] ) * 1000 + 625; ?>",
+								"keyframes": {
+									<?php if ( "top" === $popup['options']['placement'] ) : ?>
+										"transform": ["translateY(-100%)", "translateY(0)"]
+									<?php elseif ( "bottom" === $popup['options']['placement'] ) : ?>
+										"transform": ["translateY(100%)", "translateY(0)"]
+									<?php else : ?>
+										"opacity": ["0", "1"]
+									<?php endif; ?>
+								}
+						}
+					]
 				}
 			</script>
 		</amp-animation>
