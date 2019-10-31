@@ -26,141 +26,99 @@
 	.newspack-popup {
 		background: white;
 		margin: 0 auto;
-		max-width: 1200px;
-		min-width: 50%;
+		max-width: 780px;
 		padding: 1.5em;
 
-		> *:first-child {
+		& > *:first-child {
 			margin-top: 0;
 		}
 
-		> *:last-child {
+		& > *:last-child {
 			margin-bottom: 0;
 		}
 	}
 
 	.newspack-lightbox__close {
-		background: rgba( black, 0.5 );
-		border: 0;
-		border-radius: 4px;
+		border-radius: 50%;
 		box-shadow: none;
 		cursor: pointer;
 		font-size: inherit;
-		height: 48px;
-		margin: -48px 0 0;
-		padding: 0;
+		height: 36px;
+		margin: 0;
+		padding: 6px;
 		position: absolute;
-		right: 0;
-		top: -0.75em;
-		transition: background-color 250ms;
-		width: 48px;
-
-		&:active,
-		&:focus,
-		&:hover {
-			background-color: rgba( black, 0.75 );
-		}
-
-		&:focus {
-			outline: thin dotted white;
-			outline-offset: -4px;
-		}
-
-		svg {
-			left: 12px;
-			position: absolute;
-			top: 12px;
-		}
+		right: 0.25em;
+		top: 0.25em;
+		width: 36px;
 	}
 
 	/* Placements */
+	&.newspack-lightbox-placement-center {
+		.newspack-popup-wrapper {
+			max-height: 90%;
+			max-height: calc(100% - 1.5em);
+			overflow-y: auto;
+		}
+	}
+
 	&.newspack-lightbox-placement-bottom,
 	&.newspack-lightbox-placement-top {
 		.newspack-popup-wrapper {
+			margin: 0;
 			max-height: 100%;
+			overflow-y: auto;
 			width: 100%;
 		}
 
 		.newspack-popup {
-			@include media( desktop ) {
-				padding-left: 0;
-				padding-right: 0;
-			}
-		}
-
-		.newspack-lightbox__close {
-			right: 0.75em;
+			max-width: 90%;
+			padding-left: 0;
+			padding-right: 0;
+			width: 1200px;
 		}
 	}
 
 	&.newspack-lightbox-placement-bottom {
 		align-items: flex-end;
-
-		.newspack-popup-wrapper {
-			margin: 0.75em 0 0;
-		}
 	}
 
 	&.newspack-lightbox-placement-top {
 		align-items: flex-start;
-
-		.newspack-popup-wrapper {
-			margin: 0 0 0.75em;
-		}
-
-		.newspack-lightbox__close {
-			bottom: -0.75em;
-			margin-bottom: -48px;
-			margin-top: 0;
-			top: auto;
-		}
 	}
 
 	&.newspack-lightbox-placement-left,
 	&.newspack-lightbox-placement-right {
-		@include media( narrowdesktop ) {
+		.newspack-popup-wrapper {
+			height: 100%;
+			margin: 0;
+			max-height: 100%;
+			overflow-y: auto;
+			width: 780px;
+		}
+
+		@include media( mobile ) {
 			.newspack-popup-wrapper {
-				height: 100%;
-				margin: 0;
-				max-width: 65%;
+				max-width: 90%;
+				max-width: calc(100% - 3em);
 			}
 
 			.newspack-popup {
-				max-height: 100%;
 				max-width: 100%;
-				min-width: 100%;
-				overflow-y: auto;
 			}
+		}
 
-			.newspack-lightbox__close {
-				margin-top: 0;
-				top: 0.75em;
+		@include media( tablet ) {
+			.newspack-popup-wrapper {
+				max-width: 80%;
 			}
 		}
 
 		&.newspack-lightbox-placement-left {
 			justify-content: flex-start;
-
-			.newspack-lightbox__close {
-				margin-right: -48px;
-				right: -0.75em;
-			}
 		}
 
 		&.newspack-lightbox-placement-right {
 			justify-content: flex-end;
-
-			.newspack-lightbox__close {
-				left: -0.75em;
-				margin-left: -48px;
-				right: auto;
-			}
-		}
-
-		@include media( desktop ) {
-			.newspack-popup-wrapper {
-				max-width: 50%;
-			}
 		}
 	}
 }
