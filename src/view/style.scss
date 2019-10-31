@@ -85,40 +85,4 @@
 	&.newspack-lightbox-placement-top {
 		align-items: flex-start;
 	}
-
-	&.newspack-lightbox-placement-left,
-	&.newspack-lightbox-placement-right {
-		.newspack-popup-wrapper {
-			height: 100%;
-			margin: 0;
-			max-height: 100%;
-			overflow-y: auto;
-			width: 780px;
-		}
-
-		@include media( mobile ) {
-			.newspack-popup-wrapper {
-				max-width: 90%;
-				max-width: calc(100% - 3em);
-			}
-
-			.newspack-popup {
-				max-width: 100%;
-			}
-		}
-
-		@include media( tablet ) {
-			.newspack-popup-wrapper {
-				max-width: 80%;
-			}
-		}
-
-		&.newspack-lightbox-placement-left {
-			justify-content: flex-start;
-		}
-
-		&.newspack-lightbox-placement-right {
-			justify-content: flex-end;
-		}
-	}
 }
