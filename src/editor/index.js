@@ -22,7 +22,7 @@ import { PluginSidebar, PluginSidebarMoreMenuItem } from '@wordpress/editPost';
 
 const icon = (
 	<SVG xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-		<Path d="M11.99 18.54l-7.37-5.73L3 14.07l9 7 9-7-1.63-1.27-7.38 5.74zM12 16l7.36-5.73L21 9l-9-7-9 7 1.63 1.27L12 16z"/>
+		<Path d="M11.99 18.54l-7.37-5.73L3 14.07l9 7 9-7-1.63-1.27-7.38 5.74zM12 16l7.36-5.73L21 9l-9-7-9 7 1.63 1.27L12 16z" />
 	</SVG>
 );
 
@@ -33,6 +33,7 @@ class PopupSidebar extends Component {
 	render() {
 		const {
 			frequency,
+			placement,
 			onMetaFieldChange,
 			trigger_scroll_progress,
 			trigger_delay,
@@ -84,6 +85,16 @@ class PopupSidebar extends Component {
 								{ value: 100, label: __( 'Every 100 page views' ) },
 							] }
 						/>
+						<SelectControl
+							label={ __( 'Placement' ) }
+							value={ placement }
+							onChange={ value => onMetaFieldChange( 'placement', value ) }
+							options={ [
+								{ value: 'center', label: __( 'Center' ) },
+								{ value: 'top', label: __( 'Top' ) },
+								{ value: 'bottom', label: __( 'Bottom' ) },
+							] }
+						/>
 					</PanelBody>
 				</PluginSidebar>
 			</Fragment>
@@ -95,9 +106,11 @@ const popupSidebar = compose( [
 	withSelect( select => {
 		const { getEditedPostAttribute } = select( 'core/editor' );
 		const meta = getEditedPostAttribute( 'meta' );
-		const { frequency, trigger_scroll_progress, trigger_delay, trigger_type } = meta || {};
+		const { frequency, placement, trigger_scroll_progress, trigger_delay, trigger_type } =
+			meta || {};
 		return {
 			frequency,
+			placement,
 			trigger_scroll_progress,
 			trigger_delay,
 			trigger_type,
