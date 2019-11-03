@@ -113,7 +113,7 @@ final class Newspack_Popups {
 			[
 				'object_subtype' => self::NEWSPACK_PLUGINS_CPT,
 				'show_in_rest'   => true,
-				'type'           => 'integer',
+				'type'           => 'string',
 				'single'         => true,
 				'auth_callback'  => '__return_true',
 			]

@@ -61,10 +61,10 @@ class PopupSidebar extends Component {
 					value={ frequency }
 					onChange={ value => onMetaFieldChange( 'frequency', value ) }
 					options={ [
-						{ value: 0, label: __( 'Once per user' ) },
-						{ value: 5, label: __( 'Every 5 page views' ) },
-						{ value: 25, label: __( 'Every 25 page views' ) },
-						{ value: 100, label: __( 'Every 100 page views' ) },
+						{ value: 'never', label: __( 'Never' ) },
+						{ value: 'once', label: __( 'Once' ) },
+						{ value: 'always', label: __( 'Every page view' ) },
+						{ value: 'daily', label: __( 'Once a day' ) },
 					] }
 				/>
 				<SelectControl

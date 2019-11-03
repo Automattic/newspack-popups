@@ -38,8 +38,6 @@ final class Newspack_Popups_Inserter {
 		if ( $popup ) {
 			$markup  = self::generate_popup( $popup );
 			$content = self::insert_popup( $content, $popup );
-			wp_enqueue_script( 'amp-animation' );
-			wp_enqueue_script( 'amp-position-observer' );
 			\wp_register_style(
 				'newspack-popups-view',
 				plugins_url( '../dist/view.css', __FILE__ ),
@@ -48,6 +46,8 @@ final class Newspack_Popups_Inserter {
 			);
 			\wp_style_add_data( 'newspack-popups-view', 'rtl', 'replace' );
 			\wp_enqueue_style( 'newspack-popups-view' );
+			wp_enqueue_script( 'amp-animation' );
+			wp_enqueue_script( 'amp-position-observer' );
 		}
 		return $content;
 	}
@@ -156,6 +156,7 @@ final class Newspack_Popups_Inserter {
 	 */
 	public static function generate_popup( $popup ) {
 		$element_id = 'lightbox' . rand(); // phpcs:ignore WordPress.WP.AlternativeFunctions.rand_rand
+		$endpoint   = str_replace( 'http://', '//', get_rest_url( null, 'newspack-popups/v1/reader' ) );
 		$classes    = [ 'newspack-lightbox', 'newspack-lightbox-placement-' . $popup['options']['placement'] ];
 		ob_start();
 		?>
@@ -166,10 +167,26 @@ final class Newspack_Popups_Inserter {
 						<h1><?php echo esc_html( $popup['title'] ); ?></h1>
 					<?php endif; ?>
 					<?php echo ( $popup['body'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					<form class="popup-dismiss-form"
+						method="POST"
+						action-xhr="<?php echo esc_url( $endpoint ); ?>"
+						target="_top">
+						<input
+							name="url"
+							type="hidden"
+							value="CANONICAL_URL"
+							data-amp-replace="CANONICAL_URL"
+						/>
+						<input
+							name="popup_id"
+							type="hidden"
+							value="<?php echo ( esc_attr( $popup['id'] ) ); ?>"
+						/>
+						<button on="tap:<?php echo esc_attr( $element_id ); ?>.hide" class="newspack-lightbox__close" aria-label="<?php esc_html_e( 'Close Pop-up', 'newspack-popups' ); ?>">
+							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" role="img" aria-hidden="true" focusable="false"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+						</button>
+					</form>
 				</div>
-				<button on="tap:<?php echo esc_attr( $element_id ); ?>.hide" class="newspack-lightbox__close" aria-label="<?php esc_html_e( 'Close Pop-up', 'newspack-popups' ) ?>">
-					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" role="img" aria-hidden="true" focusable="false"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
-				</button>
 			</div>
 		</div>
 		<div id="newspack-lightbox-marker">
@@ -224,9 +241,9 @@ final class Newspack_Popups_Inserter {
 		<script id="amp-access" type="application/json">
 			{
 				"authorization": "<?php echo esc_url( $endpoint ); ?>?popup_id=<?php echo ( esc_attr( $popup['id'] ) ); ?>&rid=READER_ID&url=CANONICAL_URL&RANDOM",
-				"pingback": "<?php echo esc_url( $endpoint ); ?>?popup_id=<?php echo ( esc_attr( $popup['id'] ) ); ?>&rid=READER_ID&url=CANONICAL_URL&RANDOM",
+				"noPingback": true,
 				"authorizationFallbackResponse": {
-					"displayPopup": true
+					"displayPopup": false
 				}
 			}
 		</script>
