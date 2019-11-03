@@ -106,7 +106,7 @@ const PopupSidebarWithData = compose( [
 ] )( PopupSidebar );
 
 const PluginDocumentSettingPanelDemo = () => (
-	<PluginDocumentSettingPanel name="popup-settings-panel" title="Popup Settings">
+	<PluginDocumentSettingPanel name="popup-settings-panel" title={ __(' Pop-up Settings' ) }>
 		<PopupSidebarWithData />
 	</PluginDocumentSettingPanel>
 );
