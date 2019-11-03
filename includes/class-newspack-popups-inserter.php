@@ -12,7 +12,31 @@ defined( 'ABSPATH' ) || exit;
  */
 final class Newspack_Popups_Inserter {
 
-	const NEWSPACK_POPUPS_VIEW_LIMIT = 1;
+	/**
+	 * The popup object to display.
+	 *
+	 * @var object
+	 */
+	protected static $popup = null;
+
+	/**
+	 * Retrieve the best popup for the current post.
+	 *
+	 * @return object Popup object.
+	 */
+	public static function popup_for_post() {
+		if ( self::$popup ) {
+			return self::$popup;
+		}
+		// First try for pop-up with category filtering.
+		self::$popup = self::retrieve_popup( get_the_category() );
+
+		// If nothing found, try for sitewide pop-up.
+		if ( ! self::$popup ) {
+			self::$popup = self::retrieve_popup();
+		}
+		return self::$popup;
+	}
 
 	/**
 	 * Constructor.
@@ -33,22 +57,23 @@ final class Newspack_Popups_Inserter {
 		if ( is_user_logged_in() || ! is_single() ) {
 			return $content;
 		}
-		/* End */
-		$popup = self::retrieve_popup();
-		if ( $popup ) {
-			$markup  = self::generate_popup( $popup );
-			$content = self::insert_popup( $content, $popup );
-			\wp_register_style(
-				'newspack-popups-view',
-				plugins_url( '../dist/view.css', __FILE__ ),
-				null,
-				filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/view.css' )
-			);
-			\wp_style_add_data( 'newspack-popups-view', 'rtl', 'replace' );
-			\wp_enqueue_style( 'newspack-popups-view' );
-			wp_enqueue_script( 'amp-animation' );
-			wp_enqueue_script( 'amp-position-observer' );
+		$popup = self::popup_for_post();
+
+		if ( ! $popup ) {
+			return $content;
 		}
+
+		$content = self::insert_popup( $content, $popup );
+		\wp_register_style(
+			'newspack-popups-view',
+			plugins_url( '../dist/view.css', __FILE__ ),
+			null,
+			filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/view.css' )
+		);
+		\wp_style_add_data( 'newspack-popups-view', 'rtl', 'replace' );
+		\wp_enqueue_style( 'newspack-popups-view' );
+		wp_enqueue_script( 'amp-animation' );
+		wp_enqueue_script( 'amp-position-observer' );
 		return $content;
 	}
 
@@ -91,7 +116,7 @@ final class Newspack_Popups_Inserter {
 	 *
 	 * @return object Popup object
 	 */
-	public static function retrieve_popup() {
+	public static function retrieve_popup( $categories = [] ) {
 		$popup = null;
 
 		$args = [
@@ -100,6 +125,22 @@ final class Newspack_Popups_Inserter {
 			'posts_per_page' => 1,
 		];
 
+		$category_ids = array_map(
+			function( $cagegory ) {
+				return $cagegory->term_id;
+			},
+			$categories
+		);
+		if ( count( $category_ids ) ) {
+			$args['category__in'] = $category_ids;
+		} else {
+			$args['category__not_in'] = get_terms(
+				'category',
+				[
+					'fields' => 'ids',
+				]
+			);
+		}
 		$query = new WP_Query( $args );
 		while ( $query->have_posts() ) {
 			$query->the_post();
@@ -232,9 +273,12 @@ final class Newspack_Popups_Inserter {
 	 * Add amp-access header code.
 	 */
 	public static function popup_access() {
-		$popup = self::retrieve_popup();
+		if ( is_user_logged_in() || ! is_single() ) {
+			return;
+		}
+		$popup = self::popup_for_post();
 		if ( ! $popup ) {
-			return null;
+			return;
 		}
 		$endpoint = str_replace( 'http://', '//', get_rest_url( null, 'newspack-popups/v1/reader' ) );
 		?>
