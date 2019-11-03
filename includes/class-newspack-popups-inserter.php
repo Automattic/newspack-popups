@@ -46,6 +46,8 @@ final class Newspack_Popups_Inserter {
 			);
 			\wp_style_add_data( 'newspack-popups-view', 'rtl', 'replace' );
 			\wp_enqueue_style( 'newspack-popups-view' );
+			wp_enqueue_script( 'amp-animation' );
+			wp_enqueue_script( 'amp-position-observer' );
 		}
 		return $content;
 	}
