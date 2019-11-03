@@ -17,9 +17,16 @@ final class Newspack_Popups {
 	/**
 	 * The single instance of the class.
 	 *
-	 * @var Newspack_Ads
+	 * @var Newspack_Popups
 	 */
 	protected static $instance = null;
+
+	/**
+	 * The ID of the sitewide default Popup.
+	 *
+	 * @var integer
+	 */
+	protected static $sitewide_popup_id = -1; // -1 signifies this has not been set
 
 	/**
 	 * Main Newspack Ads Instance.
@@ -41,6 +48,8 @@ final class Newspack_Popups {
 		add_action( 'init', [ __CLASS__, 'register_cpt' ] );
 		add_action( 'init', [ __CLASS__, 'register_meta' ] );
 		add_action( 'enqueue_block_editor_assets', [ __CLASS__, 'enqueue_block_editor_assets' ] );
+		add_filter( 'display_post_states', [ __CLASS__, 'display_post_states' ], 10, 2 );
+
 		include_once dirname( __FILE__ ) . '/class-newspack-popups-inserter.php';
 		include_once dirname( __FILE__ ) . '/class-newspack-popups-api.php';
 	}
@@ -148,6 +157,36 @@ final class Newspack_Popups {
 		);
 		\wp_style_add_data( 'newspack-popups', 'rtl', 'replace' );
 		\wp_enqueue_style( 'newspack-popups' );
+	}
+
+	/**
+	 * Display 'Sitewide Default' state by the appropriate pop-up.
+	 *
+	 * @param array   $post_states An array of post display states.
+	 * @param WP_Post $post        The current post object.
+	 */
+	public static function display_post_states( $post_states, $post ) {
+		if ( self::NEWSPACK_PLUGINS_CPT !== $post->post_type ) {
+			return $post_states;
+		}
+		if ( -1 === self::$sitewide_popup_id ) {
+			self::$sitewide_popup_id = null; // Setting to null indicates the query has been performed once, and needn't be repeated.
+
+			$query = new WP_Query(
+				[
+					'post_type'      => self::NEWSPACK_PLUGINS_CPT,
+					'post_status'    => 'publish',
+					'posts_per_page' => 1,
+				]
+			);
+			if ( $query->have_posts() ) {
+				self::$sitewide_popup_id = $query->posts[0]->ID;
+			}
+		}
+		if ( $post->ID === self::$sitewide_popup_id ) {
+			$post_states['newspack_popups_sitewide_default'] = __( 'Sitewide Default', 'newspack-popups' );
+		}
+		return $post_states;
 	}
 }
 Newspack_Popups::instance();
