@@ -12,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
  */
 final class Newspack_Popups {
 
-	const NEWSPACK_PLUGINS_CPT = 'newspack_plugins_cpt';
+	const NEWSPACK_PLUGINS_CPT = 'newspack_popups_cpt';
 
 	/**
 	 * The single instance of the class.
@@ -58,8 +58,25 @@ final class Newspack_Popups {
 	 * Register the custom post type.
 	 */
 	public static function register_cpt() {
+		$labels = [
+			'name'               => _x( 'Pop-ups', 'post type general name', 'newspack-popups' ),
+			'singular_name'      => _x( 'Pop-up', 'post type singular name', 'newspack-popups' ),
+			'menu_name'          => _x( 'Pop-ups', 'admin menu', 'newspack-popups' ),
+			'name_admin_bar'     => _x( 'Pop-up', 'add new on admin bar', 'newspack-popups' ),
+			'add_new'            => _x( 'Add New', 'popup', 'newspack-popups' ),
+			'add_new_item'       => __( 'Add New Pop-up', 'newspack-popups' ),
+			'new_item'           => __( 'New Pop-up', 'newspack-popups' ),
+			'edit_item'          => __( 'Edit Pop-up', 'newspack-popups' ),
+			'view_item'          => __( 'View Pop-up', 'newspack-popups' ),
+			'all_items'          => __( 'All Pop-ups', 'newspack-popups' ),
+			'search_items'       => __( 'Search Pop-ups', 'newspack-popups' ),
+			'parent_item_colon'  => __( 'Parent Pop-ups:', 'newspack-popups' ),
+			'not_found'          => __( 'No pop-ups found.', 'newspack-popups' ),
+			'not_found_in_trash' => __( 'No pop-ups found in Trash.', 'newspack-popups' ),
+		];
+
 		$cpt_args = [
-			'label'        => __( 'Pop-ups' ),
+			'labels'       => $labels,
 			'public'       => false,
 			'show_ui'      => true,
 			'show_in_rest' => true,
@@ -137,7 +154,7 @@ final class Newspack_Popups {
 	 */
 	public static function enqueue_block_editor_assets() {
 		$screen = get_current_screen();
-		if ( 'newspack_plugins_cpt' !== $screen->post_type ) {
+		if ( self::NEWSPACK_PLUGINS_CPT !== $screen->post_type ) {
 			return;
 		}
 
