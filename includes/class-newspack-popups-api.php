@@ -68,6 +68,7 @@ final class Newspack_Popups_API {
 		$frequency             = $popup['options']['frequency'];
 		$current_views         = (int) $response['currentViews'];
 		$last_view             = (int) $data['time'];
+		$subscription_status   = $data['subscription_status'];
 		$response['frequency'] = $frequency;
 		switch ( $frequency ) {
 			case 'daily':
@@ -84,6 +85,9 @@ final class Newspack_Popups_API {
 				$response['displayPopup'] = false;
 				break;
 		}
+		if ( 'subscribed' === $subscription_status ) {
+			$response['displayPopup'] = false;
+		}
 		return rest_ensure_response( $response );
 	}
 
@@ -99,6 +103,7 @@ final class Newspack_Popups_API {
 			$data          = get_transient( $transient_name );
 			$data['count'] = (int) $data['count'] + 1;
 			$data['time']  = time();
+			$data['subscription_status'] = $request['mailing_list_status'];
 			set_transient( $transient_name, $data, 0 );
 		}
 		return $this->reader_get_endpoint( $request );
