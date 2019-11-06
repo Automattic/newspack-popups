@@ -262,6 +262,23 @@ final class Newspack_Popups_Inserter {
 					</form>
 				</div>
 			</div>
+			<form class="popup-dismiss-form"
+				method="POST"
+				action-xhr="<?php echo esc_url( $endpoint ); ?>"
+				target="_top">
+				<input
+					name="url"
+					type="hidden"
+					value="CANONICAL_URL"
+					data-amp-replace="CANONICAL_URL"
+				/>
+				<input
+					name="popup_id"
+					type="hidden"
+					value="<?php echo ( esc_attr( $popup['id'] ) ); ?>"
+				/>
+				<button class="newspack-lightbox-shim" on="tap:<?php echo esc_attr( $element_id ); ?>.hide"></button>
+			</form>
 		</div>
 		<div id="newspack-lightbox-marker">
 			<amp-position-observer on="enter:showAnim.start;" once layout="nodisplay" />
