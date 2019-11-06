@@ -42,7 +42,7 @@ final class Newspack_Popups_Inserter {
 	 * Constructor.
 	 */
 	public function __construct() {
-		add_action( 'the_content', [ $this, 'popup' ] );
+		add_filter( 'the_content', [ $this, 'popup' ] );
 		add_action( 'wp_head', [ __CLASS__, 'popup_access' ] );
 	}
 
