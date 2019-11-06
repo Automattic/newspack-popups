@@ -51,7 +51,7 @@ final class Newspack_Popups_API {
 	 */
 	public function reader_get_endpoint( $request ) {
 		$popup_id = isset( $request['popup_id'] ) ? $request['popup_id'] : false;
-		$popup    = Newspack_Popups_Inserter::retrieve_popup( $popup_id );
+		$popup    = Newspack_Popups_Inserter::retrieve_popup_by_id( $popup_id );
 		$response = [
 			'currentViews' => 0,
 			'displayPopup' => false,
@@ -111,10 +111,10 @@ final class Newspack_Popups_API {
 	 * @return string Transient id.
 	 */
 	public function get_transient_name( $request ) {
-		$reader_id = isset( $request['rid'] ) ? sanitize_title( $request['rid'] ) : false;
+		$reader_id = isset( $request['rid'] ) ? esc_attr( $request['rid'] ) : false;
 		// TODO: Is retrieving the amp-access cookie the best way to get READER_ID outside the context of amp-access?
 		if ( ! $reader_id ) {
-			$reader_id = isset( $_COOKIE['amp-access'] ) ? sanitize_text_field( $_COOKIE['amp-access'] ) : false; // phpcs:ignore WordPressVIPMinimum.Variables.RestrictedVariables.cache_constraints___COOKIE
+			$reader_id = isset( $_COOKIE['amp-access'] ) ? esc_attr( $_COOKIE['amp-access'] ) : false; // phpcs:ignore WordPressVIPMinimum.Variables.RestrictedVariables.cache_constraints___COOKIE, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		}
 		$popup_id = isset( $request['popup_id'] ) ? $request['popup_id'] : false;
 		$url      = isset( $request['url'] ) ? esc_url_raw( urldecode( $request['url'] ) ) : false;

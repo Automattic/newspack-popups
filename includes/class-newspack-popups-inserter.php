@@ -114,6 +114,7 @@ final class Newspack_Popups_Inserter {
 	/**
 	 * Retrieve popup CPT post.
 	 *
+	 * @param array $categories An array of categories to match.
 	 * @return object Popup object
 	 */
 	public static function retrieve_popup( $categories = [] ) {
@@ -141,7 +142,36 @@ final class Newspack_Popups_Inserter {
 				]
 			);
 		}
-		$query = new WP_Query( $args );
+		return self::retrieve_popup_with_query( new WP_Query( $args ) );
+	}
+
+	/**
+	 * Retrieve popup CPT post by ID.
+	 *
+	 * @param string $post_id An array of categories to match.
+	 * @return object Popup object
+	 */
+	public static function retrieve_popup_by_id( $post_id ) {
+		$popup = null;
+
+		$args = [
+			'post_type'      => Newspack_Popups::NEWSPACK_PLUGINS_CPT,
+			'post_status'    => 'publish',
+			'posts_per_page' => 1,
+			'p'              => $post_id,
+		];
+
+		return self::retrieve_popup_with_query( new WP_Query( $args ) );
+	}
+
+	/**
+	 * Retrieve popup CPT post.
+	 *
+	 * @param WP_Query $query The query to use.
+	 * @return object Popup object
+	 */
+	protected static function retrieve_popup_with_query( WP_Query $query ) {
+		$popup = null;
 		while ( $query->have_posts() ) {
 			$query->the_post();
 			$blocks = parse_blocks( get_the_content() );
