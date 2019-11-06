@@ -126,8 +126,8 @@ final class Newspack_Popups_Inserter {
 		];
 
 		$category_ids = array_map(
-			function( $cagegory ) {
-				return $cagegory->term_id;
+			function( $category ) {
+				return $category->term_id;
 			},
 			$categories
 		);
