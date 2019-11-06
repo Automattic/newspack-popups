@@ -9,7 +9,14 @@ import { __ } from '@wordpress/i18n';
 import { withSelect, withDispatch } from '@wordpress/data';
 import { compose } from '@wordpress/compose';
 import { Component, render, Fragment } from '@wordpress/element';
-import { Path, RangeControl, RadioControl, SelectControl, TextControl, SVG } from '@wordpress/components';
+import {
+	Path,
+	RangeControl,
+	RadioControl,
+	SelectControl,
+	TextControl,
+	SVG,
+} from '@wordpress/components';
 import { registerPlugin } from '@wordpress/plugins';
 import { PluginDocumentSettingPanel } from '@wordpress/editPost';
 
@@ -20,8 +27,9 @@ class PopupSidebar extends Component {
 	render() {
 		const {
 			frequency,
-			placement,
 			onMetaFieldChange,
+			overlay_opacity,
+			placement,
 			trigger_scroll_progress,
 			trigger_delay,
 			trigger_type,
@@ -80,9 +88,18 @@ class PopupSidebar extends Component {
 				/>
 				<TextControl
 					label={ __( 'UTM Suppression' ) }
-					help={  __( 'Users arriving at the site from URLs with this utm_source will never be shown the pop-up.' ) }
+					help={ __(
+						'Users arriving at the site from URLs with this utm_source will never be shown the pop-up.'
+					) }
 					value={ utm_suppression }
 					onChange={ value => onMetaFieldChange( 'utm_suppression', value ) }
+				/>
+				<RangeControl
+					label={ __( 'Overlay opacity' ) }
+					value={ overlay_opacity }
+					onChange={ value => onMetaFieldChange( 'overlay_opacity', value ) }
+					min={ 0 }
+					max={ 100 }
 				/>
 			</Fragment>
 		);
@@ -93,10 +110,18 @@ const PopupSidebarWithData = compose( [
 	withSelect( select => {
 		const { getEditedPostAttribute } = select( 'core/editor' );
 		const meta = getEditedPostAttribute( 'meta' );
-		const { frequency, placement, trigger_scroll_progress, trigger_delay, trigger_type, utm_suppression } =
-			meta || {};
+		const {
+			frequency,
+			overlay_opacity,
+			placement,
+			trigger_scroll_progress,
+			trigger_delay,
+			trigger_type,
+			utm_suppression,
+		} = meta || {};
 		return {
 			frequency,
+			overlay_opacity,
 			placement,
 			trigger_scroll_progress,
 			trigger_delay,
@@ -114,7 +139,7 @@ const PopupSidebarWithData = compose( [
 ] )( PopupSidebar );
 
 const PluginDocumentSettingPanelDemo = () => (
-	<PluginDocumentSettingPanel name="popup-settings-panel" title={ __(' Pop-up Settings' ) }>
+	<PluginDocumentSettingPanel name="popup-settings-panel" title={ __( ' Pop-up Settings' ) }>
 		<PopupSidebarWithData />
 	</PluginDocumentSettingPanel>
 );

@@ -1,6 +1,5 @@
 .newspack-lightbox {
 	align-items: center;
-	background: rgba( black, 0.5 );
 	display: flex;
 	height: 100%;
 	justify-content: center;
@@ -13,7 +12,7 @@
 	z-index: 99999;
 
 	.newspack-lightbox-shim {
-		background: transparent;
+		background: black;
 		height: 100%;
 		left: 0;
 		position: absolute;
