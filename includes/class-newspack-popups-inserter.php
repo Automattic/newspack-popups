@@ -135,12 +135,12 @@ final class Newspack_Popups_Inserter {
 		if ( count( $category_ids ) ) {
 			$args['category__in'] = $category_ids;
 		} else {
-			$args['category__not_in'] = get_terms(
-				'category',
+			$args['tax_query'] = [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
 				[
-					'fields' => 'ids',
-				]
-			);
+					'taxonomy' => 'category',
+					'operator' => 'NOT EXISTS',
+				],
+			];
 		}
 		return self::retrieve_popup_with_query( new WP_Query( $args ) );
 	}

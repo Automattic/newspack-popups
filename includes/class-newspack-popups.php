@@ -195,6 +195,14 @@ final class Newspack_Popups {
 					'post_type'        => self::NEWSPACK_PLUGINS_CPT,
 					'post_status'      => 'publish',
 					'posts_per_page'   => 1,
+					'tax_query'        => [ //phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+						[
+							'taxonomy' => 'category',
+							'operator' => 'NOT EXISTS',
+						],
+					],
+
+
 					'category__not_in' => get_terms(
 						'category',
 						[
