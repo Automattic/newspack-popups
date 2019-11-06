@@ -148,6 +148,18 @@ final class Newspack_Popups {
 				'auth_callback'  => '__return_true',
 			]
 		);
+
+		\register_meta(
+			'post',
+			'utm_suppression',
+			[
+				'object_subtype' => self::NEWSPACK_PLUGINS_CPT,
+				'show_in_rest'   => true,
+				'type'           => 'string',
+				'single'         => true,
+				'auth_callback'  => '__return_true',
+			]
+		);
 	}
 
 	/**

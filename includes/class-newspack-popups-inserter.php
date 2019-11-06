@@ -44,6 +44,7 @@ final class Newspack_Popups_Inserter {
 	public function __construct() {
 		add_filter( 'the_content', [ $this, 'popup' ] );
 		add_action( 'wp_head', [ __CLASS__, 'popup_access' ] );
+		add_action( 'wp_head', [ __CLASS__, 'popup_access' ] );
 	}
 
 	/**
@@ -190,6 +191,7 @@ final class Newspack_Popups_Inserter {
 						'trigger_type'            => get_post_meta( get_the_ID(), 'trigger_type', true ),
 						'trigger_delay'           => get_post_meta( get_the_ID(), 'trigger_delay', true ),
 						'trigger_scroll_progress' => get_post_meta( get_the_ID(), 'trigger_scroll_progress', true ),
+						'utm_suppression'         => get_post_meta( get_the_ID(), 'utm_suppression', true ),
 					],
 					[
 						'placement'               => 'center',
@@ -197,6 +199,7 @@ final class Newspack_Popups_Inserter {
 						'trigger_type'            => 'time',
 						'trigger_delay'           => 0,
 						'trigger_scroll_progress' => 0,
+						'utm_suppression'         => null,
 					]
 				),
 			];

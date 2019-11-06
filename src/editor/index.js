@@ -9,7 +9,7 @@ import { __ } from '@wordpress/i18n';
 import { withSelect, withDispatch } from '@wordpress/data';
 import { compose } from '@wordpress/compose';
 import { Component, render, Fragment } from '@wordpress/element';
-import { Path, RangeControl, RadioControl, SelectControl, SVG } from '@wordpress/components';
+import { Path, RangeControl, RadioControl, SelectControl, TextControl, SVG } from '@wordpress/components';
 import { registerPlugin } from '@wordpress/plugins';
 import { PluginDocumentSettingPanel } from '@wordpress/editPost';
 
@@ -25,6 +25,7 @@ class PopupSidebar extends Component {
 			trigger_scroll_progress,
 			trigger_delay,
 			trigger_type,
+			utm_suppression,
 		} = this.props;
 		return (
 			<Fragment>
@@ -77,6 +78,12 @@ class PopupSidebar extends Component {
 						{ value: 'bottom', label: __( 'Bottom' ) },
 					] }
 				/>
+				<TextControl
+					label={ __( 'UTM Suppression' ) }
+					help={  __( 'Users arriving at the site from URLs with this utm_source will never be shown the pop-up.' ) }
+					value={ utm_suppression }
+					onChange={ value => onMetaFieldChange( 'utm_suppression', value ) }
+				/>
 			</Fragment>
 		);
 	}
@@ -86,7 +93,7 @@ const PopupSidebarWithData = compose( [
 	withSelect( select => {
 		const { getEditedPostAttribute } = select( 'core/editor' );
 		const meta = getEditedPostAttribute( 'meta' );
-		const { frequency, placement, trigger_scroll_progress, trigger_delay, trigger_type } =
+		const { frequency, placement, trigger_scroll_progress, trigger_delay, trigger_type, utm_suppression } =
 			meta || {};
 		return {
 			frequency,
@@ -94,6 +101,7 @@ const PopupSidebarWithData = compose( [
 			trigger_scroll_progress,
 			trigger_delay,
 			trigger_type,
+			utm_suppression,
 		};
 	} ),
 	withDispatch( dispatch => {
