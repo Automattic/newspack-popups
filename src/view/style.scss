@@ -33,6 +33,7 @@ $color__secondary-variation: darken( $color__secondary, 10% );
 
 	.newspack-popup-wrapper {
 		background: white;
+		box-shadow: 0 0 1em 0.5em rgba( black, 0.1 );
 		overflow-x: hidden;
 		position: relative;
 		z-index: 1;
