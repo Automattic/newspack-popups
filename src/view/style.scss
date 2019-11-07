@@ -47,8 +47,18 @@ $color__secondary-variation: darken( $color__secondary, 10% );
 			margin-top: 0;
 		}
 
-		& > *:last-child {
+		& > *:nth-last-child(2) { // Last child being .popup-dismiss-form
 			margin-bottom: 0;
+		}
+
+		.wp-block-column {
+			& > *:first-child {
+				margin-top: 0;
+			}
+
+			& > *:last-child {
+				margin-bottom: 0;
+			}
 		}
 	}
 
