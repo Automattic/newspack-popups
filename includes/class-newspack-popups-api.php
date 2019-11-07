@@ -68,9 +68,10 @@ final class Newspack_Popups_API {
 		$response['currentViews'] = (int) $data['count'];
 
 		$frequency             = $popup['options']['frequency'];
-		$utm_suppression       = $popup['options']['utm_suppression'];
-		$current_views         = (int) $response['currentViews'];
-		$last_view             = (int) $data['time'];
+		$utm_suppression       = ! empty( $popup['options']['utm_suppression'] ) ? $popup['options']['utm_suppression'] : null;
+		$current_views         = ! empty( $response['currentViews'] ) ? (int) $response['currentViews'] : 0;
+		$suppress_forever      = ! empty( $data['suppress_forever'] ) ? (int) $data['suppress_forever'] : false;
+		$last_view             = ! empty( $data['time'] ) ? (int) $data['time'] : 0;
 		$response['frequency'] = $frequency;
 		switch ( $frequency ) {
 			case 'daily':
@@ -94,6 +95,9 @@ final class Newspack_Popups_API {
 				$response['displayPopup'] = false;
 			}
 		}
+		if ( $suppress_forever ) {
+			$response['displayPopup'] = false;
+		}
 		return rest_ensure_response( $response );
 	}
 
@@ -109,6 +113,9 @@ final class Newspack_Popups_API {
 			$data          = get_transient( $transient_name );
 			$data['count'] = (int) $data['count'] + 1;
 			$data['time']  = time();
+			if ( $request['suppress_forever'] ) {
+				$data['suppress_forever'] = true;
+			}
 			set_transient( $transient_name, $data, 0 );
 		}
 		return $this->reader_get_endpoint( $request );
