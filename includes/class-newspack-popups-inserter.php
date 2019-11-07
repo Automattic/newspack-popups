@@ -247,7 +247,7 @@ final class Newspack_Popups_Inserter {
 			<div class="newspack-popup-wrapper">
 				<div class="newspack-popup">
 					<?php if ( ! empty( $popup['title'] ) ) : ?>
-						<h1><?php echo esc_html( $popup['title'] ); ?></h1>
+						<h1 class="newspack-popup-title"><?php echo esc_html( $popup['title'] ); ?></h1>
 					<?php endif; ?>
 					<?php echo ( $popup['body'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					<?php if ( $dismiss_text ) : ?>
