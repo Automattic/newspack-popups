@@ -301,7 +301,8 @@ final class Newspack_Popups_Inserter {
 							"selector": ".newspack-lightbox",
 							"delay": "<?php echo intval( $popup['options']['trigger_delay'] ) * 1000 + 500; ?>",
 							"keyframes": {
-								"opacity": ["0", "1"]
+								"opacity": ["0", "1"],
+								"visibility": ["hidden", "visible"]
 							}
 						},
 						{
