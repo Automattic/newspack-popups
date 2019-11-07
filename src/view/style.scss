@@ -1,3 +1,7 @@
+// Secondary Color based on Newspack Theme
+$color__secondary: #555;
+$color__secondary-variation: darken( $color__secondary, 10% );
+
 .newspack-lightbox {
 	align-items: center;
 	display: flex;
@@ -60,6 +64,30 @@
 		right: 0.25em;
 		top: 0.25em;
 		width: 36px;
+	}
+
+	.popup-not-interested-form {
+		font-size: 0.7em;
+		text-align: center;
+
+		button {
+			background: transparent;
+			border: 0;
+			border-radius: 0;
+			color: $color__secondary;
+			font-size: 1em;
+			font-weight: normal;
+			margin: 0;
+			padding: 0;
+
+
+			&:active,
+			&:focus,
+			&:hover {
+				color: $color__secondary-variation;
+				outline: 0;
+			}
+		}
 	}
 
 	/* Placements */

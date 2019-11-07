@@ -27,6 +27,7 @@ class PopupSidebar extends Component {
 	 */
 	render() {
 		const {
+			dismiss_text,
 			frequency,
 			onMetaFieldChange,
 			overlay_opacity,
@@ -108,6 +109,11 @@ class PopupSidebar extends Component {
 					min={ 0 }
 					max={ 100 }
 				/>
+				<TextControl
+					label={ __( 'Text for "Not Interested" button' ) }
+					value={ dismiss_text }
+					onChange={ value => onMetaFieldChange( 'dismiss_text', value ) }
+				/>
 			</Fragment>
 		);
 	}
@@ -119,6 +125,7 @@ const PopupSidebarWithData = compose( [
 		const meta = getEditedPostAttribute( 'meta' );
 		const {
 			frequency,
+			dismiss_text,
 			overlay_color,
 			overlay_opacity,
 			placement,
@@ -128,6 +135,7 @@ const PopupSidebarWithData = compose( [
 			utm_suppression,
 		} = meta || {};
 		return {
+			dismiss_text,
 			frequency,
 			overlay_color,
 			overlay_opacity,
