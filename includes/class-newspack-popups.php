@@ -163,6 +163,18 @@ final class Newspack_Popups {
 
 		\register_meta(
 			'post',
+			'overlay_color',
+			[
+				'object_subtype' => self::NEWSPACK_PLUGINS_CPT,
+				'show_in_rest'   => true,
+				'type'           => 'string',
+				'single'         => true,
+				'auth_callback'  => '__return_true',
+			]
+		);
+
+		\register_meta(
+			'post',
 			'overlay_opacity',
 			[
 				'object_subtype' => self::NEWSPACK_PLUGINS_CPT,

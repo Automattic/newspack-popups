@@ -19,6 +19,7 @@ import {
 } from '@wordpress/components';
 import { registerPlugin } from '@wordpress/plugins';
 import { PluginDocumentSettingPanel } from '@wordpress/editPost';
+import { ColorPaletteControl } from '@wordpress/block-editor';
 
 class PopupSidebar extends Component {
 	/**
@@ -29,6 +30,7 @@ class PopupSidebar extends Component {
 			frequency,
 			onMetaFieldChange,
 			overlay_opacity,
+			overlay_color,
 			placement,
 			trigger_scroll_progress,
 			trigger_delay,
@@ -94,6 +96,11 @@ class PopupSidebar extends Component {
 					value={ utm_suppression }
 					onChange={ value => onMetaFieldChange( 'utm_suppression', value ) }
 				/>
+				<ColorPaletteControl
+					value={ overlay_color }
+					onChange={ value => onMetaFieldChange( 'overlay_color', value ) }
+					label={ __( 'Overlay Color' ) }
+				/>
 				<RangeControl
 					label={ __( 'Overlay opacity' ) }
 					value={ overlay_opacity }
@@ -112,6 +119,7 @@ const PopupSidebarWithData = compose( [
 		const meta = getEditedPostAttribute( 'meta' );
 		const {
 			frequency,
+			overlay_color,
 			overlay_opacity,
 			placement,
 			trigger_scroll_progress,
@@ -121,6 +129,7 @@ const PopupSidebarWithData = compose( [
 		} = meta || {};
 		return {
 			frequency,
+			overlay_color,
 			overlay_opacity,
 			placement,
 			trigger_scroll_progress,
