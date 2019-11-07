@@ -1,6 +1,5 @@
 .newspack-lightbox {
 	align-items: center;
-	background: rgba( black, 0.5 );
 	display: flex;
 	height: 100%;
 	justify-content: center;
@@ -9,12 +8,29 @@
 	opacity: 0;
 	position: fixed;
 	top: 0;
+	visibility: hidden;
 	width: 100%;
 	z-index: 99999;
 
+	.newspack-lightbox-shim {
+		background: black;
+		border: 0;
+		border-radius: 0;
+		height: 100%;
+		left: 0;
+		margin: 0;
+		padding: 0;
+		position: absolute;
+		top: 0;
+		width: 100%;
+		z-index: 0;
+	}
+
 	.newspack-popup-wrapper {
 		background: white;
+		overflow-x: hidden;
 		position: relative;
+		z-index: 1;
 	}
 
 	.newspack-popup {

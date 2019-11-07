@@ -187,6 +187,8 @@ final class Newspack_Popups_Inserter {
 				'options' => wp_parse_args(
 					[
 						'frequency'               => get_post_meta( get_the_ID(), 'frequency', true ),
+						'overlay_color'           => get_post_meta( get_the_ID(), 'overlay_color', true ),
+						'overlay_opacity'         => get_post_meta( get_the_ID(), 'overlay_opacity', true ),
 						'placement'               => get_post_meta( get_the_ID(), 'placement', true ),
 						'trigger_type'            => get_post_meta( get_the_ID(), 'trigger_type', true ),
 						'trigger_delay'           => get_post_meta( get_the_ID(), 'trigger_delay', true ),
@@ -194,8 +196,10 @@ final class Newspack_Popups_Inserter {
 						'utm_suppression'         => get_post_meta( get_the_ID(), 'utm_suppression', true ),
 					],
 					[
-						'placement'               => 'center',
 						'frequency'               => 0,
+						'overlay_color'           => '#000000',
+						'overlay_opacity'         => 30,
+						'placement'               => 'center',
 						'trigger_type'            => 'time',
 						'trigger_delay'           => 0,
 						'trigger_scroll_progress' => 0,
@@ -229,9 +233,11 @@ final class Newspack_Popups_Inserter {
 	 * @return string The generated markup.
 	 */
 	public static function generate_popup( $popup ) {
-		$element_id = 'lightbox' . rand(); // phpcs:ignore WordPress.WP.AlternativeFunctions.rand_rand
-		$endpoint   = str_replace( 'http://', '//', get_rest_url( null, 'newspack-popups/v1/reader' ) );
-		$classes    = [ 'newspack-lightbox', 'newspack-lightbox-placement-' . $popup['options']['placement'] ];
+		$element_id      = 'lightbox' . rand(); // phpcs:ignore WordPress.WP.AlternativeFunctions.rand_rand
+		$endpoint        = str_replace( 'http://', '//', get_rest_url( null, 'newspack-popups/v1/reader' ) );
+		$classes         = [ 'newspack-lightbox', 'newspack-lightbox-placement-' . $popup['options']['placement'] ];
+		$overlay_opacity = absint( $popup['options']['overlay_opacity'] ) / 100;
+		$overlay_color   = $popup['options']['overlay_color'];
 		ob_start();
 		?>
 		<div amp-access="displayPopup" amp-access-hide class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>" role="button" tabindex="0" id="<?php echo esc_attr( $element_id ); ?>">
@@ -262,6 +268,23 @@ final class Newspack_Popups_Inserter {
 					</form>
 				</div>
 			</div>
+			<form class="popup-dismiss-form"
+				method="POST"
+				action-xhr="<?php echo esc_url( $endpoint ); ?>"
+				target="_top">
+				<input
+					name="url"
+					type="hidden"
+					value="CANONICAL_URL"
+					data-amp-replace="CANONICAL_URL"
+				/>
+				<input
+					name="popup_id"
+					type="hidden"
+					value="<?php echo ( esc_attr( $popup['id'] ) ); ?>"
+				/>
+				<button style="opacity: <?php echo floatval( $overlay_opacity ); ?>;background-color:<?php echo esc_attr( $overlay_color ); ?>;" class="newspack-lightbox-shim" on="tap:<?php echo esc_attr( $element_id ); ?>.hide"></button>
+			</form>
 		</div>
 		<div id="newspack-lightbox-marker">
 			<amp-position-observer on="enter:showAnim.start;" once layout="nodisplay" />
@@ -278,7 +301,8 @@ final class Newspack_Popups_Inserter {
 							"selector": ".newspack-lightbox",
 							"delay": "<?php echo intval( $popup['options']['trigger_delay'] ) * 1000 + 500; ?>",
 							"keyframes": {
-								"opacity": ["0", "1"]
+								"opacity": ["0", "1"],
+								"visibility": ["hidden", "visible"]
 							}
 						},
 						{
