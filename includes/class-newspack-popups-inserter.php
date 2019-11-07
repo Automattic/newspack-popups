@@ -44,6 +44,7 @@ final class Newspack_Popups_Inserter {
 	public function __construct() {
 		add_filter( 'the_content', [ $this, 'popup' ] );
 		add_action( 'wp_head', [ __CLASS__, 'popup_access' ] );
+		add_action( 'wp_head', [ __CLASS__, 'popup_access' ] );
 	}
 
 	/**
@@ -185,18 +186,26 @@ final class Newspack_Popups_Inserter {
 				'body'    => $body,
 				'options' => wp_parse_args(
 					[
+						'dismiss_text'            => get_post_meta( get_the_ID(), 'dismiss_text', true ),
 						'frequency'               => get_post_meta( get_the_ID(), 'frequency', true ),
+						'overlay_color'           => get_post_meta( get_the_ID(), 'overlay_color', true ),
+						'overlay_opacity'         => get_post_meta( get_the_ID(), 'overlay_opacity', true ),
 						'placement'               => get_post_meta( get_the_ID(), 'placement', true ),
 						'trigger_type'            => get_post_meta( get_the_ID(), 'trigger_type', true ),
 						'trigger_delay'           => get_post_meta( get_the_ID(), 'trigger_delay', true ),
 						'trigger_scroll_progress' => get_post_meta( get_the_ID(), 'trigger_scroll_progress', true ),
+						'utm_suppression'         => get_post_meta( get_the_ID(), 'utm_suppression', true ),
 					],
 					[
-						'placement'               => 'center',
+						'dismiss_text'            => '',
 						'frequency'               => 0,
+						'overlay_color'           => '#000000',
+						'overlay_opacity'         => 30,
+						'placement'               => 'center',
 						'trigger_type'            => 'time',
 						'trigger_delay'           => 0,
 						'trigger_scroll_progress' => 0,
+						'utm_suppression'         => null,
 					]
 				),
 			];
@@ -226,18 +235,45 @@ final class Newspack_Popups_Inserter {
 	 * @return string The generated markup.
 	 */
 	public static function generate_popup( $popup ) {
-		$element_id = 'lightbox' . rand(); // phpcs:ignore WordPress.WP.AlternativeFunctions.rand_rand
-		$endpoint   = str_replace( 'http://', '//', get_rest_url( null, 'newspack-popups/v1/reader' ) );
-		$classes    = [ 'newspack-lightbox', 'newspack-lightbox-placement-' . $popup['options']['placement'] ];
+		$element_id      = 'lightbox' . rand(); // phpcs:ignore WordPress.WP.AlternativeFunctions.rand_rand
+		$endpoint        = str_replace( 'http://', '//', get_rest_url( null, 'newspack-popups/v1/reader' ) );
+		$classes         = [ 'newspack-lightbox', 'newspack-lightbox-placement-' . $popup['options']['placement'] ];
+		$dismiss_text    = ! empty( $popup['options']['dismiss_text'] ) && strlen( trim( $popup['options']['dismiss_text'] ) ) > 0 ? $popup['options']['dismiss_text'] : null;
+		$overlay_opacity = absint( $popup['options']['overlay_opacity'] ) / 100;
+		$overlay_color   = $popup['options']['overlay_color'];
 		ob_start();
 		?>
 		<div amp-access="displayPopup" amp-access-hide class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>" role="button" tabindex="0" id="<?php echo esc_attr( $element_id ); ?>">
 			<div class="newspack-popup-wrapper">
 				<div class="newspack-popup">
 					<?php if ( ! empty( $popup['title'] ) ) : ?>
-						<h1><?php echo esc_html( $popup['title'] ); ?></h1>
+						<h1 class="newspack-popup-title"><?php echo esc_html( $popup['title'] ); ?></h1>
 					<?php endif; ?>
 					<?php echo ( $popup['body'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					<?php if ( $dismiss_text ) : ?>
+					<form class="popup-not-interested-form"
+						method="POST"
+						action-xhr="<?php echo esc_url( $endpoint ); ?>"
+						target="_top">
+						<input
+							name="url"
+							type="hidden"
+							value="CANONICAL_URL"
+							data-amp-replace="CANONICAL_URL"
+						/>
+						<input
+							name="popup_id"
+							type="hidden"
+							value="<?php echo ( esc_attr( $popup['id'] ) ); ?>"
+						/>
+						<input
+							name="suppress_forever"
+							type="hidden"
+							value="1"
+						/>
+						<button on="tap:<?php echo esc_attr( $element_id ); ?>.hide" aria-label="<?php esc_attr( $dismiss_text ); ?>"><?php echo esc_attr( $dismiss_text ); ?></button>
+					</form>
+					<?php endif; ?>
 					<form class="popup-dismiss-form"
 						method="POST"
 						action-xhr="<?php echo esc_url( $endpoint ); ?>"
@@ -259,6 +295,23 @@ final class Newspack_Popups_Inserter {
 					</form>
 				</div>
 			</div>
+			<form class="popup-dismiss-form"
+				method="POST"
+				action-xhr="<?php echo esc_url( $endpoint ); ?>"
+				target="_top">
+				<input
+					name="url"
+					type="hidden"
+					value="CANONICAL_URL"
+					data-amp-replace="CANONICAL_URL"
+				/>
+				<input
+					name="popup_id"
+					type="hidden"
+					value="<?php echo ( esc_attr( $popup['id'] ) ); ?>"
+				/>
+				<button style="opacity: <?php echo floatval( $overlay_opacity ); ?>;background-color:<?php echo esc_attr( $overlay_color ); ?>;" class="newspack-lightbox-shim" on="tap:<?php echo esc_attr( $element_id ); ?>.hide"></button>
+			</form>
 		</div>
 		<div id="newspack-lightbox-marker">
 			<amp-position-observer on="enter:showAnim.start;" once layout="nodisplay" />
@@ -275,16 +328,17 @@ final class Newspack_Popups_Inserter {
 							"selector": ".newspack-lightbox",
 							"delay": "<?php echo intval( $popup['options']['trigger_delay'] ) * 1000 + 500; ?>",
 							"keyframes": {
-								"opacity": ["0", "1"]
+								"opacity": ["0", "1"],
+								"visibility": ["hidden", "visible"]
 							}
 						},
 						{
 								"selector": ".newspack-popup-wrapper",
 								"delay": "<?php echo intval( $popup['options']['trigger_delay'] ) * 1000 + 625; ?>",
 								"keyframes": {
-									<?php if ( "top" === $popup['options']['placement'] ) : ?>
+									<?php if ( 'top' === $popup['options']['placement'] ) : ?>
 										"transform": ["translateY(-100%)", "translateY(0)"]
-									<?php elseif ( "bottom" === $popup['options']['placement'] ) : ?>
+									<?php elseif ( 'bottom' === $popup['options']['placement'] ) : ?>
 										"transform": ["translateY(100%)", "translateY(0)"]
 									<?php else : ?>
 										"opacity": ["0", "1"]

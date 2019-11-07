@@ -148,6 +148,55 @@ final class Newspack_Popups {
 				'auth_callback'  => '__return_true',
 			]
 		);
+
+		\register_meta(
+			'post',
+			'utm_suppression',
+			[
+				'object_subtype' => self::NEWSPACK_PLUGINS_CPT,
+				'show_in_rest'   => true,
+				'type'           => 'string',
+				'single'         => true,
+				'auth_callback'  => '__return_true',
+			]
+		);
+
+		\register_meta(
+			'post',
+			'overlay_color',
+			[
+				'object_subtype' => self::NEWSPACK_PLUGINS_CPT,
+				'show_in_rest'   => true,
+				'type'           => 'string',
+				'single'         => true,
+				'auth_callback'  => '__return_true',
+			]
+		);
+
+		\register_meta(
+			'post',
+			'overlay_opacity',
+			[
+				'object_subtype' => self::NEWSPACK_PLUGINS_CPT,
+				'show_in_rest'   => true,
+				'type'           => 'integer',
+				'single'         => true,
+				'auth_callback'  => '__return_true',
+			]
+		);
+
+		\register_meta(
+			'post',
+			'dismiss_text',
+			[
+				'object_subtype' => self::NEWSPACK_PLUGINS_CPT,
+				'show_in_rest'   => true,
+				'type'           => 'string',
+				'single'         => true,
+				'auth_callback'  => '__return_true',
+			]
+		);
+
 	}
 
 	/**

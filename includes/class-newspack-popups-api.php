@@ -19,6 +19,8 @@ final class Newspack_Popups_API {
 	 */
 	public function __construct() {
 		add_action( 'rest_api_init', [ $this, 'register_api_endpoints' ] );
+		add_filter( 'query_vars', [ $this, 'add_utm_source_query_var' ] );
+		add_action( 'wp_head', [ $this, 'get_utm_source' ] );
 	}
 
 	/**
@@ -66,8 +68,10 @@ final class Newspack_Popups_API {
 		$response['currentViews'] = (int) $data['count'];
 
 		$frequency             = $popup['options']['frequency'];
-		$current_views         = (int) $response['currentViews'];
-		$last_view             = (int) $data['time'];
+		$utm_suppression       = ! empty( $popup['options']['utm_suppression'] ) ? $popup['options']['utm_suppression'] : null;
+		$current_views         = ! empty( $response['currentViews'] ) ? (int) $response['currentViews'] : 0;
+		$suppress_forever      = ! empty( $data['suppress_forever'] ) ? (int) $data['suppress_forever'] : false;
+		$last_view             = ! empty( $data['time'] ) ? (int) $data['time'] : 0;
 		$response['frequency'] = $frequency;
 		switch ( $frequency ) {
 			case 'daily':
@@ -84,6 +88,16 @@ final class Newspack_Popups_API {
 				$response['displayPopup'] = false;
 				break;
 		}
+		if ( $utm_suppression ) {
+			$utm_source_transient_name = $this->get_utm_source_transient_name();
+			$utm_source_transient      = $this->get_utm_source_transient( $utm_source_transient_name );
+			if ( ! empty( $utm_source_transient[ $utm_suppression ] ) ) {
+				$response['displayPopup'] = false;
+			}
+		}
+		if ( $suppress_forever ) {
+			$response['displayPopup'] = false;
+		}
 		return rest_ensure_response( $response );
 	}
 
@@ -99,6 +113,9 @@ final class Newspack_Popups_API {
 			$data          = get_transient( $transient_name );
 			$data['count'] = (int) $data['count'] + 1;
 			$data['time']  = time();
+			if ( $request['suppress_forever'] ) {
+				$data['suppress_forever'] = true;
+			}
 			set_transient( $transient_name, $data, 0 );
 		}
 		return $this->reader_get_endpoint( $request );
@@ -112,9 +129,8 @@ final class Newspack_Popups_API {
 	 */
 	public function get_transient_name( $request ) {
 		$reader_id = isset( $request['rid'] ) ? esc_attr( $request['rid'] ) : false;
-		// TODO: Is retrieving the amp-access cookie the best way to get READER_ID outside the context of amp-access?
 		if ( ! $reader_id ) {
-			$reader_id = isset( $_COOKIE['amp-access'] ) ? esc_attr( $_COOKIE['amp-access'] ) : false; // phpcs:ignore WordPressVIPMinimum.Variables.RestrictedVariables.cache_constraints___COOKIE, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			$reader_id = $this->get_reader_id();
 		}
 		$popup_id = isset( $request['popup_id'] ) ? $request['popup_id'] : false;
 		$url      = isset( $request['url'] ) ? esc_url_raw( urldecode( $request['url'] ) ) : false;
@@ -125,6 +141,65 @@ final class Newspack_Popups_API {
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Add utm_source to WP query vars
+	 *
+	 * @param array $vars Query vars.
+	 * @return array Query vars.
+	 */
+	public function add_utm_source_query_var( $vars ) {
+		$vars[] = 'utm_source';
+		return $vars;
+	}
+
+	/**
+	 * Assess utm_source value
+	 */
+	public function get_utm_source() {
+		$utm_source = get_query_var( 'utm_source' );
+		if ( ! empty( $utm_source ) ) {
+			$transient_name = self::get_utm_source_transient_name();
+			if ( $transient_name ) {
+				$transient = self::get_utm_source_transient( $transient_name );
+
+				$transient[ $utm_source ] = true;
+				set_transient( $transient_name, $transient, 0 );
+			}
+		}
+	}
+
+	/**
+	 * Assess utm_source transient name
+	 *
+	 * @param string $transient_name Transient name.
+	 * @return array UTM Source Transient.
+	 */
+	public function get_utm_source_transient( $transient_name ) {
+		if ( $transient_name ) {
+			$transient = get_transient( $transient_name );
+		}
+		return $transient ? $transient : [];
+	}
+
+	/**
+	 * Get utm_source transient value
+	 */
+	public function get_utm_source_transient_name() {
+		$reader_id = $this->get_reader_id();
+		if ( $reader_id ) {
+			return 'utm_source-' . $reader_id;
+		}
+		return null;
+	}
+
+	/**
+	 * Get AMP-Access cookie
+	 */
+	public function get_reader_id() {
+		// TODO: Is retrieving the amp-access cookie the best way to get READER_ID outside the context of amp-access?
+		return isset( $_COOKIE['amp-access'] ) ? esc_attr( $_COOKIE['amp-access'] ) : false; // phpcs:ignore WordPressVIPMinimum.Variables.RestrictedVariables.cache_constraints___COOKIE, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 	}
 }
 $newspack_popups_api = new Newspack_Popups_API();
