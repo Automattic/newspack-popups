@@ -241,6 +241,28 @@ final class Newspack_Popups_Inserter {
 		$dismiss_text    = ! empty( $popup['options']['dismiss_text'] ) && strlen( trim( $popup['options']['dismiss_text'] ) ) > 0 ? $popup['options']['dismiss_text'] : null;
 		$overlay_opacity = absint( $popup['options']['overlay_opacity'] ) / 100;
 		$overlay_color   = $popup['options']['overlay_color'];
+
+		ob_start();
+		?>
+		<input
+			name="url"
+			type="hidden"
+			value="CANONICAL_URL"
+			data-amp-replace="CANONICAL_URL"
+		/>
+		<input
+			name="popup_id"
+			type="hidden"
+			value="<?php echo ( esc_attr( $popup['id'] ) ); ?>"
+		/>
+		<input
+			name="mailing_list_status"
+			type="hidden"
+			[value]="mailing_list_status"
+		/>
+		<?php
+		$hidden_fields = ob_get_clean();
+
 		ob_start();
 		?>
 		<div amp-access="displayPopup" amp-access-hide class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>" role="button" tabindex="0" id="<?php echo esc_attr( $element_id ); ?>">
@@ -255,17 +277,7 @@ final class Newspack_Popups_Inserter {
 						method="POST"
 						action-xhr="<?php echo esc_url( $endpoint ); ?>"
 						target="_top">
-						<input
-							name="url"
-							type="hidden"
-							value="CANONICAL_URL"
-							data-amp-replace="CANONICAL_URL"
-						/>
-						<input
-							name="popup_id"
-							type="hidden"
-							value="<?php echo ( esc_attr( $popup['id'] ) ); ?>"
-						/>
+						<?php echo $hidden_fields; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 						<input
 							name="suppress_forever"
 							type="hidden"
@@ -278,17 +290,7 @@ final class Newspack_Popups_Inserter {
 						method="POST"
 						action-xhr="<?php echo esc_url( $endpoint ); ?>"
 						target="_top">
-						<input
-							name="url"
-							type="hidden"
-							value="CANONICAL_URL"
-							data-amp-replace="CANONICAL_URL"
-						/>
-						<input
-							name="popup_id"
-							type="hidden"
-							value="<?php echo ( esc_attr( $popup['id'] ) ); ?>"
-						/>
+						<?php echo $hidden_fields; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 						<button on="tap:<?php echo esc_attr( $element_id ); ?>.hide" class="newspack-lightbox__close" aria-label="<?php esc_html_e( 'Close Pop-up', 'newspack-popups' ); ?>">
 							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" role="img" aria-hidden="true" focusable="false"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
 						</button>
@@ -299,17 +301,7 @@ final class Newspack_Popups_Inserter {
 				method="POST"
 				action-xhr="<?php echo esc_url( $endpoint ); ?>"
 				target="_top">
-				<input
-					name="url"
-					type="hidden"
-					value="CANONICAL_URL"
-					data-amp-replace="CANONICAL_URL"
-				/>
-				<input
-					name="popup_id"
-					type="hidden"
-					value="<?php echo ( esc_attr( $popup['id'] ) ); ?>"
-				/>
+				<?php echo $hidden_fields; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				<button style="opacity: <?php echo floatval( $overlay_opacity ); ?>;background-color:<?php echo esc_attr( $overlay_color ); ?>;" class="newspack-lightbox-shim" on="tap:<?php echo esc_attr( $element_id ); ?>.hide"></button>
 			</form>
 		</div>
