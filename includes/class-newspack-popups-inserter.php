@@ -73,8 +73,6 @@ final class Newspack_Popups_Inserter {
 		);
 		\wp_style_add_data( 'newspack-popups-view', 'rtl', 'replace' );
 		\wp_enqueue_style( 'newspack-popups-view' );
-		wp_enqueue_script( 'amp-animation' );
-		wp_enqueue_script( 'amp-position-observer' );
 		return $content;
 	}
 
@@ -368,7 +366,38 @@ final class Newspack_Popups_Inserter {
 			}
 		</script>
 		<?php
-		wp_enqueue_script( 'amp-access' );
+		static::register_amp_scripts();
+	}
+
+	/**
+	 * Register and enqueue all required AMP scripts, if needed.
+	 */
+	public static function register_amp_scripts() {
+		if ( ! wp_script_is( 'amp-runtime', 'registered' ) ) {
+		// phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion
+			wp_register_script(
+				'amp-runtime',
+				'https://cdn.ampproject.org/v0.js',
+				null,
+				null,
+				true
+			);
+		}
+		$scripts = [ 'amp-access', 'amp-animation', 'amp-form', 'amp-bind', 'amp-position-observer' ];
+		foreach ( $scripts as $script ) {
+			if ( ! wp_script_is( $script, 'registered' ) ) {
+				$path = "https://cdn.ampproject.org/v0/{$script}-latest.js";
+				// phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion
+				wp_register_script(
+					$script,
+					$path,
+					array( 'amp-runtime' ),
+					null,
+					true
+				);
+			}
+			wp_enqueue_script( $script );
+		}
 	}
 }
 $newspack_popups_inserter = new Newspack_Popups_Inserter();
