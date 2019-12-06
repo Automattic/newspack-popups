@@ -43,12 +43,12 @@ final class Newspack_Popups_Inserter {
 	 */
 	public function __construct() {
 		add_filter( 'the_content', [ $this, 'popup' ] );
-		add_action( 'wp_head', [ __CLASS__, 'popup_access' ] );
+		add_action( 'after_header', [ $this, 'popup_after_header' ] ); // This is a Newspack theme hook. When used with other themes, popups won't be inserted on archive pages.
 		add_action( 'wp_head', [ __CLASS__, 'popup_access' ] );
 	}
 
 	/**
-	 * Process popup and insert into content if needed.
+	 * Process popup and insert into post and page ontent if needed.
 	 *
 	 * @param string $content The content of the post.
 	 * @return string The content with popup inserted.
@@ -79,6 +79,29 @@ final class Newspack_Popups_Inserter {
 		\wp_style_add_data( 'newspack-popups-view', 'rtl', 'replace' );
 		\wp_enqueue_style( 'newspack-popups-view' );
 		return $content;
+	}
+
+	/**
+	 * Process popup and insert into archive pages if needed. Applies to Newspack Theme only.
+	 */
+	public static function popup_after_header() {
+		/* Posts and pages are covered by the_content hook */
+		if ( is_user_logged_in() || is_single() || is_page() ) {
+			return;
+		}
+
+		$popup = self::popup_for_post();
+
+		if ( ! $popup ) {
+			return;
+		}
+
+		// Pop-ups triggered by scroll position can only appear on Posts.
+		if ( 'scroll' === $popup['options']['trigger_type'] ) {
+			return;
+		}
+
+		echo $popup['markup']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 
 	/**
