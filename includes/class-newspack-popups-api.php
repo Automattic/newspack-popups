@@ -71,6 +71,7 @@ final class Newspack_Popups_API {
 		$utm_suppression       = ! empty( $popup['options']['utm_suppression'] ) ? $popup['options']['utm_suppression'] : null;
 		$current_views         = ! empty( $response['currentViews'] ) ? (int) $response['currentViews'] : 0;
 		$suppress_forever      = ! empty( $data['suppress_forever'] ) ? (int) $data['suppress_forever'] : false;
+		$mailing_list_status   = ! empty( $data['mailing_list_status'] ) ? (int) $data['mailing_list_status'] : false;
 		$last_view             = ! empty( $data['time'] ) ? (int) $data['time'] : 0;
 		$response['frequency'] = $frequency;
 		switch ( $frequency ) {
@@ -95,7 +96,7 @@ final class Newspack_Popups_API {
 				$response['displayPopup'] = false;
 			}
 		}
-		if ( $suppress_forever ) {
+		if ( $suppress_forever || $mailing_list_status ) {
 			$response['displayPopup'] = false;
 		}
 		return rest_ensure_response( $response );
@@ -115,6 +116,9 @@ final class Newspack_Popups_API {
 			$data['time']  = time();
 			if ( $request['suppress_forever'] ) {
 				$data['suppress_forever'] = true;
+			}
+			if ( $request['mailing_list_status'] && 'subscribed' === $request['mailing_list_status'] ) {
+				$data['mailing_list_status'] = true;
 			}
 			set_transient( $transient_name, $data, 0 );
 		}
