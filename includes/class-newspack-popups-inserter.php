@@ -55,12 +55,17 @@ final class Newspack_Popups_Inserter {
 	 */
 	public static function popup( $content = '' ) {
 		/* From https://github.com/Automattic/newspack-blocks/pull/115 */
-		if ( is_user_logged_in() || ! is_single() ) {
+		if ( is_user_logged_in() ) {
 			return $content;
 		}
 		$popup = self::popup_for_post();
 
 		if ( ! $popup ) {
+			return $content;
+		}
+
+		// Pop-ups triggered by scroll position can only appear on Posts.
+		if ( 'scroll' === $popup['options']['trigger_type'] && ! is_single() ) {
 			return $content;
 		}
 
@@ -347,11 +352,15 @@ final class Newspack_Popups_Inserter {
 	 * Add amp-access header code.
 	 */
 	public static function popup_access() {
-		if ( is_user_logged_in() || ! is_single() ) {
+		if ( is_user_logged_in() ) {
 			return;
 		}
 		$popup = self::popup_for_post();
 		if ( ! $popup ) {
+			return;
+		}
+		// Pop-ups triggered by scroll position can only appear on Posts.
+		if ( 'scroll' === $popup['options']['trigger_type'] && ! is_single() ) {
 			return;
 		}
 		$endpoint = str_replace( 'http://', '//', get_rest_url( null, 'newspack-popups/v1/reader' ) );

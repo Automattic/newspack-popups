@@ -139,10 +139,7 @@ final class Newspack_Popups_API {
 		$popup_id = isset( $request['popup_id'] ) ? $request['popup_id'] : false;
 		$url      = isset( $request['url'] ) ? esc_url_raw( urldecode( $request['url'] ) ) : false;
 		if ( $reader_id && $url && $popup_id ) {
-			$post_id = url_to_postid( $url ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.url_to_postid_url_to_postid
-			if ( $post_id && 'post' === get_post_type( $post_id ) ) {
-				return $reader_id . '-' . $popup_id . '-popup';
-			}
+			return $reader_id . '-' . $popup_id . '-popup';
 		}
 		return false;
 	}
