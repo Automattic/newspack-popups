@@ -75,7 +75,6 @@ class PopupSidebar extends Component {
 					options={ [
 						{ value: 'never', label: __( 'Never' ) },
 						{ value: 'once', label: __( 'Once' ) },
-						{ value: 'always', label: __( 'Every page view' ) },
 						{ value: 'daily', label: __( 'Once a day' ) },
 					] }
 				/>
