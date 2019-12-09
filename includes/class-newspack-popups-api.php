@@ -81,9 +81,6 @@ final class Newspack_Popups_API {
 			case 'once':
 				$response['displayPopup'] = $current_views < 1;
 				break;
-			case 'always':
-				$response['displayPopup'] = true;
-				break;
 			case 'never':
 			default:
 				$response['displayPopup'] = false;
