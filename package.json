@@ -18,6 +18,8 @@
     "webpack-cli": "^3.3.9"
   },
   "scripts": {
+    "start": "npm run dev",
+    "dev": "calypso-build --watch --config='./webpack.config.js'",
     "build:webpack": "calypso-build --config='./webpack.config.js'",
     "build": "run-p \"build:*\"",
     "clean": "rm -rf dist/",
