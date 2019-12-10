@@ -54,13 +54,16 @@ final class Newspack_Popups_Inserter {
 	 * @return string The content with popup inserted.
 	 */
 	public static function popup( $content = '' ) {
-		/* From https://github.com/Automattic/newspack-blocks/pull/115 */
-		if ( is_user_logged_in() ) {
+		if ( is_admin() ) {
 			return $content;
 		}
 		$popup = self::popup_for_post();
 
 		if ( ! $popup ) {
+			return $content;
+		}
+
+		if ( ! static::assess_test_mode( $popup ) ) {
 			return $content;
 		}
 
@@ -86,11 +89,15 @@ final class Newspack_Popups_Inserter {
 	 */
 	public static function popup_after_header() {
 		/* Posts and pages are covered by the_content hook */
-		if ( is_user_logged_in() || is_single() || is_page() ) {
+		if ( is_singular() ) {
 			return;
 		}
 
 		$popup = self::popup_for_post();
+
+		if ( ! static::assess_test_mode( $popup ) ) {
+			return;
+		}
 
 		if ( ! $popup ) {
 			return;
@@ -375,13 +382,20 @@ final class Newspack_Popups_Inserter {
 	 * Add amp-access header code.
 	 */
 	public static function popup_access() {
-		if ( is_user_logged_in() ) {
+		if ( is_admin() ) {
 			return;
 		}
+
 		$popup = self::popup_for_post();
+
 		if ( ! $popup ) {
 			return;
 		}
+
+		if ( ! static::assess_test_mode( $popup ) ) {
+			return;
+		}
+
 		// Pop-ups triggered by scroll position can only appear on Posts.
 		if ( 'scroll' === $popup['options']['trigger_type'] && ! is_single() ) {
 			return;
@@ -430,6 +444,25 @@ final class Newspack_Popups_Inserter {
 			}
 			wp_enqueue_script( $script );
 		}
+	}
+
+	/**
+	 * If Pop-up Frequency is "Test Mode," assess whether it should be shown.
+	 *
+	 * @param object $popup The popup to assess.
+	 * @return bool Should popup be shown based on Test Mode assessment.
+	 */
+	public static function assess_test_mode( $popup ) {
+		if ( is_user_logged_in() ) {
+			if ( 'test' !== $popup['options']['frequency'] || ! current_user_can( 'edit_others_pages' ) ) {
+				return false;
+			}
+		} else {
+			if ( 'test' === $popup['options']['frequency'] ) {
+				return false;
+			}
+		}
+		return true;
 	}
 }
 $newspack_popups_inserter = new Newspack_Popups_Inserter();
