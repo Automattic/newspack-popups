@@ -41,16 +41,51 @@ final class Newspack_Popups_Model {
 	 */
 	public static function set_sitewide_popup( $id ) {
 		$popup = self::retrieve_popup_by_id( $id );
-		if ( $popup ) {
-			$time = current_time( 'mysql' );
-			wp_update_post(
+		if ( ! $popup ) {
+			return new \WP_Error(
+				'newspack_popups_popup_doesnt_exist',
+				esc_html__( 'The Popup specified does not exist.', 'newspack-popups' ),
 				[
-					'ID'            => $id,
-					'post_date'     => $time,
-					'post_date_gmt' => get_gmt_from_date( $time ),
+					'status' => 400,
+					'level'  => 'fatal',
 				]
 			);
 		}
+		$time = current_time( 'mysql' );
+		wp_update_post(
+			[
+				'ID'            => $id,
+				'post_date'     => $time,
+				'post_date_gmt' => get_gmt_from_date( $time ),
+			]
+		);
+	}
+
+	/**
+	 * Set categories for a Popup.
+	 *
+	 * @param integer $id ID of sitewide popup.
+	 * @param array   $categories Array of categories to be set.
+	 */
+	public static function set_popup_categories( $id, $categories ) {
+		$popup = self::retrieve_popup_by_id( $id );
+		if ( ! $popup ) {
+			return new \WP_Error(
+				'newspack_popups_popup_doesnt_exist',
+				esc_html__( 'The Popup specified does not exist.', 'newspack-popups' ),
+				[
+					'status' => 400,
+					'level'  => 'fatal',
+				]
+			);
+		}
+		$category_ids = array_map(
+			function( $category ) {
+				return $category['id'];
+			},
+			$categories
+		);
+		return wp_set_post_categories( $id, $category_ids );
 	}
 
 	/**
