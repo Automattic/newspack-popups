@@ -85,7 +85,7 @@ final class Newspack_Popups_Model {
 				'title'   => get_the_title(),
 				'body'    => $body,
 				'options' => wp_parse_args(
-					[
+					array_filter([
 						'dismiss_text'            => get_post_meta( get_the_ID(), 'dismiss_text', true ),
 						'frequency'               => get_post_meta( get_the_ID(), 'frequency', true ),
 						'overlay_color'           => get_post_meta( get_the_ID(), 'overlay_color', true ),
@@ -95,10 +95,10 @@ final class Newspack_Popups_Model {
 						'trigger_delay'           => get_post_meta( get_the_ID(), 'trigger_delay', true ),
 						'trigger_scroll_progress' => get_post_meta( get_the_ID(), 'trigger_scroll_progress', true ),
 						'utm_suppression'         => get_post_meta( get_the_ID(), 'utm_suppression', true ),
-					],
+					]),
 					[
 						'dismiss_text'            => '',
-						'frequency'               => 0,
+						'frequency'               => 'test',
 						'overlay_color'           => '#000000',
 						'overlay_opacity'         => 30,
 						'placement'               => 'center',
