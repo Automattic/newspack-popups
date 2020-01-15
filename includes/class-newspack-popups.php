@@ -50,6 +50,7 @@ final class Newspack_Popups {
 		add_action( 'enqueue_block_editor_assets', [ __CLASS__, 'enqueue_block_editor_assets' ] );
 		add_filter( 'display_post_states', [ __CLASS__, 'display_post_states' ], 10, 2 );
 
+		include_once dirname( __FILE__ ) . '/class-newspack-popups-model.php';
 		include_once dirname( __FILE__ ) . '/class-newspack-popups-inserter.php';
 		include_once dirname( __FILE__ ) . '/class-newspack-popups-api.php';
 	}
@@ -215,15 +216,6 @@ final class Newspack_Popups {
 			filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/editor.js' ),
 			true
 		);
-
-		\wp_register_style(
-			'newspack-popups',
-			plugins_url( '../dist/editor.css', __FILE__ ),
-			[ 'wp-components' ],
-			filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/editor.css' )
-		);
-		\wp_style_add_data( 'newspack-popups', 'rtl', 'replace' );
-		\wp_enqueue_style( 'newspack-popups' );
 	}
 
 	/**

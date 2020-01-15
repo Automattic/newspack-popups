@@ -53,7 +53,7 @@ final class Newspack_Popups_API {
 	 */
 	public function reader_get_endpoint( $request ) {
 		$popup_id = isset( $request['popup_id'] ) ? $request['popup_id'] : false;
-		$popup    = Newspack_Popups_Inserter::retrieve_popup_by_id( $popup_id );
+		$popup    = Newspack_Popups_Model::retrieve_popup_by_id( $popup_id );
 		$response = [
 			'currentViews' => 0,
 			'displayPopup' => false,
