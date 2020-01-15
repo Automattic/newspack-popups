@@ -13,6 +13,20 @@ defined( 'ABSPATH' ) || exit;
 final class Newspack_Popups_Model {
 
 	/**
+	 * Retrieve all Popus (first 100).
+	 *
+	 * @return array Array of Popup objects.
+	 */
+	public static function retrieve_popups() {
+		$args = [
+			'post_type'      => Newspack_Popups::NEWSPACK_PLUGINS_CPT,
+			'post_status'    => 'publish',
+			'posts_per_page' => 100,
+		];
+		return self::retrieve_popup_with_query( new WP_Query( $args ), true );
+	}
+
+	/**
 	 * Retrieve popup CPT post.
 	 *
 	 * @param array $categories An array of categories to match.
@@ -69,9 +83,10 @@ final class Newspack_Popups_Model {
 	 * Retrieve popup CPT post.
 	 *
 	 * @param WP_Query $query The query to use.
+	 * @param boolean  $include_categories If true, returned objects will include assigned categories.
 	 * @return object Popup object
 	 */
-	protected static function retrieve_popup_with_query( WP_Query $query ) {
+	protected static function retrieve_popup_with_query( WP_Query $query, $include_categories = false ) {
 		$popups = [];
 		while ( $query->have_posts() ) {
 			$popup = null;
@@ -110,6 +125,9 @@ final class Newspack_Popups_Model {
 					]
 				),
 			];
+			if ( $include_categories ) {
+				$popup['categories'] = get_the_category( get_the_ID() );
+			}
 
 			switch ( $popup['options']['trigger_type'] ) {
 				case 'scroll':
