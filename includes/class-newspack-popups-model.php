@@ -72,8 +72,9 @@ final class Newspack_Popups_Model {
 	 * @return object Popup object
 	 */
 	protected static function retrieve_popup_with_query( WP_Query $query ) {
-		$popup = null;
+		$popups = [];
 		while ( $query->have_posts() ) {
+			$popup = null;
 			$query->the_post();
 			$blocks = parse_blocks( get_the_content() );
 			$body   = '';
@@ -123,9 +124,17 @@ final class Newspack_Popups_Model {
 				$popup['options']['placement'] = 'center';
 			}
 			$popup['markup'] = self::generate_popup( $popup );
+
+			$popups[] = $popup;
 		}
 		wp_reset_postdata();
-		return $popup;
+		if ( 1 === count( $popups ) ) {
+			return $popups[0];
+		}
+		if ( count( $popups ) > 1 ) {
+			return $popups;
+		}
+		return null;
 	}
 
 	/**
