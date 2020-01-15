@@ -23,7 +23,34 @@ final class Newspack_Popups_Model {
 			'post_status'    => 'publish',
 			'posts_per_page' => 100,
 		];
-		return self::retrieve_popup_with_query( new WP_Query( $args ), true );
+
+		$popups = self::retrieve_popup_with_query( new WP_Query( $args ), true );
+		foreach ( $popups as &$popup ) {
+			if ( ! count( $popup['categories'] ) ) {
+				$popup['sitewide_default'] = true;
+				break;
+			}
+		}
+		return $popups;
+	}
+
+	/**
+	 * Set post time to now, making it the sitewide popup.
+	 *
+	 * @param integer $id ID of the Popup to make sitewide default.
+	 */
+	public static function set_sitewide_popup( $id ) {
+		$popup = self::retrieve_popup_by_id( $id );
+		if ( $popup ) {
+			$time = current_time( 'mysql' );
+			wp_update_post(
+				[
+					'ID'            => $id,
+					'post_date'     => $time,
+					'post_date_gmt' => get_gmt_from_date( $time ),
+				]
+			);
+		}
 	}
 
 	/**
