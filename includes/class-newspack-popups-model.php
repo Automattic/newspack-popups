@@ -25,6 +25,11 @@ final class Newspack_Popups_Model {
 		];
 
 		$popups = self::retrieve_popup_with_query( new WP_Query( $args ), true );
+
+		// Hacky check if this is a single popup object as opposed to an array of Pop-ups. TODO: replace.
+		if ( isset( $popups['id'] ) ) {
+			$popups = [ $popups ];
+		}
 		foreach ( $popups as &$popup ) {
 			if ( ! count( $popup['categories'] ) ) {
 				$popup['sitewide_default'] = true;
