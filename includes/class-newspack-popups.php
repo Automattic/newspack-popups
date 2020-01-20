@@ -216,6 +216,12 @@ final class Newspack_Popups {
 			filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/editor.js' ),
 			true
 		);
+		\wp_enqueue_style(
+			'newspack-popups-editor',
+			plugins_url( '../dist/editor.css', __FILE__ ),
+			null,
+			filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/view.css' )
+		);
 	}
 
 	/**

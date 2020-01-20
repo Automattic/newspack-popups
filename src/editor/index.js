@@ -21,6 +21,12 @@ import { registerPlugin } from '@wordpress/plugins';
 import { PluginDocumentSettingPanel } from '@wordpress/editPost';
 import { ColorPaletteControl } from '@wordpress/block-editor';
 
+/**
+ * Internal dependencies
+ */
+import { optionsFieldsSelector } from './utils';
+import PopupPreview from './PopupPreview';
+
 class PopupSidebar extends Component {
 	/**
 	 * Render
@@ -37,9 +43,11 @@ class PopupSidebar extends Component {
 			trigger_delay,
 			trigger_type,
 			utm_suppression,
+			currentPost,
 		} = this.props;
 		return (
 			<Fragment>
+				<PopupPreview />
 				<RadioControl
 					label={ __( 'Trigger' ) }
 					help={ __( 'The event to trigger the popup' ) }
@@ -124,32 +132,7 @@ class PopupSidebar extends Component {
 }
 
 const PopupSidebarWithData = compose( [
-	withSelect( select => {
-		const { getEditedPostAttribute } = select( 'core/editor' );
-		const meta = getEditedPostAttribute( 'meta' );
-		const {
-			frequency,
-			dismiss_text,
-			overlay_color,
-			overlay_opacity,
-			placement,
-			trigger_scroll_progress,
-			trigger_delay,
-			trigger_type,
-			utm_suppression,
-		} = meta || {};
-		return {
-			dismiss_text,
-			frequency,
-			overlay_color,
-			overlay_opacity,
-			placement,
-			trigger_scroll_progress,
-			trigger_delay,
-			trigger_type,
-			utm_suppression,
-		};
-	} ),
+	withSelect( optionsFieldsSelector ),
 	withDispatch( dispatch => {
 		return {
 			onMetaFieldChange: ( key, value ) => {
