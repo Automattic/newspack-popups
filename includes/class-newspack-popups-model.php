@@ -149,7 +149,6 @@ final class Newspack_Popups_Model {
 	protected static function retrieve_popup_with_query( WP_Query $query, $include_categories = false ) {
 		$popups = [];
 		while ( $query->have_posts() ) {
-			$popup = null;
 			$query->the_post();
 			$blocks = parse_blocks( get_the_content() );
 			$body   = '';
