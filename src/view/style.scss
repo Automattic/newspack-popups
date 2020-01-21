@@ -16,6 +16,16 @@ $color__secondary-variation: darken( $color__secondary, 10% );
 	width: 100%;
 	z-index: 99999;
 
+	.admin-bar & {
+		@media only screen and (min-width: 601px) {
+			padding-top: 46px !important;
+		}
+
+		@media only screen and (min-width: 783px) {
+			padding-top: 32px !important;
+		}
+	}
+
 	.newspack-lightbox-shim {
 		background: black;
 		border: 0;
