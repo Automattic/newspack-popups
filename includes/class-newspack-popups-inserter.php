@@ -168,13 +168,20 @@ final class Newspack_Popups_Inserter {
 			return;
 		}
 		$endpoint = str_replace( 'http://', '//', get_rest_url( null, 'newspack-popups/v1/reader' ) );
+
+		// In test frequency cases (logged in site editor), fallback to authorization of true to avoid possible amp-access timeouts.
+		$authorization_fallback_response = (
+			'test' === $popup['options']['frequency'] &&
+			is_user_logged_in() &&
+			current_user_can( 'edit_others_pages' )
+		) ? 'true' : 'false';
 		?>
 		<script id="amp-access" type="application/json">
 			{
 				"authorization": "<?php echo esc_url( $endpoint ); ?>?popup_id=<?php echo ( esc_attr( $popup['id'] ) ); ?>&rid=READER_ID&url=CANONICAL_URL&RANDOM",
 				"noPingback": true,
 				"authorizationFallbackResponse": {
-					"displayPopup": false
+					"displayPopup": <?php echo( esc_attr( $authorization_fallback_response ) ); ?>
 				}
 			}
 		</script>
