@@ -25,11 +25,6 @@ final class Newspack_Popups_Model {
 		];
 
 		$popups = self::retrieve_popup_with_query( new WP_Query( $args ), true );
-
-		// Hacky check if this is a single popup object as opposed to an array of Pop-ups. TODO: replace.
-		if ( isset( $popups['id'] ) ) {
-			$popups = [ $popups ];
-		}
 		foreach ( $popups as &$popup ) {
 			if ( ! count( $popup['categories'] ) ) {
 				$popup['sitewide_default'] = true;
@@ -100,8 +95,6 @@ final class Newspack_Popups_Model {
 	 * @return object Popup object
 	 */
 	public static function retrieve_popup( $categories = [] ) {
-		$popup = null;
-
 		$args = [
 			'post_type'      => Newspack_Popups::NEWSPACK_PLUGINS_CPT,
 			'post_status'    => 'publish',
@@ -124,7 +117,8 @@ final class Newspack_Popups_Model {
 				],
 			];
 		}
-		return self::retrieve_popup_with_query( new WP_Query( $args ) );
+		$popups = self::retrieve_popup_with_query( new WP_Query( $args ) );
+		return count( $popups ) > 0 ? $popups[0] : null;
 	}
 
 	/**
@@ -134,8 +128,6 @@ final class Newspack_Popups_Model {
 	 * @return object Popup object
 	 */
 	public static function retrieve_popup_by_id( $post_id ) {
-		$popup = null;
-
 		$args = [
 			'post_type'      => Newspack_Popups::NEWSPACK_PLUGINS_CPT,
 			'post_status'    => 'publish',
@@ -143,7 +135,8 @@ final class Newspack_Popups_Model {
 			'p'              => $post_id,
 		];
 
-		return self::retrieve_popup_with_query( new WP_Query( $args ) );
+		$popups = self::retrieve_popup_with_query( new WP_Query( $args ) );
+		return count( $popups ) > 0 ? $popups[0] : null;
 	}
 
 	/**
@@ -213,13 +206,7 @@ final class Newspack_Popups_Model {
 			$popups[] = $popup;
 		}
 		wp_reset_postdata();
-		if ( 1 === count( $popups ) ) {
-			return $popups[0];
-		}
-		if ( count( $popups ) > 1 ) {
-			return $popups;
-		}
-		return null;
+		return $popups;
 	}
 
 	/**
