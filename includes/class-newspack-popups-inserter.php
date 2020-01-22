@@ -45,6 +45,13 @@ final class Newspack_Popups_Inserter {
 		add_filter( 'the_content', [ $this, 'popup' ] );
 		add_action( 'after_header', [ $this, 'popup_after_header' ] ); // This is a Newspack theme hook. When used with other themes, popups won't be inserted on archive pages.
 		add_action( 'wp_head', [ __CLASS__, 'popup_access' ] );
+
+		// add a special class to the body
+		if(Newspack_Popups::previewed_popup_id()) {
+			add_filter('body_class', function () {
+				return ['is-newspack-popup-preview'];
+			});
+		};
 	}
 
 	/**
@@ -68,7 +75,7 @@ final class Newspack_Popups_Inserter {
 		}
 
 		// Pop-ups triggered by scroll position can only appear on Posts.
-		if ( 'scroll' === $popup['options']['trigger_type'] && ! is_single() ) {
+		if ( 'scroll' === $popup['options']['trigger_type'] && ! is_single() && !Newspack_Popups::previewed_popup_id() ) {
 			return $content;
 		}
 
@@ -119,6 +126,12 @@ final class Newspack_Popups_Inserter {
 	 * @return string The content with popup inserted.
 	 */
 	public static function insert_popup( $content = '', $popup = [] ) {
+		// skip admin bar and content if it's a popup preview
+		if (Newspack_Popups::previewed_popup_id()) {
+			show_admin_bar( false );
+			return $popup['markup'];
+		};
+
 		if ( 0 === $popup['options']['trigger_scroll_progress'] ) {
 			return $popup['markup'] . $content;
 		}
@@ -164,7 +177,7 @@ final class Newspack_Popups_Inserter {
 		}
 
 		// Pop-ups triggered by scroll position can only appear on Posts.
-		if ( 'scroll' === $popup['options']['trigger_type'] && ! is_single() ) {
+		if ( 'scroll' === $popup['options']['trigger_type'] && ! is_single() && !Newspack_Popups::previewed_popup_id() ) {
 			return;
 		}
 		$endpoint = str_replace( 'http://', '//', get_rest_url( null, 'newspack-popups/v1/reader' ) );
@@ -220,6 +233,9 @@ final class Newspack_Popups_Inserter {
 	 * @return bool Should popup be shown based on Test Mode assessment.
 	 */
 	public static function assess_test_mode( $popup ) {
+		if (Newspack_Popups::previewed_popup_id()) {
+			return true;
+		}
 		if ( is_user_logged_in() ) {
 			if ( 'test' !== $popup['options']['frequency'] || ! current_user_can( 'edit_others_pages' ) ) {
 				return false;

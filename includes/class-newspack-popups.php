@@ -14,6 +14,8 @@ final class Newspack_Popups {
 
 	const NEWSPACK_PLUGINS_CPT = 'newspack_popups_cpt';
 
+	const NEWSPACK_POPUP_PREVIEW_QUERY_PARAM = 'newspack_popup_preview_id';
+
 	/**
 	 * The single instance of the class.
 	 *
@@ -260,6 +262,15 @@ final class Newspack_Popups {
 			$post_states['newspack_popups_sitewide_default'] = __( 'Sitewide Default', 'newspack-popups' );
 		}
 		return $post_states;
+	}
+
+	/**
+	 * Get previewed popup id from the URL.
+	 *
+	 * @return number|null Popup id, if found in the URL
+	 */
+	public static function previewed_popup_id() {
+		return isset($_REQUEST[ Newspack_Popups::NEWSPACK_POPUP_PREVIEW_QUERY_PARAM ]) ? $_REQUEST[ Newspack_Popups::NEWSPACK_POPUP_PREVIEW_QUERY_PARAM ] : NULL;
 	}
 }
 Newspack_Popups::instance();

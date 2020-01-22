@@ -23,7 +23,6 @@ final class Newspack_Popups_Model {
 
 		$args = [
 			'post_type'      => Newspack_Popups::NEWSPACK_PLUGINS_CPT,
-			'post_status'    => 'publish',
 			'posts_per_page' => 1,
 		];
 
@@ -43,6 +42,14 @@ final class Newspack_Popups_Model {
 				],
 			];
 		}
+
+		$preview_id = Newspack_Popups::previewed_popup_id();
+		if ($preview_id) {
+			$args['p'] = $preview_id;
+		} else {
+			$args['post_status'] = 'publish';
+		};
+
 		return self::retrieve_popup_with_query( new WP_Query( $args ) );
 	}
 
