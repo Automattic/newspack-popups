@@ -2,95 +2,67 @@
  * WordPress dependencies
  */
 import apiFetch from '@wordpress/api-fetch';
-import { Fragment, useEffect, useState, createPortal } from '@wordpress/element';
-import { Button } from '@wordpress/components';
+import { Fragment, useEffect, useState } from '@wordpress/element';
+import { Button, Modal } from '@wordpress/components';
 import { withSelect, withDispatch } from '@wordpress/data';
 import { compose } from '@wordpress/compose';
 import { __ } from '@wordpress/i18n';
 
-/**
- * Internal dependencies
- */
-import { optionsFieldsSelector } from './utils';
-import './editor.scss';
+const connectPreviewModal = compose( [
+	withSelect( select => {
+		const { getCurrentPostId } = select( 'core/editor' );
+		return {
+			postId: getCurrentPostId(),
+		};
+	} ),
+	withDispatch( dispatch => {
+		return {};
+	} ),
+] );
 
-const PopupPreview = ( { title, body, options, setShowPreview } ) => {
-	const [ domEl, setDomEl ] = useState();
-	const [ popupMarkup, setPopupMarkup ] = useState();
-	const [ fontFamily, setFontFamily ] = useState();
-
-	useEffect(() => {
-		const domParentEl = document.querySelector( '.editor-post-title' );
-
-		// retrieve the possibly custom font family for headings etc.
-		setFontFamily(
-			window
-				.getComputedStyle( document.querySelector( '.editor-post-title__input' ), null )
-				.getPropertyValue( 'font-family' )
-		);
-
-		if ( ! domEl && domParentEl ) {
-			apiFetch( {
-				path: '/newspack-popups/v1/preview',
-				method: 'POST',
-				data: { title, body, options },
-			} ).then( data => {
-				setPopupMarkup( data.markup );
-
-				const _domEl = document.createElement( 'div' );
-				domParentEl.appendChild( _domEl );
-				setDomEl( _domEl );
-
-				// attach click handlers to buttons on the popup element
-				const hidePreviewButtons = document.getElementsByClassName(
-					'newspack-lightbox__close--preview'
-				);
-				[ ...hidePreviewButtons ].map( el => {
-					el.addEventListener( 'click', () => setShowPreview( false ) );
-				} );
-			} );
-		}
-	}, [ domEl ]);
-
-	return domEl && popupMarkup && fontFamily
-		? ReactDOM.createPortal(
-				<div
-					// custom font styles and popup markup
-					dangerouslySetInnerHTML={ {
-						__html: `
-      <style>
-        .newspack-lightbox h1,
-        .newspack-lightbox h2,
-        .newspack-lightbox h3,
-        .newspack-lightbox h4,
-        .newspack-lightbox h5,
-        .newspack-lightbox h6,
-        .newspack-lightbox blockquote,
-        .newspack-lightbox cite,
-        .newspack-lightbox button,
-        .newspack-lightbox input {
-          font-family: ${ fontFamily } !important;
-        }
-      </style>
-      ${ popupMarkup }`,
-					} }
-				/>,
-				domEl
-		  )
-		: null;
+const PreviewModal = ( { postId, onRequestClose } ) => {
+	const url = `/?newspack_popup_preview_id=${ postId }`;
+	return postId ? (
+		<Fragment>
+			<style>
+				{ `
+					.components-modal__content {
+						padding: 0;
+					}
+					.components-modal__header {
+						margin: 0;
+					}
+				` }
+			</style>
+			<Modal
+				// clicking on content is triggering close
+				shouldCloseOnClickOutside={ false }
+				title={ __( 'Popup preview' ) }
+				onRequestClose={ onRequestClose }
+			>
+				<iframe src={ url } frameBorder="0" style={ { width: '80vw', height: '80vh' } } />
+			</Modal>
+		</Fragment>
+	) : null;
 };
 
-const PopupPreviewConnected = withSelect( select => {
-	const { getEditedPostContent, getEditedPostAttribute } = select( 'core/editor' );
-	return {
-		body: getEditedPostContent(),
-		title: getEditedPostAttribute( 'title' ),
-		options: optionsFieldsSelector( select ),
-	};
-} )( PopupPreview );
+const ConnectedPreviewModal = connectPreviewModal( PreviewModal );
 
-const PopupPreviewSetting = ( { content, options } ) => {
-	const [ showPreview, setShowPreview ] = useState();
+const PopupPreviewSetting = ( {
+	content,
+	options,
+	performAutosave,
+	isSavingPost,
+	embedPreview,
+} ) => {
+	const [ showPreview, setShowPreview ] = useState( false );
+	const displayPreviewModal = ! isSavingPost && showPreview;
+
+	useEffect(() => {
+		if ( showPreview ) {
+			performAutosave();
+		}
+	}, [ showPreview ]);
 
 	return (
 		<Fragment>
@@ -101,9 +73,30 @@ const PopupPreviewSetting = ( { content, options } ) => {
 			>
 				{ __( 'Preview' ) }
 			</Button>
-			{ showPreview && <PopupPreviewConnected setShowPreview={ setShowPreview } /> }
+			{ displayPreviewModal && (
+				<ConnectedPreviewModal
+					onRequestClose={ () => setShowPreview( false ) }
+					embedPreview={ embedPreview }
+				/>
+			) }
 		</Fragment>
 	);
 };
 
-export default PopupPreviewSetting;
+const connectPopupPreviewSetting = compose( [
+	withSelect( select => {
+		const { isSavingPost } = select( 'core/editor' );
+		return {
+			isSavingPost: isSavingPost(),
+		};
+	} ),
+	withDispatch( dispatch => {
+		return {
+			performAutosave: () => {
+				dispatch( 'core/editor' ).savePost();
+			},
+		};
+	} ),
+] );
+
+export default connectPopupPreviewSetting( PopupPreviewSetting );
