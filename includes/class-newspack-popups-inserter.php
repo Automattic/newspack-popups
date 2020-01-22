@@ -45,13 +45,6 @@ final class Newspack_Popups_Inserter {
 		add_filter( 'the_content', [ $this, 'popup' ] );
 		add_action( 'after_header', [ $this, 'popup_after_header' ] ); // This is a Newspack theme hook. When used with other themes, popups won't be inserted on archive pages.
 		add_action( 'wp_head', [ __CLASS__, 'popup_access' ] );
-
-		// add a special class to the body
-		if(Newspack_Popups::previewed_popup_id()) {
-			add_filter('body_class', function () {
-				return ['is-newspack-popup-preview'];
-			});
-		};
 	}
 
 	/**
@@ -129,10 +122,9 @@ final class Newspack_Popups_Inserter {
 		// skip admin bar and content if it's a popup preview
 		if (Newspack_Popups::previewed_popup_id()) {
 			show_admin_bar( false );
-			return $popup['markup'];
 		};
 
-		if ( 0 === $popup['options']['trigger_scroll_progress'] ) {
+		if ( 0 === $popup['options']['trigger_scroll_progress'] || Newspack_Popups::previewed_popup_id() ) {
 			return $popup['markup'] . $content;
 		}
 

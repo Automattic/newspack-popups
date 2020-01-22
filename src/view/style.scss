@@ -140,11 +140,3 @@ $color__secondary-variation: darken( $color__secondary, 10% );
 		align-items: flex-start;
 	}
 }
-
-// popup preview styling
-.is-newspack-popup-preview {
-	header,
-	footer {
-		display: none;
-	}
-}
