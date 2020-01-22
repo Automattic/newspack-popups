@@ -43,14 +43,6 @@ final class Newspack_Popups_API {
 				'callback' => [ $this, 'reader_post_endpoint' ],
 			]
 		);
-		\register_rest_route(
-			'newspack-popups/v1/',
-			'preview',
-			[
-				'methods'  => \WP_REST_Server::CREATABLE,
-				'callback' => [ $this, 'preview_endpoint' ],
-			]
-		);
 	}
 
 	/**
@@ -131,23 +123,6 @@ final class Newspack_Popups_API {
 			set_transient( $transient_name, $data, 0 );
 		}
 		return $this->reader_get_endpoint( $request );
-	}
-
-	/**
-	 * Handle POST requests to generate a popup preview
-	 *
-	 * @param WP_REST_Request $request with title, body, and options
-	 * @return WP_REST_Response Popup object
-	 */
-	public function preview_endpoint( $request ) {
-		$popup = Newspack_Popups_Model::generate_popup(
-			null,
-			$request['title'],
-			$request['body'],
-			$request['options'],
-			true
-		);
-		return $popup;
 	}
 
 	/**
