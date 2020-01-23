@@ -1,100 +1,60 @@
 /**
  * WordPress dependencies
  */
-import apiFetch from '@wordpress/api-fetch';
-import { Fragment, useEffect, useState } from '@wordpress/element';
-import { Button, Modal } from '@wordpress/components';
+import { Button } from '@wordpress/components';
 import { withSelect, withDispatch } from '@wordpress/data';
 import { compose } from '@wordpress/compose';
 import { __ } from '@wordpress/i18n';
 
-const connectPreviewModal = compose( [
-	withSelect( select => {
-		const { getCurrentPostId } = select( 'core/editor' );
-		return {
-			postId: getCurrentPostId(),
-		};
-	} ),
-	withDispatch( dispatch => {
-		return {};
-	} ),
-] );
-
-const PreviewModal = ( { postId, onRequestClose } ) => {
-	const url = `/?newspack_popup_preview_id=${ postId }`;
-	return postId ? (
-		<Fragment>
-			<style>
-				{ `
-					.components-modal__content {
-						padding: 0;
-					}
-					.components-modal__header {
-						margin: 0;
-					}
-				` }
-			</style>
-			<Modal
-				// clicking on content is triggering close
-				shouldCloseOnClickOutside={ false }
-				title={ __( 'Popup preview' ) }
-				onRequestClose={ onRequestClose }
-			>
-				<iframe src={ url } frameBorder="0" style={ { width: '80vw', height: '80vh' } } />
-			</Modal>
-		</Fragment>
-	) : null;
-};
-
-const ConnectedPreviewModal = connectPreviewModal( PreviewModal );
+/**
+ * External dependencies
+ */
+import { WebPreview } from 'newspack-components';
 
 const PopupPreviewSetting = ( {
 	content,
 	options,
-	performAutosave,
+	savePost,
 	isSavingPost,
 	embedPreview,
+	postId,
 } ) => {
-	const [ showPreview, setShowPreview ] = useState( false );
-	const displayPreviewModal = ! isSavingPost && showPreview;
-
-	useEffect(() => {
-		if ( showPreview ) {
-			performAutosave();
-		}
-	}, [ showPreview ]);
+	const url = `/?newspack_popup_preview_id=${ postId }`;
 
 	return (
-		<Fragment>
-			<Button
-				onClick={ () => setShowPreview( ! showPreview ) }
-				isPrimary
-				style={ { marginBottom: '17px' } }
-			>
-				{ __( 'Preview' ) }
-			</Button>
-			{ displayPreviewModal && (
-				<ConnectedPreviewModal
-					onRequestClose={ () => setShowPreview( false ) }
-					embedPreview={ embedPreview }
-				/>
+		<WebPreview
+			url={ url }
+			isPrimary
+			renderButton={ ( { showPreview } ) => (
+				<Button
+					isPrimary
+					isBusy={ isSavingPost }
+					disabled={ isSavingPost }
+					style={ {
+						marginBottom: '10px',
+						// https://github.com/WordPress/gutenberg/pull/19842
+						color: 'white',
+					} }
+					onClick={ () => savePost().then( showPreview ) }
+				>
+					{ __( 'Preview' ) }
+				</Button>
 			) }
-		</Fragment>
+		/>
 	);
 };
 
 const connectPopupPreviewSetting = compose( [
 	withSelect( select => {
-		const { isSavingPost } = select( 'core/editor' );
+		const { isSavingPost, getCurrentPostId } = select( 'core/editor' );
 		return {
+			postId: getCurrentPostId(),
 			isSavingPost: isSavingPost(),
 		};
 	} ),
 	withDispatch( dispatch => {
 		return {
-			performAutosave: () => {
-				dispatch( 'core/editor' ).savePost();
-			},
+			savePost: () => dispatch( 'core/editor' ).savePost(),
 		};
 	} ),
 ] );
