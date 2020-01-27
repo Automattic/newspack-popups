@@ -125,7 +125,7 @@ final class Newspack_Popups_Inserter {
 	 * @return string The content with popup inserted.
 	 */
 	public static function insert_popup( $content = '', $popup = [] ) {
-		// skip admin bar and content if it's a popup preview.
+		// skip admin bar if it's a popup preview.
 		if ( Newspack_Popups::previewed_popup_id() ) {
 			show_admin_bar( false );
 		};
@@ -238,10 +238,10 @@ final class Newspack_Popups_Inserter {
 	 * @return bool Should popup be shown based on Test Mode assessment.
 	 */
 	public static function assess_test_mode( $popup ) {
-		if ( Newspack_Popups::previewed_popup_id() ) {
-			return true;
-		}
 		if ( is_user_logged_in() ) {
+			if ( Newspack_Popups::previewed_popup_id() ) {
+				return true;
+			}
 			if ( 'test' !== $popup['options']['frequency'] || ! current_user_can( 'edit_others_pages' ) ) {
 				return false;
 			}
