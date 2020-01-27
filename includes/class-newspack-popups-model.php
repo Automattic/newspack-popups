@@ -239,6 +239,11 @@ final class Newspack_Popups_Model {
 		$overlay_opacity = absint( $popup['options']['overlay_opacity'] ) / 100;
 		$overlay_color   = $popup['options']['overlay_color'];
 
+		// Add a class to indicate a preview.
+		if ( Newspack_Popups::previewed_popup_id() ) {
+			array_push( $classes, 'newspack-lightbox--preview' );
+		}
+
 		ob_start();
 		?>
 		<input
