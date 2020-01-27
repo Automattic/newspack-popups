@@ -28,7 +28,13 @@ final class Newspack_Popups_Inserter {
 		if ( self::$popup ) {
 			return self::$popup;
 		}
-		// First try for pop-up with category filtering.
+
+		// First try the preview.
+		if ( Newspack_Popups::previewed_popup_id() ) {
+			return Newspack_Popups_Model::retrieve_preview_popup( Newspack_Popups::previewed_popup_id() );
+		}
+
+		// Then try for pop-up with category filtering.
 		self::$popup = Newspack_Popups_Model::retrieve_popup( get_the_category() );
 
 		// If nothing found, try for sitewide pop-up.

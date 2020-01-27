@@ -98,6 +98,7 @@ final class Newspack_Popups_Model {
 		$args = [
 			'post_type'      => Newspack_Popups::NEWSPACK_PLUGINS_CPT,
 			'posts_per_page' => 1,
+			'post_status'    => 'publish',
 		];
 
 		$category_ids = array_map(
@@ -117,13 +118,22 @@ final class Newspack_Popups_Model {
 			];
 		}
 
-		$preview_id = Newspack_Popups::previewed_popup_id();
-		if ( $preview_id ) {
-			$args['p'] = $preview_id;
-		} else {
-			$args['post_status'] = 'publish';
-		};
+		$popups = self::retrieve_popup_with_query( new WP_Query( $args ) );
+		return count( $popups ) > 0 ? $popups[0] : null;
+	}
 
+
+	/**
+	 * Retrieve popup preview CPT post.
+	 *
+	 * @param string $post_id Post id.
+	 * @return object Popup object.
+	 */
+	public static function retrieve_preview_popup( $post_id ) {
+		$args   = [
+			'post_type' => Newspack_Popups::NEWSPACK_PLUGINS_CPT,
+			'p'         => $post_id,
+		];
 		$popups = self::retrieve_popup_with_query( new WP_Query( $args ) );
 		return count( $popups ) > 0 ? $popups[0] : null;
 	}
@@ -131,8 +141,8 @@ final class Newspack_Popups_Model {
 	/**
 	 * Retrieve popup CPT post by ID.
 	 *
-	 * @param string $post_id An array of categories to match.
-	 * @return object Popup object
+	 * @param string $post_id Post id.
+	 * @return object Popup object.
 	 */
 	public static function retrieve_popup_by_id( $post_id ) {
 		$args = [
