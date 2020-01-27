@@ -13,14 +13,88 @@ defined( 'ABSPATH' ) || exit;
 final class Newspack_Popups_Model {
 
 	/**
+	 * Retrieve all Popus (first 100).
+	 *
+	 * @return array Array of Popup objects.
+	 */
+	public static function retrieve_popups() {
+		$args = [
+			'post_type'      => Newspack_Popups::NEWSPACK_PLUGINS_CPT,
+			'post_status'    => 'publish',
+			'posts_per_page' => 100,
+		];
+
+		$popups = self::retrieve_popup_with_query( new WP_Query( $args ), true );
+		foreach ( $popups as &$popup ) {
+			if ( ! count( $popup['categories'] ) ) {
+				$popup['sitewide_default'] = true;
+				break;
+			}
+		}
+		return $popups;
+	}
+
+	/**
+	 * Set post time to now, making it the sitewide popup.
+	 *
+	 * @param integer $id ID of the Popup to make sitewide default.
+	 */
+	public static function set_sitewide_popup( $id ) {
+		$popup = self::retrieve_popup_by_id( $id );
+		if ( ! $popup ) {
+			return new \WP_Error(
+				'newspack_popups_popup_doesnt_exist',
+				esc_html__( 'The Popup specified does not exist.', 'newspack-popups' ),
+				[
+					'status' => 400,
+					'level'  => 'fatal',
+				]
+			);
+		}
+		$time = current_time( 'mysql' );
+		wp_update_post(
+			[
+				'ID'            => $id,
+				'post_date'     => $time,
+				'post_date_gmt' => get_gmt_from_date( $time ),
+			]
+		);
+	}
+
+	/**
+	 * Set categories for a Popup.
+	 *
+	 * @param integer $id ID of sitewide popup.
+	 * @param array   $categories Array of categories to be set.
+	 */
+	public static function set_popup_categories( $id, $categories ) {
+		$popup = self::retrieve_popup_by_id( $id );
+		if ( ! $popup ) {
+			return new \WP_Error(
+				'newspack_popups_popup_doesnt_exist',
+				esc_html__( 'The Popup specified does not exist.', 'newspack-popups' ),
+				[
+					'status' => 400,
+					'level'  => 'fatal',
+				]
+			);
+		}
+		$category_ids = array_map(
+			function( $category ) {
+				return $category['id'];
+			},
+			$categories
+		);
+		return wp_set_post_categories( $id, $category_ids );
+	}
+
+	/**
 	 * Retrieve popup CPT post.
 	 *
 	 * @param array $categories An array of categories to match.
 	 * @return object Popup object
 	 */
 	public static function retrieve_popup( $categories = [] ) {
-		$popup = null;
-
 		$args = [
 			'post_type'      => Newspack_Popups::NEWSPACK_PLUGINS_CPT,
 			'posts_per_page' => 1,
@@ -50,7 +124,8 @@ final class Newspack_Popups_Model {
 			$args['post_status'] = 'publish';
 		};
 
-		return self::retrieve_popup_with_query( new WP_Query( $args ) );
+		$popups = self::retrieve_popup_with_query( new WP_Query( $args ) );
+		return count( $popups ) > 0 ? $popups[0] : null;
 	}
 
 	/**
@@ -60,8 +135,6 @@ final class Newspack_Popups_Model {
 	 * @return object Popup object
 	 */
 	public static function retrieve_popup_by_id( $post_id ) {
-		$popup = null;
-
 		$args = [
 			'post_type'      => Newspack_Popups::NEWSPACK_PLUGINS_CPT,
 			'post_status'    => 'publish',
@@ -69,17 +142,19 @@ final class Newspack_Popups_Model {
 			'p'              => $post_id,
 		];
 
-		return self::retrieve_popup_with_query( new WP_Query( $args ) );
+		$popups = self::retrieve_popup_with_query( new WP_Query( $args ) );
+		return count( $popups ) > 0 ? $popups[0] : null;
 	}
 
 	/**
 	 * Retrieve popup CPT post.
 	 *
 	 * @param WP_Query $query The query to use.
+	 * @param boolean  $include_categories If true, returned objects will include assigned categories.
 	 * @return object Popup object
 	 */
-	protected static function retrieve_popup_with_query( WP_Query $query ) {
-		$popup = null;
+	protected static function retrieve_popup_with_query( WP_Query $query, $include_categories = false ) {
+		$popups = [];
 		while ( $query->have_posts() ) {
 			$query->the_post();
 			$blocks = parse_blocks( get_the_content() );
@@ -116,6 +191,9 @@ final class Newspack_Popups_Model {
 					]
 				),
 			];
+			if ( $include_categories ) {
+				$popup['categories'] = get_the_category( get_the_ID() );
+			}
 
 			switch ( $popup['options']['trigger_type'] ) {
 				case 'scroll':
@@ -130,9 +208,11 @@ final class Newspack_Popups_Model {
 				$popup['options']['placement'] = 'center';
 			}
 			$popup['markup'] = self::generate_popup( $popup );
+
+			$popups[] = $popup;
 		}
 		wp_reset_postdata();
-		return $popup;
+		return $popups;
 	}
 
 	/**
