@@ -180,9 +180,10 @@ final class Newspack_Popups_Inserter {
 		}
 		$endpoint = str_replace( 'http://', '//', get_rest_url( null, 'newspack-popups/v1/reader' ) );
 
-		// In test frequency cases (logged in site editor), fallback to authorization of true to avoid possible amp-access timeouts.
+		// In test frequency cases (logged in site editor) and when previewing a popup,
+		// fallback to authorization of true to avoid possible amp-access timeouts.
 		$authorization_fallback_response = (
-			'test' === $popup['options']['frequency'] &&
+			( 'test' === $popup['options']['frequency'] || Newspack_Popups::previewed_popup_id() ) &&
 			is_user_logged_in() &&
 			current_user_can( 'edit_others_pages' )
 		) ? 'true' : 'false';
