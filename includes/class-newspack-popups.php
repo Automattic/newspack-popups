@@ -14,7 +14,7 @@ final class Newspack_Popups {
 
 	const NEWSPACK_PLUGINS_CPT = 'newspack_popups_cpt';
 
-	const NEWSPACK_POPUP_PREVIEW_QUERY_PARAM = 'newspack_popup_preview_id';
+	const NEWSPACK_POPUP_PREVIEW_QUERY_PARAM = 'newspack_popups_preview_id';
 
 	/**
 	 * The single instance of the class.
@@ -199,7 +199,6 @@ final class Newspack_Popups {
 				'auth_callback'  => '__return_true',
 			]
 		);
-
 	}
 
 	/**
@@ -222,7 +221,7 @@ final class Newspack_Popups {
 			'newspack-popups-editor',
 			plugins_url( '../dist/editor.css', __FILE__ ),
 			null,
-			filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/view.css' )
+			filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/editor.css' )
 		);
 	}
 
@@ -251,7 +250,6 @@ final class Newspack_Popups {
 						],
 					],
 
-
 					'category__not_in' => get_terms(
 						'category',
 						[
@@ -276,7 +274,7 @@ final class Newspack_Popups {
 	 * @return number|null Popup id, if found in the URL
 	 */
 	public static function previewed_popup_id() {
-		return isset($_REQUEST[ Newspack_Popups::NEWSPACK_POPUP_PREVIEW_QUERY_PARAM ]) ? $_REQUEST[ Newspack_Popups::NEWSPACK_POPUP_PREVIEW_QUERY_PARAM ] : NULL;
+		return filter_input( INPUT_GET, self::NEWSPACK_POPUP_PREVIEW_QUERY_PARAM, FILTER_SANITIZE_STRING );
 	}
 }
 Newspack_Popups::instance();

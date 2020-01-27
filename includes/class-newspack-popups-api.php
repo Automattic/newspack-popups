@@ -100,7 +100,7 @@ final class Newspack_Popups_API {
 			$response['displayPopup'] = false;
 		}
 
-		if ($this->is_preview_request($request)) {
+		if ( $this->is_preview_request( $request ) ) {
 			$response['displayPopup'] = true;
 		};
 
@@ -110,16 +110,16 @@ final class Newspack_Popups_API {
 	/**
 	 * Detect a popup preview request.
 	 *
-	 * @param WP_REST_Request $request a request.
+	 * @param  WP_REST_Request $request a request.
 	 * @return Boolean
 	 */
-	public function is_preview_request($request) {
-		$query_parms = [];
+	public function is_preview_request( $request ) {
+		$query_params = [];
 		parse_str(
-			parse_url($request->get_header('referer'))['query'],
-			$query_parms
+			wp_parse_url( $request->get_header( 'referer' ) )['query'],
+			$query_params
 		);
-		return $query_parms[Newspack_Popups::NEWSPACK_POPUP_PREVIEW_QUERY_PARAM];
+		return $query_params[ Newspack_Popups::NEWSPACK_POPUP_PREVIEW_QUERY_PARAM ];
 	}
 
 	/**

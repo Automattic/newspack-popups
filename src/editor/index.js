@@ -43,7 +43,6 @@ class PopupSidebar extends Component {
 			trigger_delay,
 			trigger_type,
 			utm_suppression,
-			currentPost,
 		} = this.props;
 		return (
 			<Fragment>

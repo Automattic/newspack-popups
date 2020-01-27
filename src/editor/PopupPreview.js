@@ -11,20 +11,12 @@ import { __ } from '@wordpress/i18n';
  */
 import { WebPreview } from 'newspack-components';
 
-const PopupPreviewSetting = ( {
-	content,
-	options,
-	savePost,
-	isSavingPost,
-	embedPreview,
-	postId,
-} ) => {
-	const url = `/?newspack_popup_preview_id=${ postId }`;
+const PopupPreviewSetting = ( { savePost, isSavingPost, postId } ) => {
+	const url = `/?newspack_popups_preview_id=${ postId }`;
 
 	return (
 		<WebPreview
 			url={ url }
-			isPrimary
 			renderButton={ ( { showPreview } ) => (
 				<Button
 					isPrimary

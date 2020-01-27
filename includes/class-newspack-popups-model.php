@@ -118,7 +118,7 @@ final class Newspack_Popups_Model {
 		}
 
 		$preview_id = Newspack_Popups::previewed_popup_id();
-		if ($preview_id) {
+		if ( $preview_id ) {
 			$args['p'] = $preview_id;
 		} else {
 			$args['post_status'] = 'publish';

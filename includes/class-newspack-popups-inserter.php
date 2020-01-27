@@ -68,7 +68,7 @@ final class Newspack_Popups_Inserter {
 		}
 
 		// Pop-ups triggered by scroll position can only appear on Posts.
-		if ( 'scroll' === $popup['options']['trigger_type'] && ! is_single() && !Newspack_Popups::previewed_popup_id() ) {
+		if ( 'scroll' === $popup['options']['trigger_type'] && ! is_single() && ! Newspack_Popups::previewed_popup_id() ) {
 			return $content;
 		}
 
@@ -119,8 +119,8 @@ final class Newspack_Popups_Inserter {
 	 * @return string The content with popup inserted.
 	 */
 	public static function insert_popup( $content = '', $popup = [] ) {
-		// skip admin bar and content if it's a popup preview
-		if (Newspack_Popups::previewed_popup_id()) {
+		// skip admin bar and content if it's a popup preview.
+		if ( Newspack_Popups::previewed_popup_id() ) {
 			show_admin_bar( false );
 		};
 
@@ -169,7 +169,7 @@ final class Newspack_Popups_Inserter {
 		}
 
 		// Pop-ups triggered by scroll position can only appear on Posts.
-		if ( 'scroll' === $popup['options']['trigger_type'] && ! is_single() && !Newspack_Popups::previewed_popup_id() ) {
+		if ( 'scroll' === $popup['options']['trigger_type'] && ! is_single() && ! Newspack_Popups::previewed_popup_id() ) {
 			return;
 		}
 		$endpoint = str_replace( 'http://', '//', get_rest_url( null, 'newspack-popups/v1/reader' ) );
@@ -232,7 +232,7 @@ final class Newspack_Popups_Inserter {
 	 * @return bool Should popup be shown based on Test Mode assessment.
 	 */
 	public static function assess_test_mode( $popup ) {
-		if (Newspack_Popups::previewed_popup_id()) {
+		if ( Newspack_Popups::previewed_popup_id() ) {
 			return true;
 		}
 		if ( is_user_logged_in() ) {
