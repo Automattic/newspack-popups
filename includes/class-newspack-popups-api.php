@@ -115,11 +115,13 @@ final class Newspack_Popups_API {
 	 */
 	public function is_preview_request( $request ) {
 		$query_params = [];
+		$parsed_url   = wp_parse_url( $request->get_header( 'referer' ) );
 		parse_str(
-			wp_parse_url( $request->get_header( 'referer' ) )['query'],
+			isset( $parsed_url['query'] ) ? $parsed_url['query'] : '',
 			$query_params
 		);
-		return $query_params[ Newspack_Popups::NEWSPACK_POPUP_PREVIEW_QUERY_PARAM ];
+		$param = Newspack_Popups::NEWSPACK_POPUP_PREVIEW_QUERY_PARAM;
+		return isset( $query_params[ $param ] ) ? $query_params[ $param ] : false;
 	}
 
 	/**
