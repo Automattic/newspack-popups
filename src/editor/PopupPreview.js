@@ -9,14 +9,19 @@ import { __ } from '@wordpress/i18n';
 /**
  * External dependencies
  */
+import { stringify } from 'qs';
 import { WebPreview } from 'newspack-components';
 
-const PopupPreviewSetting = ( { savePost, isSavingPost, postId } ) => {
-	const url = `/?newspack_popups_preview_id=${ postId }`;
+const PopupPreviewSetting = ( { savePost, isSavingPost, postId, metaFields } ) => {
+	const query = stringify( {
+		newspack_popups_preview_id: postId,
+		// Autosave does not handle meta fields, so these will be passed in the URL
+		...metaFields,
+	} );
 
 	return (
 		<WebPreview
-			url={ url }
+			url={ `/?${ query }` }
 			renderButton={ ( { showPreview } ) => (
 				<Button
 					isPrimary
@@ -38,15 +43,16 @@ const PopupPreviewSetting = ( { savePost, isSavingPost, postId } ) => {
 
 const connectPopupPreviewSetting = compose( [
 	withSelect( select => {
-		const { isSavingPost, getCurrentPostId } = select( 'core/editor' );
+		const { isSavingPost, getCurrentPostId, getEditedPostAttribute } = select( 'core/editor' );
 		return {
 			postId: getCurrentPostId(),
+			metaFields: getEditedPostAttribute( 'meta' ),
 			isSavingPost: isSavingPost(),
 		};
 	} ),
 	withDispatch( dispatch => {
 		return {
-			savePost: () => dispatch( 'core/editor' ).savePost(),
+			savePost: () => dispatch( 'core/editor' ).autosave(),
 		};
 	} ),
 ] );

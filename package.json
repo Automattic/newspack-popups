@@ -28,6 +28,7 @@
     "release": "run-p \"release:build-all\" && run-p \"release:archive\""
   },
   "dependencies": {
-    "newspack-components": "^1.0.5"
+    "newspack-components": "^1.0.5",
+    "qs": "^6.9.1"
   }
 }

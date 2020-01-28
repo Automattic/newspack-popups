@@ -130,12 +130,14 @@ final class Newspack_Popups_Model {
 	 * @return object Popup object.
 	 */
 	public static function retrieve_preview_popup( $post_id ) {
-		$args   = [
-			'post_type' => Newspack_Popups::NEWSPACK_PLUGINS_CPT,
-			'p'         => $post_id,
-		];
-		$popups = self::retrieve_popup_with_query( new WP_Query( $args ) );
-		return count( $popups ) > 0 ? $popups[0] : null;
+		// A preview might be from an autosave.
+		$autosave = wp_get_post_autosave( $post_id );
+		return self::create_popup_object(
+			$autosave ? $autosave : get_post( $post_id ),
+			false,
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$_GET
+		);
 	}
 
 	/**
@@ -161,68 +163,87 @@ final class Newspack_Popups_Model {
 	 *
 	 * @param WP_Query $query The query to use.
 	 * @param boolean  $include_categories If true, returned objects will include assigned categories.
-	 * @return object Popup object
+	 * @return array Popup objects array
 	 */
 	protected static function retrieve_popup_with_query( WP_Query $query, $include_categories = false ) {
 		$popups = [];
 		while ( $query->have_posts() ) {
 			$query->the_post();
-			$blocks = parse_blocks( get_the_content() );
-			$body   = '';
-			foreach ( $blocks as $block ) {
-				$body .= render_block( $block );
-			}
-			$popup = [
-				'id'      => get_the_ID(),
-				'title'   => get_the_title(),
-				'body'    => $body,
-				'options' => wp_parse_args(
-					array_filter([
-						'dismiss_text'            => get_post_meta( get_the_ID(), 'dismiss_text', true ),
-						'frequency'               => get_post_meta( get_the_ID(), 'frequency', true ),
-						'overlay_color'           => get_post_meta( get_the_ID(), 'overlay_color', true ),
-						'overlay_opacity'         => get_post_meta( get_the_ID(), 'overlay_opacity', true ),
-						'placement'               => get_post_meta( get_the_ID(), 'placement', true ),
-						'trigger_type'            => get_post_meta( get_the_ID(), 'trigger_type', true ),
-						'trigger_delay'           => get_post_meta( get_the_ID(), 'trigger_delay', true ),
-						'trigger_scroll_progress' => get_post_meta( get_the_ID(), 'trigger_scroll_progress', true ),
-						'utm_suppression'         => get_post_meta( get_the_ID(), 'utm_suppression', true ),
-					]),
-					[
-						'dismiss_text'            => '',
-						'frequency'               => 'test',
-						'overlay_color'           => '#000000',
-						'overlay_opacity'         => 30,
-						'placement'               => 'center',
-						'trigger_type'            => 'time',
-						'trigger_delay'           => 0,
-						'trigger_scroll_progress' => 0,
-						'utm_suppression'         => null,
-					]
-				),
-			];
-			if ( $include_categories ) {
-				$popup['categories'] = get_the_category( get_the_ID() );
-			}
-
-			switch ( $popup['options']['trigger_type'] ) {
-				case 'scroll':
-					$popup['options']['trigger_delay'] = 0;
-					break;
-				case 'time':
-				default:
-					$popup['options']['trigger_scroll_progress'] = 0;
-					break;
-			};
-			if ( ! in_array( $popup['options']['placement'], [ 'top', 'bottom' ] ) ) {
-				$popup['options']['placement'] = 'center';
-			}
-			$popup['markup'] = self::generate_popup( $popup );
-
-			$popups[] = $popup;
+			$popups[] = self::create_popup_object(
+				get_post( get_the_ID() ),
+				$include_categories
+			);
 		}
 		wp_reset_postdata();
 		return $popups;
+	}
+
+	/**
+	 * Create the popup object.
+	 *
+	 * @param WP_Post $post The post object.
+	 * @param boolean $include_categories If true, returned objects will include assigned categories.
+	 * @param object  $options Popup options to use instead of the options retrieved from the post. Used for popup previews.
+	 * @return object Popup object
+	 */
+	protected static function create_popup_object( $post, $include_categories = false, $options = null ) {
+		$blocks = parse_blocks( $post->post_content );
+		$body   = '';
+		foreach ( $blocks as $block ) {
+			$body .= render_block( $block );
+		}
+		$id = $post->ID;
+
+		$post_options = isset( $options ) ? $options : [
+			'dismiss_text'            => get_post_meta( $id, 'dismiss_text', true ),
+			'frequency'               => get_post_meta( $id, 'frequency', true ),
+			'overlay_color'           => get_post_meta( $id, 'overlay_color', true ),
+			'overlay_opacity'         => get_post_meta( $id, 'overlay_opacity', true ),
+			'placement'               => get_post_meta( $id, 'placement', true ),
+			'trigger_type'            => get_post_meta( $id, 'trigger_type', true ),
+			'trigger_delay'           => get_post_meta( $id, 'trigger_delay', true ),
+			'trigger_scroll_progress' => get_post_meta( $id, 'trigger_scroll_progress', true ),
+			'utm_suppression'         => get_post_meta( $id, 'utm_suppression', true ),
+		];
+
+		$popup = [
+			'id'      => $id,
+			'title'   => $post->post_title,
+			'body'    => $body,
+			'options' => wp_parse_args(
+				array_filter( $post_options ),
+				[
+					'dismiss_text'            => '',
+					'frequency'               => 'test',
+					'overlay_color'           => '#000000',
+					'overlay_opacity'         => 30,
+					'placement'               => 'center',
+					'trigger_type'            => 'time',
+					'trigger_delay'           => 0,
+					'trigger_scroll_progress' => 0,
+					'utm_suppression'         => null,
+				]
+			),
+		];
+		if ( $include_categories ) {
+			$popup['categories'] = get_the_category( $id );
+		}
+
+		switch ( $popup['options']['trigger_type'] ) {
+			case 'scroll':
+				$popup['options']['trigger_delay'] = 0;
+				break;
+			case 'time':
+			default:
+				$popup['options']['trigger_scroll_progress'] = 0;
+				break;
+		};
+		if ( ! in_array( $popup['options']['placement'], [ 'top', 'bottom' ], true ) ) {
+			$popup['options']['placement'] = 'center';
+		}
+		$popup['markup'] = self::generate_popup( $popup );
+
+		return $popup;
 	}
 
 	/**
