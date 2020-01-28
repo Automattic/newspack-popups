@@ -24,14 +24,9 @@ const PopupPreviewSetting = ( { savePost, isSavingPost, postId, metaFields } ) =
 			url={ `/?${ query }` }
 			renderButton={ ( { showPreview } ) => (
 				<Button
-					isPrimary
+					isLink
 					isBusy={ isSavingPost }
 					disabled={ isSavingPost }
-					style={ {
-						marginBottom: '10px',
-						// https://github.com/WordPress/gutenberg/pull/19842
-						color: 'white',
-					} }
 					onClick={ () => savePost().then( showPreview ) }
 				>
 					{ __( 'Preview' ) }

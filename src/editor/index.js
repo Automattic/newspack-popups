@@ -20,6 +20,7 @@ import {
 import { registerPlugin } from '@wordpress/plugins';
 import { PluginDocumentSettingPanel } from '@wordpress/editPost';
 import { ColorPaletteControl } from '@wordpress/block-editor';
+import { PluginPostStatusInfo } from '@wordpress/edit-post';
 
 /**
  * Internal dependencies
@@ -46,7 +47,6 @@ class PopupSidebar extends Component {
 		} = this.props;
 		return (
 			<Fragment>
-				<PopupPreview />
 				<RadioControl
 					label={ __( 'Trigger' ) }
 					help={ __( 'The event to trigger the popup' ) }
@@ -150,3 +150,11 @@ registerPlugin( 'newspack-popups', {
 	render: PluginDocumentSettingPanelDemo,
 	icon: null,
 } );
+
+// Add a button in post status section
+const PluginPostStatusInfoTest = () => (
+	<PluginPostStatusInfo>
+		<PopupPreview />
+	</PluginPostStatusInfo>
+);
+registerPlugin( 'newspack-popups-preview', { render: PluginPostStatusInfoTest } );
