@@ -18,9 +18,8 @@ import {
 	SVG,
 } from '@wordpress/components';
 import { registerPlugin } from '@wordpress/plugins';
-import { PluginDocumentSettingPanel } from '@wordpress/editPost';
+import { PluginDocumentSettingPanel, PluginPostStatusInfo } from '@wordpress/edit-post';
 import { ColorPaletteControl } from '@wordpress/block-editor';
-import { PluginPostStatusInfo } from '@wordpress/edit-post';
 
 /**
  * Internal dependencies
