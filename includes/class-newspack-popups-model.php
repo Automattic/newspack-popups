@@ -130,7 +130,7 @@ final class Newspack_Popups_Model {
 	 * @return object Popup object.
 	 */
 	public static function retrieve_preview_popup( $post_id ) {
-		// A preview might be from an autosave.
+		// A preview is stored in an autosave.
 		$autosave = wp_get_post_autosave( $post_id );
 		return self::create_popup_object(
 			$autosave ? $autosave : get_post( $post_id ),
