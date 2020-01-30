@@ -54,9 +54,10 @@ final class Newspack_Popups_API {
 	public function reader_get_endpoint( $request ) {
 		$popup_id = isset( $request['popup_id'] ) ? $request['popup_id'] : false;
 
-		$popup = Newspack_Popups_Model::retrieve_popup_by_id( $popup_id );
 		if ( $this->is_preview_request( $request ) ) {
 			$popup = Newspack_Popups_Model::retrieve_preview_popup( $popup_id );
+		} else {
+			$popup = Newspack_Popups_Model::retrieve_popup_by_id( $popup_id );
 		}
 
 		$response = [
@@ -137,7 +138,7 @@ final class Newspack_Popups_API {
 	 */
 	public function reader_post_endpoint( $request ) {
 		$transient_name = $this->get_transient_name( $request );
-		if ( $transient_name && !$this->is_preview_request($request) ) {
+		if ( $transient_name && ! $this->is_preview_request( $request ) ) {
 			$data          = get_transient( $transient_name );
 			$data['count'] = (int) $data['count'] + 1;
 			$data['time']  = time();
