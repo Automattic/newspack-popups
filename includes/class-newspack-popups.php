@@ -273,8 +273,19 @@ final class Newspack_Popups {
 	 *
 	 * @return number|null Popup id, if found in the URL
 	 */
-	public static function previewed_popup_id() {
-		return filter_input( INPUT_GET, self::NEWSPACK_POPUP_PREVIEW_QUERY_PARAM, FILTER_SANITIZE_STRING );
+	public static function previewed_popup_id( $url = null ) {
+		if ( $url ) {
+			$query_params = [];
+			$parsed_url   = wp_parse_url( $url );
+			parse_str(
+				isset( $parsed_url['query'] ) ? $parsed_url['query'] : '',
+				$query_params
+			);
+			$param = self::NEWSPACK_POPUP_PREVIEW_QUERY_PARAM;
+			return isset( $query_params[ $param ] ) ? $query_params[ $param ] : false;
+		} else {
+			return filter_input( INPUT_GET, self::NEWSPACK_POPUP_PREVIEW_QUERY_PARAM, FILTER_SANITIZE_STRING );
+		}
 	}
 }
 Newspack_Popups::instance();
