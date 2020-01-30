@@ -135,8 +135,17 @@ final class Newspack_Popups_Model {
 		return self::create_popup_object(
 			$autosave ? $autosave : get_post( $post_id ),
 			false,
-			// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			$_GET
+			[
+				'dismiss_text'            => filter_input( INPUT_GET, 'dismiss_text', FILTER_SANITIZE_STRING ),
+				'frequency'               => filter_input( INPUT_GET, 'frequency', FILTER_SANITIZE_STRING ),
+				'overlay_color'           => filter_input( INPUT_GET, 'overlay_color', FILTER_SANITIZE_STRING ),
+				'overlay_opacity'         => filter_input( INPUT_GET, 'overlay_opacity', FILTER_SANITIZE_STRING ),
+				'placement'               => filter_input( INPUT_GET, 'placement', FILTER_SANITIZE_STRING ),
+				'trigger_type'            => filter_input( INPUT_GET, 'trigger_type', FILTER_SANITIZE_STRING ),
+				'trigger_delay'           => filter_input( INPUT_GET, 'trigger_delay', FILTER_SANITIZE_STRING ),
+				'trigger_scroll_progress' => filter_input( INPUT_GET, 'trigger_scroll_progress', FILTER_SANITIZE_STRING ),
+				'utm_suppression'         => filter_input( INPUT_GET, 'utm_suppression', FILTER_SANITIZE_STRING ),
+			]
 		);
 	}
 
