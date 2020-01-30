@@ -272,11 +272,14 @@ final class Newspack_Popups_Model {
 		// Add a class to indicate a preview.
 		if ( Newspack_Popups::previewed_popup_id() ) {
 			array_push( $classes, 'newspack-lightbox--preview' );
+
 			// Remove the margin given to root element to account for admin bar. Admin bar is removed
 			// on popup preview, but the styling persists because it's being applied prior to admin bar disabling.
+			// Unfortunately, an override would necessitate use of `!important`, disallowed by AMP. So here
+			// we move the page contents up, assuming first div in body is the content element.
 			?>
 			<style media="screen">
-				html{margin-top: 0 !important;}
+				body > div:first-of-type{margin-top: -32px;}
 			</style>
 			<?php
 		}
