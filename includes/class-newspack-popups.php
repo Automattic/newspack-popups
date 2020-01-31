@@ -51,6 +51,7 @@ final class Newspack_Popups {
 		add_action( 'init', [ __CLASS__, 'register_meta' ] );
 		add_action( 'enqueue_block_editor_assets', [ __CLASS__, 'enqueue_block_editor_assets' ] );
 		add_filter( 'display_post_states', [ __CLASS__, 'display_post_states' ], 10, 2 );
+		add_filter( 'show_admin_bar', [ __CLASS__, 'hide_admin_bar_for_preview' ], 10, 2 );
 
 		include_once dirname( __FILE__ ) . '/class-newspack-popups-model.php';
 		include_once dirname( __FILE__ ) . '/class-newspack-popups-inserter.php';
@@ -266,6 +267,15 @@ final class Newspack_Popups {
 			$post_states['newspack_popups_sitewide_default'] = __( 'Sitewide Default', 'newspack-popups' );
 		}
 		return $post_states;
+	}
+
+	/**
+	 * Hide admin bar if previewing the popup.
+	 *
+	 * @return boolean Whether admin bar should be hidden
+	 */
+	public static function hide_admin_bar_for_preview() {
+		return ! self::previewed_popup_id();
 	}
 
 	/**

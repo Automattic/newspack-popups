@@ -125,11 +125,6 @@ final class Newspack_Popups_Inserter {
 	 * @return string The content with popup inserted.
 	 */
 	public static function insert_popup( $content = '', $popup = [] ) {
-		// skip admin bar if it's a popup preview.
-		if ( Newspack_Popups::previewed_popup_id() ) {
-			show_admin_bar( false );
-		};
-
 		if ( 0 === $popup['options']['trigger_scroll_progress'] || Newspack_Popups::previewed_popup_id() ) {
 			return $popup['markup'] . $content;
 		}
