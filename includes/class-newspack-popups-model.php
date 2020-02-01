@@ -219,6 +219,7 @@ final class Newspack_Popups_Model {
 		$id = $post->ID;
 
 		$post_options = isset( $options ) ? $options : [
+			'background_color'        => get_post_meta( get_the_ID(), 'background_color', true ),
 			'dismiss_text'            => get_post_meta( $id, 'dismiss_text', true ),
 			'display_title'           => get_post_meta( $id, 'display_title', true ),
 			'frequency'               => get_post_meta( $id, 'frequency', true ),
@@ -238,6 +239,7 @@ final class Newspack_Popups_Model {
 			'options' => wp_parse_args(
 				array_filter( $post_options ),
 				[
+					'background_color'        => '#FFFFFF',
 					'display_title'           => false,
 					'dismiss_text'            => '',
 					'frequency'               => 'test',
@@ -279,13 +281,14 @@ final class Newspack_Popups_Model {
 	 * @return string The generated markup.
 	 */
 	public static function generate_popup( $popup ) {
-		$element_id      = 'lightbox' . rand(); // phpcs:ignore WordPress.WP.AlternativeFunctions.rand_rand
-		$endpoint        = str_replace( 'http://', '//', get_rest_url( null, 'newspack-popups/v1/reader' ) );
-		$classes         = [ 'newspack-lightbox', 'newspack-lightbox-placement-' . $popup['options']['placement'] ];
-		$dismiss_text    = ! empty( $popup['options']['dismiss_text'] ) && strlen( trim( $popup['options']['dismiss_text'] ) ) > 0 ? $popup['options']['dismiss_text'] : null;
-		$display_title   = $popup['options']['display_title'];
-		$overlay_opacity = absint( $popup['options']['overlay_opacity'] ) / 100;
-		$overlay_color   = $popup['options']['overlay_color'];
+		$element_id       = 'lightbox' . rand(); // phpcs:ignore WordPress.WP.AlternativeFunctions.rand_rand
+		$endpoint         = str_replace( 'http://', '//', get_rest_url( null, 'newspack-popups/v1/reader' ) );
+		$classes          = [ 'newspack-lightbox', 'newspack-lightbox-placement-' . $popup['options']['placement'] ];
+		$dismiss_text     = ! empty( $popup['options']['dismiss_text'] ) && strlen( trim( $popup['options']['dismiss_text'] ) ) > 0 ? $popup['options']['dismiss_text'] : null;
+		$display_title    = $popup['options']['display_title'];
+		$overlay_opacity  = absint( $popup['options']['overlay_opacity'] ) / 100;
+		$overlay_color    = $popup['options']['overlay_color'];
+		$background_color = $popup['options']['background_color'];
 
 		ob_start();
 		?>
@@ -312,7 +315,7 @@ final class Newspack_Popups_Model {
 		?>
 		<div amp-access="displayPopup" amp-access-hide class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>" role="button" tabindex="0" id="<?php echo esc_attr( $element_id ); ?>">
 			<div class="newspack-popup-wrapper">
-				<div class="newspack-popup">
+				<div class="newspack-popup" style="background-color:<?php echo esc_attr( $background_color ); ?>;">
 					<?php if ( ! empty( $popup['title'] ) && $display_title ) : ?>
 						<h1 class="newspack-popup-title"><?php echo esc_html( $popup['title'] ); ?></h1>
 					<?php endif; ?>

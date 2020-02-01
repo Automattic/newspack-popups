@@ -50,6 +50,7 @@ class PopupSidebar extends Component {
 	 */
 	render() {
 		const {
+			background_color,
 			dismiss_text,
 			display_title,
 			frequency,
@@ -140,6 +141,11 @@ class PopupSidebar extends Component {
 					) }
 					value={ utm_suppression }
 					onChange={ value => onMetaFieldChange( 'utm_suppression', value ) }
+				/>
+				<ColorPaletteControl
+					value={ background_color }
+					onChange={ value => onMetaFieldChange( 'background_color', value ) }
+					label={ __( 'Background Color' ) }
 				/>
 				<ColorPaletteControl
 					value={ overlay_color }

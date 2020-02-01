@@ -7,6 +7,7 @@ export const optionsFieldsSelector = select => {
 	);
 	const meta = getEditedPostAttribute( 'meta' );
 	const {
+		background_color,
 		frequency,
 		dismiss_text,
 		display_title,
@@ -19,6 +20,7 @@ export const optionsFieldsSelector = select => {
 		utm_suppression,
 	} = meta || {};
 	return {
+		background_color,
 		dismiss_text,
 		display_title,
 		frequency,
