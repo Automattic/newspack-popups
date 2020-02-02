@@ -6,10 +6,12 @@
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
+import apiFetch from '@wordpress/api-fetch';
 import { withSelect, withDispatch } from '@wordpress/data';
 import { compose } from '@wordpress/compose';
 import { Component, render, Fragment } from '@wordpress/element';
 import {
+	CheckboxControl,
 	Path,
 	RangeControl,
 	RadioControl,
@@ -37,10 +39,13 @@ class PopupSidebar extends Component {
 			dismiss_text,
 			display_title,
 			frequency,
+			id,
 			onMetaFieldChange,
+			onSitewideDefaultChange,
 			overlay_opacity,
 			overlay_color,
 			placement,
+			newspack_popups_is_sitewide_default,
 			trigger_scroll_progress,
 			trigger_delay,
 			trigger_type,
@@ -48,6 +53,18 @@ class PopupSidebar extends Component {
 		} = this.props;
 		return (
 			<Fragment>
+				<CheckboxControl
+					label={ __( 'Sitewide Default', 'newspack-popups' ) }
+					checked={ newspack_popups_is_sitewide_default }
+					onChange={ value => {
+						const params = {
+							path: '/newspack-popups/v1/sitewide_default/' + id,
+							method: value ? 'POST' : 'DELETE',
+						};
+						onSitewideDefaultChange( value );
+						apiFetch( params );
+					} }
+				/>
 				<RadioControl
 					label={ __( 'Trigger' ) }
 					help={ __( 'The event to trigger the popup' ) }
@@ -142,6 +159,9 @@ const PopupSidebarWithData = compose( [
 		return {
 			onMetaFieldChange: ( key, value ) => {
 				dispatch( 'core/editor' ).editPost( { meta: { [ key ]: value } } );
+			},
+			onSitewideDefaultChange: value => {
+				dispatch( 'core/editor' ).editPost( { newspack_popups_is_sitewide_default: value } );
 			},
 		};
 	} ),
