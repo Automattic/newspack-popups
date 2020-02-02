@@ -6,10 +6,12 @@
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
+import apiFetch from '@wordpress/api-fetch';
 import { withSelect, withDispatch } from '@wordpress/data';
 import { compose } from '@wordpress/compose';
 import { Component, render, Fragment } from '@wordpress/element';
 import {
+	CheckboxControl,
 	Path,
 	RangeControl,
 	RadioControl,
@@ -29,10 +31,13 @@ class PopupSidebar extends Component {
 		const {
 			dismiss_text,
 			frequency,
+			id,
 			onMetaFieldChange,
+			onSitewideDefaultChange,
 			overlay_opacity,
 			overlay_color,
 			placement,
+			newspack_popups_is_sitewide_default,
 			trigger_scroll_progress,
 			trigger_delay,
 			trigger_type,
@@ -40,6 +45,18 @@ class PopupSidebar extends Component {
 		} = this.props;
 		return (
 			<Fragment>
+				<CheckboxControl
+					label={ __( 'Sitewide Default', 'newspack-popups' ) }
+					checked={ newspack_popups_is_sitewide_default }
+					onChange={ value => {
+						const params = {
+							path: '/newspack-popups/v1/sitewide_default/' + id,
+							method: value ? 'POST' : 'DELETE',
+						};
+						onSitewideDefaultChange( value );
+						apiFetch( params );
+					} }
+				/>
 				<RadioControl
 					label={ __( 'Trigger' ) }
 					help={ __( 'The event to trigger the popup' ) }
@@ -125,7 +142,7 @@ class PopupSidebar extends Component {
 
 const PopupSidebarWithData = compose( [
 	withSelect( select => {
-		const { getEditedPostAttribute } = select( 'core/editor' );
+		const { getEditedPostAttribute, getCurrentPostId } = select( 'core/editor' );
 		const meta = getEditedPostAttribute( 'meta' );
 		const {
 			frequency,
@@ -141,8 +158,12 @@ const PopupSidebarWithData = compose( [
 		return {
 			dismiss_text,
 			frequency,
+			id: getCurrentPostId(),
 			overlay_color,
 			overlay_opacity,
+			newspack_popups_is_sitewide_default: getEditedPostAttribute(
+				'newspack_popups_is_sitewide_default'
+			),
 			placement,
 			trigger_scroll_progress,
 			trigger_delay,
@@ -154,6 +175,9 @@ const PopupSidebarWithData = compose( [
 		return {
 			onMetaFieldChange: ( key, value ) => {
 				dispatch( 'core/editor' ).editPost( { meta: { [ key ]: value } } );
+			},
+			onSitewideDefaultChange: value => {
+				dispatch( 'core/editor' ).editPost( { newspack_popups_is_sitewide_default: value } );
 			},
 		};
 	} ),

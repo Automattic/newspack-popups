@@ -43,6 +43,56 @@ final class Newspack_Popups_API {
 				'callback' => [ $this, 'reader_post_endpoint' ],
 			]
 		);
+		\register_rest_route(
+			'newspack-popups/v1/',
+			'sitewide_default/(?P<id>\d+)',
+			[
+				'methods'             => \WP_REST_Server::EDITABLE,
+				'callback'            => [ $this, 'set_sitewide_default_endpoint' ],
+				'permission_callback' => function() {
+					if ( ! current_user_can( 'manage_options' ) ) {
+						return new \WP_Error(
+							'newspack_rest_forbidden',
+							esc_html__( 'You cannot use this resource.', 'newspack' ),
+							[
+								'status' => 403,
+							]
+						);
+					}
+					return true;
+				},
+				'args'                => [
+					'id' => [
+						'sanitize_callback' => 'absint',
+					],
+				],
+			]
+		);
+		\register_rest_route(
+			'newspack-popups/v1/',
+			'sitewide_default/(?P<id>\d+)',
+			[
+				'methods'             => \WP_REST_Server::DELETABLE,
+				'callback'            => [ $this, 'unset_sitewide_default_endpoint' ],
+				'permission_callback' => function() {
+					if ( ! current_user_can( 'manage_options' ) ) {
+						return new \WP_Error(
+							'newspack_rest_forbidden',
+							esc_html__( 'You cannot use this resource.', 'newspack' ),
+							[
+								'status' => 403,
+							]
+						);
+					}
+					return true;
+				},
+				'args'                => [
+					'id' => [
+						'sanitize_callback' => 'absint',
+					],
+				],
+			]
+		);
 	}
 
 	/**
@@ -123,6 +173,26 @@ final class Newspack_Popups_API {
 			set_transient( $transient_name, $data, 0 );
 		}
 		return $this->reader_get_endpoint( $request );
+	}
+
+	/**
+	 * Set sitewide default Popup
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 */
+	public function set_sitewide_default_endpoint( $request ) {
+		$response = Newspack_Popups_Model::set_sitewide_popup( $request['id'] );
+		return is_wp_error( $response ) ? $response : [ 'success' => true ];
+	}
+
+	/**
+	 * Unset sitewide default Popup (if it is the specified post)
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 */
+	public function unset_sitewide_default_endpoint( $request ) {
+		$response = Newspack_Popups_Model::unset_sitewide_popup( $request['id'] );
+		return is_wp_error( $response ) ? $response : [ 'success' => true ];
 	}
 
 	/**

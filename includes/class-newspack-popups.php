@@ -12,7 +12,8 @@ defined( 'ABSPATH' ) || exit;
  */
 final class Newspack_Popups {
 
-	const NEWSPACK_PLUGINS_CPT = 'newspack_popups_cpt';
+	const NEWSPACK_PLUGINS_CPT             = 'newspack_popups_cpt';
+	const NEWSPACK_POPUPS_SITEWIDE_DEFAULT = 'newspack_popups_sitewide_default';
 
 	/**
 	 * The single instance of the class.
@@ -20,13 +21,6 @@ final class Newspack_Popups {
 	 * @var Newspack_Popups
 	 */
 	protected static $instance = null;
-
-	/**
-	 * The ID of the sitewide default Popup.
-	 *
-	 * @var integer
-	 */
-	protected static $sitewide_popup_id = -1; // -1 signifies this has not been set
 
 	/**
 	 * Main Newspack Ads Instance.
@@ -49,6 +43,7 @@ final class Newspack_Popups {
 		add_action( 'init', [ __CLASS__, 'register_meta' ] );
 		add_action( 'enqueue_block_editor_assets', [ __CLASS__, 'enqueue_block_editor_assets' ] );
 		add_filter( 'display_post_states', [ __CLASS__, 'display_post_states' ], 10, 2 );
+		add_action( 'rest_api_init', [ __CLASS__, 'rest_api_init' ] );
 
 		include_once dirname( __FILE__ ) . '/class-newspack-popups-model.php';
 		include_once dirname( __FILE__ ) . '/class-newspack-popups-inserter.php';
@@ -228,38 +223,31 @@ final class Newspack_Popups {
 		if ( self::NEWSPACK_PLUGINS_CPT !== $post->post_type ) {
 			return $post_states;
 		}
-		if ( -1 === self::$sitewide_popup_id ) {
-			self::$sitewide_popup_id = null; // Setting to null indicates the query has been performed once, and needn't be repeated.
-
-			$query = new WP_Query(
-				[
-					'post_type'        => self::NEWSPACK_PLUGINS_CPT,
-					'post_status'      => 'publish',
-					'posts_per_page'   => 1,
-					'tax_query'        => [ //phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
-						[
-							'taxonomy' => 'category',
-							'operator' => 'NOT EXISTS',
-						],
-					],
-
-
-					'category__not_in' => get_terms(
-						'category',
-						[
-							'fields' => 'ids',
-						]
-					),
-				]
-			);
-			if ( $query->have_posts() ) {
-				self::$sitewide_popup_id = $query->posts[0]->ID;
-			}
-		}
-		if ( $post->ID === self::$sitewide_popup_id ) {
+		if ( absint( get_option( self::NEWSPACK_POPUPS_SITEWIDE_DEFAULT, null ) ) === absint( $post->ID ) ) {
 			$post_states['newspack_popups_sitewide_default'] = __( 'Sitewide Default', 'newspack-popups' );
 		}
 		return $post_states;
+	}
+
+	/**
+	 * Add newspack_popups_is_sitewide_default to Popup object.
+	 */
+	public static function rest_api_init() {
+		register_rest_field(
+			[ self::NEWSPACK_PLUGINS_CPT ],
+			'newspack_popups_is_sitewide_default',
+			[
+				'get_callback' => function( $post ) {
+					return absint( $post['id'] ) === absint( get_option( self::NEWSPACK_POPUPS_SITEWIDE_DEFAULT, null ) );
+				},
+				'schema'       => [
+					'context' => [
+						'edit',
+					],
+					'type'    => 'array',
+				],
+			]
+		);
 	}
 }
 Newspack_Popups::instance();
