@@ -24,6 +24,25 @@ import { PluginDocumentSettingPanel } from '@wordpress/editPost';
 import { ColorPaletteControl } from '@wordpress/block-editor';
 
 class PopupSidebar extends Component {
+	state = {
+		isSiteWideDefault: undefined,
+	};
+	componentDidMount() {
+		this.setState( {
+			isSiteWideDefault: this.props.newspack_popups_is_sitewide_default,
+		} );
+	}
+	componentDidUpdate( prevProps ) {
+		const { isSavingPost, id } = this.props;
+		const { isSiteWideDefault } = this.state;
+		if ( ! prevProps.isSavingPost && isSavingPost ) {
+			const params = {
+				path: '/newspack-popups/v1/sitewide_default/' + id,
+				method: isSiteWideDefault ? 'POST' : 'DELETE',
+			};
+			apiFetch( params );
+		}
+	}
 	/**
 	 * Render
 	 */
@@ -31,9 +50,7 @@ class PopupSidebar extends Component {
 		const {
 			dismiss_text,
 			frequency,
-			id,
 			onMetaFieldChange,
-			onSitewideDefaultChange,
 			overlay_opacity,
 			overlay_color,
 			placement,
@@ -42,21 +59,24 @@ class PopupSidebar extends Component {
 			trigger_delay,
 			trigger_type,
 			utm_suppression,
+			onSitewideDefaultChange,
+			isCurrentPostPublished,
 		} = this.props;
+		const { isSiteWideDefault } = this.state;
 		return (
 			<Fragment>
-				<CheckboxControl
-					label={ __( 'Sitewide Default', 'newspack-popups' ) }
-					checked={ newspack_popups_is_sitewide_default }
-					onChange={ value => {
-						const params = {
-							path: '/newspack-popups/v1/sitewide_default/' + id,
-							method: value ? 'POST' : 'DELETE',
-						};
-						onSitewideDefaultChange( value );
-						apiFetch( params );
-					} }
-				/>
+				{ isCurrentPostPublished && isSiteWideDefault !== undefined && (
+					<CheckboxControl
+						label={ __( 'Sitewide Default', 'newspack-popups' ) }
+						checked={ isSiteWideDefault }
+						onChange={ isSiteWideDefault => {
+							this.setState( { isSiteWideDefault } );
+							// an ugly hack to update the post attribute, just to make the editor aware of a change,
+							// so that "update" button becomes enabled
+							onSitewideDefaultChange( Math.random() );
+						} }
+					/>
+				) }
 				<RadioControl
 					label={ __( 'Trigger' ) }
 					help={ __( 'The event to trigger the popup' ) }
@@ -142,7 +162,12 @@ class PopupSidebar extends Component {
 
 const PopupSidebarWithData = compose( [
 	withSelect( select => {
-		const { getEditedPostAttribute, getCurrentPostId } = select( 'core/editor' );
+		const {
+			getEditedPostAttribute,
+			getCurrentPostId,
+			isSavingPost,
+			isCurrentPostPublished,
+		} = select( 'core/editor' );
 		const meta = getEditedPostAttribute( 'meta' );
 		const {
 			frequency,
@@ -169,6 +194,8 @@ const PopupSidebarWithData = compose( [
 			trigger_delay,
 			trigger_type,
 			utm_suppression,
+			isSavingPost: isSavingPost(),
+			isCurrentPostPublished: isCurrentPostPublished(),
 		};
 	} ),
 	withDispatch( dispatch => {
