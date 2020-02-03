@@ -24,7 +24,7 @@ const PopupPreviewSetting = ( { savePost, isSavingPost, postId, metaFields } ) =
 			url={ `/?${ query }` }
 			renderButton={ ( { showPreview } ) => (
 				<Button
-					isLink
+					isPrimary
 					isBusy={ isSavingPost }
 					disabled={ isSavingPost }
 					onClick={ () => savePost().then( showPreview ) }
