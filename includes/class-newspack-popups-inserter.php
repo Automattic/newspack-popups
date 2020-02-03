@@ -42,6 +42,9 @@ final class Newspack_Popups_Inserter {
 		$sitewide_default = get_option( Newspack_Popups::NEWSPACK_POPUPS_SITEWIDE_DEFAULT, null );
 		if ( $sitewide_default ) {
 			self::$popup = Newspack_Popups_Model::retrieve_popup_by_id( $sitewide_default );
+			if ( self::$popup ) {
+				return self::$popup;
+			}
 		}
 		return null;
 	}
