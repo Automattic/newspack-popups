@@ -10,12 +10,12 @@ import { withSelect, withDispatch } from '@wordpress/data';
 import { compose } from '@wordpress/compose';
 import { Component, render, Fragment } from '@wordpress/element';
 import {
-	CheckboxControl,
 	Path,
 	RangeControl,
 	RadioControl,
 	SelectControl,
 	TextControl,
+	ToggleControl,
 	SVG,
 } from '@wordpress/components';
 import { registerPlugin } from '@wordpress/plugins';
@@ -115,7 +115,7 @@ class PopupSidebar extends Component {
 					min={ 0 }
 					max={ 100 }
 				/>
-				<CheckboxControl
+				<ToggleControl
 					label={ __( 'Display Pop-up title', 'newspack-popups' ) }
 					checked={ display_title }
         			onChange={ value => onMetaFieldChange( 'display_title', value ) }
