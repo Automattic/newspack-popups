@@ -314,8 +314,8 @@ final class Newspack_Popups_Model {
 		ob_start();
 		?>
 		<div amp-access="displayPopup" amp-access-hide class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>" role="button" tabindex="0" id="<?php echo esc_attr( $element_id ); ?>">
-			<div class="newspack-popup-wrapper">
-				<div class="newspack-popup" style="background-color:<?php echo esc_attr( $background_color ); ?>;">
+			<div class="newspack-popup-wrapper" style="background-color:<?php echo esc_attr( $background_color ); ?>;">
+				<div class="newspack-popup">
 					<?php if ( ! empty( $popup['title'] ) && $display_title ) : ?>
 						<h1 class="newspack-popup-title"><?php echo esc_html( $popup['title'] ); ?></h1>
 					<?php endif; ?>
