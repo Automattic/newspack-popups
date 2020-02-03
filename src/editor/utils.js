@@ -7,6 +7,7 @@ export const optionsFieldsSelector = select => {
 	const {
 		frequency,
 		dismiss_text,
+		display_title,
 		overlay_color,
 		overlay_opacity,
 		placement,
@@ -17,6 +18,7 @@ export const optionsFieldsSelector = select => {
 	} = meta || {};
 	return {
 		dismiss_text,
+		display_title,
 		frequency,
 		overlay_color,
 		overlay_opacity,
