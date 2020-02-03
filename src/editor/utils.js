@@ -2,7 +2,9 @@
  * Data selector for popup options (stored in post meta)
  */
 export const optionsFieldsSelector = select => {
-	const { getEditedPostAttribute, getCurrentPostId } = select( 'core/editor' );
+	const { getEditedPostAttribute, getCurrentPostId, isSavingPost, isCurrentPostPublished } = select(
+		'core/editor'
+	);
 	const meta = getEditedPostAttribute( 'meta' );
 	const {
 		frequency,
@@ -31,5 +33,7 @@ export const optionsFieldsSelector = select => {
 		trigger_delay,
 		trigger_type,
 		utm_suppression,
+		isSavingPost: isSavingPost(),
+		isCurrentPostPublished: isCurrentPostPublished(),
 	};
 };
