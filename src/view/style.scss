@@ -19,11 +19,11 @@ $color__secondary-variation: darken( $color__secondary, 10% );
 	z-index: 99999;
 
 	.admin-bar & {
-		@media only screen and (min-width: 601px) {
+		@media only screen and ( min-width: 601px ) {
 			padding-top: 46px !important;
 		}
 
-		@media only screen and (min-width: 783px) {
+		@media only screen and ( min-width: 783px ) {
 			padding-top: 32px !important;
 		}
 	}

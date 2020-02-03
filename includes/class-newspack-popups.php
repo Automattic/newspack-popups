@@ -14,6 +14,8 @@ final class Newspack_Popups {
 
 	const NEWSPACK_PLUGINS_CPT = 'newspack_popups_cpt';
 
+	const NEWSPACK_POPUP_PREVIEW_QUERY_PARAM = 'newspack_popups_preview_id';
+
 	/**
 	 * The single instance of the class.
 	 *
@@ -49,6 +51,7 @@ final class Newspack_Popups {
 		add_action( 'init', [ __CLASS__, 'register_meta' ] );
 		add_action( 'enqueue_block_editor_assets', [ __CLASS__, 'enqueue_block_editor_assets' ] );
 		add_filter( 'display_post_states', [ __CLASS__, 'display_post_states' ], 10, 2 );
+		add_filter( 'show_admin_bar', [ __CLASS__, 'hide_admin_bar_for_preview' ], 10, 2 );
 
 		include_once dirname( __FILE__ ) . '/class-newspack-popups-model.php';
 		include_once dirname( __FILE__ ) . '/class-newspack-popups-inserter.php';
@@ -228,6 +231,12 @@ final class Newspack_Popups {
 			filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/editor.js' ),
 			true
 		);
+		\wp_enqueue_style(
+			'newspack-popups-editor',
+			plugins_url( '../dist/editor.css', __FILE__ ),
+			null,
+			filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/editor.css' )
+		);
 	}
 
 	/**
@@ -255,7 +264,6 @@ final class Newspack_Popups {
 						],
 					],
 
-
 					'category__not_in' => get_terms(
 						'category',
 						[
@@ -272,6 +280,35 @@ final class Newspack_Popups {
 			$post_states['newspack_popups_sitewide_default'] = __( 'Sitewide Default', 'newspack-popups' );
 		}
 		return $post_states;
+	}
+
+	/**
+	 * Hide admin bar if previewing the popup.
+	 *
+	 * @return boolean Whether admin bar should be hidden
+	 */
+	public static function hide_admin_bar_for_preview() {
+		return ! self::previewed_popup_id();
+	}
+
+	/**
+	 * Get previewed popup id from the URL.
+	 *
+	 * @return number|null Popup id, if found in the URL
+	 */
+	public static function previewed_popup_id( $url = null ) {
+		if ( $url ) {
+			$query_params = [];
+			$parsed_url   = wp_parse_url( $url );
+			parse_str(
+				isset( $parsed_url['query'] ) ? $parsed_url['query'] : '',
+				$query_params
+			);
+			$param = self::NEWSPACK_POPUP_PREVIEW_QUERY_PARAM;
+			return isset( $query_params[ $param ] ) ? $query_params[ $param ] : false;
+		} else {
+			return filter_input( INPUT_GET, self::NEWSPACK_POPUP_PREVIEW_QUERY_PARAM, FILTER_SANITIZE_STRING );
+		}
 	}
 }
 Newspack_Popups::instance();

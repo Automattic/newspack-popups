@@ -28,7 +28,13 @@ final class Newspack_Popups_Inserter {
 		if ( self::$popup ) {
 			return self::$popup;
 		}
-		// First try for pop-up with category filtering.
+
+		// First try the preview.
+		if ( Newspack_Popups::previewed_popup_id() ) {
+			return Newspack_Popups_Model::retrieve_preview_popup( Newspack_Popups::previewed_popup_id() );
+		}
+
+		// Then try for pop-up with category filtering.
 		self::$popup = Newspack_Popups_Model::retrieve_popup( get_the_category() );
 
 		// If nothing found, try for sitewide pop-up.
@@ -68,7 +74,7 @@ final class Newspack_Popups_Inserter {
 		}
 
 		// Pop-ups triggered by scroll position can only appear on Posts.
-		if ( 'scroll' === $popup['options']['trigger_type'] && ! is_single() ) {
+		if ( 'scroll' === $popup['options']['trigger_type'] && ! is_single() && ! Newspack_Popups::previewed_popup_id() ) {
 			return $content;
 		}
 
@@ -119,7 +125,7 @@ final class Newspack_Popups_Inserter {
 	 * @return string The content with popup inserted.
 	 */
 	public static function insert_popup( $content = '', $popup = [] ) {
-		if ( 0 === $popup['options']['trigger_scroll_progress'] ) {
+		if ( 0 === $popup['options']['trigger_scroll_progress'] || Newspack_Popups::previewed_popup_id() ) {
 			return $popup['markup'] . $content;
 		}
 
@@ -164,14 +170,15 @@ final class Newspack_Popups_Inserter {
 		}
 
 		// Pop-ups triggered by scroll position can only appear on Posts.
-		if ( 'scroll' === $popup['options']['trigger_type'] && ! is_single() ) {
+		if ( 'scroll' === $popup['options']['trigger_type'] && ! is_single() && ! Newspack_Popups::previewed_popup_id() ) {
 			return;
 		}
 		$endpoint = str_replace( 'http://', '//', get_rest_url( null, 'newspack-popups/v1/reader' ) );
 
-		// In test frequency cases (logged in site editor), fallback to authorization of true to avoid possible amp-access timeouts.
+		// In test frequency cases (logged in site editor) and when previewing a popup,
+		// fallback to authorization of true to avoid possible amp-access timeouts.
 		$authorization_fallback_response = (
-			'test' === $popup['options']['frequency'] &&
+			( 'test' === $popup['options']['frequency'] || Newspack_Popups::previewed_popup_id() ) &&
 			is_user_logged_in() &&
 			current_user_can( 'edit_others_pages' )
 		) ? 'true' : 'false';
@@ -228,6 +235,9 @@ final class Newspack_Popups_Inserter {
 	 */
 	public static function assess_test_mode( $popup ) {
 		if ( is_user_logged_in() ) {
+			if ( Newspack_Popups::previewed_popup_id() ) {
+				return true;
+			}
 			if ( 'test' !== $popup['options']['frequency'] || ! current_user_can( 'edit_others_pages' ) ) {
 				return false;
 			}

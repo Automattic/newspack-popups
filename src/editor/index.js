@@ -19,8 +19,14 @@ import {
 	SVG,
 } from '@wordpress/components';
 import { registerPlugin } from '@wordpress/plugins';
-import { PluginDocumentSettingPanel } from '@wordpress/editPost';
+import { PluginDocumentSettingPanel, PluginPostStatusInfo } from '@wordpress/edit-post';
 import { ColorPaletteControl } from '@wordpress/block-editor';
+
+/**
+ * Internal dependencies
+ */
+import { optionsFieldsSelector } from './utils';
+import PopupPreview from './PopupPreview';
 
 class PopupSidebar extends Component {
 	/**
@@ -118,7 +124,7 @@ class PopupSidebar extends Component {
 				<ToggleControl
 					label={ __( 'Display Pop-up title', 'newspack-popups' ) }
 					checked={ display_title }
-        			onChange={ value => onMetaFieldChange( 'display_title', value ) }
+					onChange={ value => onMetaFieldChange( 'display_title', value ) }
 				/>
 				<TextControl
 					label={ __( 'Text for "Not Interested" button' ) }
@@ -131,34 +137,7 @@ class PopupSidebar extends Component {
 }
 
 const PopupSidebarWithData = compose( [
-	withSelect( select => {
-		const { getEditedPostAttribute } = select( 'core/editor' );
-		const meta = getEditedPostAttribute( 'meta' );
-		const {
-			frequency,
-			display_title,
-			dismiss_text,
-			overlay_color,
-			overlay_opacity,
-			placement,
-			trigger_scroll_progress,
-			trigger_delay,
-			trigger_type,
-			utm_suppression,
-		} = meta || {};
-		return {
-			display_title,
-			dismiss_text,
-			frequency,
-			overlay_color,
-			overlay_opacity,
-			placement,
-			trigger_scroll_progress,
-			trigger_delay,
-			trigger_type,
-			utm_suppression,
-		};
-	} ),
+	withSelect( optionsFieldsSelector ),
 	withDispatch( dispatch => {
 		return {
 			onMetaFieldChange: ( key, value ) => {
@@ -177,3 +156,11 @@ registerPlugin( 'newspack-popups', {
 	render: PluginDocumentSettingPanelDemo,
 	icon: null,
 } );
+
+// Add a button in post status section
+const PluginPostStatusInfoTest = () => (
+	<PluginPostStatusInfo>
+		<PopupPreview />
+	</PluginPostStatusInfo>
+);
+registerPlugin( 'newspack-popups-preview', { render: PluginPostStatusInfoTest } );

@@ -53,7 +53,13 @@ final class Newspack_Popups_API {
 	 */
 	public function reader_get_endpoint( $request ) {
 		$popup_id = isset( $request['popup_id'] ) ? $request['popup_id'] : false;
-		$popup    = Newspack_Popups_Model::retrieve_popup_by_id( $popup_id );
+
+		if ( $this->is_preview_request( $request ) ) {
+			$popup = Newspack_Popups_Model::retrieve_preview_popup( $popup_id );
+		} else {
+			$popup = Newspack_Popups_Model::retrieve_popup_by_id( $popup_id );
+		}
+
 		$response = [
 			'currentViews' => 0,
 			'displayPopup' => false,
@@ -99,7 +105,22 @@ final class Newspack_Popups_API {
 		if ( $suppress_forever || $mailing_list_status ) {
 			$response['displayPopup'] = false;
 		}
+
+		if ( $this->is_preview_request( $request ) ) {
+			$response['displayPopup'] = true;
+		};
+
 		return rest_ensure_response( $response );
+	}
+
+	/**
+	 * Detect a popup preview request.
+	 *
+	 * @param  WP_REST_Request $request a request.
+	 * @return Boolean
+	 */
+	public function is_preview_request( $request ) {
+		return Newspack_Popups::previewed_popup_id( $request->get_header( 'referer' ) );
 	}
 
 	/**
@@ -110,7 +131,7 @@ final class Newspack_Popups_API {
 	 */
 	public function reader_post_endpoint( $request ) {
 		$transient_name = $this->get_transient_name( $request );
-		if ( $transient_name ) {
+		if ( $transient_name && ! $this->is_preview_request( $request ) ) {
 			$data          = get_transient( $transient_name );
 			$data['count'] = (int) $data['count'] + 1;
 			$data['time']  = time();
