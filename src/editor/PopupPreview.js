@@ -12,7 +12,7 @@ import { __ } from '@wordpress/i18n';
 import { stringify } from 'qs';
 import { WebPreview } from 'newspack-components';
 
-const PopupPreviewSetting = ( { savePost, isSavingPost, postId, metaFields } ) => {
+const PopupPreviewSetting = ( { autosavePost, isSavingPost, postId, metaFields } ) => {
 	const query = stringify( {
 		newspack_popups_preview_id: postId,
 		// Autosave does not handle meta fields, so these will be passed in the URL
@@ -27,7 +27,7 @@ const PopupPreviewSetting = ( { savePost, isSavingPost, postId, metaFields } ) =
 					isPrimary
 					isBusy={ isSavingPost }
 					disabled={ isSavingPost }
-					onClick={ () => savePost().then( showPreview ) }
+					onClick={ () => autosavePost().then( showPreview ) }
 				>
 					{ __( 'Preview' ) }
 				</Button>
@@ -47,7 +47,7 @@ const connectPopupPreviewSetting = compose( [
 	} ),
 	withDispatch( dispatch => {
 		return {
-			savePost: () => dispatch( 'core/editor' ).autosave(),
+			autosavePost: () => dispatch( 'core/editor' ).autosave(),
 		};
 	} ),
 ] );
