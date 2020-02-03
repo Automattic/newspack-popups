@@ -15,6 +15,7 @@ import {
 	RadioControl,
 	SelectControl,
 	TextControl,
+	ToggleControl,
 	SVG,
 } from '@wordpress/components';
 import { registerPlugin } from '@wordpress/plugins';
@@ -28,6 +29,7 @@ class PopupSidebar extends Component {
 	render() {
 		const {
 			dismiss_text,
+			display_title,
 			frequency,
 			onMetaFieldChange,
 			overlay_opacity,
@@ -113,6 +115,11 @@ class PopupSidebar extends Component {
 					min={ 0 }
 					max={ 100 }
 				/>
+				<ToggleControl
+					label={ __( 'Display Pop-up title', 'newspack-popups' ) }
+					checked={ display_title }
+        			onChange={ value => onMetaFieldChange( 'display_title', value ) }
+				/>
 				<TextControl
 					label={ __( 'Text for "Not Interested" button' ) }
 					value={ dismiss_text }
@@ -129,6 +136,7 @@ const PopupSidebarWithData = compose( [
 		const meta = getEditedPostAttribute( 'meta' );
 		const {
 			frequency,
+			display_title,
 			dismiss_text,
 			overlay_color,
 			overlay_opacity,
@@ -139,6 +147,7 @@ const PopupSidebarWithData = compose( [
 			utm_suppression,
 		} = meta || {};
 		return {
+			display_title,
 			dismiss_text,
 			frequency,
 			overlay_color,

@@ -162,6 +162,7 @@ final class Newspack_Popups_Model {
 				'options' => wp_parse_args(
 					array_filter([
 						'dismiss_text'            => get_post_meta( get_the_ID(), 'dismiss_text', true ),
+						'display_title'           => get_post_meta( get_the_ID(), 'display_title', true ),
 						'frequency'               => get_post_meta( get_the_ID(), 'frequency', true ),
 						'overlay_color'           => get_post_meta( get_the_ID(), 'overlay_color', true ),
 						'overlay_opacity'         => get_post_meta( get_the_ID(), 'overlay_opacity', true ),
@@ -172,6 +173,7 @@ final class Newspack_Popups_Model {
 						'utm_suppression'         => get_post_meta( get_the_ID(), 'utm_suppression', true ),
 					]),
 					[
+						'display_title'           => false,
 						'dismiss_text'            => '',
 						'frequency'               => 'test',
 						'overlay_color'           => '#000000',
@@ -219,6 +221,7 @@ final class Newspack_Popups_Model {
 		$endpoint        = str_replace( 'http://', '//', get_rest_url( null, 'newspack-popups/v1/reader' ) );
 		$classes         = [ 'newspack-lightbox', 'newspack-lightbox-placement-' . $popup['options']['placement'] ];
 		$dismiss_text    = ! empty( $popup['options']['dismiss_text'] ) && strlen( trim( $popup['options']['dismiss_text'] ) ) > 0 ? $popup['options']['dismiss_text'] : null;
+		$display_title   = $popup['options']['display_title'];
 		$overlay_opacity = absint( $popup['options']['overlay_opacity'] ) / 100;
 		$overlay_color   = $popup['options']['overlay_color'];
 
@@ -248,7 +251,7 @@ final class Newspack_Popups_Model {
 		<div amp-access="displayPopup" amp-access-hide class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>" role="button" tabindex="0" id="<?php echo esc_attr( $element_id ); ?>">
 			<div class="newspack-popup-wrapper">
 				<div class="newspack-popup">
-					<?php if ( ! empty( $popup['title'] ) ) : ?>
+					<?php if ( ! empty( $popup['title'] ) && $display_title ) : ?>
 						<h1 class="newspack-popup-title"><?php echo esc_html( $popup['title'] ); ?></h1>
 					<?php endif; ?>
 					<?php echo ( $popup['body'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
