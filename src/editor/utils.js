@@ -7,6 +7,7 @@ export const optionsFieldsSelector = select => {
 	);
 	const meta = getEditedPostAttribute( 'meta' );
 	const {
+		background_color,
 		frequency,
 		dismiss_text,
 		display_title,
@@ -19,6 +20,7 @@ export const optionsFieldsSelector = select => {
 		utm_suppression,
 	} = meta || {};
 	return {
+		background_color,
 		dismiss_text,
 		display_title,
 		frequency,
@@ -36,4 +38,63 @@ export const optionsFieldsSelector = select => {
 		isSavingPost: isSavingPost(),
 		isCurrentPostPublished: isCurrentPostPublished(),
 	};
+};
+
+/**
+ * Convert hex color to RGB.
+ * From https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
+ */
+const hexToRGB = hex =>
+	hex
+		.replace( /^#?([a-f\d])([a-f\d])([a-f\d])$/i, ( m, r, g, b ) => '#' + r + r + g + g + b + b )
+		.substring( 1 )
+		.match( /.{2}/g )
+		.map( x => parseInt( x, 16 ) );
+
+/**
+ * Set the background color meta field.
+ * Based on https://github.com/Automattic/newspack-theme/blob/master/newspack-theme/inc/template-functions.php#L401-L431
+ */
+export const updateEditorColors = backgroundColor => {
+	if ( ! backgroundColor ) {
+		return;
+	}
+	const blackColor = '#000';
+	const whiteColor = '#fff';
+
+	const backgroundColorRGB = hexToRGB( backgroundColor );
+	const blackRGB = hexToRGB( blackColor );
+
+	const l1 =
+		0.2126 * Math.pow( backgroundColorRGB[0] / 255, 2.2 ) +
+		0.7152 * Math.pow( backgroundColorRGB[1] / 255, 2.2 ) +
+		0.0722 * Math.pow( backgroundColorRGB[2] / 255, 2.2 );
+	const l2 =
+		0.2126 * Math.pow( blackRGB[0] / 255, 2.2 ) +
+		0.7152 * Math.pow( blackRGB[1] / 255, 2.2 ) +
+		0.0722 * Math.pow( blackRGB[2] / 255, 2.2 );
+
+	const contrastRatio =
+		l1 > l2 ? parseInt( ( l1 + 0.05 ) / ( l2 + 0.05 ) ) : parseInt( ( l2 + 0.05 ) / ( l1 + 0.05 ) );
+
+	const foregroundColor = contrastRatio > 5 ? blackColor : whiteColor;
+
+	const editorStylesEl = document.querySelector( '.edit-post-visual-editor.editor-styles-wrapper' );
+	const editorPostTitleEl = document.querySelector(
+		'.wp-block.editor-post-title__block .editor-post-title__input'
+	);
+	const editorPostTitlePlaceholderEl = document.querySelector(
+		'.wp-block.editor-post-title__block .editor-post-title__input::placeholder'
+	);
+
+	if ( editorStylesEl ) {
+		editorStylesEl.style[ 'backgroundColor' ] = backgroundColor;
+		editorStylesEl.style[ 'color' ] = foregroundColor;
+	}
+	if ( editorPostTitleEl ) {
+		editorPostTitleEl.style[ 'color' ] = foregroundColor;
+	}
+	if ( editorPostTitlePlaceholderEl ) {
+		editorPostTitlePlaceholderEl.style[ 'color' ] = foregroundColor;
+	}
 };

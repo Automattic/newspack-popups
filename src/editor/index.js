@@ -27,15 +27,19 @@ import { ColorPaletteControl } from '@wordpress/block-editor';
 /**
  * Internal dependencies
  */
-import { optionsFieldsSelector } from './utils';
+import { optionsFieldsSelector, updateEditorColors } from './utils';
 import PopupPreview from './PopupPreview';
 
 class PopupSidebar extends Component {
 	state = {
 		isSiteWideDefault: this.props.newspack_popups_is_sitewide_default,
 	};
+	componentDidMount() {
+		const { background_color } = this.props;
+		updateEditorColors( background_color );
+	}
 	componentDidUpdate( prevProps ) {
-		const { isSavingPost, id } = this.props;
+		const { background_color, isSavingPost, id } = this.props;
 		const { isSiteWideDefault } = this.state;
 		if ( ! prevProps.isSavingPost && isSavingPost ) {
 			const params = {
@@ -44,12 +48,16 @@ class PopupSidebar extends Component {
 			};
 			apiFetch( params );
 		}
+		if ( background_color !== prevProps.background_color ) {
+			updateEditorColors( background_color );
+		}
 	}
 	/**
 	 * Render
 	 */
 	render() {
 		const {
+			background_color,
 			dismiss_text,
 			display_title,
 			frequency,
@@ -140,6 +148,11 @@ class PopupSidebar extends Component {
 					) }
 					value={ utm_suppression }
 					onChange={ value => onMetaFieldChange( 'utm_suppression', value ) }
+				/>
+				<ColorPaletteControl
+					value={ background_color }
+					onChange={ value => onMetaFieldChange( 'background_color', value ) }
+					label={ __( 'Background Color' ) }
 				/>
 				<ColorPaletteControl
 					value={ overlay_color }
