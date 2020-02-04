@@ -35,13 +35,23 @@ final class Newspack_Popups_Inserter {
 		}
 
 		// Then try for pop-up with category filtering.
-		self::$popup = Newspack_Popups_Model::retrieve_popup( get_the_category() );
+		$categories = get_the_category();
+		if ( $categories && count( $categories ) ) {
+			self::$popup = Newspack_Popups_Model::retrieve_popup( get_the_category() );
+			if ( self::$popup ) {
+				return self::$popup;
+			}
+		}
 
 		// If nothing found, try for sitewide pop-up.
-		if ( ! self::$popup ) {
-			self::$popup = Newspack_Popups_Model::retrieve_popup();
+		$sitewide_default = get_option( Newspack_Popups::NEWSPACK_POPUPS_SITEWIDE_DEFAULT, null );
+		if ( $sitewide_default ) {
+			self::$popup = Newspack_Popups_Model::retrieve_popup_by_id( $sitewide_default );
+			if ( self::$popup ) {
+				return self::$popup;
+			}
 		}
-		return self::$popup;
+		return null;
 	}
 
 	/**

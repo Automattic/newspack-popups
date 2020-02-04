@@ -24,12 +24,11 @@ final class Newspack_Popups_Model {
 			'posts_per_page' => 100,
 		];
 
+		$sitewide_default_id = get_option( Newspack_Popups::NEWSPACK_POPUPS_SITEWIDE_DEFAULT, null );
+
 		$popups = self::retrieve_popup_with_query( new WP_Query( $args ), true );
 		foreach ( $popups as &$popup ) {
-			if ( ! count( $popup['categories'] ) ) {
-				$popup['sitewide_default'] = true;
-				break;
-			}
+			$popup['sitewide_default'] = $sitewide_default_id === $popup['id'];
 		}
 		return $popups;
 	}
@@ -51,20 +50,35 @@ final class Newspack_Popups_Model {
 				]
 			);
 		}
-		$time = current_time( 'mysql' );
-		wp_update_post(
-			[
-				'ID'            => $id,
-				'post_date'     => $time,
-				'post_date_gmt' => get_gmt_from_date( $time ),
-			]
-		);
+		return update_option( Newspack_Popups::NEWSPACK_POPUPS_SITEWIDE_DEFAULT, $id );
+	}
+
+	/**
+	 * If a certain post is sitewide default, clear it.
+	 *
+	 * @param integer $id ID of the Popup to unset as sitewide default.
+	 */
+	public static function unset_sitewide_popup( $id ) {
+		$popup = self::retrieve_popup_by_id( $id );
+		if ( ! $popup ) {
+			return new \WP_Error(
+				'newspack_popups_popup_doesnt_exist',
+				esc_html__( 'The Popup specified does not exist.', 'newspack-popups' ),
+				[
+					'status' => 400,
+					'level'  => 'fatal',
+				]
+			);
+		}
+		if ( absint( get_option( Newspack_Popups::NEWSPACK_POPUPS_SITEWIDE_DEFAULT, null ) ) === absint( $id ) ) {
+			return update_option( Newspack_Popups::NEWSPACK_POPUPS_SITEWIDE_DEFAULT, null );
+		}
 	}
 
 	/**
 	 * Set categories for a Popup.
 	 *
-	 * @param integer $id ID of sitewide popup.
+	 * @param integer $id ID of Popup.
 	 * @param array   $categories Array of categories to be set.
 	 */
 	public static function set_popup_categories( $id, $categories ) {

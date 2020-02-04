@@ -6,10 +6,12 @@
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
+import apiFetch from '@wordpress/api-fetch';
 import { withSelect, withDispatch } from '@wordpress/data';
 import { compose } from '@wordpress/compose';
 import { Component, render, Fragment } from '@wordpress/element';
 import {
+	CheckboxControl,
 	Path,
 	RangeControl,
 	RadioControl,
@@ -29,6 +31,20 @@ import { optionsFieldsSelector } from './utils';
 import PopupPreview from './PopupPreview';
 
 class PopupSidebar extends Component {
+	state = {
+		isSiteWideDefault: this.props.newspack_popups_is_sitewide_default,
+	};
+	componentDidUpdate( prevProps ) {
+		const { isSavingPost, id } = this.props;
+		const { isSiteWideDefault } = this.state;
+		if ( ! prevProps.isSavingPost && isSavingPost ) {
+			const params = {
+				path: '/newspack-popups/v1/sitewide_default/' + id,
+				method: isSiteWideDefault ? 'POST' : 'DELETE',
+			};
+			apiFetch( params );
+		}
+	}
 	/**
 	 * Render
 	 */
@@ -41,13 +57,29 @@ class PopupSidebar extends Component {
 			overlay_opacity,
 			overlay_color,
 			placement,
+			newspack_popups_is_sitewide_default,
 			trigger_scroll_progress,
 			trigger_delay,
 			trigger_type,
 			utm_suppression,
+			onSitewideDefaultChange,
+			isCurrentPostPublished,
 		} = this.props;
+		const { isSiteWideDefault } = this.state;
 		return (
 			<Fragment>
+				{ isCurrentPostPublished && (
+					<CheckboxControl
+						label={ __( 'Sitewide Default', 'newspack-popups' ) }
+						checked={ isSiteWideDefault }
+						onChange={ isSiteWideDefault => {
+							this.setState( { isSiteWideDefault } );
+							// an ugly hack to update the post attribute, just to make the editor aware of a change,
+							// so that "update" button becomes enabled
+							onSitewideDefaultChange( Math.random() );
+						} }
+					/>
+				) }
 				<RadioControl
 					label={ __( 'Trigger' ) }
 					help={ __( 'The event to trigger the popup' ) }
@@ -142,6 +174,9 @@ const PopupSidebarWithData = compose( [
 		return {
 			onMetaFieldChange: ( key, value ) => {
 				dispatch( 'core/editor' ).editPost( { meta: { [ key ]: value } } );
+			},
+			onSitewideDefaultChange: value => {
+				dispatch( 'core/editor' ).editPost( { newspack_popups_is_sitewide_default: value } );
 			},
 		};
 	} ),
