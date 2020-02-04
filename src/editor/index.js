@@ -27,15 +27,19 @@ import { ColorPaletteControl } from '@wordpress/block-editor';
 /**
  * Internal dependencies
  */
-import { optionsFieldsSelector } from './utils';
+import { optionsFieldsSelector, updateEditorColors } from './utils';
 import PopupPreview from './PopupPreview';
 
 class PopupSidebar extends Component {
 	state = {
 		isSiteWideDefault: this.props.newspack_popups_is_sitewide_default,
 	};
+	componentDidMount() {
+		const { background_color } = this.props;
+		updateEditorColors( background_color );
+	}
 	componentDidUpdate( prevProps ) {
-		const { isSavingPost, id } = this.props;
+		const { background_color, isSavingPost, id } = this.props;
 		const { isSiteWideDefault } = this.state;
 		if ( ! prevProps.isSavingPost && isSavingPost ) {
 			const params = {
@@ -43,6 +47,9 @@ class PopupSidebar extends Component {
 				method: isSiteWideDefault ? 'POST' : 'DELETE',
 			};
 			apiFetch( params );
+		}
+		if ( background_color !== prevProps.background_color ) {
+			updateEditorColors( background_color );
 		}
 	}
 	/**
