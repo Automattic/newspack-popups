@@ -67,12 +67,12 @@ export const updateEditorColors = backgroundColor => {
 
 	const l1 =
 		0.2126 * Math.pow( backgroundColorRGB[0] / 255, 2.2 ) +
-		0.7152 * Math.pow( backgroundColorRGB[2] / 255, 2.2 ) +
-		0.0722 * Math.pow( backgroundColorRGB[1] / 255, 2.2 );
+		0.7152 * Math.pow( backgroundColorRGB[1] / 255, 2.2 ) +
+		0.0722 * Math.pow( backgroundColorRGB[2] / 255, 2.2 );
 	const l2 =
 		0.2126 * Math.pow( blackRGB[0] / 255, 2.2 ) +
-		0.7152 * Math.pow( blackRGB[2] / 255, 2.2 ) +
-		0.0722 * Math.pow( blackRGB[1] / 255, 2.2 );
+		0.7152 * Math.pow( blackRGB[1] / 255, 2.2 ) +
+		0.0722 * Math.pow( blackRGB[2] / 255, 2.2 );
 
 	const contrastRatio =
 		l1 > l2 ? parseInt( ( l1 + 0.05 ) / ( l2 + 0.05 ) ) : parseInt( ( l2 + 0.05 ) / ( l1 + 0.05 ) );
