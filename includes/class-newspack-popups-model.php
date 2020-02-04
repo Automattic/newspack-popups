@@ -28,7 +28,7 @@ final class Newspack_Popups_Model {
 
 		$popups = self::retrieve_popup_with_query( new WP_Query( $args ), true );
 		foreach ( $popups as &$popup ) {
-			$popup['sitewide_default'] = $sitewide_default_id === $popup['id'];
+			$popup['sitewide_default'] = absint( $sitewide_default_id ) === absint( $popup['id'] );
 		}
 		return $popups;
 	}
