@@ -290,6 +290,7 @@ final class Newspack_Popups_Model {
 		$overlay_opacity  = absint( $popup['options']['overlay_opacity'] ) / 100;
 		$overlay_color    = $popup['options']['overlay_color'];
 		$background_color = $popup['options']['background_color'];
+		$foreground_color = self::foreground_color_for_background( $background_color );
 
 		ob_start();
 		?>
@@ -315,7 +316,7 @@ final class Newspack_Popups_Model {
 		ob_start();
 		?>
 		<div amp-access="displayPopup" amp-access-hide class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>" role="button" tabindex="0" id="<?php echo esc_attr( $element_id ); ?>">
-			<div class="newspack-popup-wrapper" style="background-color:<?php echo esc_attr( $background_color ); ?>;">
+			<div class="newspack-popup-wrapper" style="background-color:<?php echo esc_attr( $background_color ); ?>;color: <?php echo esc_attr( $foreground_color ); ?>">
 				<div class="newspack-popup">
 					<?php if ( ! empty( $popup['title'] ) && $display_title ) : ?>
 						<h1 class="newspack-popup-title"><?php echo esc_html( $popup['title'] ); ?></h1>
@@ -392,5 +393,46 @@ final class Newspack_Popups_Model {
 		</amp-animation>
 		<?php
 		return ob_get_clean();
+	}
+
+	/**
+	 * Pick either white or black, whatever has sufficient contrast with the color being passed to it.
+	 * Copied from https://github.com/Automattic/newspack-theme/blob/master/newspack-theme/inc/template-functions.php#L401-L431
+	 *
+	 * @param  string $background_color Hexidecimal value of the background color.
+	 * @return string Either black or white hexidecimal values.
+	 *
+	 * @ref https://stackoverflow.com/questions/1331591/given-a-background-color-black-or-white-text
+	 */
+	public static function foreground_color_for_background( $background_color ) {
+		// hex RGB.
+		$r1 = hexdec( substr( $background_color, 1, 2 ) );
+		$g1 = hexdec( substr( $background_color, 3, 2 ) );
+		$b1 = hexdec( substr( $background_color, 5, 2 ) );
+		// Black RGB.
+		$black_color    = '#000';
+		$r2_black_color = hexdec( substr( $black_color, 1, 2 ) );
+		$g2_black_color = hexdec( substr( $black_color, 3, 2 ) );
+		$b2_black_color = hexdec( substr( $black_color, 5, 2 ) );
+		// Calc contrast ratio.
+		$l1             = 0.2126 * pow( $r1 / 255, 2.2 ) +
+			0.7152 * pow( $g1 / 255, 2.2 ) +
+			0.0722 * pow( $b1 / 255, 2.2 );
+		$l2             = 0.2126 * pow( $r2_black_color / 255, 2.2 ) +
+			0.7152 * pow( $g2_black_color / 255, 2.2 ) +
+			0.0722 * pow( $b2_black_color / 255, 2.2 );
+		$contrast_ratio = 0;
+		if ( $l1 > $l2 ) {
+			$contrast_ratio = (int) ( ( $l1 + 0.05 ) / ( $l2 + 0.05 ) );
+		} else {
+			$contrast_ratio = (int) ( ( $l2 + 0.05 ) / ( $l1 + 0.05 ) );
+		}
+		if ( $contrast_ratio > 5 ) {
+			// If contrast is more than 5, return black color.
+			return '#000';
+		} else {
+			// if not, return white color.
+			return '#fff';
+		}
 	}
 }
