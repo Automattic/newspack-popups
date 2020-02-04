@@ -78,7 +78,11 @@ $color__secondary-variation: darken( $color__secondary, 10% );
 
 	.newspack-lightbox__close {
 		align-items: center;
+		background: transparent;
+		border: none;
+		border-radius: 0;
 		box-shadow: none;
+		color: inherit;
 		cursor: pointer;
 		display: flex;
 		font-size: inherit;
@@ -87,13 +91,23 @@ $color__secondary-variation: darken( $color__secondary, 10% );
 		margin: 0;
 		padding: 6px;
 		position: absolute;
-		right: 0.25em;
-		top: 0.25em;
+		right: 0;
+		top: 0;
 		width: 36px;
 
 		svg {
 			fill: currentcolor;
 			flex: 0 0 24px;
+		}
+
+		&:active,
+		&:hover {
+			opacity: 0.6;
+		}
+
+		&:focus {
+			outline: 1px solid;
+			outline-offset: -1px;
 		}
 	}
 
