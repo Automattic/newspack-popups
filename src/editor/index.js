@@ -25,13 +25,8 @@ import { ColorPaletteControl } from '@wordpress/block-editor';
 
 class PopupSidebar extends Component {
 	state = {
-		isSiteWideDefault: undefined,
+		isSiteWideDefault: this.props.newspack_popups_is_sitewide_default,
 	};
-	componentDidMount() {
-		this.setState( {
-			isSiteWideDefault: this.props.newspack_popups_is_sitewide_default,
-		} );
-	}
 	componentDidUpdate( prevProps ) {
 		const { isSavingPost, id } = this.props;
 		const { isSiteWideDefault } = this.state;
@@ -65,7 +60,7 @@ class PopupSidebar extends Component {
 		const { isSiteWideDefault } = this.state;
 		return (
 			<Fragment>
-				{ isCurrentPostPublished && isSiteWideDefault !== undefined && (
+				{ isCurrentPostPublished && (
 					<CheckboxControl
 						label={ __( 'Sitewide Default', 'newspack-popups' ) }
 						checked={ isSiteWideDefault }
