@@ -70,7 +70,7 @@ final class Newspack_Popups_Inserter {
 	 * @return string The content with popup inserted.
 	 */
 	public static function popup( $content = '' ) {
-		if ( is_admin() ) {
+		if ( is_admin() || is_feed() ) {
 			return $content;
 		}
 		$popup = self::popup_for_post();
