@@ -74,6 +74,7 @@ class PopupSidebar extends Component {
 			isCurrentPostPublished,
 		} = this.props;
 		const { isSiteWideDefault } = this.state;
+		const isInline = 'inline' === placement;
 		return (
 			<Fragment>
 				{ isCurrentPostPublished && (
@@ -88,28 +89,52 @@ class PopupSidebar extends Component {
 						} }
 					/>
 				) }
-				<RadioControl
-					label={ __( 'Trigger' ) }
-					help={ __( 'The event to trigger the popup' ) }
-					selected={ trigger_type }
+				<SelectControl
+					label={ __( 'Placement' ) }
+					value={ placement }
+					onChange={ value => onMetaFieldChange( 'placement', value ) }
 					options={ [
-						{ label: __( 'Timer' ), value: 'time' },
-						{ label: __( 'Scroll Progress' ), value: 'scroll' },
+						{ value: 'center', label: __( 'Center' ) },
+						{ value: 'top', label: __( 'Top' ) },
+						{ value: 'bottom', label: __( 'Bottom' ) },
+						{ value: 'inline', label: __( 'Inline' ) },
 					] }
-					onChange={ value => onMetaFieldChange( 'trigger_type', value ) }
 				/>
-				{ 'time' === trigger_type && (
-					<RangeControl
-						label={ __( 'Delay (seconds)' ) }
-						value={ trigger_delay }
-						onChange={ value => onMetaFieldChange( 'trigger_delay', value ) }
-						min={ 0 }
-						max={ 60 }
-					/>
+				{ ! isInline && (
+					<Fragment>
+						<RadioControl
+							label={ __( 'Trigger' ) }
+							help={ __( 'The event to trigger the popup' ) }
+							selected={ trigger_type }
+							options={ [
+								{ label: __( 'Timer' ), value: 'time' },
+								{ label: __( 'Scroll Progress' ), value: 'scroll' },
+							] }
+							onChange={ value => onMetaFieldChange( 'trigger_type', value ) }
+						/>
+						{ 'time' === trigger_type && (
+							<RangeControl
+								label={ __( 'Delay (seconds)' ) }
+								value={ trigger_delay }
+								onChange={ value => onMetaFieldChange( 'trigger_delay', value ) }
+								min={ 0 }
+								max={ 60 }
+							/>
+						) }
+						{ 'scroll' === trigger_type && (
+							<RangeControl
+								label={ __( 'Scroll Progress (percent) ' ) }
+								value={ trigger_scroll_progress }
+								onChange={ value => onMetaFieldChange( 'trigger_scroll_progress', value ) }
+								min={ 1 }
+								max={ 100 }
+							/>
+						) }
+					</Fragment>
 				) }
-				{ 'scroll' === trigger_type && (
+				{ isInline && (
 					<RangeControl
-						label={ __( 'Scroll Progress (percent) ' ) }
+						label={ __( 'Approximate position (in percent)' ) }
 						value={ trigger_scroll_progress }
 						onChange={ value => onMetaFieldChange( 'trigger_scroll_progress', value ) }
 						min={ 1 }
@@ -131,16 +156,6 @@ class PopupSidebar extends Component {
 						'newspack-popups'
 					) }
 				/>
-				<SelectControl
-					label={ __( 'Placement' ) }
-					value={ placement }
-					onChange={ value => onMetaFieldChange( 'placement', value ) }
-					options={ [
-						{ value: 'center', label: __( 'Center' ) },
-						{ value: 'top', label: __( 'Top' ) },
-						{ value: 'bottom', label: __( 'Bottom' ) },
-					] }
-				/>
 				<TextControl
 					label={ __( 'UTM Suppression' ) }
 					help={ __(
@@ -154,18 +169,22 @@ class PopupSidebar extends Component {
 					onChange={ value => onMetaFieldChange( 'background_color', value ) }
 					label={ __( 'Background Color' ) }
 				/>
-				<ColorPaletteControl
-					value={ overlay_color }
-					onChange={ value => onMetaFieldChange( 'overlay_color', value ) }
-					label={ __( 'Overlay Color' ) }
-				/>
-				<RangeControl
-					label={ __( 'Overlay opacity' ) }
-					value={ overlay_opacity }
-					onChange={ value => onMetaFieldChange( 'overlay_opacity', value ) }
-					min={ 0 }
-					max={ 100 }
-				/>
+				{ ! isInline && (
+					<Fragment>
+						<ColorPaletteControl
+							value={ overlay_color }
+							onChange={ value => onMetaFieldChange( 'overlay_color', value ) }
+							label={ __( 'Overlay Color' ) }
+						/>
+						<RangeControl
+							label={ __( 'Overlay opacity' ) }
+							value={ overlay_opacity }
+							onChange={ value => onMetaFieldChange( 'overlay_opacity', value ) }
+							min={ 0 }
+							max={ 100 }
+						/>
+					</Fragment>
+				) }
 				<ToggleControl
 					label={ __( 'Display Pop-up title', 'newspack-popups' ) }
 					checked={ display_title }
