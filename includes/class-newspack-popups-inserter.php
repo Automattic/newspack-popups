@@ -124,6 +124,15 @@ final class Newspack_Popups_Inserter {
 			return;
 		}
 
+		\wp_register_style(
+			'newspack-popups-view',
+			plugins_url( '../dist/view.css', __FILE__ ),
+			null,
+			filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/view.css' )
+		);
+		\wp_style_add_data( 'newspack-popups-view', 'rtl', 'replace' );
+		\wp_enqueue_style( 'newspack-popups-view' );
+
 		echo $popup['markup']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 
