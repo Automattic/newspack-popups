@@ -229,6 +229,11 @@ final class Newspack_Popups_API {
 		}
 		$popup_id = isset( $request['popup_id'] ) ? $request['popup_id'] : false;
 		$url      = isset( $request['url'] ) ? esc_url_raw( urldecode( $request['url'] ) ) : false;
+		if ( ! $popup_id && ! $url ) {
+			$body     = json_decode( $request->get_body(), true );
+			$popup_id = isset( $body['popup_id'] ) ? $body['popup_id'] : false;
+			$url      = isset( $body['url'] ) ? esc_url_raw( urldecode( $body['url'] ) ) : false;
+		}
 		if ( $reader_id && $url && $popup_id ) {
 			return $reader_id . '-' . $popup_id . '-popup';
 		}

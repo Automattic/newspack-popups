@@ -286,6 +286,7 @@ final class Newspack_Popups_Model {
 	 * @return string The generated markup.
 	 */
 	public static function generate_inline_popup( $popup ) {
+		global $wp;
 		$element_id    = 'lightbox' . rand(); // phpcs:ignore WordPress.WP.AlternativeFunctions.rand_rand
 		$classes       = [ 'newspack-inline-popup' ];
 		$endpoint      = self::get_dismiss_endpoint();
@@ -294,7 +295,38 @@ final class Newspack_Popups_Model {
 		$dismiss_text  = ! empty( $popup['options']['dismiss_text'] ) && strlen( trim( $popup['options']['dismiss_text'] ) ) > 0 ? $popup['options']['dismiss_text'] : null;
 		ob_start();
 		?>
-			<div amp-access="displayPopup" amp-access-hide class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>" role="button" tabindex="0" style="<?php echo esc_attr( self::container_style( $popup ) ); ?>" id="<?php echo esc_attr( $element_id ); ?>">
+			<amp-analytics>
+				<script type="application/json">
+					{
+						"requests": {
+							"event": "<?php echo esc_url( $endpoint ); ?>"
+						},
+						"triggers": {
+							"trackPageview": {
+								"on": "visible",
+								"request": "event",
+								"visibilitySpec": {
+									"selector": "#<?php echo esc_attr( $element_id ); ?>",
+									"visiblePercentageMin": 90,
+									"totalTimeMin": 500,
+									"continuousTimeMin": 200
+								},
+								"extraUrlParams": {
+									"popup_id": "<?php echo ( esc_attr( $popup['id'] ) ); ?>",
+									"url": "<?php echo esc_url( home_url( $wp->request ) ); ?>"
+								}
+							}
+						},
+						"transport": {
+							"beacon": true,
+							"xhrpost": true,
+							"useBody": true,
+							"image": false
+						}
+					}
+				</script>
+			</amp-analytics>
+			<amp-layout amp-access="displayPopup" amp-access-hide class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>" role="button" tabindex="0" style="<?php echo esc_attr( self::container_style( $popup ) ); ?>" id="<?php echo esc_attr( $element_id ); ?>">
 				<?php if ( ! empty( $popup['title'] ) && $display_title ) : ?>
 					<h1 class="newspack-popup-title"><?php echo esc_html( $popup['title'] ); ?></h1>
 				<?php endif; ?>
@@ -313,7 +345,7 @@ final class Newspack_Popups_Model {
 						<button on="tap:<?php echo esc_attr( $element_id ); ?>.hide" aria-label="<?php esc_attr( $dismiss_text ); ?>"><?php echo esc_attr( $dismiss_text ); ?></button>
 					</form>
 				<?php endif; ?>
-			</div>
+			</amp-layout>
 		<?php
 		return ob_get_clean();
 	}
