@@ -188,7 +188,7 @@ final class Newspack_Popups_API {
 			if ( $request['suppress_forever'] ) {
 				$data['suppress_forever'] = true;
 			}
-			if ( $request['mailing_list_status'] && 'subscribed' === $request['mailing_list_status'] ) {
+			if ( $this->get_mailing_list_status( $request ) ) {
 				$data['mailing_list_status'] = true;
 			}
 			set_transient( $transient_name, $data, 0 );
@@ -238,6 +238,21 @@ final class Newspack_Popups_API {
 			return $reader_id . '-' . $popup_id . '-popup';
 		}
 		return false;
+	}
+
+	/**
+	 * Get mailing list status.
+	 *
+	 * @param WP_REST_Request $request amp-access request.
+	 * @return string Mailing list status.
+	 */
+	public function get_mailing_list_status( $request ) {
+		$mailing_list_status = isset( $request['mailing_list_status'] ) ? esc_attr( $request['mailing_list_status'] ) : false;
+		if ( ! $mailing_list_status ) {
+			$body                = json_decode( $request->get_body(), true );
+			$mailing_list_status = isset( $body['mailing_list_status'] ) ? $body['mailing_list_status'] : false;
+		}
+		return 'subscribed' === $mailing_list_status;
 	}
 
 	/**

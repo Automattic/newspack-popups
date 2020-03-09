@@ -315,6 +315,16 @@ final class Newspack_Popups_Model {
 									"popup_id": "<?php echo ( esc_attr( $popup['id'] ) ); ?>",
 									"url": "<?php echo esc_url( home_url( $wp->request ) ); ?>"
 								}
+							},
+							"formSubmitSuccess": {
+								"on": "amp-form-submit-success",
+								"request": "event",
+								"selector": "#mailchimp_form",
+								"extraUrlParams": {
+									"popup_id": "<?php echo ( esc_attr( $popup['id'] ) ); ?>",
+									"url": "<?php echo esc_url( home_url( $wp->request ) ); ?>",
+									"mailing_list_status": "subscribed"
+								}
 							}
 						},
 						"transport": {
