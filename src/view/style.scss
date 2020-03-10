@@ -62,7 +62,8 @@ $color__secondary-variation: darken( $color__secondary, 10% );
 			margin-top: 0;
 		}
 
-		& > *:nth-last-child(3) { // Last 2 child being .popup-dismiss-form and .popup-not-interested-form
+		& > *:nth-last-child( 3 ) {
+			// Last 2 child being .popup-dismiss-form and .popup-not-interested-form
 			margin-bottom: 0;
 		}
 
@@ -112,42 +113,15 @@ $color__secondary-variation: darken( $color__secondary, 10% );
 		}
 	}
 
-	.popup-not-interested-form {
-		display: flex;
-		justify-content: center;
-		margin-top: 1.5em;
-
-		button {
-			background: transparent;
-			border: 0;
-			border-radius: 0;
-			color: $color__secondary;
-			font-size: 0.7em;
-			font-weight: normal;
-			line-height: 1;
-			margin: 0;
-			padding: 0;
-			text-decoration: underline;
-
-			&:active,
-			&:focus,
-			&:hover {
-				color: $color__secondary-variation;
-				outline-offset: 2px;
-				text-decoration: none;
-			}
-		}
-	}
-
 	/* Placements */
 	&.newspack-lightbox-placement-center {
 		.newspack-popup-wrapper {
 			max-height: 90%;
-			max-height: calc(100% - 1.5em);
+			max-height: calc( 100% - 1.5em );
 			min-width: 100%;
 			overflow-y: auto;
 
-			@media only screen and (min-width: 780px) {
+			@media only screen and ( min-width: 780px ) {
 				min-width: 780px;
 			}
 		}
@@ -190,12 +164,12 @@ $color__secondary-variation: darken( $color__secondary, 10% );
 				padding-left: 0;
 				padding-right: 0;
 
-				@media only screen and (min-width: 600px) {
+				@media only screen and ( min-width: 600px ) {
 					&.wp-block-columns {
 						margin-left: -16px;
 						margin-right: -16px;
-						max-width: calc(100% + 32px);
-						width: calc(100% + 32px);
+						max-width: calc( 100% + 32px );
+						width: calc( 100% + 32px );
 					}
 				}
 
@@ -206,13 +180,52 @@ $color__secondary-variation: darken( $color__secondary, 10% );
 				}
 			}
 
-			@media only screen and (min-width: 600px) {
+			@media only screen and ( min-width: 600px ) {
 				.alignfull.wp-block-columns {
 					margin-left: -16px;
 					margin-right: -16px;
-					max-width: calc(100% + 32px);
-					width: calc(100% + 32px);
+					max-width: calc( 100% + 32px );
+					width: calc( 100% + 32px );
 				}
+			}
+		}
+	}
+}
+
+.newspack-inline-popup {
+	padding: 0.75em;
+	border: 1px solid rgba( black, 0.2 );
+
+	&:focus {
+		outline: none;
+	}
+}
+
+.newspack-lightbox,
+.newspack-inline-popup {
+	.popup-not-interested-form {
+		display: flex;
+		justify-content: center;
+		margin-top: 1.5em;
+
+		button {
+			background: transparent;
+			border: 0;
+			border-radius: 0;
+			color: $color__secondary;
+			font-size: 0.7em;
+			font-weight: normal;
+			line-height: 1;
+			margin: 0;
+			padding: 0;
+			text-decoration: underline;
+
+			&:active,
+			&:focus,
+			&:hover {
+				color: $color__secondary-variation;
+				outline-offset: 2px;
+				text-decoration: none;
 			}
 		}
 	}

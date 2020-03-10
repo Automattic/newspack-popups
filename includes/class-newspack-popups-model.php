@@ -258,6 +258,11 @@ final class Newspack_Popups_Model {
 			$popup['categories'] = get_the_category( $id );
 		}
 
+		if ( 'inline' === $popup['options']['placement'] ) {
+			$popup['markup'] = self::generate_inline_popup( $popup );
+			return $popup;
+		}
+
 		switch ( $popup['options']['trigger_type'] ) {
 			case 'scroll':
 				$popup['options']['trigger_delay'] = 0;
@@ -271,8 +276,88 @@ final class Newspack_Popups_Model {
 			$popup['options']['placement'] = 'center';
 		}
 		$popup['markup'] = self::generate_popup( $popup );
-
 		return $popup;
+	}
+
+	/**
+	 * Generate markup inline popup.
+	 *
+	 * @param string $popup The popup object.
+	 * @return string The generated markup.
+	 */
+	public static function generate_inline_popup( $popup ) {
+		global $wp;
+		$element_id    = 'lightbox' . rand(); // phpcs:ignore WordPress.WP.AlternativeFunctions.rand_rand
+		$classes       = [ 'newspack-inline-popup' ];
+		$endpoint      = self::get_dismiss_endpoint();
+		$display_title = $popup['options']['display_title'];
+		$hidden_fields = self::get_hidden_fields( $popup );
+		$dismiss_text  = ! empty( $popup['options']['dismiss_text'] ) && strlen( trim( $popup['options']['dismiss_text'] ) ) > 0 ? $popup['options']['dismiss_text'] : null;
+		ob_start();
+		?>
+			<amp-analytics>
+				<script type="application/json">
+					{
+						"requests": {
+							"event": "<?php echo esc_url( $endpoint ); ?>"
+						},
+						"triggers": {
+							"trackPageview": {
+								"on": "visible",
+								"request": "event",
+								"visibilitySpec": {
+									"selector": "#<?php echo esc_attr( $element_id ); ?>",
+									"visiblePercentageMin": 90,
+									"totalTimeMin": 500,
+									"continuousTimeMin": 200
+								},
+								"extraUrlParams": {
+									"popup_id": "<?php echo ( esc_attr( $popup['id'] ) ); ?>",
+									"url": "<?php echo esc_url( home_url( $wp->request ) ); ?>"
+								}
+							},
+							"formSubmitSuccess": {
+								"on": "amp-form-submit-success",
+								"request": "event",
+								"selector": "#mailchimp_form",
+								"extraUrlParams": {
+									"popup_id": "<?php echo ( esc_attr( $popup['id'] ) ); ?>",
+									"url": "<?php echo esc_url( home_url( $wp->request ) ); ?>",
+									"mailing_list_status": "subscribed"
+								}
+							}
+						},
+						"transport": {
+							"beacon": true,
+							"xhrpost": true,
+							"useBody": true,
+							"image": false
+						}
+					}
+				</script>
+			</amp-analytics>
+			<amp-layout amp-access="displayPopup" amp-access-hide class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>" role="button" tabindex="0" style="<?php echo esc_attr( self::container_style( $popup ) ); ?>" id="<?php echo esc_attr( $element_id ); ?>">
+				<?php if ( ! empty( $popup['title'] ) && $display_title ) : ?>
+					<h1 class="newspack-popup-title"><?php echo esc_html( $popup['title'] ); ?></h1>
+				<?php endif; ?>
+				<?php echo ( $popup['body'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+				<?php if ( $dismiss_text ) : ?>
+					<form class="popup-not-interested-form"
+						method="POST"
+						action-xhr="<?php echo esc_url( $endpoint ); ?>"
+						target="_top">
+						<?php echo $hidden_fields; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+						<input
+							name="suppress_forever"
+							type="hidden"
+							value="1"
+						/>
+						<button on="tap:<?php echo esc_attr( $element_id ); ?>.hide" aria-label="<?php esc_attr( $dismiss_text ); ?>"><?php echo esc_attr( $dismiss_text ); ?></button>
+					</form>
+				<?php endif; ?>
+			</amp-layout>
+		<?php
+		return ob_get_clean();
 	}
 
 	/**
@@ -282,41 +367,19 @@ final class Newspack_Popups_Model {
 	 * @return string The generated markup.
 	 */
 	public static function generate_popup( $popup ) {
-		$element_id       = 'lightbox' . rand(); // phpcs:ignore WordPress.WP.AlternativeFunctions.rand_rand
-		$endpoint         = str_replace( 'http://', '//', get_rest_url( null, 'newspack-popups/v1/reader' ) );
-		$classes          = [ 'newspack-lightbox', 'newspack-lightbox-placement-' . $popup['options']['placement'] ];
-		$dismiss_text     = ! empty( $popup['options']['dismiss_text'] ) && strlen( trim( $popup['options']['dismiss_text'] ) ) > 0 ? $popup['options']['dismiss_text'] : null;
-		$display_title    = $popup['options']['display_title'];
-		$overlay_opacity  = absint( $popup['options']['overlay_opacity'] ) / 100;
-		$overlay_color    = $popup['options']['overlay_color'];
-		$background_color = $popup['options']['background_color'];
-		$foreground_color = self::foreground_color_for_background( $background_color );
-
-		ob_start();
-		?>
-		<input
-			name="url"
-			type="hidden"
-			value="CANONICAL_URL"
-			data-amp-replace="CANONICAL_URL"
-		/>
-		<input
-			name="popup_id"
-			type="hidden"
-			value="<?php echo ( esc_attr( $popup['id'] ) ); ?>"
-		/>
-		<input
-			name="mailing_list_status"
-			type="hidden"
-			[value]="mailing_list_status"
-		/>
-		<?php
-		$hidden_fields = ob_get_clean();
+		$element_id      = 'lightbox' . rand(); // phpcs:ignore WordPress.WP.AlternativeFunctions.rand_rand
+		$endpoint        = self::get_dismiss_endpoint();
+		$classes         = [ 'newspack-lightbox', 'newspack-lightbox-placement-' . $popup['options']['placement'] ];
+		$dismiss_text    = ! empty( $popup['options']['dismiss_text'] ) && strlen( trim( $popup['options']['dismiss_text'] ) ) > 0 ? $popup['options']['dismiss_text'] : null;
+		$display_title   = $popup['options']['display_title'];
+		$overlay_opacity = absint( $popup['options']['overlay_opacity'] ) / 100;
+		$overlay_color   = $popup['options']['overlay_color'];
+		$hidden_fields   = self::get_hidden_fields( $popup );
 
 		ob_start();
 		?>
 		<div amp-access="displayPopup" amp-access-hide class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>" role="button" tabindex="0" id="<?php echo esc_attr( $element_id ); ?>">
-			<div class="newspack-popup-wrapper" style="background-color:<?php echo esc_attr( $background_color ); ?>;color: <?php echo esc_attr( $foreground_color ); ?>">
+			<div class="newspack-popup-wrapper" style="<?php echo esc_attr( self::container_style( $popup ) ); ?>">
 				<div class="newspack-popup">
 					<?php if ( ! empty( $popup['title'] ) && $display_title ) : ?>
 						<h1 class="newspack-popup-title"><?php echo esc_html( $popup['title'] ); ?></h1>
@@ -434,5 +497,55 @@ final class Newspack_Popups_Model {
 			// if not, return white color.
 			return '#fff';
 		}
+	}
+
+	/**
+	 * Generate inline styles for Popup element.
+	 *
+	 * @param  object $popup A Pop-up object.
+	 * @return string Inline styles attribute.
+	 */
+	public static function container_style( $popup ) {
+		$background_color = $popup['options']['background_color'];
+		$foreground_color = self::foreground_color_for_background( $background_color );
+		return 'background-color:' . $background_color . ';color:' . $foreground_color;
+	}
+
+	/**
+	 * Endpoint to dismiss Pop-up.
+	 *
+	 * @return string Endpoint URL.
+	 */
+	public static function get_dismiss_endpoint() {
+		return str_replace( 'http://', '//', get_rest_url( null, 'newspack-popups/v1/reader' ) );
+	}
+
+	/**
+	 * Generate hidden fields to be used in all dismiss FORMs.
+	 *
+	 * @param  object $popup A Pop-up object.
+	 * @return string Hidden fields markup.
+	 */
+	public static function get_hidden_fields( $popup ) {
+		ob_start();
+		?>
+		<input
+			name="url"
+			type="hidden"
+			value="CANONICAL_URL"
+			data-amp-replace="CANONICAL_URL"
+		/>
+		<input
+			name="popup_id"
+			type="hidden"
+			value="<?php echo ( esc_attr( $popup['id'] ) ); ?>"
+		/>
+		<input
+			name="mailing_list_status"
+			type="hidden"
+			[value]="mailing_list_status"
+		/>
+		<?php
+		return ob_get_clean();
 	}
 }

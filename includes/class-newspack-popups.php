@@ -239,6 +239,22 @@ final class Newspack_Popups {
 			filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/editor.js' ),
 			true
 		);
+		$recent_posts = wp_get_recent_posts(
+			[
+				'numberposts' => 1,
+				'post_status' => 'publish',
+			],
+			OBJECT
+		);
+		$preview_post = count( $recent_posts ) > 0 ? get_the_permalink( $recent_posts[0] ) : '';
+
+		\wp_localize_script(
+			'newspack-popups',
+			'newspack_popups_data',
+			[
+				'preview_post' => $preview_post,
+			]
+		);
 		\wp_enqueue_style(
 			'newspack-popups-editor',
 			plugins_url( '../dist/editor.css', __FILE__ ),
