@@ -193,9 +193,14 @@ $color__secondary-variation: darken( $color__secondary, 10% );
 }
 
 .newspack-inline-popup {
-	padding: 1em;
-	border: 1px solid rgba( $color__secondary, 0.25 );
+	padding: 0.75em;
+	border: 1px solid rgba( black, 0.2 );
+
+	&:focus {
+		outline: none;
+	}
 }
+
 .newspack-lightbox,
 .newspack-inline-popup {
 	.popup-not-interested-form {
