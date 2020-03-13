@@ -123,7 +123,12 @@ final class Newspack_Popups_API {
 
 		$response['currentViews'] = (int) $data['count'];
 
-		$frequency             = $popup['options']['frequency'];
+		$frequency = $popup['options']['frequency'];
+		$placement = $popup['options']['placement'];
+		if ( 'inline' !== $placement && 'always' === $frequency ) {
+			$frequency = 'once';
+		}
+
 		$utm_suppression       = ! empty( $popup['options']['utm_suppression'] ) ? $popup['options']['utm_suppression'] : null;
 		$current_views         = ! empty( $response['currentViews'] ) ? (int) $response['currentViews'] : 0;
 		$suppress_forever      = ! empty( $data['suppress_forever'] ) ? (int) $data['suppress_forever'] : false;
@@ -138,6 +143,7 @@ final class Newspack_Popups_API {
 				$response['displayPopup'] = $current_views < 1;
 				break;
 			case 'test':
+			case 'always':
 				$response['displayPopup'] = true;
 				break;
 			case 'never':
