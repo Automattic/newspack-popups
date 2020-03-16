@@ -304,8 +304,8 @@ final class Newspack_Popups_Model {
 			return '';
 		}
 
-		$event_category = 'Newspack Popup';
-		$event_label    = 'Newspack Popup: ' . $popup['title'];
+		$event_category = 'Newspack Announcement';
+		$event_label    = 'Newspack Announcement: ' . $popup['title'];
 
 		$has_link                = preg_match( '/<a\s/', $popup['body'] ) !== 0;
 		$has_form                = preg_match( '/<form\s/', $popup['body'] ) !== 0;
@@ -329,7 +329,7 @@ final class Newspack_Popups_Model {
 							"on": "click",
 							"request": "event",
 							"vars": {
-								"event_name": "<?php echo esc_html__( 'Popup link clicked' ); ?>",
+								"event_name": "<?php echo esc_html__( 'Link Click', 'newspack-popups' ); ?>",
 								"event_label": "<?php echo esc_attr( $event_label ); ?>",
 								"event_category": "<?php echo esc_attr( $event_category ); ?>"
 							}
@@ -341,7 +341,7 @@ final class Newspack_Popups_Model {
 								"request": "event",
 								"selector": "#<?php echo esc_attr( $element_id ); ?> form:not(.popup-action-form)",
 								"vars": {
-									"event_name": "<?php echo esc_html__( 'Popup form submitted' ); ?>",
+									"event_name": "<?php echo esc_html__( 'Form Submission', 'newspack-popups' ); ?>",
 									"event_label": "<?php echo esc_attr( $event_label ); ?>",
 									"event_category": "<?php echo esc_attr( $event_category ); ?>"
 								}
@@ -353,7 +353,7 @@ final class Newspack_Popups_Model {
 								"request": "event",
 								"selector": "#<?php echo esc_attr( $element_id ); ?> form.popup-dismiss-form",
 								"vars": {
-									"event_name": "<?php echo esc_html__( 'Popup dismissed' ); ?>",
+									"event_name": "<?php echo esc_html__( 'Dismissal', 'newspack-popups' ); ?>",
 									"event_label": "<?php echo esc_attr( $event_label ); ?>",
 									"event_category": "<?php echo esc_attr( $event_category ); ?>"
 								}
@@ -365,7 +365,7 @@ final class Newspack_Popups_Model {
 							"request": "event",
 							"selector": "#<?php echo esc_attr( $element_id ); ?> form.popup-not-interested-form",
 							"vars": {
-								"event_name": "<?php echo esc_html__( 'Popup not interesting' ); ?>",
+								"event_name": "<?php echo esc_html__( 'Permanent Dismissal', 'newspack-popups' ); ?>",
 								"event_label": "<?php echo esc_attr( $event_label ); ?>",
 								"event_category": "<?php echo esc_attr( $event_category ); ?>"
 							}
@@ -376,7 +376,7 @@ final class Newspack_Popups_Model {
 							"request": "event",
 							"selector": "#<?php echo esc_attr( $element_id ); ?>",
 							"vars": {
-								"event_name": "<?php echo esc_html__( 'Popup seen' ); ?>",
+								"event_name": "<?php echo esc_html__( 'Seen', 'newspack-popups' ); ?>",
 								"event_label": "<?php echo esc_attr( $event_label ); ?>",
 								"event_category": "<?php echo esc_attr( $event_category ); ?>"
 							}
