@@ -396,6 +396,7 @@ final class Newspack_Popups_Model {
 						},
 						"popupPageLoaded": {
 							"on": "ini-load",
+							"selector": "#<?php echo esc_attr( $element_id ); ?>",
 							"request": "event",
 							"vars": {
 								"event_name": "<?php echo esc_html__( 'Load', 'newspack-popups' ); ?>",
