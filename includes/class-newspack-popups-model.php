@@ -418,12 +418,13 @@ final class Newspack_Popups_Model {
 	 */
 	public static function generate_inline_popup( $popup ) {
 		global $wp;
-		$element_id    = 'lightbox' . rand(); // phpcs:ignore WordPress.WP.AlternativeFunctions.rand_rand
-		$classes       = [ 'newspack-inline-popup' ];
-		$endpoint      = self::get_dismiss_endpoint();
-		$display_title = $popup['options']['display_title'];
-		$hidden_fields = self::get_hidden_fields( $popup );
-		$dismiss_text  = self::get_dismiss_text( $popup );
+		$element_id         = 'lightbox' . rand(); // phpcs:ignore WordPress.WP.AlternativeFunctions.rand_rand
+		$classes            = [ 'newspack-inline-popup' ];
+		$endpoint           = self::get_dismiss_endpoint();
+		$display_title      = $popup['options']['display_title'];
+		$hidden_fields      = self::get_hidden_fields( $popup );
+		$dismiss_text       = self::get_dismiss_text( $popup );
+		$has_mailchimp_form = preg_match( '/mailchimp_form/', $popup['body'] ) !== 0;
 		ob_start();
 		?>
 			<amp-analytics>
@@ -446,8 +447,9 @@ final class Newspack_Popups_Model {
 									"popup_id": "<?php echo ( esc_attr( $popup['id'] ) ); ?>",
 									"url": "<?php echo esc_url( home_url( $wp->request ) ); ?>"
 								}
-							},
-							"formSubmitSuccess": {
+							}
+							<?php if ( $has_mailchimp_form ) : ?>
+							,"formSubmitSuccess": {
 								"on": "amp-form-submit-success",
 								"request": "event",
 								"selector": "#mailchimp_form",
@@ -457,6 +459,7 @@ final class Newspack_Popups_Model {
 									"mailing_list_status": "subscribed"
 								}
 							}
+							<?php endif; ?>
 						},
 						"transport": {
 							"beacon": true,
