@@ -293,7 +293,7 @@ final class Newspack_Popups_Model {
 	 * Get the popup delay in milliseconds.
 	 *
 	 * @param object $popup The popup object.
-	 * @return number|null Delay in milliseconds.
+	 * @return number Delay in milliseconds.
 	 */
 	protected static function get_delay( $popup ) {
 		return intval( $popup['options']['trigger_delay'] ) * 1000 + 500;
