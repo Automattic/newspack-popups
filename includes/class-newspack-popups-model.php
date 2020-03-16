@@ -305,7 +305,7 @@ final class Newspack_Popups_Model {
 		}
 
 		$event_category = 'Newspack Announcement';
-		$event_label    = 'Newspack Announcement: ' . $popup['title'];
+		$event_label    = 'Newspack Announcement: ' . $popup['title'] . ' (' . $popup['id'] . ')';
 
 		$has_link                = preg_match( '/<a\s/', $popup['body'] ) !== 0;
 		$has_form                = preg_match( '/<form\s/', $popup['body'] ) !== 0;
@@ -377,6 +377,15 @@ final class Newspack_Popups_Model {
 							"selector": "#<?php echo esc_attr( $element_id ); ?>",
 							"vars": {
 								"event_name": "<?php echo esc_html__( 'Seen', 'newspack-popups' ); ?>",
+								"event_label": "<?php echo esc_attr( $event_label ); ?>",
+								"event_category": "<?php echo esc_attr( $event_category ); ?>"
+							}
+						},
+						"popupPageLoaded": {
+							"on": "ini-load",
+							"request": "event",
+							"vars": {
+								"event_name": "<?php echo esc_html__( 'Load', 'newspack-popups' ); ?>",
 								"event_label": "<?php echo esc_attr( $event_label ); ?>",
 								"event_category": "<?php echo esc_attr( $event_category ); ?>"
 							}
