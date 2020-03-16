@@ -290,6 +290,16 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
+	 * Get the popup delay in milliseconds.
+	 *
+	 * @param object $popup The popup object.
+	 * @return number|null Delay in milliseconds.
+	 */
+	protected static function get_delay( $popup ) {
+		return intval( $popup['options']['trigger_delay'] ) * 1000 + 500;
+	}
+
+	/**
 	 * Insert analytics tracking code.
 	 *
 	 * @param object $popup The popup object.
@@ -375,6 +385,9 @@ final class Newspack_Popups_Model {
 							"on": "visible",
 							"request": "event",
 							"selector": "#<?php echo esc_attr( $element_id ); ?>",
+							"visibilitySpec": {
+								"totalTimeMin": "500"
+							},
 							"vars": {
 								"event_name": "<?php echo esc_html__( 'Seen', 'newspack-popups' ); ?>",
 								"event_label": "<?php echo esc_attr( $event_label ); ?>",
@@ -550,10 +563,17 @@ final class Newspack_Popups_Model {
 					"animations": [
 						{
 							"selector": ".newspack-lightbox",
-							"delay": "<?php echo intval( $popup['options']['trigger_delay'] ) * 1000 + 500; ?>",
+							"delay": "<?php echo esc_html( self::get_delay( $popup ) ); ?>",
 							"keyframes": {
 								"opacity": ["0", "1"],
 								"visibility": ["hidden", "visible"]
+							}
+						},
+						{
+							"selector": ".newspack-lightbox",
+							"delay": "<?php echo esc_html( self::get_delay( $popup ) - 500 ); ?>",
+							"keyframes": {
+								"transform": ["translateY(100vh)", "translateY(0vh)"]
 							}
 						},
 						{
