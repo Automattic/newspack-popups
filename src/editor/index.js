@@ -9,16 +9,14 @@ import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 import { withSelect, withDispatch } from '@wordpress/data';
 import { compose } from '@wordpress/compose';
-import { Component, render, Fragment } from '@wordpress/element';
+import { Component, Fragment } from '@wordpress/element';
 import {
 	CheckboxControl,
-	Path,
 	RangeControl,
 	RadioControl,
 	SelectControl,
 	TextControl,
 	ToggleControl,
-	SVG,
 } from '@wordpress/components';
 import { registerPlugin } from '@wordpress/plugins';
 import { PluginDocumentSettingPanel, PluginPostStatusInfo } from '@wordpress/edit-post';
@@ -77,7 +75,6 @@ class PopupSidebar extends Component {
 			overlay_opacity,
 			overlay_color,
 			placement,
-			newspack_popups_is_sitewide_default,
 			trigger_scroll_progress,
 			trigger_delay,
 			trigger_type,
@@ -93,8 +90,8 @@ class PopupSidebar extends Component {
 					<CheckboxControl
 						label={ __( 'Sitewide Default', 'newspack-popups' ) }
 						checked={ isSiteWideDefault }
-						onChange={ isSiteWideDefault => {
-							this.setState( { isSiteWideDefault } );
+						onChange={ _isSiteWideDefault => {
+							this.setState( { isSiteWideDefault: _isSiteWideDefault } );
 							// an ugly hack to update the post attribute, just to make the editor aware of a change,
 							// so that "update" button becomes enabled
 							onSitewideDefaultChange( Math.random() );

@@ -61,21 +61,21 @@ $color__secondary-variation: darken( $color__secondary, 10% );
 		max-width: 780px;
 		padding: 1.5em;
 
-		& > *:first-child {
+		> *:first-child {
 			margin-top: 0;
 		}
 
-		& > *:nth-last-child( 3 ) {
+		> *:nth-last-child( 3 ) {
 			// Last 2 child being .popup-dismiss-form and .popup-not-interested-form
 			margin-bottom: 0;
 		}
 
 		.wp-block-column {
-			& > *:first-child {
+			> *:first-child {
 				margin-top: 0;
 			}
 
-			& > *:last-child {
+			> *:last-child {
 				margin-bottom: 0;
 			}
 		}
@@ -101,7 +101,7 @@ $color__secondary-variation: darken( $color__secondary, 10% );
 		width: 36px;
 
 		svg {
-			fill: currentcolor;
+			fill: currentColor;
 			flex: 0 0 24px;
 		}
 
