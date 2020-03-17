@@ -64,7 +64,7 @@ final class Newspack_Popups_Inserter {
 	}
 
 	/**
-	 * Process popup and insert into post and page ontent if needed.
+	 * Process popup and insert into post and page content if needed.
 	 *
 	 * @param string $content The content of the post.
 	 * @return string The content with popup inserted.
