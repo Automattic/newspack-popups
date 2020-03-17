@@ -52,6 +52,18 @@ class PopupSidebar extends Component {
 			updateEditorColors( background_color );
 		}
 	}
+	frequencyOptions = placement => {
+		const options = [
+			{ value: 'test', label: __( 'Test mode', 'newspack-popups' ) },
+			{ value: 'never', label: __( 'Never', 'newspack-popups' ) },
+			{ value: 'once', label: __( 'Once', 'newspack-popups' ) },
+			{ value: 'daily', label: __( 'Once a day', 'newspack-popups' ) },
+		];
+		if ( 'inline' === placement ) {
+			options.push( { value: 'always', label: __( 'Every page', 'newspack-popups' ) } );
+		}
+		return options;
+	};
 	/**
 	 * Render
 	 */
@@ -145,12 +157,7 @@ class PopupSidebar extends Component {
 					label={ __( 'Frequency' ) }
 					value={ frequency }
 					onChange={ value => onMetaFieldChange( 'frequency', value ) }
-					options={ [
-						{ value: 'test', label: __( 'Test Mode', 'newspack-popups' ) },
-						{ value: 'never', label: __( 'Never', 'newspack-popups' ) },
-						{ value: 'once', label: __( 'Once', 'newspack-popups' ) },
-						{ value: 'daily', label: __( 'Once a day', 'newspack-popups' ) },
-					] }
+					options={ this.frequencyOptions( placement ) }
 					help={ __(
 						'In "Test Mode" logged-in admins will see the Pop-up every time, and non-admins will never see them.',
 						'newspack-popups'
