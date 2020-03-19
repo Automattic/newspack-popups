@@ -258,7 +258,7 @@ final class Newspack_Popups_Model {
 			$popup['categories'] = get_the_category( $id );
 		}
 
-		if ( 'inline' === $popup['options']['placement'] ) {
+		if ( self::is_inline( $popup ) ) {
 			$popup['markup'] = self::generate_inline_popup( $popup );
 			return $popup;
 		}
@@ -300,6 +300,16 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
+	 * Is it an inline popup or not.
+	 *
+	 * @param object $popup The popup object.
+	 * @return boolean True if it is an inline popup.
+	 */
+	protected static function is_inline( $popup ) {
+		return 'inline' === $popup['options']['placement'];
+	}
+
+	/**
 	 * Insert analytics tracking code.
 	 *
 	 * @param object $popup The popup object.
@@ -313,6 +323,7 @@ final class Newspack_Popups_Model {
 		} else {
 			return '';
 		}
+		global $wp;
 
 		$event_category = 'Newspack Announcement';
 		$event_label    = 'Newspack Announcement: ' . $popup['title'] . ' (' . $popup['id'] . ')';
@@ -321,6 +332,17 @@ final class Newspack_Popups_Model {
 		$has_form                = preg_match( '/<form\s/', $popup['body'] ) !== 0;
 		$has_dismiss_form        = 'inline' !== $popup['options']['placement'];
 		$has_not_interested_form = self::get_dismiss_text( $popup );
+		$has_mailchimp_form      = preg_match( '/wp-block-jetpack-mailchimp/', $popup['body'] ) !== 0;
+		$is_inline               = self::is_inline( $popup );
+		$endpoint                = self::get_dismiss_endpoint();
+
+		$is_amp                   = function_exists( 'is_amp_endpoint' ) && is_amp_endpoint();
+		$custom_form_submit_event = 'amp-form-submit-success';
+		if ( ! $is_amp ) {
+			// For non-AMP forms, the *-success handler is not fired (maybe because of missing action-xhr attribute?).
+			// This might result in some false-positives, though (event fired when form not submitted successfully).
+			$custom_form_submit_event = 'amp-form-submit';
+		}
 
 		?>
 		<amp-analytics type="gtag" data-credentials="include">
@@ -347,7 +369,7 @@ final class Newspack_Popups_Model {
 						<?php endif; ?>
 						<?php if ( $has_form ) : ?>
 							"popupFormSubmitSuccess": {
-								"on": "amp-form-submit-success",
+								"on": "<?php echo esc_attr( $custom_form_submit_event ); ?>",
 								"request": "event",
 								"selector": "#<?php echo esc_attr( $element_id ); ?> form:not(.popup-action-form)",
 								"vars": {
@@ -408,26 +430,38 @@ final class Newspack_Popups_Model {
 				}
 			</script>
 		</amp-analytics>
-		<?php
-	}
 
-	/**
-	 * Generate markup inline popup.
-	 *
-	 * @param string $popup The popup object.
-	 * @return string The generated markup.
-	 */
-	public static function generate_inline_popup( $popup ) {
-		global $wp;
-		$element_id         = 'lightbox' . rand(); // phpcs:ignore WordPress.WP.AlternativeFunctions.rand_rand
-		$classes            = [ 'newspack-inline-popup' ];
-		$endpoint           = self::get_dismiss_endpoint();
-		$display_title      = $popup['options']['display_title'];
-		$hidden_fields      = self::get_hidden_fields( $popup );
-		$dismiss_text       = self::get_dismiss_text( $popup );
-		$has_mailchimp_form = preg_match( '/mailchimp_form/', $popup['body'] ) !== 0;
-		ob_start();
-		?>
+		<?php if ( $has_mailchimp_form ) : ?>
+			<amp-analytics>
+				<script type="application/json">
+					{
+						"requests": {
+							"event": "<?php echo esc_url( $endpoint ); ?>"
+						},
+						"triggers": {
+							"formSubmitSuccess": {
+								"on": "<?php echo esc_attr( $custom_form_submit_event ); ?>",
+								"request": "event",
+								"selector": ".wp-block-jetpack-mailchimp form",
+								"extraUrlParams": {
+									"popup_id": "<?php echo ( esc_attr( $popup['id'] ) ); ?>",
+									"url": "<?php echo esc_url( home_url( $wp->request ) ); ?>",
+									"mailing_list_status": "subscribed"
+								}
+							}
+						},
+						"transport": {
+							"beacon": true,
+							"xhrpost": true,
+							"useBody": true,
+							"image": false
+						}
+					}
+				</script>
+			</amp-analytics>
+		<?php endif; ?>
+
+		<?php if ( $is_inline ) : ?>
 			<amp-analytics>
 				<script type="application/json">
 					{
@@ -449,18 +483,6 @@ final class Newspack_Popups_Model {
 									"url": "<?php echo esc_url( home_url( $wp->request ) ); ?>"
 								}
 							}
-							<?php if ( $has_mailchimp_form ) : ?>
-							,"formSubmitSuccess": {
-								"on": "amp-form-submit-success",
-								"request": "event",
-								"selector": "#mailchimp_form",
-								"extraUrlParams": {
-									"popup_id": "<?php echo ( esc_attr( $popup['id'] ) ); ?>",
-									"url": "<?php echo esc_url( home_url( $wp->request ) ); ?>",
-									"mailing_list_status": "subscribed"
-								}
-							}
-							<?php endif; ?>
 						},
 						"transport": {
 							"beacon": true,
@@ -471,6 +493,26 @@ final class Newspack_Popups_Model {
 					}
 				</script>
 			</amp-analytics>
+		<?php endif; ?>
+		<?php
+	}
+
+	/**
+	 * Generate markup inline popup.
+	 *
+	 * @param string $popup The popup object.
+	 * @return string The generated markup.
+	 */
+	public static function generate_inline_popup( $popup ) {
+		global $wp;
+		$element_id    = 'lightbox' . rand(); // phpcs:ignore WordPress.WP.AlternativeFunctions.rand_rand
+		$classes       = [ 'newspack-inline-popup' ];
+		$endpoint      = self::get_dismiss_endpoint();
+		$display_title = $popup['options']['display_title'];
+		$hidden_fields = self::get_hidden_fields( $popup );
+		$dismiss_text  = self::get_dismiss_text( $popup );
+		ob_start();
+		?>
 			<?php self::insert_event_tracking( $popup, $element_id ); ?>
 			<amp-layout amp-access="displayPopup" amp-access-hide class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>" role="button" tabindex="0" style="<?php echo esc_attr( self::container_style( $popup ) ); ?>" id="<?php echo esc_attr( $element_id ); ?>">
 				<?php if ( ! empty( $popup['title'] ) && $display_title ) : ?>
