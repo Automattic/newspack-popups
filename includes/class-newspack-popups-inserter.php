@@ -88,7 +88,7 @@ final class Newspack_Popups_Inserter {
 		// In order to prevent the SCAIP ad being inserted mid-popup, let's insert the ads
 		// manually. SCAI begins by checking if there are any ads already inserted and bails
 		// if there are, to allow for manual ads placement.
-		if ( $is_inline ) {
+		if ( function_exists( 'scaip_maybe_insert_shortcode' ) && $is_inline ) {
 			$content = scaip_maybe_insert_shortcode( $content );
 		}
 
