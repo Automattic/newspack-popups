@@ -85,6 +85,13 @@ final class Newspack_Popups_Inserter {
 
 		$is_inline = 'inline' === $popup['options']['placement'];
 
+		// In order to prevent the SCAIP ad being inserted mid-popup, let's insert the ads
+		// manually. SCAI begins by checking if there are any ads already inserted and bails
+		// if there are, to allow for manual ads placement.
+		if ( $is_inline ) {
+			$content = scaip_maybe_insert_shortcode( $content );
+		}
+
 		if ( $is_inline && ! is_single() ) {
 			// Inline Pop-ups can only appear in Posts.
 			return $content;
