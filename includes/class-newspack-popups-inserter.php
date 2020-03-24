@@ -58,7 +58,7 @@ final class Newspack_Popups_Inserter {
 	 * Constructor.
 	 */
 	public function __construct() {
-		add_filter( 'the_content', [ $this, 'popup' ] );
+		add_filter( 'the_content', [ $this, 'popup' ], 1 );
 		add_action( 'after_header', [ $this, 'popup_after_header' ] ); // This is a Newspack theme hook. When used with other themes, popups won't be inserted on archive pages.
 		add_action( 'wp_head', [ __CLASS__, 'popup_access' ] );
 	}
@@ -84,6 +84,13 @@ final class Newspack_Popups_Inserter {
 		}
 
 		$is_inline = 'inline' === $popup['options']['placement'];
+
+		// In order to prevent the SCAIP ad being inserted mid-popup, let's insert the ads
+		// manually. SCAI begins by checking if there are any ads already inserted and bails
+		// if there are, to allow for manual ads placement.
+		if ( function_exists( 'scaip_maybe_insert_shortcode' ) && $is_inline ) {
+			$content = scaip_maybe_insert_shortcode( $content );
+		}
 
 		if ( $is_inline && ! is_single() ) {
 			// Inline Pop-ups can only appear in Posts.
@@ -269,7 +276,7 @@ final class Newspack_Popups_Inserter {
 				true
 			);
 		}
-		$scripts = [ 'amp-access', 'amp-animation', 'amp-form', 'amp-bind', 'amp-position-observer' ];
+		$scripts = [ 'amp-access', 'amp-analytics', 'amp-animation', 'amp-form', 'amp-bind', 'amp-position-observer' ];
 		foreach ( $scripts as $script ) {
 			if ( ! wp_script_is( $script, 'registered' ) ) {
 				$path = "https://cdn.ampproject.org/v0/{$script}-latest.js";
