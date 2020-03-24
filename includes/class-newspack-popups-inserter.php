@@ -58,7 +58,7 @@ final class Newspack_Popups_Inserter {
 	 * Constructor.
 	 */
 	public function __construct() {
-		add_filter( 'the_content', [ $this, 'popup' ], 100 );
+		add_filter( 'the_content', [ $this, 'popup' ], 1 );
 		add_action( 'after_header', [ $this, 'popup_after_header' ] ); // This is a Newspack theme hook. When used with other themes, popups won't be inserted on archive pages.
 		add_action( 'wp_head', [ __CLASS__, 'popup_access' ] );
 	}
