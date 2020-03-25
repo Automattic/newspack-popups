@@ -26,7 +26,7 @@ final class Newspack_Popups_Model {
 
 		$sitewide_default_id = get_option( Newspack_Popups::NEWSPACK_POPUPS_SITEWIDE_DEFAULT, null );
 
-		$popups = self::retrieve_popup_with_query( new WP_Query( $args ), true );
+		$popups = self::retrieve_popups_with_query( new WP_Query( $args ), true );
 		foreach ( $popups as &$popup ) {
 			$popup['sitewide_default'] = absint( $sitewide_default_id ) === absint( $popup['id'] );
 		}
@@ -132,7 +132,7 @@ final class Newspack_Popups_Model {
 			];
 		}
 
-		$popups = self::retrieve_popup_with_query( new WP_Query( $args ) );
+		$popups = self::retrieve_popups_with_query( new WP_Query( $args ) );
 		return count( $popups ) > 0 ? $popups[0] : null;
 	}
 
@@ -179,7 +179,7 @@ final class Newspack_Popups_Model {
 			'p'              => $post_id,
 		];
 
-		$popups = self::retrieve_popup_with_query( new WP_Query( $args ) );
+		$popups = self::retrieve_popups_with_query( new WP_Query( $args ) );
 		return count( $popups ) > 0 ? $popups[0] : null;
 	}
 
@@ -190,7 +190,7 @@ final class Newspack_Popups_Model {
 	 * @param boolean  $include_categories If true, returned objects will include assigned categories.
 	 * @return array Popup objects array
 	 */
-	protected static function retrieve_popup_with_query( WP_Query $query, $include_categories = false ) {
+	protected static function retrieve_popups_with_query( WP_Query $query, $include_categories = false ) {
 		$popups = [];
 		while ( $query->have_posts() ) {
 			$query->the_post();

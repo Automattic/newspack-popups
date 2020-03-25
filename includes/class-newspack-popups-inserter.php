@@ -58,8 +58,8 @@ final class Newspack_Popups_Inserter {
 	 * Constructor.
 	 */
 	public function __construct() {
-		add_filter( 'the_content', [ $this, 'popup' ], 1 );
-		add_action( 'after_header', [ $this, 'popup_after_header' ] ); // This is a Newspack theme hook. When used with other themes, popups won't be inserted on archive pages.
+		add_filter( 'the_content', [ $this, 'insert_popup_in_content' ], 1 );
+		add_action( 'after_header', [ $this, 'insert_popup_after_header' ] ); // This is a Newspack theme hook. When used with other themes, popups won't be inserted on archive pages.
 		add_action( 'wp_head', [ __CLASS__, 'popup_access' ] );
 	}
 
@@ -69,17 +69,17 @@ final class Newspack_Popups_Inserter {
 	 * @param string $content The content of the post.
 	 * @return string The content with popup inserted.
 	 */
-	public static function popup( $content = '' ) {
+	public static function insert_popup_in_content( $content = '' ) {
 		if ( is_admin() || ! is_singular() ) {
 			return $content;
 		}
+
 		$popup = self::popup_for_post();
 
-		if ( ! $popup ) {
-			return $content;
-		}
-
-		if ( ! static::assess_test_mode( $popup ) ) {
+		if (
+			! $popup ||
+			! static::assess_test_mode( $popup )
+		) {
 			return $content;
 		}
 
@@ -100,22 +100,16 @@ final class Newspack_Popups_Inserter {
 			return $content;
 		}
 
+		self::enqueue_popup_assets();
+
 		$content = $is_inline ? self::insert_inline_popup( $content, $popup ) : self::insert_popup( $content, $popup );
-		\wp_register_style(
-			'newspack-popups-view',
-			plugins_url( '../dist/view.css', __FILE__ ),
-			null,
-			filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/view.css' )
-		);
-		\wp_style_add_data( 'newspack-popups-view', 'rtl', 'replace' );
-		\wp_enqueue_style( 'newspack-popups-view' );
 		return $content;
 	}
 
 	/**
 	 * Process popup and insert into archive pages if needed. Applies to Newspack Theme only.
 	 */
-	public static function popup_after_header() {
+	public static function insert_popup_after_header() {
 		/* Posts and pages are covered by the_content hook */
 		if ( is_singular() ) {
 			return;
@@ -123,19 +117,26 @@ final class Newspack_Popups_Inserter {
 
 		$popup = self::popup_for_post();
 
-		if ( ! static::assess_test_mode( $popup ) ) {
+		if (
+			! $popup ||
+			! static::assess_test_mode( $popup ) ||
+			// Pop-ups triggered by scroll position can only appear on Posts.
+			'scroll' === $popup['options']['trigger_type'] ||
+			// Inline Pop-ups can only appear in Posts.
+			'inline' === $popup['options']['placement']
+		) {
 			return;
 		}
 
-		if ( ! $popup ) {
-			return;
-		}
+		self::enqueue_popup_assets();
+		echo $popup['markup']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	}
 
-		// Pop-ups triggered by scroll position can only appear on Posts.
-		if ( 'scroll' === $popup['options']['trigger_type'] ) {
-			return;
-		}
 
+	/**
+	 * Enqueue the assets needed to display the popups.
+	 */
+	public static function enqueue_popup_assets() {
 		\wp_register_style(
 			'newspack-popups-view',
 			plugins_url( '../dist/view.css', __FILE__ ),
@@ -144,13 +145,6 @@ final class Newspack_Popups_Inserter {
 		);
 		\wp_style_add_data( 'newspack-popups-view', 'rtl', 'replace' );
 		\wp_enqueue_style( 'newspack-popups-view' );
-
-		// Inline Pop-ups can only appear in Posts.
-		if ( 'inline' === $popup['options']['placement'] ) {
-			return;
-		}
-
-		echo $popup['markup']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 
 	/**
@@ -227,18 +221,15 @@ final class Newspack_Popups_Inserter {
 
 		$popup = self::popup_for_post();
 
-		if ( ! $popup ) {
+		if (
+			! $popup ||
+			! static::assess_test_mode( $popup ) ||
+			// Pop-ups triggered by scroll position can only appear on Posts.
+			'scroll' === $popup['options']['trigger_type'] && ! is_single() && ! Newspack_Popups::previewed_popup_id()
+		) {
 			return;
 		}
 
-		if ( ! static::assess_test_mode( $popup ) ) {
-			return;
-		}
-
-		// Pop-ups triggered by scroll position can only appear on Posts.
-		if ( 'scroll' === $popup['options']['trigger_type'] && ! is_single() && ! Newspack_Popups::previewed_popup_id() ) {
-			return;
-		}
 		$endpoint = str_replace( 'http://', '//', get_rest_url( null, 'newspack-popups/v1/reader' ) );
 
 		// In test frequency cases (logged in site editor) and when previewing a popup,
