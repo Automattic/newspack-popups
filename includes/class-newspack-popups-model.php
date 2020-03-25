@@ -13,7 +13,7 @@ defined( 'ABSPATH' ) || exit;
 final class Newspack_Popups_Model {
 
 	/**
-	 * Retrieve all Popus (first 100).
+	 * Retrieve all Popups (first 100).
 	 *
 	 * @return array Array of Popup objects.
 	 */
@@ -28,7 +28,11 @@ final class Newspack_Popups_Model {
 
 		$popups = self::retrieve_popups_with_query( new WP_Query( $args ), true );
 		foreach ( $popups as &$popup ) {
-			$popup['sitewide_default'] = absint( $sitewide_default_id ) === absint( $popup['id'] );
+			// UI will not allow for setting inline as sitewide default, but there may be
+			// legacy popups from before this update.
+			if ('inline' !== $popup['options']['placement']) {
+				$popup['sitewide_default'] = absint( $sitewide_default_id ) === absint( $popup['id'] );
+			}
 		}
 		return $popups;
 	}
@@ -44,6 +48,18 @@ final class Newspack_Popups_Model {
 			return new \WP_Error(
 				'newspack_popups_popup_doesnt_exist',
 				esc_html__( 'The Popup specified does not exist.', 'newspack-popups' ),
+				[
+					'status' => 400,
+					'level'  => 'fatal',
+				]
+			);
+		}
+
+		// Such update will not be permitted by the UI, but it's handled just to be explicit about it.
+		if ('inline' === $popup['options']['placement']) {
+			return new \WP_Error(
+				'newspack_popups_inline_sitewide',
+				esc_html__( 'An inline popup cannot be a sitewide default.', 'newspack-popups' ),
 				[
 					'status' => 400,
 					'level'  => 'fatal',
@@ -103,39 +119,20 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
-	 * Retrieve popup CPT post.
+	 * Retrieve all inline popups.
 	 *
-	 * @param array $categories An array of categories to match.
-	 * @return object Popup object
+	 * @return array Inline popup objects.
 	 */
-	public static function retrieve_popup( $categories = [] ) {
+	public static function retrieve_inline_popups( $categories = [] ) {
 		$args = [
 			'post_type'      => Newspack_Popups::NEWSPACK_PLUGINS_CPT,
-			'posts_per_page' => 1,
 			'post_status'    => 'publish',
+			'meta_key' => 'placement',
+			'meta_value' => 'inline',
 		];
 
-		$category_ids = array_map(
-			function( $category ) {
-				return $category->term_id;
-			},
-			$categories
-		);
-		if ( count( $category_ids ) ) {
-			$args['category__in'] = $category_ids;
-		} else {
-			$args['tax_query'] = [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
-				[
-					'taxonomy' => 'category',
-					'operator' => 'NOT EXISTS',
-				],
-			];
-		}
-
-		$popups = self::retrieve_popups_with_query( new WP_Query( $args ) );
-		return count( $popups ) > 0 ? $popups[0] : null;
+		return self::retrieve_popups_with_query( new WP_Query( $args ) );
 	}
-
 
 	/**
 	 * Retrieve popup preview CPT post.
