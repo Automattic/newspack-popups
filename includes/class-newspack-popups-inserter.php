@@ -74,6 +74,7 @@ final class Newspack_Popups_Inserter {
 	 */
 	public function __construct() {
 		add_filter( 'the_content', [ $this, 'insert_popups_in_content' ], 1 );
+		add_shortcode( 'newspack-popup', [$this, 'popup_shortcode'] );
 		add_action( 'after_header', [ $this, 'insert_popups_after_header' ] ); // This is a Newspack theme hook. When used with other themes, popups won't be inserted on archive pages.
 		add_action( 'wp_head', [ __CLASS__, 'insert_popups_access' ] );
 	}
@@ -147,7 +148,7 @@ final class Newspack_Popups_Inserter {
 			return $content;
 		}
 
-		$content = $is_inline ? self::insert_inline_popup( $content, $popup ) : self::insert_popup( $content, $popup );
+		$content = $is_inline ? self::insert_inline_popup_shortcode( $content, $popup ) : self::insert_popup( $content, $popup );
 		return $content;
 	}
 
@@ -240,13 +241,13 @@ final class Newspack_Popups_Inserter {
 	}
 
 	/**
-	 * Insert inline Popup markup into content
+	 * Insert inline Popup shortcode into content.
 	 *
 	 * @param string $content The content of the post.
 	 * @param object $popup The popup object to insert.
-	 * @return string The content with popup inserted.
+	 * @return string The content with popup shortcode inserted.
 	 */
-	public static function insert_inline_popup( $content = '', $popup = [] ) {
+	public static function insert_inline_popup_shortcode( $content = '', $popup = [] ) {
 		$position  = 0;
 		$positions = [];
 		$close_tag = '</p>';
@@ -266,7 +267,17 @@ final class Newspack_Popups_Inserter {
 		}
 		$before_popup = substr( $content, 0, $insertion_position );
 		$after_popup  = substr( $content, $insertion_position );
-		return $before_popup . $popup['markup'] . $after_popup;
+		return $before_popup . '[newspack-popup id="' . $popup['id'] . '"]' . $after_popup;
+	}
+
+	/**
+	 * The popup shortcode function.
+	 *
+	 * @param array $atts Shortcode attributes.
+	 * @return HTML
+	 */
+	public static function popup_shortcode( $atts = array() ) {
+		return Newspack_Popups_Model::retrieve_popup_by_id( $atts['id'] )['markup'];
 	}
 
 	/**
