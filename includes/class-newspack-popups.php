@@ -274,10 +274,10 @@ final class Newspack_Popups {
 			return $post_states;
 		}
 		$post_status_object = get_post_status_object( $post->post_status );
-		$is_inline = get_post_meta( $post->ID, 'placement', true ) == 'inline';
-		if ($is_inline) {
+		$is_inline          = get_post_meta( $post->ID, 'placement', true ) == 'inline';
+		if ( $is_inline ) {
 			$post_states[ $post_status_object->name ] = __( 'Inline', 'newspack-popups' );
-		} else if ( absint( get_option( self::NEWSPACK_POPUPS_SITEWIDE_DEFAULT, null ) ) === absint( $post->ID ) ) {
+		} elseif ( absint( get_option( self::NEWSPACK_POPUPS_SITEWIDE_DEFAULT, null ) ) === absint( $post->ID ) ) {
 			$post_states[ $post_status_object->name ] = __( 'Sitewide Default', 'newspack-popups' );
 		}
 		return $post_states;

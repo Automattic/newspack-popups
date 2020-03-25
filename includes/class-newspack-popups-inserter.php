@@ -25,7 +25,7 @@ final class Newspack_Popups_Inserter {
 	 * @return array Popup objects.
 	 */
 	public static function popups_for_post() {
-		if ( !empty(self::$popups) ) {
+		if ( ! empty( self::$popups ) ) {
 			return self::$popups;
 		}
 
@@ -36,9 +36,9 @@ final class Newspack_Popups_Inserter {
 			return [ Newspack_Popups_Model::retrieve_preview_popup( Newspack_Popups::previewed_popup_id() ) ];
 		}
 
-		// Get all inline popups
+		// Get all inline popups.
 		$inline_popups = Newspack_Popups_Model::retrieve_inline_popups();
-		if (!empty($inline_popups)) {
+		if ( ! empty( $inline_popups ) ) {
 			$found_popups = array_merge(
 				$found_popups,
 				$inline_popups
@@ -62,7 +62,7 @@ final class Newspack_Popups_Inserter {
 		}
 
 
-		if ( !empty($found_popups) ) {
+		if ( ! empty( $found_popups ) ) {
 			return $found_popups;
 		}
 
@@ -74,7 +74,7 @@ final class Newspack_Popups_Inserter {
 	 */
 	public function __construct() {
 		add_filter( 'the_content', [ $this, 'insert_popups_in_content' ], 1 );
-		add_shortcode( 'newspack-popup', [$this, 'popup_shortcode'] );
+		add_shortcode( 'newspack-popup', [ $this, 'popup_shortcode' ] );
 		add_action( 'after_header', [ $this, 'insert_popups_after_header' ] ); // This is a Newspack theme hook. When used with other themes, popups won't be inserted on archive pages.
 		add_action( 'wp_head', [ __CLASS__, 'insert_popups_access' ] );
 	}
@@ -91,14 +91,14 @@ final class Newspack_Popups_Inserter {
 
 		$popups = self::popups_for_post();
 
-		if (empty($popups)) {
+		if ( empty( $popups ) ) {
 			return $content;
 		}
 
 		$has_an_inline_popup = false;
 
 		// First needs to check if there any inline popups, to handle SCAIP.
-		foreach($popups as $popup) {
+		foreach ( $popups as $popup ) {
 			if (
 				static::should_display( $popup ) &&
 				'inline' === $popup['options']['placement']
@@ -107,7 +107,7 @@ final class Newspack_Popups_Inserter {
 			}
 		}
 
-		if ($has_an_inline_popup && function_exists( 'scaip_maybe_insert_shortcode' )) {
+		if ( $has_an_inline_popup && function_exists( 'scaip_maybe_insert_shortcode' ) ) {
 			// Prevent default SCAIP insertion.
 			remove_filter( 'the_content', 'scaip_maybe_insert_shortcode', 10 );
 
@@ -118,9 +118,9 @@ final class Newspack_Popups_Inserter {
 		}
 
 		// Now insert the popups.
-		foreach($popups as $popup) {
+		foreach ( $popups as $popup ) {
 			if ( static::should_display( $popup ) ) {
-				$content = self::insert_single_popup_in_content($content, $popup);
+				$content = self::insert_single_popup_in_content( $content, $popup );
 			}
 		}
 
@@ -133,8 +133,8 @@ final class Newspack_Popups_Inserter {
 	/**
 	 * Insert popup into post and page content.
 	 *
-	 * @param object $popup The popup to be inserted.
 	 * @param string $content The content of the post.
+	 * @param object $popup The popup to be inserted.
 	 * @return string The content with popup inserted.
 	 */
 	public static function insert_single_popup_in_content( $content = '', $popup = [] ) {
@@ -163,9 +163,9 @@ final class Newspack_Popups_Inserter {
 
 		$popups = self::popups_for_post();
 
-		if (!empty($popups)) {
-			foreach($popups as $popup) {
-				self::insert_single_popup_after_header($popup);
+		if ( ! empty( $popups ) ) {
+			foreach ( $popups as $popup ) {
+				self::insert_single_popup_after_header( $popup );
 			}
 			self::enqueue_popup_assets();
 		}
@@ -176,7 +176,7 @@ final class Newspack_Popups_Inserter {
 	 *
 	 * @param object $popup The popup to be inserted.
 	 */
-	public static function insert_single_popup_after_header($popup) {
+	public static function insert_single_popup_after_header( $popup ) {
 		if (
 			! $popup ||
 			! static::should_display( $popup ) ||
@@ -290,9 +290,9 @@ final class Newspack_Popups_Inserter {
 
 		$popups = self::popups_for_post();
 
-		if (!empty($popups)) {
-			foreach($popups as $popup) {
-				self::insert_single_popup_amp_access($popup);
+		if ( ! empty( $popups ) ) {
+			foreach ( $popups as $popup ) {
+				self::insert_single_popup_amp_access( $popup );
 			}
 			static::register_amp_scripts();
 		}
@@ -303,7 +303,7 @@ final class Newspack_Popups_Inserter {
 	 *
 	 * @param object $popup The popup object to insert.
 	 */
-	public static function insert_single_popup_amp_access($popup) {
+	public static function insert_single_popup_amp_access( $popup ) {
 		if (
 			! static::should_display( $popup ) ||
 			// Pop-ups triggered by scroll position can only appear on Posts.
@@ -394,12 +394,12 @@ final class Newspack_Popups_Inserter {
 	 * @return bool Should popup be shown based on categories it has.
 	 */
 	public static function assess_categories_filter( $popup ) {
-		$post_categories = get_the_category();
-		$popup_categories = get_the_category($popup['id']);
+		$post_categories  = get_the_category();
+		$popup_categories = get_the_category( $popup['id'] );
 		if ( $popup_categories && count( $popup_categories ) ) {
 			return array_intersect(
-				array_column($post_categories, 'term_id'),
-				array_column($popup_categories, 'term_id')
+				array_column( $post_categories, 'term_id' ),
+				array_column( $popup_categories, 'term_id' )
 			);
 		}
 		return true;
@@ -412,7 +412,7 @@ final class Newspack_Popups_Inserter {
 	 * @return bool Should popup be shown.
 	 */
 	public static function should_display( $popup ) {
-		return self::assess_test_mode($popup) && self::assess_categories_filter($popup);
+		return self::assess_test_mode( $popup ) && self::assess_categories_filter( $popup );
 	}
 }
 $newspack_popups_inserter = new Newspack_Popups_Inserter();

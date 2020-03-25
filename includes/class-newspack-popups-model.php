@@ -30,7 +30,7 @@ final class Newspack_Popups_Model {
 		foreach ( $popups as &$popup ) {
 			// UI will not allow for setting inline as sitewide default, but there may be
 			// legacy popups from before this update.
-			if ('inline' !== $popup['options']['placement']) {
+			if ( 'inline' !== $popup['options']['placement'] ) {
 				$popup['sitewide_default'] = absint( $sitewide_default_id ) === absint( $popup['id'] );
 			}
 		}
@@ -56,7 +56,7 @@ final class Newspack_Popups_Model {
 		}
 
 		// Such update will not be permitted by the UI, but it's handled just to be explicit about it.
-		if ('inline' === $popup['options']['placement']) {
+		if ( 'inline' === $popup['options']['placement'] ) {
 			return new \WP_Error(
 				'newspack_popups_inline_sitewide',
 				esc_html__( 'An inline popup cannot be a sitewide default.', 'newspack-popups' ),
@@ -123,12 +123,13 @@ final class Newspack_Popups_Model {
 	 *
 	 * @return array Inline popup objects.
 	 */
-	public static function retrieve_inline_popups( $categories = [] ) {
+	public static function retrieve_inline_popups() {
 		$args = [
-			'post_type'      => Newspack_Popups::NEWSPACK_PLUGINS_CPT,
-			'post_status'    => 'publish',
-			'meta_key' => 'placement',
-			'meta_value' => 'inline',
+			'post_type'   => Newspack_Popups::NEWSPACK_PLUGINS_CPT,
+			'post_status' => 'publish',
+			'meta_key'    => 'placement',
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+			'meta_value'  => 'inline',
 		];
 
 		return self::retrieve_popups_with_query( new WP_Query( $args ) );
