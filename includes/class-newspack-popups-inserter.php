@@ -34,25 +34,35 @@ final class Newspack_Popups_Inserter {
 			return [ Newspack_Popups_Model::retrieve_preview_popup( Newspack_Popups::previewed_popup_id() ) ];
 		}
 
-		// Get all inline popups in there first.
+		// 1. Get all inline popups in there first.
 		$popups_to_display = Newspack_Popups_Model::retrieve_inline_popups();
 
-		// Get the sitewide pop-up.
-		$sitewide_default = get_option( Newspack_Popups::NEWSPACK_POPUPS_SITEWIDE_DEFAULT, null );
-		if ( $sitewide_default ) {
-			$found_popup = Newspack_Popups_Model::retrieve_popup_by_id( $sitewide_default );
-			if (
-				$found_popup &&
-				// Prevent inline sitewide default from being added - all inline popups are there.
-				'inline' !== $found_popup['options']['placement']
-			) {
-				array_push(
-					$popups_to_display,
-					$found_popup
-				);
+		// 2. Get the overlay popup.
+
+		// Check if there's an overlay popup with matching category.
+		$category_overlay_popup = Newspack_Popups_Model::retrieve_category_overlay_popup();
+		if ( $category_overlay_popup ) {
+			array_push(
+				$popups_to_display,
+				$category_overlay_popup
+			);
+		} else {
+			// If there's no category-matching popup, get the sitewide pop-up.
+			$sitewide_default = get_option( Newspack_Popups::NEWSPACK_POPUPS_SITEWIDE_DEFAULT, null );
+			if ( $sitewide_default ) {
+				$found_popup = Newspack_Popups_Model::retrieve_popup_by_id( $sitewide_default );
+				if (
+					$found_popup &&
+					// Prevent inline sitewide default from being added - all inline popups are there.
+					'inline' !== $found_popup['options']['placement']
+				) {
+					array_push(
+						$popups_to_display,
+						$found_popup
+					);
+				}
 			}
 		}
-
 
 		if ( ! empty( $popups_to_display ) ) {
 			return $popups_to_display;

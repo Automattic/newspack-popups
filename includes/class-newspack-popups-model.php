@@ -136,6 +136,35 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
+	 * Retrieve first overlay popup matching post categries.
+	 *
+	 * @return object|null Popup object.
+	 */
+	public static function retrieve_category_overlay_popup() {
+		$post_categories = get_the_category();
+
+		if ( empty( $post_categories ) ) {
+			return null;
+		}
+
+		$args = [
+			'post_type'      => Newspack_Popups::NEWSPACK_PLUGINS_CPT,
+			'posts_per_page' => 1,
+			'post_status'    => 'publish',
+			'category__in'   => array_column( $post_categories, 'term_id' ),
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+			'meta_query'     => array(
+				'key'     => 'placement',
+				'value'   => 'inline',
+				'compare' => '!=',
+			),
+		];
+
+		$popups = self::retrieve_popups_with_query( new WP_Query( $args ) );
+		return count( $popups ) > 0 ? $popups[0] : null;
+	}
+
+	/**
 	 * Retrieve popup preview CPT post.
 	 *
 	 * @param string $post_id Post id.
@@ -182,7 +211,7 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
-	 * Retrieve popup CPT post.
+	 * Retrieve popup CPT posts.
 	 *
 	 * @param WP_Query $query The query to use.
 	 * @param boolean  $include_categories If true, returned objects will include assigned categories.
