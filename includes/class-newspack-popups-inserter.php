@@ -29,21 +29,13 @@ final class Newspack_Popups_Inserter {
 			return self::$popups;
 		}
 
-		$found_popups = [];
-
 		// Get the previewed popup and return early if there's one.
 		if ( Newspack_Popups::previewed_popup_id() ) {
 			return [ Newspack_Popups_Model::retrieve_preview_popup( Newspack_Popups::previewed_popup_id() ) ];
 		}
 
-		// Get all inline popups.
-		$inline_popups = Newspack_Popups_Model::retrieve_inline_popups();
-		if ( ! empty( $inline_popups ) ) {
-			$found_popups = array_merge(
-				$found_popups,
-				$inline_popups
-			);
-		}
+		// Get all inline popups in there first.
+		$popups_to_display = Newspack_Popups_Model::retrieve_inline_popups();
 
 		// Get the sitewide pop-up.
 		$sitewide_default = get_option( Newspack_Popups::NEWSPACK_POPUPS_SITEWIDE_DEFAULT, null );
@@ -55,15 +47,15 @@ final class Newspack_Popups_Inserter {
 				'inline' !== $found_popup['options']['placement']
 			) {
 				array_push(
-					$found_popups,
+					$popups_to_display,
 					$found_popup
 				);
 			}
 		}
 
 
-		if ( ! empty( $found_popups ) ) {
-			return $found_popups;
+		if ( ! empty( $popups_to_display ) ) {
+			return $popups_to_display;
 		}
 
 		return null;
