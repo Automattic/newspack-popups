@@ -192,14 +192,16 @@ final class Newspack_Popups_Model {
 	 */
 	protected static function retrieve_popup_with_query( WP_Query $query, $include_categories = false ) {
 		$popups = [];
-		while ( $query->have_posts() ) {
-			$query->the_post();
-			$popups[] = self::create_popup_object(
-				get_post( get_the_ID() ),
-				$include_categories
-			);
+		if ( $query->have_posts() ) {
+			while ( $query->have_posts() ) {
+				$query->the_post();
+				$popups[] = self::create_popup_object(
+					get_post( get_the_ID() ),
+					$include_categories
+				);
+			}
+			wp_reset_postdata();
 		}
-		wp_reset_postdata();
 		return $popups;
 	}
 
