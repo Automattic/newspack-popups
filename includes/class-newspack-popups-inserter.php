@@ -121,8 +121,7 @@ final class Newspack_Popups_Inserter {
 
 		// Now insert the popups.
 		foreach ( $popups as $popup ) {
-			$is_inline = 'inline' === $popup['options']['placement'];
-			$content   = $is_inline ? self::insert_inline_popup_shortcode( $content, $popup ) : self::insert_popup( $content, $popup );
+			$content = self::insert_popup( $content, $popup );
 		}
 
 		self::enqueue_popup_assets();
@@ -168,11 +167,14 @@ final class Newspack_Popups_Inserter {
 	 *
 	 * @param string $content The content of the post.
 	 * @param object $popup The popup object to insert.
-	 * @return string The content with popup inserted.
+	 * @return string The content with popup markup inserted.
 	 */
 	public static function insert_popup( $content = '', $popup = [] ) {
-		if ( 0 === $popup['options']['trigger_scroll_progress'] || Newspack_Popups::previewed_popup_id() ) {
-			return $popup['markup'] . $content;
+		$is_inline    = 'inline' === $popup['options']['placement'];
+		$popup_markup = $is_inline ? '[newspack-popup id="' . $popup['id'] . '"]' : $popup['markup'];
+
+		if ( ! $is_inline && 0 === $popup['options']['trigger_scroll_progress'] ) {
+			return $popup_markup . $content;
 		}
 
 		$position  = 0;
@@ -194,37 +196,8 @@ final class Newspack_Popups_Inserter {
 		}
 		$before_popup = substr( $content, 0, $insertion_position );
 		$after_popup  = substr( $content, $insertion_position );
-		return $before_popup . $popup['markup'] . $after_popup;
-	}
 
-	/**
-	 * Insert inline Popup shortcode into content.
-	 *
-	 * @param string $content The content of the post.
-	 * @param object $popup The popup object to insert.
-	 * @return string The content with popup shortcode inserted.
-	 */
-	public static function insert_inline_popup_shortcode( $content = '', $popup = [] ) {
-		$position  = 0;
-		$positions = [];
-		$close_tag = '</p>';
-		while ( stripos( $content, $close_tag, $position ) !== false ) {
-			$position    = stripos( $content, '</p>', $position ) + strlen( $close_tag );
-			$positions[] = $position;
-		}
-		$total_length       = strlen( $content );
-		$percentage         = intval( $popup['options']['trigger_scroll_progress'] ) / 100;
-		$precise_position   = $total_length * $percentage;
-		$insertion_position = $total_length;
-		foreach ( $positions as $position ) {
-			if ( $position >= $precise_position ) {
-				$insertion_position = $position;
-				break;
-			}
-		}
-		$before_popup = substr( $content, 0, $insertion_position );
-		$after_popup  = substr( $content, $insertion_position );
-		return $before_popup . '[newspack-popup id="' . $popup['id'] . '"]' . $after_popup;
+		return $before_popup . $popup_markup . $after_popup;
 	}
 
 	/**
