@@ -35,15 +35,15 @@ final class Newspack_Popups_Inserter {
 		}
 
 		// 1. Get all inline popups in there first.
-		$popups_to_display = Newspack_Popups_Model::retrieve_inline_popups();
+		$popups_to_maybe_display = Newspack_Popups_Model::retrieve_inline_popups();
 
 		// 2. Get the overlay popup.
 
 		// Check if there's an overlay popup with matching category.
 		$category_overlay_popup = Newspack_Popups_Model::retrieve_category_overlay_popup();
-		if ( $category_overlay_popup && static::should_display( $category_overlay_popup ) ) {
+		if ( $category_overlay_popup ) {
 			array_push(
-				$popups_to_display,
+				$popups_to_maybe_display,
 				$category_overlay_popup
 			);
 		} else {
@@ -53,23 +53,26 @@ final class Newspack_Popups_Inserter {
 				$found_popup = Newspack_Popups_Model::retrieve_popup_by_id( $sitewide_default );
 				if (
 					$found_popup &&
-					static::should_display( $found_popup ) &&
 					// Prevent inline sitewide default from being added - all inline popups are there.
 					'inline' !== $found_popup['options']['placement']
 				) {
 					array_push(
-						$popups_to_display,
+						$popups_to_maybe_display,
 						$found_popup
 					);
 				}
 			}
 		}
 
+		$popups_to_display = array_filter(
+			$popups_to_maybe_display,
+			[ 'self', 'should_display' ]
+		);
 		if ( ! empty( $popups_to_display ) ) {
 			return $popups_to_display;
 		}
 
-		return null;
+		return [];
 	}
 
 	/**
