@@ -171,10 +171,14 @@ final class Newspack_Popups_Model {
 	 * @return object Popup object.
 	 */
 	public static function retrieve_preview_popup( $post_id ) {
-		// A preview is stored in an autosave.
-		$autosave = wp_get_post_autosave( $post_id );
+		// Up-to-date post data is stored in an autosave.
+		$autosave    = wp_get_post_autosave( $post_id );
+		$post_object = $autosave ? $autosave : get_post( $post_id );
+		// Setting proper id for correct API calls.
+		$post_object->ID = $post_id;
+
 		return self::create_popup_object(
-			$autosave ? $autosave : get_post( $post_id ),
+			$post_object,
 			false,
 			[
 				'background_color'        => filter_input( INPUT_GET, 'background_color', FILTER_SANITIZE_STRING ),
