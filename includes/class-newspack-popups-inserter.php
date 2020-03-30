@@ -41,7 +41,7 @@ final class Newspack_Popups_Inserter {
 
 		// Check if there's an overlay popup with matching category.
 		$category_overlay_popup = Newspack_Popups_Model::retrieve_category_overlay_popup();
-		if ( $category_overlay_popup ) {
+		if ( $category_overlay_popup && static::should_display( $category_overlay_popup ) ) {
 			array_push(
 				$popups_to_display,
 				$category_overlay_popup
@@ -53,6 +53,7 @@ final class Newspack_Popups_Inserter {
 				$found_popup = Newspack_Popups_Model::retrieve_popup_by_id( $sitewide_default );
 				if (
 					$found_popup &&
+					static::should_display( $found_popup ) &&
 					// Prevent inline sitewide default from being added - all inline popups are there.
 					'inline' !== $found_popup['options']['placement']
 				) {
@@ -78,7 +79,8 @@ final class Newspack_Popups_Inserter {
 		add_filter( 'the_content', [ $this, 'insert_popups_in_content' ], 1 );
 		add_shortcode( 'newspack-popup', [ $this, 'popup_shortcode' ] );
 		add_action( 'after_header', [ $this, 'insert_popups_after_header' ] ); // This is a Newspack theme hook. When used with other themes, popups won't be inserted on archive pages.
-		add_action( 'wp_head', [ __CLASS__, 'insert_popups_access' ] );
+		add_action( 'wp_head', [ $this, 'insert_popups_amp_access' ] );
+		add_action( 'wp_head', [ $this, 'register_amp_scripts' ] );
 	}
 
 	/**
@@ -97,17 +99,15 @@ final class Newspack_Popups_Inserter {
 			return $content;
 		}
 
-		$has_an_inline_popup = false;
-
 		// First needs to check if there any inline popups, to handle SCAIP.
-		foreach ( $popups as $popup ) {
-			if (
-				static::should_display( $popup ) &&
-				'inline' === $popup['options']['placement']
-			) {
-				$has_an_inline_popup = true;
-			}
-		}
+		$has_an_inline_popup = count(
+			array_filter(
+				$popups,
+				function( $p ) {
+					return 'inline' === $p['options']['placement'];
+				}
+			)
+		);
 
 		if ( $has_an_inline_popup && function_exists( 'scaip_maybe_insert_shortcode' ) ) {
 			// Prevent default SCAIP insertion.
@@ -121,36 +121,12 @@ final class Newspack_Popups_Inserter {
 
 		// Now insert the popups.
 		foreach ( $popups as $popup ) {
-			if ( static::should_display( $popup ) ) {
-				$content = self::insert_single_popup_in_content( $content, $popup );
-			}
+			$is_inline = 'inline' === $popup['options']['placement'];
+			$content   = $is_inline ? self::insert_inline_popup_shortcode( $content, $popup ) : self::insert_popup( $content, $popup );
 		}
 
 		self::enqueue_popup_assets();
 
-		return $content;
-	}
-
-
-	/**
-	 * Insert popup into post and page content.
-	 *
-	 * @param string $content The content of the post.
-	 * @param object $popup The popup to be inserted.
-	 * @return string The content with popup inserted.
-	 */
-	public static function insert_single_popup_in_content( $content = '', $popup = [] ) {
-		$is_inline = 'inline' === $popup['options']['placement'];
-
-		if ( $is_inline && ! is_single() ) {
-			// Inline Pop-ups can only appear in Posts.
-			return $content;
-		} elseif ( 'scroll' === $popup['options']['trigger_type'] && ! is_single() && ! Newspack_Popups::previewed_popup_id() ) {
-			// Pop-ups triggered by scroll position can only appear on Posts.
-			return $content;
-		}
-
-		$content = $is_inline ? self::insert_inline_popup_shortcode( $content, $popup ) : self::insert_popup( $content, $popup );
 		return $content;
 	}
 
@@ -167,32 +143,11 @@ final class Newspack_Popups_Inserter {
 
 		if ( ! empty( $popups ) ) {
 			foreach ( $popups as $popup ) {
-				self::insert_single_popup_after_header( $popup );
+				echo $popup['markup']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			}
 			self::enqueue_popup_assets();
 		}
 	}
-
-	/**
-	 * Process single popup and insert into archive pages if needed. Applies to Newspack Theme only.
-	 *
-	 * @param object $popup The popup to be inserted.
-	 */
-	public static function insert_single_popup_after_header( $popup ) {
-		if (
-			! $popup ||
-			! static::should_display( $popup ) ||
-			// Pop-ups triggered by scroll position can only appear on Posts.
-			'scroll' === $popup['options']['trigger_type'] ||
-			// Inline Pop-ups can only appear in Posts.
-			'inline' === $popup['options']['placement']
-		) {
-			return;
-		}
-
-		echo $popup['markup']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-	}
-
 
 	/**
 	 * Enqueue the assets needed to display the popups.
@@ -209,7 +164,7 @@ final class Newspack_Popups_Inserter {
 	}
 
 	/**
-	 * Insert Popup markup into content
+	 * Insert Popup markup into content.
 	 *
 	 * @param string $content The content of the post.
 	 * @param object $popup The popup object to insert.
@@ -284,63 +239,56 @@ final class Newspack_Popups_Inserter {
 
 	/**
 	 * Add amp-access header code.
+	 *
+	 * @param object $popups The popup objects to handle.
 	 */
-	public static function insert_popups_access() {
+	public static function insert_popups_amp_access( $popups ) {
 		if ( is_admin() ) {
 			return;
 		}
 
-		$popups = self::popups_for_post();
+		$popups                  = self::popups_for_post();
+		$endpoint                = str_replace( 'http://', '//', get_rest_url( null, 'newspack-popups/v1/reader' ) );
+		$popups_access_providers = [];
 
-		if ( ! empty( $popups ) ) {
-			foreach ( $popups as $popup ) {
-				self::insert_single_popup_amp_access( $popup );
-			}
-			static::register_amp_scripts();
+		foreach ( $popups as $popup ) {
+			// In test frequency cases (logged in site editor) and when previewing,
+			// fallback to authorization of true to avoid possible amp-access timeouts.
+			$authorization_fallback_response = (
+				( 'test' === $popup['options']['frequency'] || Newspack_Popups::previewed_popup_id() ) &&
+				is_user_logged_in() &&
+				current_user_can( 'edit_others_pages' )
+			);
+
+			$amp_access_provider = array(
+				'namespace'                     => 'popup_' . $popup['id'],
+				'authorization'                 => esc_url( $endpoint ) . '?popup_id=' . esc_attr( $popup['id'] ) . '&rid=READER_ID&url=CANONICAL_URL&RANDOM',
+				'noPingback'                    => true,
+				'authorizationFallbackResponse' => array(
+					'displayPopup' => $authorization_fallback_response,
+				),
+			);
+
+			array_push(
+				$popups_access_providers,
+				$amp_access_provider
+			);
 		}
-	}
 
-	/**
-	 * Add amp-access header code.
-	 *
-	 * @param object $popup The popup object to insert.
-	 */
-	public static function insert_single_popup_amp_access( $popup ) {
-		if (
-			! static::should_display( $popup ) ||
-			// Pop-ups triggered by scroll position can only appear on Posts.
-			'scroll' === $popup['options']['trigger_type'] && ! is_single() && ! Newspack_Popups::previewed_popup_id()
-		) {
-			return;
+		if ( ! empty( $popups_access_providers ) ) {
+			?>
+			<script id="amp-access" type="application/json">
+				<?php echo wp_json_encode( $popups_access_providers ); ?>
+			</script>
+			<?php
 		}
-
-		$endpoint = str_replace( 'http://', '//', get_rest_url( null, 'newspack-popups/v1/reader' ) );
-
-		// In test frequency cases (logged in site editor) and when previewing a popup,
-		// fallback to authorization of true to avoid possible amp-access timeouts.
-		$authorization_fallback_response = (
-			( 'test' === $popup['options']['frequency'] || Newspack_Popups::previewed_popup_id() ) &&
-			is_user_logged_in() &&
-			current_user_can( 'edit_others_pages' )
-		) ? 'true' : 'false';
-		?>
-		<script id="amp-access" type="application/json">
-			{
-				"authorization": "<?php echo esc_url( $endpoint ); ?>?popup_id=<?php echo ( esc_attr( $popup['id'] ) ); ?>&rid=READER_ID&url=CANONICAL_URL&RANDOM",
-				"noPingback": true,
-				"authorizationFallbackResponse": {
-					"displayPopup": <?php echo( esc_attr( $authorization_fallback_response ) ); ?>
-				}
-			}
-		</script>
-		<?php
 	}
 
 	/**
 	 * Register and enqueue all required AMP scripts, if needed.
 	 */
 	public static function register_amp_scripts() {
-		if ( ! wp_script_is( 'amp-runtime', 'registered' ) ) {
+		if ( ! is_admin() && ! wp_script_is( 'amp-runtime', 'registered' ) ) {
 		// phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion
 			wp_register_script(
 				'amp-runtime',
@@ -368,23 +316,32 @@ final class Newspack_Popups_Inserter {
 	}
 
 	/**
+	 * Some popups can only appear on Posts.
+	 *
+	 * @param object $popup The popup to assess.
+	 * @return bool Should popup be shown.
+	 */
+	public static function assess_is_post( $popup ) {
+		if (
+			// Inline Pop-ups can only appear in Posts.
+			'inline' === $popup['options']['placement'] ||
+			// Pop-ups triggered by scroll position can only appear on Posts.
+			'scroll' === $popup['options']['trigger_type']
+		) {
+			return is_single();
+		}
+		return true;
+	}
+
+	/**
 	 * If Pop-up Frequency is "Test Mode," assess whether it should be shown.
 	 *
 	 * @param object $popup The popup to assess.
 	 * @return bool Should popup be shown based on Test Mode assessment.
 	 */
 	public static function assess_test_mode( $popup ) {
-		if ( is_user_logged_in() ) {
-			if ( Newspack_Popups::previewed_popup_id() ) {
-				return true;
-			}
-			if ( 'test' !== $popup['options']['frequency'] || ! current_user_can( 'edit_others_pages' ) ) {
-				return false;
-			}
-		} else {
-			if ( 'test' === $popup['options']['frequency'] ) {
-				return false;
-			}
+		if ( 'test' === $popup['options']['frequency'] ) {
+			return is_user_logged_in() && ( current_user_can( 'edit_others_pages' ) || Newspack_Popups::previewed_popup_id() );
 		}
 		return true;
 	}
@@ -414,7 +371,7 @@ final class Newspack_Popups_Inserter {
 	 * @return bool Should popup be shown.
 	 */
 	public static function should_display( $popup ) {
-		return self::assess_test_mode( $popup ) && self::assess_categories_filter( $popup );
+		return self::assess_is_post( $popup ) && self::assess_test_mode( $popup ) && self::assess_categories_filter( $popup );
 	}
 }
 $newspack_popups_inserter = new Newspack_Popups_Inserter();
