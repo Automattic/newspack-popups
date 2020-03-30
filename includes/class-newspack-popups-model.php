@@ -473,7 +473,7 @@ final class Newspack_Popups_Model {
 							"formSubmitSuccess": {
 								"on": "<?php echo esc_attr( $custom_form_submit_event ); ?>",
 								"request": "event",
-								"selector": ".wp-block-jetpack-mailchimp form",
+								"selector": "#<?php echo esc_attr( $element_id ); ?> .wp-block-jetpack-mailchimp form",
 								"extraUrlParams": {
 									"popup_id": "<?php echo ( esc_attr( $popup['id'] ) ); ?>",
 									"url": "<?php echo esc_url( home_url( $wp->request ) ); ?>",
