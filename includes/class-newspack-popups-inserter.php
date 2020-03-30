@@ -210,7 +210,12 @@ final class Newspack_Popups_Inserter {
 	 * @return HTML
 	 */
 	public static function popup_shortcode( $atts = array() ) {
-		return Newspack_Popups_Model::retrieve_popup_by_id( $atts['id'] )['markup'];
+		$previewed_popup_id = Newspack_Popups::previewed_popup_id();
+		if ($previewed_popup_id) {
+			return Newspack_Popups_Model::retrieve_preview_popup( $previewed_popup_id )['markup'];
+		} else {
+			return Newspack_Popups_Model::retrieve_popup_by_id( $atts['id'] )['markup'];
+		}
 	}
 
 	/**
