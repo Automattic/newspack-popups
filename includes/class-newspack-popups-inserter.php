@@ -100,7 +100,7 @@ final class Newspack_Popups_Inserter {
 			return $content;
 		}
 
-		$content = $is_inline ? self::insert_inline_popup( $content, $popup ) : self::insert_popup( $content, $popup );
+		$content = self::insert_popup( $content, $popup );
 		\wp_register_style(
 			'newspack-popups-view',
 			plugins_url( '../dist/view.css', __FILE__ ),
@@ -154,67 +154,43 @@ final class Newspack_Popups_Inserter {
 	}
 
 	/**
-	 * Insert Popup markup into content
+	 * Insert Popup markup into content.
 	 *
 	 * @param string $content The content of the post.
 	 * @param object $popup The popup object to insert.
-	 * @return string The content with popup inserted.
+	 * @return string The content with popup markup inserted.
 	 */
 	public static function insert_popup( $content = '', $popup = [] ) {
-		if ( 0 === $popup['options']['trigger_scroll_progress'] || Newspack_Popups::previewed_popup_id() ) {
-			return $popup['markup'] . $content;
+		$is_inline    = 'inline' === $popup['options']['placement'];
+		$popup_markup = $popup['markup'];
+
+		if ( ! $is_inline && 0 === $popup['options']['trigger_scroll_progress'] ) {
+			return $popup_markup . $content;
 		}
 
-		$position  = 0;
-		$positions = [];
-		$close_tag = '</p>';
-		while ( stripos( $content, $close_tag, $position ) !== false ) {
-			$position    = stripos( $content, '</p>', $position ) + strlen( $close_tag );
-			$positions[] = $position;
-		}
-		$total_length       = strlen( $content );
-		$percentage         = intval( $popup['options']['trigger_scroll_progress'] ) / 100;
-		$precise_position   = $total_length * $percentage;
+		$percentage       = intval( $popup['options']['trigger_scroll_progress'] ) / 100;
+		$total_length     = strlen( $content );
+		$precise_position = $total_length * $percentage;
+
+		$blocks = [];
+		// Match block closing comment.
+		$block_close_pattern = '/<!-- \/wp:[\w-\/]* -->/';
+		// Minus 2 to account for '/' chars.
+		$pattern_string_length = strlen( $block_close_pattern ) - 2;
+		preg_match_all( $block_close_pattern, $content, $blocks, PREG_OFFSET_CAPTURE );
 		$insertion_position = $total_length;
-		foreach ( $positions as $position ) {
-			if ( $position >= $precise_position ) {
-				$insertion_position = $position;
+		foreach ( $blocks[0] as $index => $block ) {
+			$block_offest = $block[1];
+			$offset       = $block_offest + $pattern_string_length;
+			if ( $offset >= $precise_position ) {
+				$insertion_position = $offset;
 				break;
 			}
 		}
-		$before_popup = substr( $content, 0, $insertion_position );
-		$after_popup  = substr( $content, $insertion_position );
-		return $before_popup . $popup['markup'] . $after_popup;
-	}
 
-	/**
-	 * Insert inline Popup markup into content
-	 *
-	 * @param string $content The content of the post.
-	 * @param object $popup The popup object to insert.
-	 * @return string The content with popup inserted.
-	 */
-	public static function insert_inline_popup( $content = '', $popup = [] ) {
-		$position  = 0;
-		$positions = [];
-		$close_tag = '</p>';
-		while ( stripos( $content, $close_tag, $position ) !== false ) {
-			$position    = stripos( $content, '</p>', $position ) + strlen( $close_tag );
-			$positions[] = $position;
-		}
-		$total_length       = strlen( $content );
-		$percentage         = intval( $popup['options']['trigger_scroll_progress'] ) / 100;
-		$precise_position   = $total_length * $percentage;
-		$insertion_position = $total_length;
-		foreach ( $positions as $position ) {
-			if ( $position >= $precise_position ) {
-				$insertion_position = $position;
-				break;
-			}
-		}
 		$before_popup = substr( $content, 0, $insertion_position );
 		$after_popup  = substr( $content, $insertion_position );
-		return $before_popup . $popup['markup'] . $after_popup;
+		return $before_popup . $popup_markup . $after_popup;
 	}
 
 	/**
