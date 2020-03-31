@@ -12,7 +12,7 @@
 				margin-bottom: 0.75em;
 			}
 
-			& + .popup-not-interested-form {
+			+ .popup-not-interested-form {
 				margin-top: 0.75rem;
 			}
 		}
@@ -20,7 +20,7 @@
 		.newspack-lightbox-placement-center & {
 			margin: -1.5em -1.5em 0;
 
-			& + .popup-not-interested-form {
+			+ .popup-not-interested-form {
 				margin-bottom: -0.75rem;
 			}
 		}
