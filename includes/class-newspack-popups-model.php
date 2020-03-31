@@ -334,9 +334,17 @@ final class Newspack_Popups_Model {
 		$has_form                = preg_match( '/<form\s/', $popup['body'] ) !== 0;
 		$has_dismiss_form        = 'inline' !== $popup['options']['placement'];
 		$has_not_interested_form = self::get_dismiss_text( $popup );
-		$has_mailchimp_form      = preg_match( '/wp-block-jetpack-mailchimp/', $popup['body'] ) !== 0;
 		$is_inline               = self::is_inline( $popup );
 		$endpoint                = self::get_dismiss_endpoint();
+
+		// Mailchimp.
+		$mailchimp_form_selector = '';
+		if ( preg_match( '/wp-block-jetpack-mailchimp/', $popup['body'] ) !== 0 ) {
+			$mailchimp_form_selector = '.wp-block-jetpack-mailchimp form';
+		}
+		if ( preg_match( '/mc4wp-form/', $popup['body'] ) !== 0 ) {
+			$mailchimp_form_selector = '.mc4wp-form';
+		}
 
 		$is_amp                   = function_exists( 'is_amp_endpoint' ) && is_amp_endpoint();
 		$custom_form_submit_event = 'amp-form-submit-success';
@@ -433,7 +441,7 @@ final class Newspack_Popups_Model {
 			</script>
 		</amp-analytics>
 
-		<?php if ( $has_mailchimp_form ) : ?>
+		<?php if ( $mailchimp_form_selector ) : ?>
 			<amp-analytics>
 				<script type="application/json">
 					{
@@ -444,7 +452,7 @@ final class Newspack_Popups_Model {
 							"formSubmitSuccess": {
 								"on": "<?php echo esc_attr( $custom_form_submit_event ); ?>",
 								"request": "event",
-								"selector": ".wp-block-jetpack-mailchimp form",
+								"selector": "#<?php echo esc_attr( $element_id ); ?> <?php echo esc_attr( $mailchimp_form_selector ); ?>",
 								"extraUrlParams": {
 									"popup_id": "<?php echo ( esc_attr( $popup['id'] ) ); ?>",
 									"url": "<?php echo esc_url( home_url( $wp->request ) ); ?>",
