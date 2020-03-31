@@ -180,28 +180,26 @@ final class Newspack_Popups_Inserter {
 			return $popup_markup . $content;
 		}
 
-		$percentage       = intval( $popup['options']['trigger_scroll_progress'] ) / 100;
-		$total_length     = strlen( $content );
-		$precise_position = $total_length * $percentage;
-
-		$blocks = [];
-		// Match block closing comment.
-		$block_close_pattern = '/<!-- \/wp:[\w-\/]* -->/';
-		// Minus 2 to account for '/' chars.
-		$pattern_string_length = strlen( $block_close_pattern ) - 2;
-		preg_match_all( $block_close_pattern, $content, $blocks, PREG_OFFSET_CAPTURE );
+		$position  = 0;
+		$positions = [];
+		$close_tag = '</p>';
+		while ( stripos( $content, $close_tag, $position ) !== false ) {
+			$position    = stripos( $content, '</p>', $position ) + strlen( $close_tag );
+			$positions[] = $position;
+		}
+		$total_length       = strlen( $content );
+		$percentage         = intval( $popup['options']['trigger_scroll_progress'] ) / 100;
+		$precise_position   = $total_length * $percentage;
 		$insertion_position = $total_length;
-		foreach ( $blocks[0] as $index => $block ) {
-			$block_offest = $block[1];
-			$offset       = $block_offest + $pattern_string_length;
-			if ( $offset >= $precise_position ) {
-				$insertion_position = $offset;
+		foreach ( $positions as $position ) {
+			if ( $position >= $precise_position ) {
+				$insertion_position = $position;
 				break;
 			}
 		}
-
 		$before_popup = substr( $content, 0, $insertion_position );
 		$after_popup  = substr( $content, $insertion_position );
+
 		return $before_popup . $popup_markup . $after_popup;
 	}
 
@@ -213,7 +211,7 @@ final class Newspack_Popups_Inserter {
 	 */
 	public static function popup_shortcode( $atts = array() ) {
 		$previewed_popup_id = Newspack_Popups::previewed_popup_id();
-		if ( $previewed_popup_id ) {
+		if ($previewed_popup_id) {
 			return Newspack_Popups_Model::retrieve_preview_popup( $previewed_popup_id )['markup'];
 		} else {
 			return Newspack_Popups_Model::retrieve_popup_by_id( $atts['id'] )['markup'];
