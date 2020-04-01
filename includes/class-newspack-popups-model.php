@@ -152,12 +152,10 @@ final class Newspack_Popups_Model {
 			'posts_per_page' => 1,
 			'post_status'    => 'publish',
 			'category__in'   => array_column( $post_categories, 'term_id' ),
-			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
-			'meta_query'     => array(
-				'key'     => 'placement',
-				'value'   => 'inline',
-				'compare' => '!=',
-			),
+			'meta_key'       => 'placement',
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+			'meta_value'     => 'inline',
+			'meta_compare'   => '!=',
 		];
 
 		$popups = self::retrieve_popups_with_query( new WP_Query( $args ) );
