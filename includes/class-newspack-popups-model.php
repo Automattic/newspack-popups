@@ -223,14 +223,16 @@ final class Newspack_Popups_Model {
 	 */
 	protected static function retrieve_popups_with_query( WP_Query $query, $include_categories = false ) {
 		$popups = [];
-		while ( $query->have_posts() ) {
-			$query->the_post();
-			$popups[] = self::create_popup_object(
-				get_post( get_the_ID() ),
-				$include_categories
-			);
+		if ( $query->have_posts() ) {
+			while ( $query->have_posts() ) {
+				$query->the_post();
+				$popups[] = self::create_popup_object(
+					get_post( get_the_ID() ),
+					$include_categories
+				);
+			}
+			wp_reset_postdata();
 		}
-		wp_reset_postdata();
 		return $popups;
 	}
 
@@ -363,9 +365,17 @@ final class Newspack_Popups_Model {
 		$has_form                = preg_match( '/<form\s/', $popup['body'] ) !== 0;
 		$has_dismiss_form        = 'inline' !== $popup['options']['placement'];
 		$has_not_interested_form = self::get_dismiss_text( $popup );
-		$has_mailchimp_form      = preg_match( '/wp-block-jetpack-mailchimp/', $popup['body'] ) !== 0;
 		$is_inline               = self::is_inline( $popup );
 		$endpoint                = self::get_dismiss_endpoint();
+
+		// Mailchimp.
+		$mailchimp_form_selector = '';
+		if ( preg_match( '/wp-block-jetpack-mailchimp/', $popup['body'] ) !== 0 ) {
+			$mailchimp_form_selector = '.wp-block-jetpack-mailchimp form';
+		}
+		if ( preg_match( '/mc4wp-form/', $popup['body'] ) !== 0 ) {
+			$mailchimp_form_selector = '.mc4wp-form';
+		}
 
 		$is_amp                   = function_exists( 'is_amp_endpoint' ) && is_amp_endpoint();
 		$custom_form_submit_event = 'amp-form-submit-success';
@@ -462,7 +472,7 @@ final class Newspack_Popups_Model {
 			</script>
 		</amp-analytics>
 
-		<?php if ( $has_mailchimp_form ) : ?>
+		<?php if ( $mailchimp_form_selector ) : ?>
 			<amp-analytics>
 				<script type="application/json">
 					{
@@ -473,7 +483,7 @@ final class Newspack_Popups_Model {
 							"formSubmitSuccess": {
 								"on": "<?php echo esc_attr( $custom_form_submit_event ); ?>",
 								"request": "event",
-								"selector": "#<?php echo esc_attr( $element_id ); ?> .wp-block-jetpack-mailchimp form",
+								"selector": "#<?php echo esc_attr( $element_id ); ?> <?php echo esc_attr( $mailchimp_form_selector ); ?>",
 								"extraUrlParams": {
 									"popup_id": "<?php echo ( esc_attr( $popup['id'] ) ); ?>",
 									"url": "<?php echo esc_url( home_url( $wp->request ) ); ?>",
@@ -561,7 +571,7 @@ final class Newspack_Popups_Model {
 							type="hidden"
 							value="1"
 						/>
-						<button on="tap:<?php echo esc_attr( $element_id ); ?>.hide" aria-label="<?php esc_attr( $dismiss_text ); ?>"><?php echo esc_attr( $dismiss_text ); ?></button>
+						<button on="tap:<?php echo esc_attr( $element_id ); ?>.hide" aria-label="<?php esc_attr( $dismiss_text ); ?>" style="<?php echo esc_attr( self::container_style( $popup ) ); ?>"><?php echo esc_attr( $dismiss_text ); ?></button>
 					</form>
 				<?php endif; ?>
 			</amp-layout>
@@ -605,7 +615,7 @@ final class Newspack_Popups_Model {
 							type="hidden"
 							value="1"
 						/>
-						<button on="tap:<?php echo esc_attr( $element_id ); ?>.hide" aria-label="<?php esc_attr( $dismiss_text ); ?>"><?php echo esc_attr( $dismiss_text ); ?></button>
+						<button on="tap:<?php echo esc_attr( $element_id ); ?>.hide" aria-label="<?php esc_attr( $dismiss_text ); ?>" style="<?php echo esc_attr( self::container_style( $popup ) ); ?>"><?php echo esc_attr( $dismiss_text ); ?></button>
 					</form>
 					<?php endif; ?>
 					<form class="popup-dismiss-form popup-action-form"
@@ -613,7 +623,7 @@ final class Newspack_Popups_Model {
 						action-xhr="<?php echo esc_url( $endpoint ); ?>"
 						target="_top">
 						<?php echo $hidden_fields; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-						<button on="tap:<?php echo esc_attr( $element_id ); ?>.hide" class="newspack-lightbox__close" aria-label="<?php esc_html_e( 'Close Pop-up', 'newspack-popups' ); ?>">
+						<button on="tap:<?php echo esc_attr( $element_id ); ?>.hide" class="newspack-lightbox__close" aria-label="<?php esc_html_e( 'Close Pop-up', 'newspack-popups' ); ?>" style="<?php echo esc_attr( self::container_style( $popup ) ); ?>">
 							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" role="img" aria-hidden="true" focusable="false"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
 						</button>
 					</form>
