@@ -13,7 +13,7 @@ defined( 'ABSPATH' ) || exit;
 final class Newspack_Popups_Model {
 
 	/**
-	 * Retrieve all Popus (first 100).
+	 * Retrieve all Popups (first 100).
 	 *
 	 * @return array Array of Popup objects.
 	 */
@@ -26,9 +26,13 @@ final class Newspack_Popups_Model {
 
 		$sitewide_default_id = get_option( Newspack_Popups::NEWSPACK_POPUPS_SITEWIDE_DEFAULT, null );
 
-		$popups = self::retrieve_popup_with_query( new WP_Query( $args ), true );
+		$popups = self::retrieve_popups_with_query( new WP_Query( $args ), true );
 		foreach ( $popups as &$popup ) {
-			$popup['sitewide_default'] = absint( $sitewide_default_id ) === absint( $popup['id'] );
+			// UI will not allow for setting inline as sitewide default, but there may be
+			// legacy popups from before this update.
+			if ( 'inline' !== $popup['options']['placement'] ) {
+				$popup['sitewide_default'] = absint( $sitewide_default_id ) === absint( $popup['id'] );
+			}
 		}
 		return $popups;
 	}
@@ -44,6 +48,18 @@ final class Newspack_Popups_Model {
 			return new \WP_Error(
 				'newspack_popups_popup_doesnt_exist',
 				esc_html__( 'The Popup specified does not exist.', 'newspack-popups' ),
+				[
+					'status' => 400,
+					'level'  => 'fatal',
+				]
+			);
+		}
+
+		// Such update will not be permitted by the UI, but it's handled just to be explicit about it.
+		if ( 'inline' === $popup['options']['placement'] ) {
+			return new \WP_Error(
+				'newspack_popups_inline_sitewide',
+				esc_html__( 'An inline popup cannot be a sitewide default.', 'newspack-popups' ),
 				[
 					'status' => 400,
 					'level'  => 'fatal',
@@ -103,39 +119,48 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
-	 * Retrieve popup CPT post.
+	 * Retrieve all inline popups.
 	 *
-	 * @param array $categories An array of categories to match.
-	 * @return object Popup object
+	 * @return array Inline popup objects.
 	 */
-	public static function retrieve_popup( $categories = [] ) {
+	public static function retrieve_inline_popups() {
+		$args = [
+			'post_type'   => Newspack_Popups::NEWSPACK_PLUGINS_CPT,
+			'post_status' => 'publish',
+			'meta_key'    => 'placement',
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+			'meta_value'  => 'inline',
+		];
+
+		return self::retrieve_popups_with_query( new WP_Query( $args ) );
+	}
+
+	/**
+	 * Retrieve first overlay popup matching post categries.
+	 *
+	 * @return object|null Popup object.
+	 */
+	public static function retrieve_category_overlay_popup() {
+		$post_categories = get_the_category();
+
+		if ( empty( $post_categories ) ) {
+			return null;
+		}
+
 		$args = [
 			'post_type'      => Newspack_Popups::NEWSPACK_PLUGINS_CPT,
 			'posts_per_page' => 1,
 			'post_status'    => 'publish',
+			'category__in'   => array_column( $post_categories, 'term_id' ),
+			'meta_key'       => 'placement',
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+			'meta_value'     => 'inline',
+			'meta_compare'   => '!=',
 		];
 
-		$category_ids = array_map(
-			function( $category ) {
-				return $category->term_id;
-			},
-			$categories
-		);
-		if ( count( $category_ids ) ) {
-			$args['category__in'] = $category_ids;
-		} else {
-			$args['tax_query'] = [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
-				[
-					'taxonomy' => 'category',
-					'operator' => 'NOT EXISTS',
-				],
-			];
-		}
-
-		$popups = self::retrieve_popup_with_query( new WP_Query( $args ) );
+		$popups = self::retrieve_popups_with_query( new WP_Query( $args ) );
 		return count( $popups ) > 0 ? $popups[0] : null;
 	}
-
 
 	/**
 	 * Retrieve popup preview CPT post.
@@ -144,10 +169,14 @@ final class Newspack_Popups_Model {
 	 * @return object Popup object.
 	 */
 	public static function retrieve_preview_popup( $post_id ) {
-		// A preview is stored in an autosave.
-		$autosave = wp_get_post_autosave( $post_id );
+		// Up-to-date post data is stored in an autosave.
+		$autosave    = wp_get_post_autosave( $post_id );
+		$post_object = $autosave ? $autosave : get_post( $post_id );
+		// Setting proper id for correct API calls.
+		$post_object->ID = $post_id;
+
 		return self::create_popup_object(
-			$autosave ? $autosave : get_post( $post_id ),
+			$post_object,
 			false,
 			[
 				'background_color'        => filter_input( INPUT_GET, 'background_color', FILTER_SANITIZE_STRING ),
@@ -179,18 +208,18 @@ final class Newspack_Popups_Model {
 			'p'              => $post_id,
 		];
 
-		$popups = self::retrieve_popup_with_query( new WP_Query( $args ) );
+		$popups = self::retrieve_popups_with_query( new WP_Query( $args ) );
 		return count( $popups ) > 0 ? $popups[0] : null;
 	}
 
 	/**
-	 * Retrieve popup CPT post.
+	 * Retrieve popup CPT posts.
 	 *
 	 * @param WP_Query $query The query to use.
 	 * @param boolean  $include_categories If true, returned objects will include assigned categories.
 	 * @return array Popup objects array
 	 */
-	protected static function retrieve_popup_with_query( WP_Query $query, $include_categories = false ) {
+	protected static function retrieve_popups_with_query( WP_Query $query, $include_categories = false ) {
 		$popups = [];
 		if ( $query->have_posts() ) {
 			while ( $query->have_posts() ) {
@@ -524,7 +553,7 @@ final class Newspack_Popups_Model {
 		ob_start();
 		?>
 			<?php self::insert_event_tracking( $popup, $element_id ); ?>
-			<amp-layout amp-access="displayPopup" amp-access-hide class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>" role="button" tabindex="0" style="<?php echo esc_attr( self::container_style( $popup ) ); ?>" id="<?php echo esc_attr( $element_id ); ?>">
+			<amp-layout amp-access="popup_<?php echo esc_attr( $popup['id'] ); ?>.displayPopup" amp-access-hide class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>" role="button" tabindex="0" style="<?php echo esc_attr( self::container_style( $popup ) ); ?>" id="<?php echo esc_attr( $element_id ); ?>">
 				<?php if ( ! empty( $popup['title'] ) && $display_title ) : ?>
 					<h1 class="newspack-popup-title"><?php echo esc_html( $popup['title'] ); ?></h1>
 				<?php endif; ?>
@@ -566,7 +595,7 @@ final class Newspack_Popups_Model {
 
 		ob_start();
 		?>
-		<amp-layout amp-access="displayPopup" amp-access-hide class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>" role="button" tabindex="0" id="<?php echo esc_attr( $element_id ); ?>">
+		<amp-layout amp-access="popup_<?php echo esc_attr( $popup['id'] ); ?>.displayPopup" amp-access-hide class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>" role="button" tabindex="0" id="<?php echo esc_attr( $element_id ); ?>">
 			<div class="newspack-popup-wrapper" style="<?php echo esc_attr( self::container_style( $popup ) ); ?>">
 				<div class="newspack-popup">
 					<?php if ( ! empty( $popup['title'] ) && $display_title ) : ?>
