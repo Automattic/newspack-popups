@@ -66,7 +66,7 @@ final class Newspack_Popups_Inserter {
 
 		$popups_to_display = array_filter(
 			$popups_to_maybe_display,
-			[ 'self', 'should_display' ]
+			[ __CLASS__, 'should_display' ]
 		);
 		if ( ! empty( $popups_to_display ) ) {
 			return $popups_to_display;
@@ -211,10 +211,13 @@ final class Newspack_Popups_Inserter {
 	 */
 	public static function popup_shortcode( $atts = array() ) {
 		$previewed_popup_id = Newspack_Popups::previewed_popup_id();
-		if ($previewed_popup_id) {
-			return Newspack_Popups_Model::retrieve_preview_popup( $previewed_popup_id )['markup'];
-		} else {
-			return Newspack_Popups_Model::retrieve_popup_by_id( $atts['id'] )['markup'];
+		if ( $previewed_popup_id ) {
+			$found_popup = Newspack_Popups_Model::retrieve_preview_popup( $previewed_popup_id );
+		} elseif ( isset( $atts['id'] ) ) {
+			$found_popup = Newspack_Popups_Model::retrieve_popup_by_id( $atts['id'] );
+		}
+		if ( isset( $found_popup['markup'] ) ) {
+			return $found_popup['markup'];
 		}
 	}
 
