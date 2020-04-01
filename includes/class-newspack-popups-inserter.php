@@ -174,16 +174,14 @@ final class Newspack_Popups_Inserter {
 
 		$blocks = [];
 		// Match block closing comment.
-		$block_close_pattern = '/<!-- \/wp:[\w-\/]* -->/';
-		// Minus 2 to account for '/' chars.
-		$pattern_string_length = strlen( $block_close_pattern ) - 2;
+		// hyphens have to be escaped for some PHP versions: https://stackoverflow.com/a/55606868/3772847.
+		$block_close_pattern = '/<!\-\- \/wp:[\w\-\/]* \-\->/';
 		preg_match_all( $block_close_pattern, $content, $blocks, PREG_OFFSET_CAPTURE );
 		$insertion_position = $total_length;
 		foreach ( $blocks[0] as $index => $block ) {
 			$block_offest = $block[1];
-			$offset       = $block_offest + $pattern_string_length;
-			if ( $offset >= $precise_position ) {
-				$insertion_position = $offset;
+			if ( $block_offest >= $precise_position ) {
+				$insertion_position = $block_offest;
 				break;
 			}
 		}
