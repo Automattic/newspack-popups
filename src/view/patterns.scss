@@ -24,5 +24,10 @@
 				margin-bottom: -0.75rem;
 			}
 		}
+
+		.newspack-lightbox-has-title.newspack-inline-popup &,
+		.newspack-lightbox-has-title.newspack-lightbox-placement-center & {
+			margin-top: 0;
+		}
 	}
 }
