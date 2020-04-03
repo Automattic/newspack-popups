@@ -348,6 +348,9 @@ final class Newspack_Popups_Model {
 	 * @return string Prints the generated amp-analytics element.
 	 */
 	protected static function insert_event_tracking( $popup, $element_id ) {
+		if ( Newspack_Popups::previewed_popup_id() ) {
+			return '';
+		}
 		if ( class_exists( '\Google\Site_Kit\Context', '\Google\Site_Kit\Modules\Analytics' ) ) {
 			$analytics           = new \Google\Site_Kit\Modules\Analytics( new \Google\Site_Kit\Context( GOOGLESITEKIT_PLUGIN_MAIN_FILE ) );
 			$google_analytics_id = $analytics->get_settings()->get()['propertyID'];
