@@ -92,6 +92,10 @@ final class Newspack_Popups_Inserter {
 	 * @param string $content The content of the post.
 	 */
 	public static function insert_popups_in_content( $content = '' ) {
+		if ( self::assess_amp_form_issue( $content ) ) {
+			return $content;
+		}
+
 		if ( is_admin() || ! is_singular() ) {
 			return $content;
 		}
@@ -269,9 +273,34 @@ final class Newspack_Popups_Inserter {
 	}
 
 	/**
+	 * Disable popups on non-AMP pages with a form with POST method.
+	 * More context: https://github.com/ampproject/amphtml/issues/27638.
+	 *
+	 * @param string $content The content of the post.
+	 * @return bool True if popups should be disabled for current page.
+	 */
+	public static function assess_amp_form_issue( $content = false ) {
+		if ( is_admin() || ! is_singular() ) {
+			return false;
+		}
+		if ( ! $content ) {
+			$content = get_the_content();
+		}
+		$is_amp = function_exists( 'is_amp_endpoint' ) && is_amp_endpoint();
+
+		if ( ! $is_amp ) {
+			return preg_match( "/<form.*method=[\"']post[\"']/", $content );
+		}
+		return false;
+	}
+
+	/**
 	 * Register and enqueue all required AMP scripts, if needed.
 	 */
 	public static function register_amp_scripts() {
+		if ( self::assess_amp_form_issue() ) {
+			return;
+		}
 		if ( ! is_admin() && ! wp_script_is( 'amp-runtime', 'registered' ) ) {
 		// phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion
 			wp_register_script(
