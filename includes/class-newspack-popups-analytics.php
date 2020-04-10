@@ -13,28 +13,12 @@ defined( 'ABSPATH' ) || exit;
 final class Newspack_Popups_Analytics {
 
 	/**
-	 * Popups to add analytics for.
-	 *
-	 * @var array $popups An array of format 'element ID => popup object'.
-	 */
-	protected static $popups = [];
-
-	/**
 	 * Constructor.
 	 */
 	public function __construct() {
 		add_filter( 'googlesitekit_amp_gtag_opt', [ $this, 'insert_analytics' ] );
-		add_filter( 'googlesitekit_gtag_opt', [ $this, 'insert_analytics' ] ); // @todo should this be here?
+		add_filter( 'googlesitekit_gtag_opt', [ $this, 'insert_analytics' ] );
 		add_action( 'wp_footer', [ $this, 'print_extra_analytics' ] );
-	}
-
-	/**
-	 * Add GA event tracking to a popup.
-	 *
-	 * @param object $popup A popup object.
-	 */
-	public static function add_event_tracking( $popup ) {
-		self::$popups[ $popup['id'] ] = $popup;
 	}
 
 	/**
@@ -53,7 +37,7 @@ final class Newspack_Popups_Analytics {
 		$custom_form_submit_event = ( function_exists( 'is_amp_endpoint' ) && is_amp_endpoint() ) ? 'amp-form-submit-success' : 'amp-form-submit';
 		$event_category           = __( 'Newspack Announcement', 'newspack-popups' );
 
-		foreach ( self::$popups as $popup ) {
+		foreach ( Newspack_Popups_Inserter::popups_for_post() as $popup ) {
 			$element_id = 'lightbox-popup-' . $popup['id'];
 			/* translators: %$1s: popup title %2$d popup ID */
 			$event_label             = sprintf( __( 'Newspack Announcement: %1$s (%2$d)', 'newspack-popups' ), $popup['title'], $popup['id'] );
@@ -160,7 +144,7 @@ final class Newspack_Popups_Analytics {
 			return;
 		}
 
-		foreach ( self::$popups as $popup ) {
+		foreach ( Newspack_Popups_Inserter::popups_for_post() as $popup ) {
 			if ( Newspack_Popups_Model::get_mailchimp_form_selector( $popup ) ) {
 				self::print_extra_mailchimp_analytics( $popup );
 			}

@@ -372,7 +372,6 @@ final class Newspack_Popups_Model {
 		$dismiss_text  = self::get_dismiss_text( $popup );
 		$classes       = [ 'newspack-inline-popup' ];
 		$classes[]     = ( ! empty( $popup['title'] ) && $display_title ) ? 'newspack-lightbox-has-title' : null;
-		Newspack_Popups_Analytics::add_event_tracking( $popup );
 		ob_start();
 		?>
 			<amp-layout amp-access="popup_<?php echo esc_attr( $popup['id'] ); ?>.displayPopup" amp-access-hide class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>" role="button" tabindex="0" style="<?php echo esc_attr( self::container_style( $popup ) ); ?>" id="<?php echo esc_attr( $element_id ); ?>">
@@ -502,7 +501,6 @@ final class Newspack_Popups_Model {
 			</script>
 		</amp-animation>
 		<?php
-		Newspack_Popups_Analytics::add_event_tracking( $popup );
 		return ob_get_clean();
 	}
 
