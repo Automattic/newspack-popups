@@ -393,7 +393,7 @@ final class Newspack_Popups_Model {
 					"vars" : {
 						"gtag_id": "<?php echo esc_attr( $google_analytics_id ); ?>",
 						"config" : {
-							"<?php echo esc_attr( $google_analytics_id ); ?>": { "groups": "default" }
+							"<?php echo esc_attr( $google_analytics_id ); ?>": { "groups": "default", "send_page_view": false }
 						}
 					},
 					"triggers": {
