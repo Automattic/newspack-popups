@@ -348,6 +348,9 @@ final class Newspack_Popups_Model {
 	 * @return string Prints the generated amp-analytics element.
 	 */
 	protected static function insert_event_tracking( $popup, $element_id ) {
+		if ( Newspack_Popups::previewed_popup_id() ) {
+			return '';
+		}
 		if ( class_exists( '\Google\Site_Kit\Context', '\Google\Site_Kit\Modules\Analytics' ) ) {
 			$analytics           = new \Google\Site_Kit\Modules\Analytics( new \Google\Site_Kit\Context( GOOGLESITEKIT_PLUGIN_MAIN_FILE ) );
 			$google_analytics_id = $analytics->get_settings()->get()['propertyID'];
@@ -390,7 +393,7 @@ final class Newspack_Popups_Model {
 					"vars" : {
 						"gtag_id": "<?php echo esc_attr( $google_analytics_id ); ?>",
 						"config" : {
-							"<?php echo esc_attr( $google_analytics_id ); ?>": { "groups": "default" }
+							"<?php echo esc_attr( $google_analytics_id ); ?>": { "groups": "default", "send_page_view": false }
 						}
 					},
 					"triggers": {
@@ -545,11 +548,12 @@ final class Newspack_Popups_Model {
 	public static function generate_inline_popup( $popup ) {
 		global $wp;
 		$element_id    = 'lightbox' . rand(); // phpcs:ignore WordPress.WP.AlternativeFunctions.rand_rand
-		$classes       = [ 'newspack-inline-popup' ];
 		$endpoint      = self::get_dismiss_endpoint();
 		$display_title = $popup['options']['display_title'];
 		$hidden_fields = self::get_hidden_fields( $popup );
 		$dismiss_text  = self::get_dismiss_text( $popup );
+		$classes       = [ 'newspack-inline-popup' ];
+		$classes[]     = ( ! empty( $popup['title'] ) && $display_title ) ? 'newspack-lightbox-has-title' : null;
 		ob_start();
 		?>
 			<?php self::insert_event_tracking( $popup, $element_id ); ?>
@@ -586,12 +590,13 @@ final class Newspack_Popups_Model {
 	public static function generate_popup( $popup ) {
 		$element_id      = 'lightbox' . rand(); // phpcs:ignore WordPress.WP.AlternativeFunctions.rand_rand
 		$endpoint        = self::get_dismiss_endpoint();
-		$classes         = [ 'newspack-lightbox', 'newspack-lightbox-placement-' . $popup['options']['placement'] ];
 		$dismiss_text    = self::get_dismiss_text( $popup );
 		$display_title   = $popup['options']['display_title'];
 		$overlay_opacity = absint( $popup['options']['overlay_opacity'] ) / 100;
 		$overlay_color   = $popup['options']['overlay_color'];
 		$hidden_fields   = self::get_hidden_fields( $popup );
+		$classes         = [ 'newspack-lightbox', 'newspack-lightbox-placement-' . $popup['options']['placement'] ];
+		$classes[]       = ( ! empty( $popup['title'] ) && $display_title ) ? 'newspack-lightbox-has-title' : null;
 
 		ob_start();
 		?>
