@@ -1,3 +1,16 @@
+# [1.3.0](https://github.com/Automattic/newspack-popups/compare/v1.2.0...v1.3.0) (2020-04-21)
+
+
+### Bug Fixes
+
+* dont count pageviews when initializing popup analytics ([969d3b6](https://github.com/Automattic/newspack-popups/commit/969d3b6c4b1e7d23ea49a02d25f49bfbbef61f85))
+* prevent reporting analytics data for popup previews ([5eaec91](https://github.com/Automattic/newspack-popups/commit/5eaec9147eac9f3a5cc12c62ee3f05ddff061de7))
+
+
+### Features
+
+* add class to pop-up if display title is enabled ([#98](https://github.com/Automattic/newspack-popups/issues/98)) ([ee37d73](https://github.com/Automattic/newspack-popups/commit/ee37d7379c92fd0b40d5ca6bec2505940c673e73))
+
 # [1.2.0](https://github.com/Automattic/newspack-popups/compare/v1.1.1...v1.2.0) (2020-04-01)
 
 
