@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/Automattic/newspack-popups/compare/v1.3.0...v1.3.1) (2020-04-22)
+
+
+### Bug Fixes
+
+* **amp:** disable popups on non-AMP pages with POST form elements ([366407d](https://github.com/Automattic/newspack-popups/commit/366407d4cebaede14c7bb10d0e3a8509fd86ab15))
+
 # [1.3.0](https://github.com/Automattic/newspack-popups/compare/v1.2.0...v1.3.0) (2020-04-21)
 
 
