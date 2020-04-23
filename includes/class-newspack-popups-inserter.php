@@ -84,6 +84,13 @@ final class Newspack_Popups_Inserter {
 		add_action( 'after_header', [ $this, 'insert_popups_after_header' ] ); // This is a Newspack theme hook. When used with other themes, popups won't be inserted on archive pages.
 		add_action( 'wp_head', [ $this, 'insert_popups_amp_access' ] );
 		add_action( 'wp_head', [ $this, 'register_amp_scripts' ] );
+
+		add_filter(
+			'newspack_newsletters_assess_has_disabled_popups',
+			function () {
+				return get_post_meta( get_the_ID(), 'newspack_popups_has_disabled_popups', true );
+			}
+		);
 	}
 
 	/**
@@ -274,7 +281,7 @@ final class Newspack_Popups_Inserter {
 	 * @return bool True if popups should be disabled for current page.
 	 */
 	public static function assess_has_disabled_popups() {
-		return get_post_meta( get_the_ID(), 'newspack_popups_has_disabled_popups', true );
+		return apply_filters( 'newspack_newsletters_assess_has_disabled_popups', [] );
 	}
 
 	/**
