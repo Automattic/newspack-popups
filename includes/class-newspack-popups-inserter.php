@@ -92,7 +92,7 @@ final class Newspack_Popups_Inserter {
 	 * @param string $content The content of the post.
 	 */
 	public static function insert_popups_in_content( $content = '' ) {
-		if ( self::assess_amp_form_issue( $content ) ) {
+		if ( self::assess_has_disabled_popups( $content ) ) {
 			return $content;
 		}
 
@@ -273,32 +273,19 @@ final class Newspack_Popups_Inserter {
 	}
 
 	/**
-	 * Disable popups on non-AMP pages with a form with POST method.
-	 * More context: https://github.com/ampproject/amphtml/issues/27638.
+	 * Disable popups on posts and pages which have newspack_popups_has_disabled_popups.
 	 *
-	 * @param string $content The content of the post.
 	 * @return bool True if popups should be disabled for current page.
 	 */
-	public static function assess_amp_form_issue( $content = false ) {
-		if ( is_admin() || ! is_singular() ) {
-			return false;
-		}
-		if ( ! $content ) {
-			$content = get_the_content();
-		}
-		$is_amp = function_exists( 'is_amp_endpoint' ) && is_amp_endpoint();
-
-		if ( ! $is_amp ) {
-			return preg_match( "/<form.*method=[\"']post[\"']/", $content );
-		}
-		return false;
+	public static function assess_has_disabled_popups() {
+		return get_post_meta( get_the_ID(), 'newspack_popups_has_disabled_popups', true );
 	}
 
 	/**
 	 * Register and enqueue all required AMP scripts, if needed.
 	 */
 	public static function register_amp_scripts() {
-		if ( self::assess_amp_form_issue() ) {
+		if ( self::assess_has_disabled_popups() ) {
 			return;
 		}
 		if ( ! is_admin() && ! wp_script_is( 'amp-runtime', 'registered' ) ) {
