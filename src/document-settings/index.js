@@ -4,24 +4,24 @@
 import { __ } from '@wordpress/i18n';
 import { withSelect, withDispatch } from '@wordpress/data';
 import { compose } from '@wordpress/compose';
-import { PluginPostStatusInfo } from '@wordpress/edit-post';
+import { PluginDocumentSettingPanel } from '@wordpress/edit-post';
 import { registerPlugin } from '@wordpress/plugins';
-import { FormToggle } from '@wordpress/components';
+import { ToggleControl } from '@wordpress/components';
 
-const PostStatusElement = ( { hasDisabledPopups, onChange } ) => {
-	return (
-		<PluginPostStatusInfo>
-			<label htmlFor="popups-disabled">{ __( 'Disable Popups', 'newspack-popups' ) }</label>
-			<FormToggle
-				checked={ hasDisabledPopups }
-				onChange={ () => onChange( ! hasDisabledPopups ) }
-				id="popups-disabled"
-			/>
-		</PluginPostStatusInfo>
-	);
-};
+const PopupsSettingsPanel = ( { hasDisabledPopups, onChange } ) => (
+	<PluginDocumentSettingPanel
+		name="newsletters-popups-settings-panel"
+		title={ __( 'Newspack Popups Settings', 'newspack-newsletters' ) }
+	>
+		<ToggleControl
+			checked={ hasDisabledPopups }
+			onChange={ () => onChange( ! hasDisabledPopups ) }
+			label={ __( 'Disable Popups on this post or page', 'newspack-popups' ) }
+		/>
+	</PluginDocumentSettingPanel>
+);
 
-const PostStatusElementWithSelect = compose( [
+const PopupsSettingsPanelWithSelect = compose( [
 	withSelect( select => {
 		const { getEditedPostAttribute } = select( 'core/editor' );
 		const meta = getEditedPostAttribute( 'meta' );
@@ -35,8 +35,9 @@ const PostStatusElementWithSelect = compose( [
 			},
 		};
 	} ),
-] )( PostStatusElement );
+] )( PopupsSettingsPanel );
 
 registerPlugin( 'newspack-popups-post-status-info', {
-	render: PostStatusElementWithSelect,
+	render: PopupsSettingsPanelWithSelect,
+	icon: false,
 } );
