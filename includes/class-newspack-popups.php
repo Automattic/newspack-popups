@@ -221,6 +221,17 @@ final class Newspack_Popups {
 			]
 		);
 
+		// Meta field for all post types.
+		\register_meta(
+			'post',
+			'newspack_popups_has_disabled_popups',
+			[
+				'show_in_rest'  => true,
+				'type'          => 'boolean',
+				'single'        => true,
+				'auth_callback' => '__return_true',
+			]
+		);
 	}
 
 	/**
@@ -228,7 +239,19 @@ final class Newspack_Popups {
 	 */
 	public static function enqueue_block_editor_assets() {
 		$screen = get_current_screen();
+
 		if ( self::NEWSPACK_PLUGINS_CPT !== $screen->post_type ) {
+			if ( 'page' !== $screen->post_type || 'post' !== $screen->post_type ) {
+				// Script for global settings.
+				\wp_enqueue_script(
+					'newspack-popups',
+					plugins_url( '../dist/documentSettings.js', __FILE__ ),
+					[],
+					filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/documentSettings.js' ),
+					true
+				);
+			}
+
 			return;
 		}
 
