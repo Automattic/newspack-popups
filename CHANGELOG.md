@@ -1,3 +1,19 @@
+# [1.4.0](https://github.com/Automattic/newspack-popups/compare/v1.3.1...v1.4.0) (2020-04-24)
+
+
+### Bug Fixes
+
+* check if meta exists ([37786da](https://github.com/Automattic/newspack-popups/commit/37786daa4ce92d1b82b3d5938270d82c140ea719))
+
+
+### Features
+
+* add as filter ([9f74644](https://github.com/Automattic/newspack-popups/commit/9f74644494cc98813e6429e5c9b6333c0f059725))
+* add assessment in insert_popups_amp_access ([09c9d5d](https://github.com/Automattic/newspack-popups/commit/09c9d5dcc464765c05003064f36e09cdc3d8b6a1))
+* change settings UI ([e5bef8f](https://github.com/Automattic/newspack-popups/commit/e5bef8f67a2b6485648ddc024942accbc738ae71))
+* enable disabling popups for specific posts and pages ([2cdaf31](https://github.com/Automattic/newspack-popups/commit/2cdaf316755e3f7f4e76650b8863b7026523d20b))
+* enqueue script for posts and pages only ([4d15744](https://github.com/Automattic/newspack-popups/commit/4d1574409e2251afee3703ebce848a7cc5b6340a))
+
 ## [1.3.1](https://github.com/Automattic/newspack-popups/compare/v1.3.0...v1.3.1) (2020-04-22)
 
 
