@@ -25,7 +25,7 @@ const PopupsSettingsPanelWithSelect = compose( [
 	withSelect( select => {
 		const { getEditedPostAttribute } = select( 'core/editor' );
 		const meta = getEditedPostAttribute( 'meta' );
-		return { hasDisabledPopups: meta.newspack_popups_has_disabled_popups };
+		return { hasDisabledPopups: meta && meta.newspack_popups_has_disabled_popups };
 	} ),
 	withDispatch( dispatch => {
 		const { editPost } = dispatch( 'core/editor' );
