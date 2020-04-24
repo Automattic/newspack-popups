@@ -241,14 +241,16 @@ final class Newspack_Popups {
 		$screen = get_current_screen();
 
 		if ( self::NEWSPACK_PLUGINS_CPT !== $screen->post_type ) {
-			// Script for global settings.
-			\wp_enqueue_script(
-				'newspack-popups',
-				plugins_url( '../dist/documentSettings.js', __FILE__ ),
-				[],
-				filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/documentSettings.js' ),
-				true
-			);
+			if ( 'page' !== $screen->post_type || 'post' !== $screen->post_type ) {
+				// Script for global settings.
+				\wp_enqueue_script(
+					'newspack-popups',
+					plugins_url( '../dist/documentSettings.js', __FILE__ ),
+					[],
+					filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/documentSettings.js' ),
+					true
+				);
+			}
 
 			return;
 		}
