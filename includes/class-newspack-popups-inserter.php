@@ -103,6 +103,12 @@ final class Newspack_Popups_Inserter {
 			return $content;
 		}
 
+		// Don't inject inline popups on paywalled posts.
+		// It doesn't make sense with a paywall message and also causes an infinite loop.
+		if ( function_exists( 'wc_memberships_is_post_content_restricted' ) && wc_memberships_is_post_content_restricted() ) {
+			return $content;
+		}
+
 		$popups = self::popups_for_post();
 
 		if ( empty( $popups ) ) {
