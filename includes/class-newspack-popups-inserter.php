@@ -184,23 +184,21 @@ final class Newspack_Popups_Inserter {
 		$total_length     = strlen( $content );
 		$precise_position = $total_length * $percentage;
 
-		$blocks = [];
-		// Match block closing comment.
-		// hyphens have to be escaped for some PHP versions: https://stackoverflow.com/a/55606868/3772847.
-		$block_close_pattern = '/<!\-\- \/wp:[\w\-\/]* \-\->/';
-		preg_match_all( $block_close_pattern, $content, $blocks, PREG_OFFSET_CAPTURE );
-		$insertion_position = $total_length;
-		foreach ( $blocks[0] as $index => $block ) {
-			$block_offest = $block[1];
-			if ( $block_offest >= $precise_position ) {
-				$insertion_position = $block_offest;
-				break;
+		$blocks      = parse_blocks( $content );
+		$pos         = 0;
+		$output      = '';
+		$is_inserted = false;
+		foreach ( $blocks as $block ) {
+			$block_content = render_block( $block );
+			$pos          += strlen( $block_content );
+			if ( ! $is_inserted && $pos >= $precise_position ) {
+				$output     .= '<!-- wp:shortcode -->' . $popup_markup . '<!-- /wp:shortcode -->';
+				$is_inserted = true;
 			}
+			$output .= $block_content;
 		}
 
-		$before_popup = substr( $content, 0, $insertion_position );
-		$after_popup  = substr( $content, $insertion_position );
-		return $before_popup . $popup_markup . $after_popup;
+		return $output;
 	}
 
 	/**
