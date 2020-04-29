@@ -347,13 +347,15 @@ final class Newspack_Popups {
 		if ( $update ) {
 			return;
 		}
+		$placement = isset( $_GET['placement'] ) && 'inline' === sanitize_text_field( $_GET['placement'] ) ? 'inline' : 'center'; //phpcs:ignore
+
 		update_post_meta( $post_id, 'background_color', '#FFFFFF' );
 		update_post_meta( $post_id, 'display_title', false );
 		update_post_meta( $post_id, 'dismiss_text', __( "I'm not interested", 'newspack' ) );
 		update_post_meta( $post_id, 'frequency', 'test' );
 		update_post_meta( $post_id, 'overlay_color', '#000000' );
 		update_post_meta( $post_id, 'overlay_opacity', 30 );
-		update_post_meta( $post_id, 'placement', 'center' );
+		update_post_meta( $post_id, 'placement', $placement );
 		update_post_meta( $post_id, 'trigger_type', 'time' );
 		update_post_meta( $post_id, 'trigger_delay', 3 );
 		update_post_meta( $post_id, 'trigger_scroll_progress', 30 );
