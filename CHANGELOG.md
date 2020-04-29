@@ -1,3 +1,10 @@
+## [1.4.1](https://github.com/Automattic/newspack-popups/compare/v1.4.0...v1.4.1) (2020-04-29)
+
+
+### Bug Fixes
+
+* prevent infinite loop with inline popups and paywalled content ([83633ee](https://github.com/Automattic/newspack-popups/commit/83633ee6ab04b5c773bfe482848688d5d803010a))
+
 # [1.4.0](https://github.com/Automattic/newspack-popups/compare/v1.3.1...v1.4.0) (2020-04-24)
 
 
