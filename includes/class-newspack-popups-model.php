@@ -119,6 +119,65 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
+	 * Set options for a Popup.
+	 *
+	 * @param integer $id ID of Popup.
+	 * @param array   $options Array of options to update.
+	 */
+	public static function set_popup_options( $id, $options ) {
+		$popup = self::retrieve_popup_by_id( $id );
+		if ( ! $popup ) {
+			return new \WP_Error(
+				'newspack_popups_popup_doesnt_exist',
+				esc_html__( 'The Popup specified does not exist.', 'newspack-popups' ),
+				[
+					'status' => 400,
+					'level'  => 'fatal',
+				]
+			);
+		}
+		foreach ( $options as $key => $value ) {
+			switch ( $key ) {
+				case 'frequency':
+					if ( ! in_array( $value, [ 'test', 'never', 'once', 'daily', 'always' ] ) ) {
+						return new \WP_Error(
+							'newspack_popups_invalid_option_value',
+							esc_html__( 'Invalid frequency value.', 'newspack-popups' ),
+							[
+								'status' => 400,
+								'level'  => 'fatal',
+							]
+						);
+					}
+					update_post_meta( $id, $key, $value );
+					break;
+				case 'placement':
+					if ( ! in_array( $value, [ 'center', 'top', 'bottom', 'inline' ] ) ) {
+						return new \WP_Error(
+							'newspack_popups_invalid_option_value',
+							esc_html__( 'Invalid placement value.', 'newspack-popups' ),
+							[
+								'status' => 400,
+								'level'  => 'fatal',
+							]
+						);
+					}
+					update_post_meta( $id, $key, $value );
+					break;
+				default:
+					return new \WP_Error(
+						'newspack_popups_invalid_option',
+						esc_html__( 'Invalid Pop-ups option.', 'newspack-popups' ),
+						[
+							'status' => 400,
+							'level'  => 'fatal',
+						]
+					);
+			}
+		}
+	}
+
+	/**
 	 * Retrieve all inline popups.
 	 *
 	 * @return array Inline popup objects.
