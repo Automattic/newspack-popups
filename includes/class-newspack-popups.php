@@ -62,20 +62,20 @@ final class Newspack_Popups {
 	 */
 	public static function register_cpt() {
 		$labels = [
-			'name'               => _x( 'Pop-ups', 'post type general name', 'newspack-popups' ),
-			'singular_name'      => _x( 'Pop-up', 'post type singular name', 'newspack-popups' ),
-			'menu_name'          => _x( 'Pop-ups', 'admin menu', 'newspack-popups' ),
-			'name_admin_bar'     => _x( 'Pop-up', 'add new on admin bar', 'newspack-popups' ),
+			'name'               => _x( 'Campaigns', 'post type general name', 'newspack-popups' ),
+			'singular_name'      => _x( 'Campaign', 'post type singular name', 'newspack-popups' ),
+			'menu_name'          => _x( 'Campaigns', 'admin menu', 'newspack-popups' ),
+			'name_admin_bar'     => _x( 'Campaign', 'add new on admin bar', 'newspack-popups' ),
 			'add_new'            => _x( 'Add New', 'popup', 'newspack-popups' ),
-			'add_new_item'       => __( 'Add New Pop-up', 'newspack-popups' ),
-			'new_item'           => __( 'New Pop-up', 'newspack-popups' ),
-			'edit_item'          => __( 'Edit Pop-up', 'newspack-popups' ),
-			'view_item'          => __( 'View Pop-up', 'newspack-popups' ),
-			'all_items'          => __( 'All Pop-ups', 'newspack-popups' ),
-			'search_items'       => __( 'Search Pop-ups', 'newspack-popups' ),
-			'parent_item_colon'  => __( 'Parent Pop-ups:', 'newspack-popups' ),
-			'not_found'          => __( 'No pop-ups found.', 'newspack-popups' ),
-			'not_found_in_trash' => __( 'No pop-ups found in Trash.', 'newspack-popups' ),
+			'add_new_item'       => __( 'Add New Campaign', 'newspack-popups' ),
+			'new_item'           => __( 'New Campaign', 'newspack-popups' ),
+			'edit_item'          => __( 'Edit Campaign', 'newspack-popups' ),
+			'view_item'          => __( 'View Campaign', 'newspack-popups' ),
+			'all_items'          => __( 'All Campaigns', 'newspack-popups' ),
+			'search_items'       => __( 'Search Campaigns', 'newspack-popups' ),
+			'parent_item_colon'  => __( 'Parent Campaigns:', 'newspack-popups' ),
+			'not_found'          => __( 'No Campaigns found.', 'newspack-popups' ),
+			'not_found_in_trash' => __( 'No Campaigns found in Trash.', 'newspack-popups' ),
 		];
 
 		$cpt_args = [

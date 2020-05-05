@@ -47,7 +47,7 @@ final class Newspack_Popups_Model {
 		if ( ! $popup ) {
 			return new \WP_Error(
 				'newspack_popups_popup_doesnt_exist',
-				esc_html__( 'The Popup specified does not exist.', 'newspack-popups' ),
+				esc_html__( 'The Campaign specified does not exist.', 'newspack-popups' ),
 				[
 					'status' => 400,
 					'level'  => 'fatal',
@@ -59,7 +59,7 @@ final class Newspack_Popups_Model {
 		if ( 'inline' === $popup['options']['placement'] ) {
 			return new \WP_Error(
 				'newspack_popups_inline_sitewide',
-				esc_html__( 'An inline popup cannot be a sitewide default.', 'newspack-popups' ),
+				esc_html__( 'An inline Campaign cannot be a sitewide default.', 'newspack-popups' ),
 				[
 					'status' => 400,
 					'level'  => 'fatal',
@@ -79,7 +79,7 @@ final class Newspack_Popups_Model {
 		if ( ! $popup ) {
 			return new \WP_Error(
 				'newspack_popups_popup_doesnt_exist',
-				esc_html__( 'The Popup specified does not exist.', 'newspack-popups' ),
+				esc_html__( 'The Campaign specified does not exist.', 'newspack-popups' ),
 				[
 					'status' => 400,
 					'level'  => 'fatal',
@@ -102,7 +102,7 @@ final class Newspack_Popups_Model {
 		if ( ! $popup ) {
 			return new \WP_Error(
 				'newspack_popups_popup_doesnt_exist',
-				esc_html__( 'The Popup specified does not exist.', 'newspack-popups' ),
+				esc_html__( 'The Campaign specified does not exist.', 'newspack-popups' ),
 				[
 					'status' => 400,
 					'level'  => 'fatal',
@@ -129,7 +129,7 @@ final class Newspack_Popups_Model {
 		if ( ! $popup ) {
 			return new \WP_Error(
 				'newspack_popups_popup_doesnt_exist',
-				esc_html__( 'The Popup specified does not exist.', 'newspack-popups' ),
+				esc_html__( 'The Campaign specified does not exist.', 'newspack-popups' ),
 				[
 					'status' => 400,
 					'level'  => 'fatal',
@@ -167,7 +167,7 @@ final class Newspack_Popups_Model {
 				default:
 					return new \WP_Error(
 						'newspack_popups_invalid_option',
-						esc_html__( 'Invalid Pop-ups option.', 'newspack-popups' ),
+						esc_html__( 'Invalid Campaign option.', 'newspack-popups' ),
 						[
 							'status' => 400,
 							'level'  => 'fatal',
