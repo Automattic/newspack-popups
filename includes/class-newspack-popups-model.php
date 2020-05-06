@@ -15,12 +15,13 @@ final class Newspack_Popups_Model {
 	/**
 	 * Retrieve all Popups (first 100).
 	 *
+	 * @param  boolean $include_unpublished Whether to include unpublished posts.
 	 * @return array Array of Popup objects.
 	 */
-	public static function retrieve_popups() {
+	public static function retrieve_popups( $include_unpublished = false ) {
 		$args = [
 			'post_type'      => Newspack_Popups::NEWSPACK_PLUGINS_CPT,
-			'post_status'    => 'publish',
+			'post_status'    => $include_unpublished ? [ 'publish', 'draft' ] : 'publish',
 			'posts_per_page' => 100,
 		];
 
@@ -325,6 +326,7 @@ final class Newspack_Popups_Model {
 
 		$popup = [
 			'id'      => $id,
+			'status'  => $post->post_status,
 			'title'   => $post->post_title,
 			'body'    => $body,
 			'options' => wp_parse_args(
