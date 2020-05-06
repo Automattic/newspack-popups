@@ -117,7 +117,7 @@ class PopupSidebar extends Component {
 					<Fragment>
 						<RadioControl
 							label={ __( 'Trigger' ) }
-							help={ __( 'The event to trigger the popup' ) }
+							help={ __( 'The event to trigger the Campaign' ) }
 							selected={ trigger_type }
 							options={ [
 								{ label: __( 'Timer' ), value: 'time' },
@@ -160,14 +160,14 @@ class PopupSidebar extends Component {
 					onChange={ value => onMetaFieldChange( 'frequency', value ) }
 					options={ this.frequencyOptions( placement ) }
 					help={ __(
-						'In "Test Mode" logged-in admins will see the Pop-up every time, and non-admins will never see them.',
+						'In "Test Mode" logged-in admins will see the Campaign every time, and non-admins will never see them.',
 						'newspack-popups'
 					) }
 				/>
 				<TextControl
 					label={ __( 'UTM Suppression' ) }
 					help={ __(
-						'Users arriving at the site from URLs with this utm_source will never be shown the pop-up.'
+						'Users arriving at the site from URLs with this utm_source will never be shown the Campaign.'
 					) }
 					value={ utm_suppression }
 					onChange={ value => onMetaFieldChange( 'utm_suppression', value ) }
@@ -194,7 +194,7 @@ class PopupSidebar extends Component {
 					</Fragment>
 				) }
 				<ToggleControl
-					label={ __( 'Display Pop-up title', 'newspack-popups' ) }
+					label={ __( 'Display Campaign title', 'newspack-popups' ) }
 					checked={ display_title }
 					onChange={ value => onMetaFieldChange( 'display_title', value ) }
 				/>
@@ -223,7 +223,7 @@ const PopupSidebarWithData = compose( [
 ] )( PopupSidebar );
 
 const PluginDocumentSettingPanelDemo = () => (
-	<PluginDocumentSettingPanel name="popup-settings-panel" title={ __( ' Pop-up Settings' ) }>
+	<PluginDocumentSettingPanel name="popup-settings-panel" title={ __( 'Campaign Settings' ) }>
 		<PopupSidebarWithData />
 	</PluginDocumentSettingPanel>
 );
