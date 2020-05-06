@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name:     Newspack Campaigns
- * Plugin URI:      https://newspack.block
+ * Plugin URI:      https://newspack.blog
  * Description:     AMP-compatible overlay and inline Campaigns.
  * Author:          Automattic
  * Author URI:      https://newspack.blog
