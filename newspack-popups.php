@@ -4,7 +4,7 @@
  * Plugin URI:      https://newspack.block
  * Description:     AMP-compatible overlay and inline Campaigns.
  * Author:          Automattic
- * Author URI:      https://newspack.block
+ * Author URI:      https://newspack.blog
  * Text Domain:     newspack-popups
  * Domain Path:     /languages
  * Version:         1.1.0
