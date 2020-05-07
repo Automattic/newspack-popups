@@ -19,7 +19,6 @@ final class Newspack_Popups_API {
 	 */
 	public function __construct() {
 		add_action( 'rest_api_init', [ $this, 'register_api_endpoints' ] );
-		add_filter( 'query_vars', [ $this, 'add_utm_source_query_var' ] );
 		add_action( 'wp_head', [ $this, 'get_utm_source' ] );
 	}
 
@@ -152,6 +151,11 @@ final class Newspack_Popups_API {
 				break;
 		}
 		if ( $utm_suppression ) {
+			$referer = filter_input( INPUT_SERVER, 'HTTP_REFERER', FILTER_SANITIZE_STRING );
+			if ( ! empty( $referer ) && stripos( $referer, 'utm_source=' . $utm_suppression ) ) {
+				$response['displayPopup'] = false;
+			}
+
 			$utm_source_transient_name = $this->get_utm_source_transient_name();
 			$utm_source_transient      = $this->get_utm_source_transient( $utm_source_transient_name );
 			if ( ! empty( $utm_source_transient[ $utm_suppression ] ) ) {
@@ -262,21 +266,10 @@ final class Newspack_Popups_API {
 	}
 
 	/**
-	 * Add utm_source to WP query vars
-	 *
-	 * @param array $vars Query vars.
-	 * @return array Query vars.
-	 */
-	public function add_utm_source_query_var( $vars ) {
-		$vars[] = 'utm_source';
-		return $vars;
-	}
-
-	/**
 	 * Assess utm_source value
 	 */
 	public function get_utm_source() {
-		$utm_source = get_query_var( 'utm_source' );
+		$utm_source = filter_input( INPUT_GET, 'utm_source', FILTER_SANITIZE_STRING );
 		if ( ! empty( $utm_source ) ) {
 			$transient_name = self::get_utm_source_transient_name();
 			if ( $transient_name ) {

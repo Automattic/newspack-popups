@@ -15,12 +15,13 @@ final class Newspack_Popups_Model {
 	/**
 	 * Retrieve all Popups (first 100).
 	 *
+	 * @param  boolean $include_unpublished Whether to include unpublished posts.
 	 * @return array Array of Popup objects.
 	 */
-	public static function retrieve_popups() {
+	public static function retrieve_popups( $include_unpublished = false ) {
 		$args = [
 			'post_type'      => Newspack_Popups::NEWSPACK_PLUGINS_CPT,
-			'post_status'    => 'publish',
+			'post_status'    => $include_unpublished ? [ 'publish', 'draft' ] : 'publish',
 			'posts_per_page' => 100,
 		];
 
@@ -47,7 +48,7 @@ final class Newspack_Popups_Model {
 		if ( ! $popup ) {
 			return new \WP_Error(
 				'newspack_popups_popup_doesnt_exist',
-				esc_html__( 'The Popup specified does not exist.', 'newspack-popups' ),
+				esc_html__( 'The Campaign specified does not exist.', 'newspack-popups' ),
 				[
 					'status' => 400,
 					'level'  => 'fatal',
@@ -59,7 +60,7 @@ final class Newspack_Popups_Model {
 		if ( 'inline' === $popup['options']['placement'] ) {
 			return new \WP_Error(
 				'newspack_popups_inline_sitewide',
-				esc_html__( 'An inline popup cannot be a sitewide default.', 'newspack-popups' ),
+				esc_html__( 'An inline Campaign cannot be a sitewide default.', 'newspack-popups' ),
 				[
 					'status' => 400,
 					'level'  => 'fatal',
@@ -79,7 +80,7 @@ final class Newspack_Popups_Model {
 		if ( ! $popup ) {
 			return new \WP_Error(
 				'newspack_popups_popup_doesnt_exist',
-				esc_html__( 'The Popup specified does not exist.', 'newspack-popups' ),
+				esc_html__( 'The Campaign specified does not exist.', 'newspack-popups' ),
 				[
 					'status' => 400,
 					'level'  => 'fatal',
@@ -102,7 +103,7 @@ final class Newspack_Popups_Model {
 		if ( ! $popup ) {
 			return new \WP_Error(
 				'newspack_popups_popup_doesnt_exist',
-				esc_html__( 'The Popup specified does not exist.', 'newspack-popups' ),
+				esc_html__( 'The Campaign specified does not exist.', 'newspack-popups' ),
 				[
 					'status' => 400,
 					'level'  => 'fatal',
@@ -116,6 +117,65 @@ final class Newspack_Popups_Model {
 			$categories
 		);
 		return wp_set_post_categories( $id, $category_ids );
+	}
+
+	/**
+	 * Set options for a Popup.
+	 *
+	 * @param integer $id ID of Popup.
+	 * @param array   $options Array of options to update.
+	 */
+	public static function set_popup_options( $id, $options ) {
+		$popup = self::retrieve_popup_by_id( $id );
+		if ( ! $popup ) {
+			return new \WP_Error(
+				'newspack_popups_popup_doesnt_exist',
+				esc_html__( 'The Campaign specified does not exist.', 'newspack-popups' ),
+				[
+					'status' => 400,
+					'level'  => 'fatal',
+				]
+			);
+		}
+		foreach ( $options as $key => $value ) {
+			switch ( $key ) {
+				case 'frequency':
+					if ( ! in_array( $value, [ 'test', 'never', 'once', 'daily', 'always' ] ) ) {
+						return new \WP_Error(
+							'newspack_popups_invalid_option_value',
+							esc_html__( 'Invalid frequency value.', 'newspack-popups' ),
+							[
+								'status' => 400,
+								'level'  => 'fatal',
+							]
+						);
+					}
+					update_post_meta( $id, $key, $value );
+					break;
+				case 'placement':
+					if ( ! in_array( $value, [ 'center', 'top', 'bottom', 'inline' ] ) ) {
+						return new \WP_Error(
+							'newspack_popups_invalid_option_value',
+							esc_html__( 'Invalid placement value.', 'newspack-popups' ),
+							[
+								'status' => 400,
+								'level'  => 'fatal',
+							]
+						);
+					}
+					update_post_meta( $id, $key, $value );
+					break;
+				default:
+					return new \WP_Error(
+						'newspack_popups_invalid_option',
+						esc_html__( 'Invalid Campaign option.', 'newspack-popups' ),
+						[
+							'status' => 400,
+							'level'  => 'fatal',
+						]
+					);
+			}
+		}
 	}
 
 	/**
@@ -266,6 +326,7 @@ final class Newspack_Popups_Model {
 
 		$popup = [
 			'id'      => $id,
+			'status'  => $post->post_status,
 			'title'   => $post->post_title,
 			'body'    => $body,
 			'options' => wp_parse_args(
