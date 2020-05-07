@@ -1,3 +1,17 @@
+# [1.5.0](https://github.com/Automattic/newspack-popups/compare/v1.4.1...v1.5.0) (2020-05-07)
+
+
+### Bug Fixes
+
+* fix couple issues with popup utm suppression ([c4f5a1b](https://github.com/Automattic/newspack-popups/commit/c4f5a1ba0ecb62c03bf3ef27c49954302ff0a1fe))
+* resolve issue causing admin bar to display incorrectly ([#116](https://github.com/Automattic/newspack-popups/issues/116)) ([97270ea](https://github.com/Automattic/newspack-popups/commit/97270ea4fb2e1952bc9fcc502370efdd057c6ebc))
+
+
+### Features
+
+* convenience method for updating pop-up options ([#112](https://github.com/Automattic/newspack-popups/issues/112)) ([4f14604](https://github.com/Automattic/newspack-popups/commit/4f146041067aed7f50033fa2849040dd42ae1ada))
+* support for draft popups ([c7c7fe5](https://github.com/Automattic/newspack-popups/commit/c7c7fe5e7cd7bdc27bcd0db60eba32b1611ada45))
+
 ## [1.4.1](https://github.com/Automattic/newspack-popups/compare/v1.4.0...v1.4.1) (2020-04-29)
 
 
