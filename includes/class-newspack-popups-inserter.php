@@ -193,27 +193,25 @@ final class Newspack_Popups_Inserter {
 			return $popup_markup . $content;
 		}
 
-		$position  = 0;
-		$positions = [];
-		$close_tag = '</p>';
-		while ( stripos( $content, $close_tag, $position ) !== false ) {
-			$position    = stripos( $content, '</p>', $position ) + strlen( $close_tag );
-			$positions[] = $position;
-		}
-		$total_length       = strlen( $content );
-		$percentage         = intval( $popup['options']['trigger_scroll_progress'] ) / 100;
-		$precise_position   = $total_length * $percentage;
-		$insertion_position = $total_length;
-		foreach ( $positions as $position ) {
-			if ( $position >= $precise_position ) {
-				$insertion_position = $position;
-				break;
-			}
-		}
-		$before_popup = substr( $content, 0, $insertion_position );
-		$after_popup  = substr( $content, $insertion_position );
+		$percentage       = intval( $popup['options']['trigger_scroll_progress'] ) / 100;
+		$total_length     = strlen( $content );
+		$precise_position = $total_length * $percentage;
 
-		return $before_popup . $popup_markup . $after_popup;
+		$blocks      = parse_blocks( $content );
+		$pos         = 0;
+		$output      = '';
+		$is_inserted = false;
+		foreach ( $blocks as $block ) {
+			$block_content = render_block( $block );
+			$pos          += strlen( $block_content );
+			if ( ! $is_inserted && $pos >= $precise_position ) {
+				$output     .= '<!-- wp:shortcode -->' . $popup_markup . '<!-- /wp:shortcode -->';
+				$is_inserted = true;
+			}
+			$output .= $block_content;
+		}
+
+		return $output;
 	}
 
 	/**
