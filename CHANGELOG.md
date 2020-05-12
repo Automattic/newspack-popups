@@ -1,3 +1,10 @@
+## [1.5.1](https://github.com/Automattic/newspack-popups/compare/v1.5.0...v1.5.1) (2020-05-12)
+
+
+### Bug Fixes
+
+* popup insertion logic ([#94](https://github.com/Automattic/newspack-popups/issues/94)) ([79ef273](https://github.com/Automattic/newspack-popups/commit/79ef2730d5930183b98c2f68d1dfa21bb32cf5a2)), closes [#92](https://github.com/Automattic/newspack-popups/issues/92)
+
 # [1.5.0](https://github.com/Automattic/newspack-popups/compare/v1.4.1...v1.5.0) (2020-05-07)
 
 
