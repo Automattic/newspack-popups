@@ -205,7 +205,9 @@ final class Newspack_Popups_Inserter {
 			$block_content = render_block( $block );
 			$pos          += strlen( $block_content );
 			if ( ! $is_inserted && $pos >= $precise_position ) {
-				$output     .= '<!-- wp:shortcode -->' . $popup_markup . '<!-- /wp:shortcode -->';
+				// Inline popups are placed as shortcodes, while overlay ones are raw markup.
+				$block_type  = $is_inline ? 'shortcode' : 'html';
+				$output     .= '<!-- wp:' . $block_type . ' -->' . $popup_markup . '<!-- /wp:' . $block_type . ' -->';
 				$is_inserted = true;
 			}
 			$output .= $block_content;
