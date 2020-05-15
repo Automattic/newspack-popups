@@ -91,6 +91,18 @@ final class Newspack_Popups_Inserter {
 				return get_post_meta( get_the_ID(), 'newspack_popups_has_disabled_popups', true );
 			}
 		);
+
+		// Suppress popups on product pages.
+		// Until the popups non-AMP refactoring happens, they will break Add to Cart buttons.
+		add_filter(
+			'newspack_newsletters_assess_has_disabled_popups',
+			function( $disabled ) {
+				if ( function_exists( 'is_product' ) && is_product() ) {
+					return true;
+				}
+				return $disabled;
+			}
+		);
 	}
 
 	/**
@@ -205,7 +217,9 @@ final class Newspack_Popups_Inserter {
 			$block_content = render_block( $block );
 			$pos          += strlen( $block_content );
 			if ( ! $is_inserted && $pos >= $precise_position ) {
-				$output     .= '<!-- wp:shortcode -->' . $popup_markup . '<!-- /wp:shortcode -->';
+				// Inline popups are placed as shortcodes, while overlay ones are raw markup.
+				$block_type  = $is_inline ? 'shortcode' : 'html';
+				$output     .= '<!-- wp:' . $block_type . ' -->' . $popup_markup . '<!-- /wp:' . $block_type . ' -->';
 				$is_inserted = true;
 			}
 			$output .= $block_content;
