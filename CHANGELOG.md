@@ -1,3 +1,11 @@
+## [1.5.2](https://github.com/Automattic/newspack-popups/compare/v1.5.1...v1.5.2) (2020-05-15)
+
+
+### Bug Fixes
+
+* **insertion:** fix insertion of overlay scroll-triggered popups ([6dc4427](https://github.com/Automattic/newspack-popups/commit/6dc4427e40d2722277d91ee1e11dd92c1fd7dd57)), closes [#124](https://github.com/Automattic/newspack-popups/issues/124)
+* dont load popups on products because of amp-form ([8eb5ebc](https://github.com/Automattic/newspack-popups/commit/8eb5ebcc643df4d40f800af2402e70c906becb3d))
+
 ## [1.5.1](https://github.com/Automattic/newspack-popups/compare/v1.5.0...v1.5.1) (2020-05-12)
 
 
