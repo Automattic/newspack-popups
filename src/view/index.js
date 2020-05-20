@@ -10,11 +10,11 @@ import './style.scss';
 import './patterns.scss';
 
 const manageForms = container => {
-	const forms = Array.from( container.querySelectorAll( 'form.popup-action-form' ) );
+	const forms = [ ...container.querySelectorAll( 'form.popup-action-form' ) ];
 	forms.forEach( form => {
 		form.addEventListener( 'submit', event => {
 			const XHR = new XMLHttpRequest();
-			const inputs = Array.from( form.querySelectorAll( 'input' ) );
+			const inputs = [ ...form.querySelectorAll( 'input' ) ];
 			const pairs = inputs.map(
 				( { name, value } ) => encodeURIComponent( name ) + '=' + encodeURIComponent( value )
 			);
@@ -30,7 +30,7 @@ const manageForms = container => {
 
 if ( typeof window !== 'undefined' ) {
 	domReady( () => {
-		const campaignArray = Array.from( document.querySelectorAll( '.newspack-lightbox' ) );
+		const campaignArray = [ ...document.querySelectorAll( '.newspack-lightbox' ) ];
 		campaignArray.forEach( campaign => {
 			manageForms( campaign );
 		} );
