@@ -174,14 +174,14 @@ class PopupSidebar extends Component {
 				/>
 				<ColorPaletteControl
 					value={ background_color }
-					onChange={ value => onMetaFieldChange( 'background_color', value ) }
+					onChange={ value => onMetaFieldChange( 'background_color', value || '#FFFFFF' ) }
 					label={ __( 'Background Color' ) }
 				/>
 				{ ! isInline && (
 					<Fragment>
 						<ColorPaletteControl
 							value={ overlay_color }
-							onChange={ value => onMetaFieldChange( 'overlay_color', value ) }
+							onChange={ value => onMetaFieldChange( 'overlay_color', value || '#000000' ) }
 							label={ __( 'Overlay Color' ) }
 						/>
 						<RangeControl
