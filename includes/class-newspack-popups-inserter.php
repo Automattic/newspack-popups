@@ -180,6 +180,18 @@ final class Newspack_Popups_Inserter {
 	 * Enqueue the assets needed to display the popups.
 	 */
 	public static function enqueue_popup_assets() {
+		$is_amp = function_exists( 'is_amp_endpoint' ) && is_amp_endpoint();
+		if ( ! $is_amp ) {
+			wp_register_script(
+				'newspack-popups-view',
+				plugins_url( '../dist/view.js', __FILE__ ),
+				null,
+				filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/view.js' ),
+				true
+			);
+			wp_enqueue_script( 'newspack-popups-view' );
+		}
+
 		\wp_register_style(
 			'newspack-popups-view',
 			plugins_url( '../dist/view.css', __FILE__ ),
@@ -319,7 +331,7 @@ final class Newspack_Popups_Inserter {
 				true
 			);
 		}
-		$scripts = [ 'amp-access', 'amp-analytics', 'amp-animation', 'amp-form', 'amp-bind', 'amp-position-observer' ];
+		$scripts = [ 'amp-access', 'amp-analytics', 'amp-animation', 'amp-bind', 'amp-position-observer' ];
 		foreach ( $scripts as $script ) {
 			if ( ! wp_script_is( $script, 'registered' ) ) {
 				$path = "https://cdn.ampproject.org/v0/{$script}-latest.js";
