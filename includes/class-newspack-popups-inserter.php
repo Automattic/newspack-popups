@@ -111,7 +111,7 @@ final class Newspack_Popups_Inserter {
 	 * @param string $content The content of the post.
 	 */
 	public static function insert_popups_in_content( $content = '' ) {
-		if ( is_admin() || ! is_singular() || self::assess_has_disabled_popups( $content ) ) {
+		if ( ! is_main_query() || ! in_the_loop() || is_admin() || ! is_singular() || self::assess_has_disabled_popups( $content ) ) {
 			return $content;
 		}
 
