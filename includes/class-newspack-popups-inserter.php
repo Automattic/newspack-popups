@@ -214,7 +214,15 @@ final class Newspack_Popups_Inserter {
 		$popup_markup = $is_inline ? '[newspack-popup id="' . $popup['id'] . '"]' : $popup['markup'];
 
 		if ( ! $is_inline && 0 === $popup['options']['trigger_scroll_progress'] ) {
-			return $popup_markup . $content;
+			$blocks       = parse_blocks( $content );
+			$is_gutenberg = array_reduce(
+				$blocks,
+				function( $carry, $item ) {
+					return $item['blockName'] ? true : $carry;
+				},
+				false
+			);
+			return $is_gutenberg ? $popup_markup . $content : $content;
 		}
 
 		$percentage       = intval( $popup['options']['trigger_scroll_progress'] ) / 100;
