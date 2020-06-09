@@ -1,3 +1,11 @@
+## [1.5.3](https://github.com/Automattic/newspack-popups/compare/v1.5.2...v1.5.3) (2020-06-09)
+
+
+### Bug Fixes
+
+* handle default background and overlay colors in the editor ([e51c5d8](https://github.com/Automattic/newspack-popups/commit/e51c5d840aa47b13020f2a1794c73b6218acddac)), closes [#56](https://github.com/Automattic/newspack-popups/issues/56)
+* remove amp-form in non-amp requests ([#127](https://github.com/Automattic/newspack-popups/issues/127)) ([77c2f2f](https://github.com/Automattic/newspack-popups/commit/77c2f2fa656811c1edd4701011b9ff2ff3c70a5a))
+
 ## [1.5.2](https://github.com/Automattic/newspack-popups/compare/v1.5.1...v1.5.2) (2020-05-15)
 
 
