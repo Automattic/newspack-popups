@@ -309,16 +309,26 @@ final class Newspack_Popups_Model {
 	 */
 	protected static function create_popup_object( $campaign_post, $containing_post_id = null, $include_categories = false, $options = null ) {
 
-		// Set the post global to the containing post to enable dynamic blocks like Jetpack Related Posts to function properly.
+		// Query the containing post to enable dynamic blocks like Jetpack Related Posts to function properly.
 		if ( $containing_post_id ) {
-			global $post;
-			$post = get_post( $containing_post_id ); // phpcs:ignore
+			$containing_post = new WP_Query(
+				[
+					'p' => $containing_post_id,
+				]
+			);
+			if ( $containing_post->have_posts() ) {
+				$containing_post->the_post();
+			}
 		}
 		$blocks = parse_blocks( $campaign_post->post_content );
 		$body   = '';
 		foreach ( $blocks as $block ) {
 			$body .= render_block( $block );
 		}
+		if ( $containing_post_id ) {
+			wp_reset_postdata();
+		}
+
 		$id = $campaign_post->ID;
 
 		$post_options = isset( $options ) ? $options : [
