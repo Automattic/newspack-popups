@@ -27,7 +27,7 @@ final class Newspack_Popups_API {
 	 */
 	public function register_api_endpoints() {
 		\register_rest_route(
-			'newspack-popups/v1/',
+			'newspack-popups/v1',
 			'reader',
 			[
 				'methods'  => \WP_REST_Server::READABLE,
@@ -35,7 +35,7 @@ final class Newspack_Popups_API {
 			]
 		);
 		\register_rest_route(
-			'newspack-popups/v1/',
+			'newspack-popups/v1',
 			'reader',
 			[
 				'methods'  => \WP_REST_Server::CREATABLE,
@@ -43,7 +43,7 @@ final class Newspack_Popups_API {
 			]
 		);
 		\register_rest_route(
-			'newspack-popups/v1/',
+			'newspack-popups/v1',
 			'sitewide_default/(?P<id>\d+)',
 			[
 				'methods'             => \WP_REST_Server::EDITABLE,
@@ -68,7 +68,7 @@ final class Newspack_Popups_API {
 			]
 		);
 		\register_rest_route(
-			'newspack-popups/v1/',
+			'newspack-popups/v1',
 			'sitewide_default/(?P<id>\d+)',
 			[
 				'methods'             => \WP_REST_Server::DELETABLE,
