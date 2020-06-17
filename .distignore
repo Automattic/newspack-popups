@@ -4,7 +4,8 @@
 .distignore
 .editorconfig
 .eslintignore
-.eslintrc
+.*rc*
+*.config.js
 .git
 .gitignore
 .gitlab-ci.yml
@@ -30,6 +31,7 @@ phpcs.xml
 .phpcs.xml.dist
 phpcs.xml.dist
 README.md
+PULL_REQUEST_TEMPLATE.md
 webpack.config.js
 wp-cli.local.yml
 yarn.lock
@@ -39,3 +41,13 @@ node_modules
 *.sql
 *.tar.gz
 *.zip
+
+node_modules/*
+.git/*
+vendor/*
+src/*
+.github/*
+.circleci/*
+tests/*
+bin/*
+release/*
