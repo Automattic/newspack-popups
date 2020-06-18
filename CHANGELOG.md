@@ -1,3 +1,16 @@
+# [1.6.0](https://github.com/Automattic/newspack-popups/compare/v1.5.3...v1.6.0) (2020-06-18)
+
+
+### Bug Fixes
+
+* namespace use in register_rest_route ([5c69bd7](https://github.com/Automattic/newspack-popups/commit/5c69bd76f6f57661b6cdebb40889549cbae24635))
+* related posts in campaigns ([#144](https://github.com/Automattic/newspack-popups/issues/144)) ([caef323](https://github.com/Automattic/newspack-popups/commit/caef323482cdea8e100681ddd028aa45dfc6ab45))
+
+
+### Features
+
+* clean up release zip ([bafe05e](https://github.com/Automattic/newspack-popups/commit/bafe05ed3dea557fcf10cf4b7d119ed564ce4766))
+
 ## [1.5.3](https://github.com/Automattic/newspack-popups/compare/v1.5.2...v1.5.3) (2020-06-09)
 
 
