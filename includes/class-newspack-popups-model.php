@@ -192,7 +192,17 @@ final class Newspack_Popups_Model {
 			'meta_value'  => 'inline',
 		];
 
-		return self::retrieve_popups_with_query( new WP_Query( $args ) );
+		$inline_popups = self::retrieve_popups_with_query( new WP_Query( $args ) );
+
+		// Sort inline campaigns to be in descending order of position in content.
+		usort(
+			$inline_popups,
+			function ( $popup1, $popup2 ) {
+				return $popup1['options']['trigger_scroll_progress'] > $popup2['options']['trigger_scroll_progress'] ? -1 : 1;
+			}
+		);
+
+		return $inline_popups;
 	}
 
 	/**
