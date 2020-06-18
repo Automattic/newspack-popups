@@ -103,6 +103,22 @@ final class Newspack_Popups_Inserter {
 				return $disabled;
 			}
 		);
+
+		// These hooks are fired before and after rendering posts in the Homepage Posts block.
+		// By removing the the_content filter before rendering, we avoid incorrectly injecting campaign content into excerpts in the block.
+		add_action(
+			'newspack_blocks_homepage_posts_before_render',
+			function() {
+				remove_filter( 'the_content', [ $this, 'insert_popups_in_content' ], 1 );
+			}
+		);
+
+		add_action(
+			'newspack_blocks_homepage_posts_after_render',
+			function() {
+				add_filter( 'the_content', [ $this, 'insert_popups_in_content' ], 1 );
+			}
+		);
 	}
 
 	/**

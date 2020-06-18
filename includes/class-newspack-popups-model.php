@@ -229,6 +229,7 @@ final class Newspack_Popups_Model {
 	 * @return object Popup object.
 	 */
 	public static function retrieve_preview_popup( $post_id ) {
+		$containing_post_id = get_the_ID();
 		// Up-to-date post data is stored in an autosave.
 		$autosave    = wp_get_post_autosave( $post_id );
 		$post_object = $autosave ? $autosave : get_post( $post_id );
@@ -237,6 +238,7 @@ final class Newspack_Popups_Model {
 
 		return self::create_popup_object(
 			$post_object,
+			$containing_post_id,
 			false,
 			[
 				'background_color'        => filter_input( INPUT_GET, 'background_color', FILTER_SANITIZE_STRING ),
@@ -280,12 +282,14 @@ final class Newspack_Popups_Model {
 	 * @return array Popup objects array
 	 */
 	protected static function retrieve_popups_with_query( WP_Query $query, $include_categories = false ) {
-		$popups = [];
+		$containing_post_id = get_the_ID();
+		$popups             = [];
 		if ( $query->have_posts() ) {
 			while ( $query->have_posts() ) {
 				$query->the_post();
 				$popups[] = self::create_popup_object(
 					get_post( get_the_ID() ),
+					$containing_post_id,
 					$include_categories
 				);
 			}
@@ -297,21 +301,38 @@ final class Newspack_Popups_Model {
 	/**
 	 * Create the popup object.
 	 *
-	 * @param WP_Post $post The post object.
+	 * @param WP_Post $campaign_post The campaign post object.
+	 * @param integer $containing_post_id ID of the post that will contain the Campaign.
 	 * @param boolean $include_categories If true, returned objects will include assigned categories.
 	 * @param object  $options Popup options to use instead of the options retrieved from the post. Used for popup previews.
 	 * @return object Popup object
 	 */
-	protected static function create_popup_object( $post, $include_categories = false, $options = null ) {
-		$blocks = parse_blocks( $post->post_content );
+	protected static function create_popup_object( $campaign_post, $containing_post_id = null, $include_categories = false, $options = null ) {
+
+		// Query the containing post to enable dynamic blocks like Jetpack Related Posts to function properly.
+		if ( $containing_post_id ) {
+			$containing_post = new WP_Query(
+				[
+					'p' => $containing_post_id,
+				]
+			);
+			if ( $containing_post->have_posts() ) {
+				$containing_post->the_post();
+			}
+		}
+		$blocks = parse_blocks( $campaign_post->post_content );
 		$body   = '';
 		foreach ( $blocks as $block ) {
 			$body .= render_block( $block );
 		}
-		$id = $post->ID;
+		if ( $containing_post_id ) {
+			wp_reset_postdata();
+		}
+
+		$id = $campaign_post->ID;
 
 		$post_options = isset( $options ) ? $options : [
-			'background_color'        => get_post_meta( get_the_ID(), 'background_color', true ),
+			'background_color'        => get_post_meta( $id, 'background_color', true ),
 			'dismiss_text'            => get_post_meta( $id, 'dismiss_text', true ),
 			'display_title'           => get_post_meta( $id, 'display_title', true ),
 			'frequency'               => get_post_meta( $id, 'frequency', true ),
@@ -326,8 +347,8 @@ final class Newspack_Popups_Model {
 
 		$popup = [
 			'id'      => $id,
-			'status'  => $post->post_status,
-			'title'   => $post->post_title,
+			'status'  => $campaign_post->post_status,
+			'title'   => $campaign_post->post_title,
 			'body'    => $body,
 			'options' => wp_parse_args(
 				array_filter( $post_options ),
