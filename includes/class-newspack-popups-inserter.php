@@ -191,8 +191,8 @@ final class Newspack_Popups_Inserter {
 
 					$inline_popup['is_inserted'] = true;
 				}
-				$output .= $block_content;
 			}
+			$output .= $block_content;
 		}
 
 		// 3. Insert any remaining inline campaigns at the end.
