@@ -206,7 +206,7 @@ final class Newspack_Popups_Inserter {
 
 		// 4. Insert overlay campaigns at the top of content.
 		foreach ( $overlay_popups as $overlay_popup ) {
-			$output = $overlay_popup['markup'] . $output;
+			$output = '<!-- wp:html -->' . $overlay_popup['markup'] . '<!-- /wp:html -->' . $output;
 		}
 
 		self::enqueue_popup_assets();
