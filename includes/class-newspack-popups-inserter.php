@@ -163,14 +163,54 @@ final class Newspack_Popups_Inserter {
 			$content = scaip_maybe_insert_shortcode( $content );
 		}
 
-		// Now insert the popups.
+		$total_length = strlen( $content );
+
+		// 1. Separate campaigns into inline and overlay.
+		$inline_popups  = [];
+		$overlay_popups = [];
 		foreach ( $popups as $popup ) {
-			$content = self::insert_popup( $content, $popup );
+			if ( 'inline' === $popup['options']['placement'] ) {
+				$percentage                = intval( $popup['options']['trigger_scroll_progress'] ) / 100;
+				$popup['precise_position'] = $total_length * $percentage;
+				$popup['is_inserted']      = false;
+				$inline_popups[]           = $popup;
+			} else {
+				$overlay_popups[] = $popup;
+			}
+		}
+
+		// 2. Iterate overall blocks and insert inline campaigns.
+		$pos    = 0;
+		$output = '';
+		foreach ( parse_blocks( $content ) as $block ) {
+			$block_content = render_block( $block );
+			$pos          += strlen( $block_content );
+			foreach ( $inline_popups as &$inline_popup ) {
+				if ( ! $inline_popup['is_inserted'] && $pos > $inline_popup['precise_position'] ) {
+					$output .= '<!-- wp:shortcode -->[newspack-popup id="' . $inline_popup['id'] . '"]<!-- /wp:shortcode -->';
+
+					$inline_popup['is_inserted'] = true;
+				}
+			}
+			$output .= $block_content;
+		}
+
+		// 3. Insert any remaining inline campaigns at the end.
+		foreach ( $inline_popups as $inline_popup ) {
+			if ( ! $inline_popup['is_inserted'] ) {
+				$output .= '<!-- wp:shortcode -->[newspack-popup id="' . $inline_popup['id'] . '"]<!-- /wp:shortcode -->';
+
+				$inline_popup['is_inserted'] = true;
+			}
+		}
+
+		// 4. Insert overlay campaigns at the top of content.
+		foreach ( $overlay_popups as $overlay_popup ) {
+			$output = '<!-- wp:html -->' . $overlay_popup['markup'] . '<!-- /wp:html -->' . $output;
 		}
 
 		self::enqueue_popup_assets();
-
-		return $content;
+		return $output;
 	}
 
 	/**
@@ -216,44 +256,6 @@ final class Newspack_Popups_Inserter {
 		);
 		\wp_style_add_data( 'newspack-popups-view', 'rtl', 'replace' );
 		\wp_enqueue_style( 'newspack-popups-view' );
-	}
-
-	/**
-	 * Insert Popup markup into content.
-	 *
-	 * @param string $content The content of the post.
-	 * @param object $popup The popup object to insert.
-	 * @return string The content with popup markup inserted.
-	 */
-	public static function insert_popup( $content = '', $popup = [] ) {
-		$is_inline    = 'inline' === $popup['options']['placement'];
-		$popup_markup = $is_inline ? '[newspack-popup id="' . $popup['id'] . '"]' : $popup['markup'];
-
-		if ( ! $is_inline && 0 === $popup['options']['trigger_scroll_progress'] ) {
-			return $popup_markup . $content;
-		}
-
-		$percentage       = intval( $popup['options']['trigger_scroll_progress'] ) / 100;
-		$total_length     = strlen( $content );
-		$precise_position = $total_length * $percentage;
-
-		$blocks      = parse_blocks( $content );
-		$pos         = 0;
-		$output      = '';
-		$is_inserted = false;
-		foreach ( $blocks as $block ) {
-			$block_content = render_block( $block );
-			$pos          += strlen( $block_content );
-			if ( ! $is_inserted && $pos >= $precise_position ) {
-				// Inline popups are placed as shortcodes, while overlay ones are raw markup.
-				$block_type  = $is_inline ? 'shortcode' : 'html';
-				$output     .= '<!-- wp:' . $block_type . ' -->' . $popup_markup . '<!-- /wp:' . $block_type . ' -->';
-				$is_inserted = true;
-			}
-			$output .= $block_content;
-		}
-
-		return $output;
 	}
 
 	/**
