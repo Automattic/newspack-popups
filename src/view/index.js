@@ -30,7 +30,10 @@ const manageForms = container => {
 
 if ( typeof window !== 'undefined' ) {
 	domReady( () => {
-		const campaignArray = [ ...document.querySelectorAll( '.newspack-lightbox' ) ];
+		const campaignArray = [
+			...document.querySelectorAll( '.newspack-lightbox' ),
+			...document.querySelectorAll( '.newspack-inline-popup' ),
+		];
 		campaignArray.forEach( campaign => {
 			manageForms( campaign );
 		} );
