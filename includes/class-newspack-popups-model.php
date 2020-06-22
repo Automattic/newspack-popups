@@ -423,7 +423,7 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
-	 * Insert analytics tracking code.
+	 * Insert self-reporting analytics tracking code.
 	 *
 	 * @param object $popup The popup object.
 	 * @param string $element_id The id of the popup element.
@@ -433,23 +433,10 @@ final class Newspack_Popups_Model {
 		if ( Newspack_Popups::previewed_popup_id() ) {
 			return '';
 		}
-		if ( class_exists( '\Google\Site_Kit\Context', '\Google\Site_Kit\Modules\Analytics' ) ) {
-			$analytics           = new \Google\Site_Kit\Modules\Analytics( new \Google\Site_Kit\Context( GOOGLESITEKIT_PLUGIN_MAIN_FILE ) );
-			$google_analytics_id = $analytics->get_settings()->get()['propertyID'];
-		} else {
-			return '';
-		}
 		global $wp;
 
-		$event_category = 'Newspack Announcement';
-		$event_label    = 'Newspack Announcement: ' . $popup['title'] . ' (' . $popup['id'] . ')';
-
-		$has_link                = preg_match( '/<a\s/', $popup['body'] ) !== 0;
-		$has_form                = preg_match( '/<form\s/', $popup['body'] ) !== 0;
-		$has_dismiss_form        = 'inline' !== $popup['options']['placement'];
-		$has_not_interested_form = self::get_dismiss_text( $popup );
-		$is_inline               = self::is_inline( $popup );
-		$endpoint                = self::get_dismiss_endpoint();
+		$is_inline = self::is_inline( $popup );
+		$endpoint  = self::get_dismiss_endpoint();
 
 		// Mailchimp.
 		$mailchimp_form_selector = '';
@@ -460,101 +447,7 @@ final class Newspack_Popups_Model {
 			$mailchimp_form_selector = '.mc4wp-form';
 		}
 
-		$is_amp                   = function_exists( 'is_amp_endpoint' ) && is_amp_endpoint();
-		$custom_form_submit_event = 'amp-form-submit-success';
-		if ( ! $is_amp ) {
-			// For non-AMP forms, the *-success handler is not fired (maybe because of missing action-xhr attribute?).
-			// This might result in some false-positives, though (event fired when form not submitted successfully).
-			$custom_form_submit_event = 'amp-form-submit';
-		}
-
 		?>
-		<amp-analytics type="gtag" data-credentials="include">
-			<script type="application/json">
-				{
-					"vars" : {
-						"gtag_id": "<?php echo esc_attr( $google_analytics_id ); ?>",
-						"config" : {
-							"<?php echo esc_attr( $google_analytics_id ); ?>": { "groups": "default", "send_page_view": false }
-						}
-					},
-					"triggers": {
-						<?php if ( $has_link ) : ?>
-						"popupAnchorClicks": {
-							"selector": "#<?php echo esc_attr( $element_id ); ?> a",
-							"on": "click",
-							"request": "event",
-							"vars": {
-								"event_name": "<?php echo esc_html__( 'Link Click', 'newspack-popups' ); ?>",
-								"event_label": "<?php echo esc_attr( $event_label ); ?>",
-								"event_category": "<?php echo esc_attr( $event_category ); ?>"
-							}
-						},
-						<?php endif; ?>
-						<?php if ( $has_form ) : ?>
-							"popupFormSubmitSuccess": {
-								"on": "<?php echo esc_attr( $custom_form_submit_event ); ?>",
-								"request": "event",
-								"selector": "#<?php echo esc_attr( $element_id ); ?> form:not(.popup-action-form)",
-								"vars": {
-									"event_name": "<?php echo esc_html__( 'Form Submission', 'newspack-popups' ); ?>",
-									"event_label": "<?php echo esc_attr( $event_label ); ?>",
-									"event_category": "<?php echo esc_attr( $event_category ); ?>"
-								}
-							},
-						<?php endif; ?>
-						<?php if ( $has_dismiss_form ) : ?>
-							"popupDismissed": {
-								"on": "amp-form-submit-success",
-								"request": "event",
-								"selector": "#<?php echo esc_attr( $element_id ); ?> form.popup-dismiss-form",
-								"vars": {
-									"event_name": "<?php echo esc_html__( 'Dismissal', 'newspack-popups' ); ?>",
-									"event_label": "<?php echo esc_attr( $event_label ); ?>",
-									"event_category": "<?php echo esc_attr( $event_category ); ?>"
-								}
-							},
-						<?php endif; ?>
-						<?php if ( $has_not_interested_form ) : ?>
-						"popupNotInterested": {
-							"on": "amp-form-submit-success",
-							"request": "event",
-							"selector": "#<?php echo esc_attr( $element_id ); ?> form.popup-not-interested-form",
-							"vars": {
-								"event_name": "<?php echo esc_html__( 'Permanent Dismissal', 'newspack-popups' ); ?>",
-								"event_label": "<?php echo esc_attr( $event_label ); ?>",
-								"event_category": "<?php echo esc_attr( $event_category ); ?>"
-							}
-						},
-						<?php endif; ?>
-						"popupVisible": {
-							"on": "visible",
-							"request": "event",
-							"selector": "#<?php echo esc_attr( $element_id ); ?>",
-							"visibilitySpec": {
-								"totalTimeMin": "500"
-							},
-							"vars": {
-								"event_name": "<?php echo esc_html__( 'Seen', 'newspack-popups' ); ?>",
-								"event_label": "<?php echo esc_attr( $event_label ); ?>",
-								"event_category": "<?php echo esc_attr( $event_category ); ?>"
-							}
-						},
-						"popupPageLoaded": {
-							"on": "ini-load",
-							"selector": "#<?php echo esc_attr( $element_id ); ?>",
-							"request": "event",
-							"vars": {
-								"event_name": "<?php echo esc_html__( 'Load', 'newspack-popups' ); ?>",
-								"event_label": "<?php echo esc_attr( $event_label ); ?>",
-								"event_category": "<?php echo esc_attr( $event_category ); ?>"
-							}
-						}
-					}
-				}
-			</script>
-		</amp-analytics>
-
 		<?php if ( $mailchimp_form_selector ) : ?>
 			<amp-analytics>
 				<script type="application/json">
@@ -564,7 +457,7 @@ final class Newspack_Popups_Model {
 						},
 						"triggers": {
 							"formSubmitSuccess": {
-								"on": "<?php echo esc_attr( $custom_form_submit_event ); ?>",
+								"on": "amp-form-submit-success",
 								"request": "event",
 								"selector": "#<?php echo esc_attr( $element_id ); ?> <?php echo esc_attr( $mailchimp_form_selector ); ?>",
 								"extraUrlParams": {
@@ -622,6 +515,96 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
+	 * Add tracked analytics events to use in Newspack Plugin's newspack_analytics_events filter.
+	 *
+	 * @param object $popup The popup object.
+	 * @param string $element_id The id of the popup element.
+	 */
+	protected static function get_analytics_events( $popup, $element_id ) {
+		if ( Newspack_Popups::previewed_popup_id() ) {
+			return '';
+		}
+
+		$event_category = 'Newspack Announcement';
+		$event_label    = 'Newspack Announcement: ' . $popup['title'] . ' (' . $popup['id'] . ')';
+
+		$has_link                = preg_match( '/<a\s/', $popup['body'] ) !== 0;
+		$has_form                = preg_match( '/<form\s/', $popup['body'] ) !== 0;
+		$has_dismiss_form        = 'inline' !== $popup['options']['placement'];
+		$has_not_interested_form = self::get_dismiss_text( $popup );
+
+		$analytics_events = [
+			[
+				'id'             => 'popupVisible',
+				'on'             => 'visible',
+				'element'        => '#' . esc_attr( $element_id ),
+				'visibilitySpec' => [
+					'totalTimeMin' => '500',
+				],
+				'event_name'     => esc_html__( 'Seen', 'newspack-popups' ),
+				'event_label'    => esc_attr( $event_label ),
+				'event_category' => esc_attr( $event_category ),
+			],
+			[
+				'id'             => 'popupPageLoaded',
+				'on'             => 'ini-load',
+				'element'        => '#' . esc_attr( $element_id ),
+				'event_name'     => esc_html__( 'Load', 'newspack-popups' ),
+				'event_label'    => esc_attr( $event_label ),
+				'event_category' => esc_attr( $event_category ),
+			],
+		];
+
+		if ( $has_link ) {
+			$analytics_events[] = [
+				'id'             => 'popupAnchorClicks',
+				'on'             => 'click',
+				'element'        => '#' . esc_attr( $element_id ) . ' a',
+				'amp_element'    => '#' . esc_attr( $element_id ) . ' a',
+				'event_name'     => esc_html__( 'Link Click', 'newspack-popups' ),
+				'event_label'    => esc_attr( $event_label ),
+				'event_category' => esc_attr( $event_category ),
+			];
+		}
+
+		if ( $has_form ) {
+			$analytics_events[] = [
+				'id'             => 'popupFormSubmitSuccess',
+				'amp_on'         => 'amp-form-submit-success',
+				'on'             => 'submit',
+				'element'        => '#' . esc_attr( $element_id ) . ' form:not(.popup-action-form)',
+				'event_name'     => esc_html__( 'Form Submission', 'newspack-popups' ),
+				'event_label'    => esc_attr( $event_label ),
+				'event_category' => esc_attr( $event_category ),
+			];
+		}
+		if ( $has_dismiss_form ) {
+			$analytics_events[] = [
+				'id'             => 'popupDismissed',
+				'amp_on'         => 'amp-form-submit-success',
+				'on'             => 'submit',
+				'element'        => '#' . esc_attr( $element_id ) . ' form.popup-dismiss-form',
+				'event_name'     => esc_html__( 'Dismissal', 'newspack-popups' ),
+				'event_label'    => esc_attr( $event_label ),
+				'event_category' => esc_attr( $event_category ),
+			];
+		}
+		if ( $has_not_interested_form ) {
+			$analytics_events[] = [
+				'id'             => 'popupNotInterested',
+				'amp_on'         => 'amp-form-submit-success',
+				'on'             => 'submit',
+				'element'        => '#' . esc_attr( $element_id ) . ' form.popup-not-interested-form',
+				'event_name'     => esc_html__( 'Permanent Dismissal', 'newspack-popups' ),
+				'event_label'    => esc_attr( $event_label ),
+				'event_category' => esc_attr( $event_category ),
+			];
+		}
+
+		return $analytics_events;
+	}
+
+	/**
 	 * Generate markup inline popup.
 	 *
 	 * @param string $popup The popup object.
@@ -636,20 +619,28 @@ final class Newspack_Popups_Model {
 		$dismiss_text  = self::get_dismiss_text( $popup );
 		$classes       = [ 'newspack-inline-popup' ];
 		$classes[]     = ( ! empty( $popup['title'] ) && $display_title ) ? 'newspack-lightbox-has-title' : null;
+
+		add_filter(
+			'newspack_analytics_events',
+			function ( $evts ) use ( $popup, $element_id ) {
+					return array_merge( $evts, self::get_analytics_events( $popup, $element_id ) );
+			}
+		);
+
 		ob_start();
 		?>
 			<?php self::insert_event_tracking( $popup, $element_id ); ?>
 			<amp-layout amp-access="popup_<?php echo esc_attr( $popup['id'] ); ?>.displayPopup" amp-access-hide class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>" role="button" tabindex="0" style="<?php echo esc_attr( self::container_style( $popup ) ); ?>" id="<?php echo esc_attr( $element_id ); ?>">
-				<?php if ( ! empty( $popup['title'] ) && $display_title ) : ?>
+						<?php if ( ! empty( $popup['title'] ) && $display_title ) : ?>
 					<h1 class="newspack-popup-title"><?php echo esc_html( $popup['title'] ); ?></h1>
 				<?php endif; ?>
-				<?php echo ( $popup['body'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-				<?php if ( $dismiss_text ) : ?>
+						<?php echo ( $popup['body'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+						<?php if ( $dismiss_text ) : ?>
 					<form class="popup-not-interested-form popup-action-form"
 						method="POST"
 						action-xhr="<?php echo esc_url( $endpoint ); ?>"
 						target="_top">
-						<?php echo $hidden_fields; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+							<?php echo $hidden_fields; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 						<input
 							name="suppress_forever"
 							type="hidden"
@@ -680,6 +671,13 @@ final class Newspack_Popups_Model {
 		$classes         = [ 'newspack-lightbox', 'newspack-lightbox-placement-' . $popup['options']['placement'] ];
 		$classes[]       = ( ! empty( $popup['title'] ) && $display_title ) ? 'newspack-lightbox-has-title' : null;
 
+		add_filter(
+			'newspack_analytics_events',
+			function ( $evts ) use ( $popup, $element_id ) {
+				return array_merge( $evts, self::get_analytics_events( $popup, $element_id ) );
+			}
+		);
+
 		ob_start();
 		?>
 		<amp-layout amp-access="popup_<?php echo esc_attr( $popup['id'] ); ?>.displayPopup" amp-access-hide class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>" role="button" tabindex="0" id="<?php echo esc_attr( $element_id ); ?>">
@@ -694,7 +692,7 @@ final class Newspack_Popups_Model {
 						method="POST"
 						action-xhr="<?php echo esc_url( $endpoint ); ?>"
 						target="_top">
-						<?php echo $hidden_fields; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+							<?php echo $hidden_fields; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 						<input
 							name="suppress_forever"
 							type="hidden"
