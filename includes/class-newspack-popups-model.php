@@ -423,7 +423,7 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
-	 * Insert self-reporting analytics tracking code.
+	 * Insert amp-analytics tracking code.
 	 *
 	 * @param object $popup The popup object.
 	 * @param string $element_id The id of the popup element.
@@ -512,6 +512,47 @@ final class Newspack_Popups_Model {
 			</amp-analytics>
 		<?php endif; ?>
 		<?php
+
+		// GA events which are not supported by Newspack plugin filter.
+		if ( class_exists( '\Google\Site_Kit\Context', '\Google\Site_Kit\Modules\Analytics' ) ) {
+			$analytics           = new \Google\Site_Kit\Modules\Analytics( new \Google\Site_Kit\Context( GOOGLESITEKIT_PLUGIN_MAIN_FILE ) );
+			$google_analytics_id = $analytics->get_settings()->get()['propertyID'];
+		} else {
+			return '';
+		}
+
+		$event_category = 'Newspack Announcement';
+		$event_label    = 'Newspack Announcement: ' . $popup['title'] . ' (' . $popup['id'] . ')';
+
+		?>
+		<amp-analytics type="gtag" data-credentials="include">
+			<script type="application/json">
+				{
+					"vars" : {
+						"gtag_id": "<?php echo esc_attr( $google_analytics_id ); ?>",
+						"config" : {
+							"<?php echo esc_attr( $google_analytics_id ); ?>": { "groups": "default", "send_page_view": false }
+						}
+					},
+					"triggers": {
+						"popupVisible": {
+							"on": "visible",
+							"request": "event",
+							"selector": "#<?php echo esc_attr( $element_id ); ?>",
+							"visibilitySpec": {
+								"totalTimeMin": "500"
+							},
+							"vars": {
+								"event_name": "<?php echo esc_html__( 'Seen', 'newspack-popups' ); ?>",
+								"event_label": "<?php echo esc_attr( $event_label ); ?>",
+								"event_category": "<?php echo esc_attr( $event_category ); ?>"
+							}
+						}
+					}
+				}
+			</script>
+		</amp-analytics>
+		<?php
 	}
 
 	/**
@@ -534,17 +575,6 @@ final class Newspack_Popups_Model {
 		$has_not_interested_form = self::get_dismiss_text( $popup );
 
 		$analytics_events = [
-			[
-				'id'             => 'popupVisible',
-				'on'             => 'visible',
-				'element'        => '#' . esc_attr( $element_id ),
-				'visibilitySpec' => [
-					'totalTimeMin' => '500',
-				],
-				'event_name'     => esc_html__( 'Seen', 'newspack-popups' ),
-				'event_label'    => esc_attr( $event_label ),
-				'event_category' => esc_attr( $event_category ),
-			],
 			[
 				'id'             => 'popupPageLoaded',
 				'on'             => 'ini-load',
