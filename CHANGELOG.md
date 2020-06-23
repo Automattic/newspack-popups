@@ -1,3 +1,17 @@
+# [1.7.0](https://github.com/Automattic/newspack-popups/compare/v1.6.0...v1.7.0) (2020-06-23)
+
+
+### Bug Fixes
+
+* insert all campaigns into content in one pass ([#150](https://github.com/Automattic/newspack-popups/issues/150)) ([3c30b8e](https://github.com/Automattic/newspack-popups/commit/3c30b8e9a4907ba08ab315538eed35f2990d2cde))
+* non-amp form handling for inline campaigns ([#154](https://github.com/Automattic/newspack-popups/issues/154)) ([12b27b4](https://github.com/Automattic/newspack-popups/commit/12b27b48bf57e067c3372aa7c4b44652adbabe78))
+
+
+### Features
+
+* **analytics:** use newspack-plugin's filter where possible ([#155](https://github.com/Automattic/newspack-popups/issues/155)) ([0ee60bc](https://github.com/Automattic/newspack-popups/commit/0ee60bccbc1c7548927b4f44db1b0a884837c609))
+* add class names for newsletter prompts, for analytics tracking ([9ca1f83](https://github.com/Automattic/newspack-popups/commit/9ca1f83c66755e868d537a95da65786ce405ffbe))
+
 # [1.6.0](https://github.com/Automattic/newspack-popups/compare/v1.5.3...v1.6.0) (2020-06-18)
 
 
