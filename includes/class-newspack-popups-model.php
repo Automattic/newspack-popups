@@ -643,13 +643,15 @@ final class Newspack_Popups_Model {
 	 */
 	public static function generate_inline_popup( $popup ) {
 		global $wp;
-		$element_id    = 'lightbox' . rand(); // phpcs:ignore WordPress.WP.AlternativeFunctions.rand_rand
-		$endpoint      = self::get_dismiss_endpoint();
-		$display_title = $popup['options']['display_title'];
-		$hidden_fields = self::get_hidden_fields( $popup );
-		$dismiss_text  = self::get_dismiss_text( $popup );
-		$classes       = [ 'newspack-inline-popup' ];
-		$classes[]     = ( ! empty( $popup['title'] ) && $display_title ) ? 'newspack-lightbox-has-title' : null;
+		$element_id           = 'lightbox' . rand(); // phpcs:ignore WordPress.WP.AlternativeFunctions.rand_rand
+		$endpoint             = self::get_dismiss_endpoint();
+		$display_title        = $popup['options']['display_title'];
+		$hidden_fields        = self::get_hidden_fields( $popup );
+		$dismiss_text         = self::get_dismiss_text( $popup );
+		$is_newsletter_prompt = false !== strpos( $popup['body'], 'wp-block-jetpack-mailchimp' ); // Is this a newsletter prompt? Add a class so we can target for analytics.
+		$classes              = array( 'newspack-inline-popup' );
+		$classes[]            = ( ! empty( $popup['title'] ) && $display_title ) ? 'newspack-lightbox-has-title' : null;
+		$classes[]            = $is_newsletter_prompt ? 'newspack-newsletter-prompt-inline' : null;
 
 		add_filter(
 			'newspack_analytics_events',
@@ -692,15 +694,17 @@ final class Newspack_Popups_Model {
 	 * @return string The generated markup.
 	 */
 	public static function generate_popup( $popup ) {
-		$element_id      = 'lightbox' . rand(); // phpcs:ignore WordPress.WP.AlternativeFunctions.rand_rand
-		$endpoint        = self::get_dismiss_endpoint();
-		$dismiss_text    = self::get_dismiss_text( $popup );
-		$display_title   = $popup['options']['display_title'];
-		$overlay_opacity = absint( $popup['options']['overlay_opacity'] ) / 100;
-		$overlay_color   = $popup['options']['overlay_color'];
-		$hidden_fields   = self::get_hidden_fields( $popup );
-		$classes         = [ 'newspack-lightbox', 'newspack-lightbox-placement-' . $popup['options']['placement'] ];
-		$classes[]       = ( ! empty( $popup['title'] ) && $display_title ) ? 'newspack-lightbox-has-title' : null;
+		$element_id           = 'lightbox' . rand(); // phpcs:ignore WordPress.WP.AlternativeFunctions.rand_rand
+		$endpoint             = self::get_dismiss_endpoint();
+		$dismiss_text         = self::get_dismiss_text( $popup );
+		$display_title        = $popup['options']['display_title'];
+		$overlay_opacity      = absint( $popup['options']['overlay_opacity'] ) / 100;
+		$overlay_color        = $popup['options']['overlay_color'];
+		$hidden_fields        = self::get_hidden_fields( $popup );
+		$is_newsletter_prompt = false !== strpos( $popup['body'], 'wp-block-jetpack-mailchimp' ); // Is this a newsletter prompt? Add a class so we can target for analytics.
+		$classes              = array( 'newspack-lightbox', 'newspack-lightbox-placement-' . $popup['options']['placement'] );
+		$classes[]            = ( ! empty( $popup['title'] ) && $display_title ) ? 'newspack-lightbox-has-title' : null;
+		$classes[]            = $is_newsletter_prompt ? 'newspack-newsletter-prompt-overlay' : null;
 
 		add_filter(
 			'newspack_analytics_events',
