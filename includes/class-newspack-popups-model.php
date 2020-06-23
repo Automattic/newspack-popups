@@ -566,8 +566,9 @@ final class Newspack_Popups_Model {
 			return '';
 		}
 
+		$popup_id       = $popup['id'];
 		$event_category = 'Newspack Announcement';
-		$event_label    = 'Newspack Announcement: ' . $popup['title'] . ' (' . $popup['id'] . ')';
+		$event_label    = 'Newspack Announcement: ' . $popup['title'] . ' (' . $popup_id . ')';
 
 		$has_link                = preg_match( '/<a\s/', $popup['body'] ) !== 0;
 		$has_form                = preg_match( '/<form\s/', $popup['body'] ) !== 0;
@@ -576,7 +577,7 @@ final class Newspack_Popups_Model {
 
 		$analytics_events = [
 			[
-				'id'             => 'popupPageLoaded',
+				'id'             => 'popupPageLoaded-' . $popup_id,
 				'on'             => 'ini-load',
 				'element'        => '#' . esc_attr( $element_id ),
 				'event_name'     => esc_html__( 'Load', 'newspack-popups' ),
@@ -587,7 +588,7 @@ final class Newspack_Popups_Model {
 
 		if ( $has_link ) {
 			$analytics_events[] = [
-				'id'             => 'popupAnchorClicks',
+				'id'             => 'popupAnchorClicks-' . $popup_id,
 				'on'             => 'click',
 				'element'        => '#' . esc_attr( $element_id ) . ' a',
 				'amp_element'    => '#' . esc_attr( $element_id ) . ' a',
@@ -599,7 +600,7 @@ final class Newspack_Popups_Model {
 
 		if ( $has_form ) {
 			$analytics_events[] = [
-				'id'             => 'popupFormSubmitSuccess',
+				'id'             => 'popupFormSubmitSuccess-' . $popup_id,
 				'amp_on'         => 'amp-form-submit-success',
 				'on'             => 'submit',
 				'element'        => '#' . esc_attr( $element_id ) . ' form:not(.popup-action-form)',
@@ -610,7 +611,7 @@ final class Newspack_Popups_Model {
 		}
 		if ( $has_dismiss_form ) {
 			$analytics_events[] = [
-				'id'             => 'popupDismissed',
+				'id'             => 'popupDismissed-' . $popup_id,
 				'amp_on'         => 'amp-form-submit-success',
 				'on'             => 'submit',
 				'element'        => '#' . esc_attr( $element_id ) . ' form.popup-dismiss-form',
@@ -621,7 +622,7 @@ final class Newspack_Popups_Model {
 		}
 		if ( $has_not_interested_form ) {
 			$analytics_events[] = [
-				'id'             => 'popupNotInterested',
+				'id'             => 'popupNotInterested-' . $popup_id,
 				'amp_on'         => 'amp-form-submit-success',
 				'on'             => 'submit',
 				'element'        => '#' . esc_attr( $element_id ) . ' form.popup-not-interested-form',
