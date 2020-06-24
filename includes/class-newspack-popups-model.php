@@ -574,6 +574,8 @@ final class Newspack_Popups_Model {
 		$has_form                = preg_match( '/<form\s/', $popup['body'] ) !== 0;
 		$has_dismiss_form        = 'inline' !== $popup['options']['placement'];
 		$has_not_interested_form = self::get_dismiss_text( $popup );
+		$is_newsletter_prompt    = false !== strpos( $popup['body'], 'wp-block-jetpack-mailchimp' );
+		$is_inline               = self::is_inline( $popup );
 
 		$analytics_events = [
 			[
@@ -629,6 +631,28 @@ final class Newspack_Popups_Model {
 				'event_name'     => esc_html__( 'Permanent Dismissal', 'newspack-popups' ),
 				'event_label'    => esc_attr( $event_label ),
 				'event_category' => esc_attr( $event_category ),
+			];
+		}
+		if ( $is_newsletter_prompt ) {
+			$analytics_events[] = [ // phpcs:ignore Generic.Arrays.DisallowShortArraySyntax.Found
+				'id'             => 'newsletterImpression-' . $popup_id,
+				'on'             => 'visible',
+				'element'        => '#' . esc_attr( $element_id ),
+				'event_name'     => 'newsletter modal impression ' . esc_attr( $is_inline ? '2' : '1' ),
+				'event_label'    => esc_attr( get_the_title() ),
+				'event_category' => 'NTG newsletter',
+				'visibilitySpec' => [ // phpcs:ignore Generic.Arrays.DisallowShortArraySyntax.Found
+					'totalTimeMin' => 500,
+				],
+			];
+			$analytics_events[] = [ // phpcs:ignore Generic.Arrays.DisallowShortArraySyntax.Found
+				'id'             => 'newsletterSignup-' . $popup_id,
+				'amp_on'         => 'amp-form-submit-success',
+				'on'             => 'submit',
+				'element'        => '#' . esc_attr( $element_id ) . ' .wp-block-jetpack-mailchimp form',
+				'event_name'     => 'newsletter signup',
+				'event_label'    => 'success',
+				'event_category' => 'NTG newsletter',
 			];
 		}
 
