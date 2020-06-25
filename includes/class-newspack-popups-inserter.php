@@ -143,17 +143,7 @@ final class Newspack_Popups_Inserter {
 			return $content;
 		}
 
-		// First needs to check if there any inline popups, to handle SCAIP.
-		$has_an_inline_popup = count(
-			array_filter(
-				$popups,
-				function( $p ) {
-					return 'inline' === $p['options']['placement'];
-				}
-			)
-		);
-
-		if ( $has_an_inline_popup && function_exists( 'scaip_maybe_insert_shortcode' ) ) {
+		if ( function_exists( 'scaip_maybe_insert_shortcode' ) ) {
 			// Prevent default SCAIP insertion.
 			remove_filter( 'the_content', 'scaip_maybe_insert_shortcode', 10 );
 
