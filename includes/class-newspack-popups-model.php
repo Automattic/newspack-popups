@@ -634,18 +634,18 @@ final class Newspack_Popups_Model {
 			];
 		}
 		if ( $is_newsletter_prompt ) {
-			$analytics_events[] = [ // phpcs:ignore Generic.Arrays.DisallowShortArraySyntax.Found
+			$analytics_events[] = [
 				'id'             => 'newsletterImpression-' . $popup_id,
 				'on'             => 'visible',
 				'element'        => '#' . esc_attr( $element_id ),
 				'event_name'     => 'newsletter modal impression ' . esc_attr( $is_inline ? '2' : '1' ),
 				'event_label'    => esc_attr( get_the_title() ),
 				'event_category' => 'NTG newsletter',
-				'visibilitySpec' => [ // phpcs:ignore Generic.Arrays.DisallowShortArraySyntax.Found
+				'visibilitySpec' => [
 					'totalTimeMin' => 500,
 				],
 			];
-			$analytics_events[] = [ // phpcs:ignore Generic.Arrays.DisallowShortArraySyntax.Found
+			$analytics_events[] = [
 				'id'             => 'newsletterSignup-' . $popup_id,
 				'amp_on'         => 'amp-form-submit-success',
 				'on'             => 'submit',
