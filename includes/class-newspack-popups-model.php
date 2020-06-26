@@ -298,6 +298,58 @@ final class Newspack_Popups_Model {
 		return $popups;
 	}
 
+	protected static function mark_newsletter_blocks( $block ) {
+		$blocks_to_filter = [ 'jetpack/mailchimp' ];
+		if ( in_array( $block['blockName'], $blocks_to_filter ) ) {
+			$id               = rand();
+			$unique_classname = 'newspack-popups-newsletter-form-' . $id;
+
+			$classes                     = isset( $block['attrs']['className'] ) ? explode( ' ', $block['attrs']['className'] ) : [];
+			$classes[]                   = 'newspack-popups-newsletter-form';
+			$classes[]                   = $unique_classname;
+			$block['attrs']['className'] = implode( ' ', $classes );
+
+			// TODO: wrap in amp-layout
+			// TODO: there are still duplicates :/
+
+			$newsletter_events = [
+				[
+					'id'             => 'newsletterImpression-' . $id,
+					'on'             => 'visible',
+					'element'        => '.' . esc_attr( $unique_classname ),
+					'event_name'     => 'newsletter modal impression ',
+					// TODO: pass info about popup to this function
+					// 'event_name'     => 'newsletter modal impression ' . esc_attr( $is_inline ? '2' : '1' ),
+					'event_label'    => esc_attr( get_the_title() ),
+					'event_category' => 'NTG newsletter',
+					'visibilitySpec' => [
+						'totalTimeMin' => 500,
+					],
+				],
+				[
+					'id'             => 'newsletterSignup-' . $id,
+					'amp_on'         => 'amp-form-submit-success',
+					'on'             => 'submit',
+					'element'        => '.' . esc_attr( $unique_classname ) . ' form',
+					'event_name'     => 'newsletter signup',
+					'event_label'    => 'success',
+					'event_category' => 'NTG newsletter',
+				],
+			];
+
+			add_filter(
+				'newspack_analytics_events',
+				function ( $evts ) use ( $newsletter_events ) {
+						return array_merge( $evts, $newsletter_events );
+				}
+			);
+		}
+
+		$inner                = array_map( [ __CLASS__, 'mark_newsletter_blocks' ], $block['innerBlocks'] );
+		$block['innerBlocks'] = $inner;
+		return $block;
+	}
+
 	/**
 	 * Create the popup object.
 	 *
@@ -323,7 +375,7 @@ final class Newspack_Popups_Model {
 		$blocks = parse_blocks( $campaign_post->post_content );
 		$body   = '';
 		foreach ( $blocks as $block ) {
-			$body .= render_block( $block );
+			$body .= render_block( self::mark_newsletter_blocks( $block ) );
 		}
 		if ( $containing_post_id ) {
 			wp_reset_postdata();
