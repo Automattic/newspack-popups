@@ -25,13 +25,21 @@ final class Newspack_Popups_Inserter {
 	 * @return array Popup objects.
 	 */
 	public static function popups_for_post() {
-		if ( ! empty( self::$popups ) ) {
-			return self::$popups;
+		$post_id = get_the_ID();
+		if ( ! $post_id ) {
+			return [];
 		}
+
+		if ( ! empty( self::$popups[ $post_id ] ) ) {
+			return self::$popups[ $post_id ];
+		}
+
+		error_log( 'popups_for_post' );
 
 		// Get the previewed popup and return early if there's one.
 		if ( Newspack_Popups::previewed_popup_id() ) {
-			return [ Newspack_Popups_Model::retrieve_preview_popup( Newspack_Popups::previewed_popup_id() ) ];
+			self::$popups[ $post_id ] = [ Newspack_Popups_Model::retrieve_preview_popup( Newspack_Popups::previewed_popup_id() ) ];
+			return self::$popups[ $post_id ];
 		}
 
 		// 1. Get all inline popups in there first.
@@ -48,19 +56,12 @@ final class Newspack_Popups_Inserter {
 			);
 		} else {
 			// If there's no category-matching popup, get the sitewide pop-up.
-			$sitewide_default = get_option( Newspack_Popups::NEWSPACK_POPUPS_SITEWIDE_DEFAULT, null );
+			$sitewide_default = self::retrieve_sitewide_default();
 			if ( $sitewide_default ) {
-				$found_popup = Newspack_Popups_Model::retrieve_popup_by_id( $sitewide_default );
-				if (
-					$found_popup &&
-					// Prevent inline sitewide default from being added - all inline popups are there.
-					'inline' !== $found_popup['options']['placement']
-				) {
-					array_push(
-						$popups_to_maybe_display,
-						$found_popup
-					);
-				}
+				array_push(
+					$popups_to_maybe_display,
+					$sitewide_default
+				);
 			}
 		}
 
@@ -68,11 +69,52 @@ final class Newspack_Popups_Inserter {
 			$popups_to_maybe_display,
 			[ __CLASS__, 'should_display' ]
 		);
-		if ( ! empty( $popups_to_display ) ) {
-			return $popups_to_display;
+
+		self::$popups[ $post_id ] = empty( $popups_to_display ) ? [] : $popups_to_display;
+		return self::$popups[ $post_id ];
+	}
+
+	/**
+	 * Retrieve the appropriate popups for archive pages.
+	 *
+	 * @return array Popup objects.
+	 */
+	public static function popups_for_archive() {
+		if ( ! empty( self::$popups['archive'] ) ) {
+			return self::$popups['archive'];
 		}
 
-		return [];
+		error_log( 'popups_for_archive' );
+
+		$campaign = [];
+
+		// Check if there's an overlay popup with matching category.
+		$category_overlay_popup = Newspack_Popups_Model::retrieve_category_overlay_popup();
+		if ( $category_overlay_popup ) {
+			$campaign = $category_overlay_popup;
+		} else {
+			$campaign = self::retrieve_sitewide_default();
+		}
+
+		self::$popups['archive'] = $campaign && self::should_display( $campaign ) ? [ $campaign ] : [];
+		return self::$popups['archive'];
+	}
+
+	/**
+	 * Retrieve sitewide default campaign, if available.
+	 *
+	 * @return array|bool Sitewide default if available, false if not.
+	 */
+	public static function retrieve_sitewide_default() {
+		// If there's no category-matching popup, get the sitewide pop-up.
+		$sitewide_default = get_option( Newspack_Popups::NEWSPACK_POPUPS_SITEWIDE_DEFAULT, null );
+		if ( $sitewide_default ) {
+			$campaign = Newspack_Popups_Model::retrieve_popup_by_id( $sitewide_default );
+			if ( $campaign && 'inline' !== $campaign['options']['placement'] ) {
+				return $campaign;
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -127,7 +169,33 @@ final class Newspack_Popups_Inserter {
 	 * @param string $content The content of the post.
 	 */
 	public static function insert_popups_in_content( $content = '' ) {
-		if ( is_admin() || ! is_singular() || self::assess_has_disabled_popups( $content ) ) {
+		// Not Frontend
+		if ( is_admin() ) {
+			return $content;
+		}
+
+		// Content is empty.
+		if ( empty( trim( $content ) ) ) {
+			return $content;
+		}
+
+		// Campaigns disabled for this page.
+		if ( self::assess_has_disabled_popups() ) {
+			return $content;
+		}
+
+		// No campaign insertion in archive pages.
+		if ( ! is_singular() ) {
+			return $content;
+		}
+
+		// If not in the loop, ignore.
+		if ( ! in_the_loop() ) {
+			return $content;
+		}
+
+		// If the current post is a Campaign, ignore.
+		if ( Newspack_Popups::NEWSPACK_PLUGINS_CPT == get_post_type() ) {
 			return $content;
 		}
 
@@ -136,6 +204,8 @@ final class Newspack_Popups_Inserter {
 		if ( function_exists( 'wc_memberships_is_post_content_restricted' ) && wc_memberships_is_post_content_restricted() ) {
 			return $content;
 		}
+
+		error_log( 'insert_popups_in_content!' );
 
 		$popups = self::popups_for_post();
 
@@ -211,8 +281,7 @@ final class Newspack_Popups_Inserter {
 		if ( is_singular() ) {
 			return;
 		}
-
-		$popups = self::popups_for_post();
+		$popups = self::popups_for_archive();
 
 		if ( ! empty( $popups ) ) {
 			foreach ( $popups as $popup ) {
@@ -272,7 +341,29 @@ final class Newspack_Popups_Inserter {
 	 * @param object $popups The popup objects to handle.
 	 */
 	public static function insert_popups_amp_access( $popups ) {
-		if ( is_admin() || self::assess_has_disabled_popups() ) {
+		// Not Frontend
+		if ( is_admin() ) {
+			return;
+		}
+
+		// Campaigns disabled for this page.
+		if ( self::assess_has_disabled_popups() ) {
+			return;
+		}
+
+		// No campaign insertion in archive pages.
+		if ( ! is_singular() ) {
+			return;
+		}
+
+		// If the current post is a Campaign, ignore.
+		if ( Newspack_Popups::NEWSPACK_PLUGINS_CPT == get_post_type() ) {
+			return;
+		}
+
+		// Don't inject inline popups on paywalled posts.
+		// It doesn't make sense with a paywall message and also causes an infinite loop.
+		if ( function_exists( 'wc_memberships_is_post_content_restricted' ) && wc_memberships_is_post_content_restricted() ) {
 			return;
 		}
 

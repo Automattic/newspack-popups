@@ -298,6 +298,8 @@ final class Newspack_Popups_Model {
 		return $popups;
 	}
 
+	protected static $popups = [];
+
 	/**
 	 * Create the popup object.
 	 *
@@ -309,6 +311,15 @@ final class Newspack_Popups_Model {
 	 */
 	protected static function create_popup_object( $campaign_post, $containing_post_id = null, $include_categories = false, $options = null ) {
 
+		if ( $containing_post_id && empty( self::$popups[ $containing_post_id ] ) ) {
+			self::$popups[ $containing_post_id ] = [];
+		}
+
+		if ( ! empty( self::$popups[ $containing_post_id ][ $campaign_post->ID ] ) ) {
+			return self::$popups[ $containing_post_id ][ $campaign_post->ID ];
+		}
+
+		error_log( 'create_popup_object: ' . $campaign_post->ID . ' in: ' . $containing_post_id );
 		// Query the containing post to enable dynamic blocks like Jetpack Related Posts to function properly.
 		if ( $containing_post_id ) {
 			$containing_post = new WP_Query(
@@ -373,6 +384,9 @@ final class Newspack_Popups_Model {
 
 		if ( self::is_inline( $popup ) ) {
 			$popup['markup'] = self::generate_inline_popup( $popup );
+			if ( $containing_post_id ) {
+				self::$popups[ $containing_post_id ][ $campaign_post->ID ] = $popup;
+			}
 			return $popup;
 		}
 
@@ -389,6 +403,10 @@ final class Newspack_Popups_Model {
 			$popup['options']['placement'] = 'center';
 		}
 		$popup['markup'] = self::generate_popup( $popup );
+
+		if ( $containing_post_id ) {
+			self::$popups[ $containing_post_id ][ $campaign_post->ID ] = $popup;
+		}
 		return $popup;
 	}
 
