@@ -127,7 +127,38 @@ final class Newspack_Popups_Inserter {
 	 * @param string $content The content of the post.
 	 */
 	public static function insert_popups_in_content( $content = '' ) {
-		if ( is_admin() || ! is_singular() || self::assess_has_disabled_popups( $content ) ) {
+		// Not Frontend.
+		if ( is_admin() ) {
+			return $content;
+		}
+
+		// Content is empty.
+		if ( empty( trim( $content ) ) ) {
+			return $content;
+		}
+
+		// No campaign insertion in archive pages.
+		if ( ! is_singular() ) {
+			return $content;
+		}
+
+		// If not in the loop, ignore.
+		if ( ! in_the_loop() ) {
+			return $content;
+		}
+
+		// Ignore on front page.
+		if ( is_front_page() ) {
+			return $content;
+		}
+
+		// Campaigns disabled for this page.
+		if ( self::assess_has_disabled_popups() ) {
+			return $content;
+		}
+
+		// If the current post is a Campaign, ignore.
+		if ( Newspack_Popups::NEWSPACK_PLUGINS_CPT == get_post_type() ) {
 			return $content;
 		}
 
