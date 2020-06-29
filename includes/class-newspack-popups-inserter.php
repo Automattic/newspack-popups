@@ -147,11 +147,6 @@ final class Newspack_Popups_Inserter {
 			return $content;
 		}
 
-		// Ignore on front page.
-		if ( is_front_page() ) {
-			return $content;
-		}
-
 		// Campaigns disabled for this page.
 		if ( self::assess_has_disabled_popups() ) {
 			return $content;
