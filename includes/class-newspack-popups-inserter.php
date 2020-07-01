@@ -222,7 +222,7 @@ final class Newspack_Popups_Inserter {
 
 		// 4. Insert overlay campaigns at the top of content.
 		foreach ( $overlay_popups as $overlay_popup ) {
-			$output = '<!-- wp:html -->' . $overlay_popup['markup'] . '<!-- /wp:html -->' . $output;
+			$output = '<!-- wp:html -->' . Newspack_Popups_Model::generate_popup( $overlay_popup ) . '<!-- /wp:html -->' . $output;
 		}
 
 		self::enqueue_popup_assets();
@@ -242,7 +242,7 @@ final class Newspack_Popups_Inserter {
 
 		if ( ! empty( $popups ) ) {
 			foreach ( $popups as $popup ) {
-				echo $popup['markup']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				echo Newspack_Popups_Model::generate_popup( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			}
 			self::enqueue_popup_assets();
 		}
@@ -287,9 +287,7 @@ final class Newspack_Popups_Inserter {
 		} elseif ( isset( $atts['id'] ) ) {
 			$found_popup = Newspack_Popups_Model::retrieve_popup_by_id( $atts['id'] );
 		}
-		if ( isset( $found_popup['markup'] ) ) {
-			return $found_popup['markup'];
-		}
+		return Newspack_Popups_Model::generate_popup( $found_popup );
 	}
 
 	/**
@@ -319,6 +317,7 @@ final class Newspack_Popups_Inserter {
 				'namespace'                     => 'popup_' . $popup['id'],
 				'authorization'                 => esc_url( $endpoint ) . '?popup_id=' . esc_attr( $popup['id'] ) . '&rid=READER_ID&url=CANONICAL_URL&RANDOM',
 				'noPingback'                    => true,
+				'authorizationTimeout'          => 10000, // For development purposes. If #development=1 is appended to URL the maximum timeout for amp-access is raised to 10s.
 				'authorizationFallbackResponse' => array(
 					'displayPopup' => $authorization_fallback_response,
 				),
