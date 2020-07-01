@@ -338,14 +338,6 @@ final class Newspack_Popups_Model {
 				$containing_post->the_post();
 			}
 		}
-		$blocks = parse_blocks( $campaign_post->post_content );
-		$body   = '';
-		foreach ( $blocks as $block ) {
-			$body .= render_block( $block );
-		}
-		if ( $containing_post_id ) {
-			wp_reset_postdata();
-		}
 
 		$id = $campaign_post->ID;
 
@@ -367,7 +359,6 @@ final class Newspack_Popups_Model {
 			'id'      => $id,
 			'status'  => $campaign_post->post_status,
 			'title'   => $campaign_post->post_title,
-			'body'    => $body,
 			'options' => wp_parse_args(
 				array_filter( $post_options ),
 				[
@@ -388,6 +379,17 @@ final class Newspack_Popups_Model {
 		if ( $include_categories ) {
 			$popup['categories'] = get_the_category( $id );
 		}
+
+		do_action( 'newspack_campaigns_before_campaign_render', $popup );
+		$blocks        = parse_blocks( $campaign_post->post_content );
+		$popup['body'] = '';
+		foreach ( $blocks as $block ) {
+			$popup['body'] .= render_block( $block );
+		}
+		if ( $containing_post_id ) {
+			wp_reset_postdata();
+		}
+		do_action( 'newspack_campaigns_after_campaign_render', $popup );
 
 		if ( self::is_inline( $popup ) ) {
 			$popup['markup'] = self::generate_inline_popup( $popup );
