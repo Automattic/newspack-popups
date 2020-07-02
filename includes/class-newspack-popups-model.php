@@ -13,13 +13,6 @@ defined( 'ABSPATH' ) || exit;
 final class Newspack_Popups_Model {
 
 	/**
-	 * An array of all retrieved campaigns, to avoid double-rendering.
-	 *
-	 * @var array
-	 */
-	protected static $campaigns = [];
-
-	/**
 	 * Retrieve all Popups (first 100).
 	 *
 	 * @param  boolean $include_unpublished Whether to include unpublished posts.
@@ -310,12 +303,6 @@ final class Newspack_Popups_Model {
 	 * @return object Popup object
 	 */
 	protected static function create_popup_object( $campaign_post, $include_categories = false, $options = null ) {
-
-		// If campaign has already been created for the same containing post, return it without re-rendering.
-		if ( ! empty( self::$campaigns[ $campaign_post->ID ] ) ) {
-			return self::$campaigns[ $campaign_post->ID ];
-		}
-
 		$id = $campaign_post->ID;
 
 		$post_options = isset( $options ) ? $options : [
@@ -359,8 +346,6 @@ final class Newspack_Popups_Model {
 		}
 
 		if ( self::is_inline( $popup ) ) {
-			// Store campaign to avoid re-rendering.
-			self::$campaigns[ $campaign_post->ID ] = $popup;
 			return $popup;
 		}
 
@@ -376,9 +361,6 @@ final class Newspack_Popups_Model {
 		if ( ! in_array( $popup['options']['placement'], [ 'top', 'bottom' ], true ) ) {
 			$popup['options']['placement'] = 'center';
 		}
-
-		// Store campaign to avoid re-rendering.
-		self::$campaigns[ $campaign_post->ID ] = $popup;
 		return $popup;
 	}
 
@@ -633,7 +615,6 @@ final class Newspack_Popups_Model {
 	 */
 	public static function generate_inline_popup( $popup ) {
 		global $wp;
-
 		$blocks = parse_blocks( $popup['content'] );
 		$body   = '';
 		foreach ( $blocks as $block ) {
@@ -695,7 +676,6 @@ final class Newspack_Popups_Model {
 		if ( isset( $popup['options'], $popup['options']['placement'] ) && 'inline' === $popup['options']['placement'] ) {
 			return self::generate_inline_popup( $popup );
 		}
-
 		$blocks = parse_blocks( $popup['content'] );
 		$body   = '';
 		foreach ( $blocks as $block ) {
