@@ -615,11 +615,14 @@ final class Newspack_Popups_Model {
 	 */
 	public static function generate_inline_popup( $popup ) {
 		global $wp;
+
+		do_action( 'newspack_campaigns_before_campaign_render', $popup );
 		$blocks = parse_blocks( $popup['content'] );
 		$body   = '';
 		foreach ( $blocks as $block ) {
 			$body .= render_block( $block );
 		}
+		do_action( 'newspack_campaigns_after_campaign_render', $popup );
 
 		$element_id           = 'lightbox' . rand(); // phpcs:ignore WordPress.WP.AlternativeFunctions.rand_rand
 		$endpoint             = self::get_dismiss_endpoint();
@@ -676,11 +679,14 @@ final class Newspack_Popups_Model {
 		if ( isset( $popup['options'], $popup['options']['placement'] ) && 'inline' === $popup['options']['placement'] ) {
 			return self::generate_inline_popup( $popup );
 		}
+
+		do_action( 'newspack_campaigns_before_campaign_render', $popup );
 		$blocks = parse_blocks( $popup['content'] );
 		$body   = '';
 		foreach ( $blocks as $block ) {
 			$body .= render_block( $block );
 		}
+		do_action( 'newspack_campaigns_after_campaign_render', $popup );
 
 		$element_id           = 'lightbox' . rand(); // phpcs:ignore WordPress.WP.AlternativeFunctions.rand_rand
 		$endpoint             = self::get_dismiss_endpoint();
