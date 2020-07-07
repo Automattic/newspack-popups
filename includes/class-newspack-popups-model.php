@@ -518,6 +518,9 @@ final class Newspack_Popups_Model {
 								"event_name": "<?php echo esc_html__( 'Seen', 'newspack-popups' ); ?>",
 								"event_label": "<?php echo esc_attr( $event_label ); ?>",
 								"event_category": "<?php echo esc_attr( $event_category ); ?>"
+							},
+							"extraUrlParams": {
+								"ni": 1
 							}
 						}
 					}
