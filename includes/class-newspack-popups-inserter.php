@@ -20,6 +20,14 @@ final class Newspack_Popups_Inserter {
 	protected static $popups = [];
 
 	/**
+	 * Whether we've already inserted campaigns into the content.
+	 * If we've already inserted campaigns into the content, don't try to do it again.
+	 *
+	 * @var boolean
+	 */
+	protected static $the_content_has_rendered = false;
+
+	/**
 	 * Retrieve the appropriate popups for the current post.
 	 *
 	 * @return array Popup objects.
@@ -127,6 +135,11 @@ final class Newspack_Popups_Inserter {
 	 * @param string $content The content of the post.
 	 */
 	public static function insert_popups_in_content( $content = '' ) {
+		// Avoid duplicate execution.
+		if ( true === self::$the_content_has_rendered ) {
+			return $content;
+		}
+
 		// Not Frontend.
 		if ( is_admin() ) {
 			return $content;
@@ -226,6 +239,7 @@ final class Newspack_Popups_Inserter {
 		}
 
 		self::enqueue_popup_assets();
+		self::$the_content_has_rendered = true;
 		return $output;
 	}
 
