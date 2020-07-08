@@ -508,12 +508,13 @@ final class Newspack_Popups_Model {
 
 		$analytics_events = [
 			[
-				'id'             => 'popupPageLoaded-' . $popup_id,
-				'on'             => 'ini-load',
-				'element'        => '#' . esc_attr( $element_id ),
-				'event_name'     => esc_html__( 'Load', 'newspack-popups' ),
-				'event_label'    => esc_attr( $event_label ),
-				'event_category' => esc_attr( $event_category ),
+				'id'              => 'popupPageLoaded-' . $popup_id,
+				'on'              => 'ini-load',
+				'element'         => '#' . esc_attr( $element_id ),
+				'event_name'      => esc_html__( 'Load', 'newspack-popups' ),
+				'event_label'     => esc_attr( $event_label ),
+				'event_category'  => esc_attr( $event_category ),
+				'non_interaction' => true,
 			],
 			[
 				'id'              => 'popupSeen-' . $popup_id,
