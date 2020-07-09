@@ -1,3 +1,15 @@
+# [1.8.0](https://github.com/Automattic/newspack-popups/compare/v1.7.2...v1.8.0) (2020-07-09)
+
+
+### Bug Fixes
+
+* make popupseen non-interactive event ([4278a17](https://github.com/Automattic/newspack-popups/commit/4278a17b948958b8f07ea3214c681fa449fb4bd9))
+
+
+### Features
+
+* mark load event as non interaction ([9abff5d](https://github.com/Automattic/newspack-popups/commit/9abff5d35666134e66b54cc81b33bfbccf86c2f2))
+
 ## [1.7.2](https://github.com/Automattic/newspack-popups/compare/v1.7.1...v1.7.2) (2020-07-07)
 
 
