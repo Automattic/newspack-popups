@@ -110,6 +110,8 @@
     }
   },
   "dependencies": {
+    "@material-ui/core": "^4.11.0",
+    "@material-ui/icons": "^4.9.1",
     "@wordpress/api-fetch": "^3.11.0",
     "@wordpress/block-editor": "^3.7.5",
     "@wordpress/compose": "^3.11.0",
