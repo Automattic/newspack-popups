@@ -48,18 +48,7 @@ final class Newspack_Popups_API {
 			[
 				'methods'             => \WP_REST_Server::EDITABLE,
 				'callback'            => [ $this, 'set_sitewide_default_endpoint' ],
-				'permission_callback' => function() {
-					if ( ! current_user_can( 'manage_options' ) ) {
-						return new \WP_Error(
-							'newspack_rest_forbidden',
-							esc_html__( 'You cannot use this resource.', 'newspack' ),
-							[
-								'status' => 403,
-							]
-						);
-					}
-					return true;
-				},
+				'permission_callback' => [ $this, 'permission_callback' ],
 				'args'                => [
 					'id' => [
 						'sanitize_callback' => 'absint',
@@ -73,18 +62,7 @@ final class Newspack_Popups_API {
 			[
 				'methods'             => \WP_REST_Server::DELETABLE,
 				'callback'            => [ $this, 'unset_sitewide_default_endpoint' ],
-				'permission_callback' => function() {
-					if ( ! current_user_can( 'manage_options' ) ) {
-						return new \WP_Error(
-							'newspack_rest_forbidden',
-							esc_html__( 'You cannot use this resource.', 'newspack' ),
-							[
-								'status' => 403,
-							]
-						);
-					}
-					return true;
-				},
+				'permission_callback' => [ $this, 'permission_callback' ],
 				'args'                => [
 					'id' => [
 						'sanitize_callback' => 'absint',
@@ -92,6 +70,69 @@ final class Newspack_Popups_API {
 				],
 			]
 		);
+		\register_rest_route(
+			'newspack-popups/v1',
+			'settings',
+			[
+				'methods'             => \WP_REST_Server::EDITABLE,
+				'callback'            => [ $this, 'update_settings' ],
+				'permission_callback' => [ $this, 'permission_callback' ],
+				'args'                => [
+					'option_name'  => [
+						'validate_callback' => [ __CLASS__, 'validate_settings_option_name' ],
+						'sanitize_callback' => 'esc_attr',
+					],
+					'option_value' => [
+						'sanitize_callback' => 'esc_attr',
+					],
+				],
+			]
+		);
+	}
+
+	/**
+	 * Validate settings option key.
+	 *
+	 * @param String $key Meta key.
+	 */
+	public static function validate_settings_option_name( $key ) {
+		return in_array( $key, array_keys( \Newspack_Popups_Settings::get_settings() ) );
+	}
+
+	/**
+	 * Permission callback for authenticated requests.
+	 *
+	 * @return boolean if user can edit stuff.
+	 */
+	public static function permission_callback() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return new \WP_Error(
+				'newspack_rest_forbidden',
+				esc_html__( 'You cannot use this resource.', 'newspack' ),
+				[
+					'status' => 403,
+				]
+			);
+		}
+		return true;
+	}
+
+	/**
+	 * Handler for API settings update endpoint.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 */
+	public static function update_settings( $request ) {
+		if ( update_option( $request['option_name'], $request['option_value'] ) ) {
+			return [
+				$request['option_name'] => $request['option_value'],
+			];
+		} else {
+			return new \WP_Error(
+				'newspack_popups_settings_error',
+				esc_html__( 'Error updating the settings.', 'newspack' )
+			);
+		}
 	}
 
 	/**
