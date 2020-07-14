@@ -1,3 +1,18 @@
+# [1.9.0](https://github.com/Automattic/newspack-popups/compare/v1.8.0...v1.9.0) (2020-07-14)
+
+
+### Bug Fixes
+
+* decode URL when checking utm_source suppression; fix transient ([#178](https://github.com/Automattic/newspack-popups/issues/178)) ([cd55311](https://github.com/Automattic/newspack-popups/commit/cd553112312c9f8974354193a4e025f0969848a1)), closes [#177](https://github.com/Automattic/newspack-popups/issues/177)
+* **settings:** styling ([2c77bd4](https://github.com/Automattic/newspack-popups/commit/2c77bd4a03f369d2337533de249b890f50a111ce))
+
+
+### Features
+
+* hide non-test campagins for logged-in users ([#169](https://github.com/Automattic/newspack-popups/issues/169)) ([476e5c0](https://github.com/Automattic/newspack-popups/commit/476e5c030b10417d45bc3abc33925681669a2d24))
+* **settings:** suppress all newsletter campaigns if one was dismissed ([#175](https://github.com/Automattic/newspack-popups/issues/175)) ([ed91a73](https://github.com/Automattic/newspack-popups/commit/ed91a7357ac94a0c82c3beda622230d99e2f8fd9))
+* add option to suppress newsletter campaigns if visiting from email ([e1371f5](https://github.com/Automattic/newspack-popups/commit/e1371f58dee5331210009207ab59cfd5e2eee959))
+
 # [1.8.0](https://github.com/Automattic/newspack-popups/compare/v1.7.2...v1.8.0) (2020-07-09)
 
 
