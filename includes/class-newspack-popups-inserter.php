@@ -482,6 +482,10 @@ final class Newspack_Popups_Inserter {
 	 * @return bool Should popup be shown.
 	 */
 	public static function should_display( $popup ) {
+		// Hide non-test mode campaigns for logged-in users.
+		if ( is_user_logged_in() && 'test' !== $popup['options']['frequency'] ) {
+			return false;
+		}
 		return self::assess_is_post( $popup ) &&
 			self::assess_test_mode( $popup ) &&
 			self::assess_categories_filter( $popup ) &&
