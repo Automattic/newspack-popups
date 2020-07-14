@@ -193,7 +193,7 @@ final class Newspack_Popups_API {
 		}
 		if ( $utm_suppression ) {
 			$referer = filter_input( INPUT_SERVER, 'HTTP_REFERER', FILTER_SANITIZE_STRING );
-			if ( ! empty( $referer ) && stripos( $referer, 'utm_source=' . $utm_suppression ) ) {
+			if ( ! empty( $referer ) && stripos( urldecode( $referer ), 'utm_source=' . urldecode( $utm_suppression ) ) ) {
 				$response['displayPopup'] = false;
 			}
 
