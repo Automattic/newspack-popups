@@ -395,6 +395,16 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
+	 * Does the popup have newsletter prompt?
+	 *
+	 * @param object $popup The popup object.
+	 * @return boolean True if popup has a newsletter prompt.
+	 */
+	public static function has_newsletter_prompt( $popup ) {
+		return false !== strpos( $popup['content'], 'wp:jetpack/mailchimp' );
+	}
+
+	/**
 	 * Insert amp-analytics tracking code.
 	 *
 	 * @param object $popup The popup object.
@@ -601,7 +611,7 @@ final class Newspack_Popups_Model {
 		$display_title        = $popup['options']['display_title'];
 		$hidden_fields        = self::get_hidden_fields( $popup );
 		$dismiss_text         = self::get_dismiss_text( $popup );
-		$is_newsletter_prompt = false !== strpos( $body, 'wp-block-jetpack-mailchimp' ); // Is this a newsletter prompt? Add a class so we can target for analytics.
+		$is_newsletter_prompt = self::has_newsletter_prompt( $popup );
 		$classes              = array( 'newspack-inline-popup' );
 		$classes[]            = ( ! empty( $popup['title'] ) && $display_title ) ? 'newspack-lightbox-has-title' : null;
 		$classes[]            = $is_newsletter_prompt ? 'newspack-newsletter-prompt-inline' : null;
@@ -667,7 +677,7 @@ final class Newspack_Popups_Model {
 		$overlay_opacity      = absint( $popup['options']['overlay_opacity'] ) / 100;
 		$overlay_color        = $popup['options']['overlay_color'];
 		$hidden_fields        = self::get_hidden_fields( $popup );
-		$is_newsletter_prompt = false !== strpos( $body, 'wp-block-jetpack-mailchimp' ); // Is this a newsletter prompt? Add a class so we can target for analytics.
+		$is_newsletter_prompt = self::has_newsletter_prompt( $popup );
 		$classes              = array( 'newspack-lightbox', 'newspack-lightbox-placement-' . $popup['options']['placement'] );
 		$classes[]            = ( ! empty( $popup['title'] ) && $display_title ) ? 'newspack-lightbox-has-title' : null;
 		$classes[]            = $is_newsletter_prompt ? 'newspack-newsletter-prompt-overlay' : null;
