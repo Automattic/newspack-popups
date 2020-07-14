@@ -15,6 +15,7 @@ const path = require( 'path' );
 const editor = path.join( __dirname, 'src', 'editor' );
 const view = path.join( __dirname, 'src', 'view' );
 const documentSettings = path.join( __dirname, 'src', 'document-settings' );
+const settings = path.join( __dirname, 'src', 'settings' );
 
 const webpackConfig = getBaseWebpackConfig(
 	{ WP: true },
@@ -23,6 +24,7 @@ const webpackConfig = getBaseWebpackConfig(
 			editor,
 			view,
 			documentSettings,
+			settings,
 		},
 		'output-path': path.join( __dirname, 'dist' ),
 	}

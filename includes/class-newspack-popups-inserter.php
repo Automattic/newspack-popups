@@ -20,6 +20,14 @@ final class Newspack_Popups_Inserter {
 	protected static $popups = [];
 
 	/**
+	 * Whether we've already inserted campaigns into the content.
+	 * If we've already inserted campaigns into the content, don't try to do it again.
+	 *
+	 * @var boolean
+	 */
+	protected static $the_content_has_rendered = false;
+
+	/**
 	 * Retrieve the appropriate popups for the current post.
 	 *
 	 * @return array Popup objects.
@@ -119,6 +127,15 @@ final class Newspack_Popups_Inserter {
 				add_filter( 'the_content', [ $this, 'insert_popups_in_content' ], 1 );
 			}
 		);
+
+		// Tell WP to take utm_medium param into account when we ask get_query_var.
+		add_filter(
+			'query_vars',
+			function ( $vars ) {
+				$vars[] .= 'utm_medium';
+				return $vars;
+			}
+		);
 	}
 
 	/**
@@ -127,6 +144,11 @@ final class Newspack_Popups_Inserter {
 	 * @param string $content The content of the post.
 	 */
 	public static function insert_popups_in_content( $content = '' ) {
+		// Avoid duplicate execution.
+		if ( true === self::$the_content_has_rendered ) {
+			return $content;
+		}
+
 		// Not Frontend.
 		if ( is_admin() ) {
 			return $content;
@@ -226,6 +248,7 @@ final class Newspack_Popups_Inserter {
 		}
 
 		self::enqueue_popup_assets();
+		self::$the_content_has_rendered = true;
 		return $output;
 	}
 
@@ -431,6 +454,28 @@ final class Newspack_Popups_Inserter {
 	}
 
 	/**
+	 * If:
+	 * - the visitor is coming from email (utm_medium param),
+	 * - the suppress_newsletter_campaigns setting is on,
+	 * - the pop-up has a newsletter form,
+	 * then it should not be displayed.
+	 *
+	 * @param object $popup The popup to assess.
+	 * @return bool Should popup be shown.
+	 */
+	public static function assess_newsletter_campaign_suppression( $popup ) {
+		$settings = \Newspack_Popups_Settings::get_settings();
+		if (
+			'email' === get_query_var( 'utm_medium' ) &&
+			$settings['suppress_newsletter_campaigns'] &&
+			\Newspack_Popups_Model::has_newsletter_prompt( $popup )
+		) {
+			return false;
+		}
+		return true;
+	}
+
+	/**
 	 * Should Popup be displayed, based on universal conditions.
 	 *
 	 * @param object $popup The popup to assess.
@@ -441,7 +486,10 @@ final class Newspack_Popups_Inserter {
 		if ( is_user_logged_in() && 'test' !== $popup['options']['frequency'] ) {
 			return false;
 		}
-		return self::assess_is_post( $popup ) && self::assess_test_mode( $popup ) && self::assess_categories_filter( $popup );
+		return self::assess_is_post( $popup ) &&
+			self::assess_test_mode( $popup ) &&
+			self::assess_categories_filter( $popup ) &&
+			self::assess_newsletter_campaign_suppression( $popup );
 	}
 }
 $newspack_popups_inserter = new Newspack_Popups_Inserter();

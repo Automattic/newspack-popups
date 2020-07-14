@@ -48,18 +48,7 @@ final class Newspack_Popups_API {
 			[
 				'methods'             => \WP_REST_Server::EDITABLE,
 				'callback'            => [ $this, 'set_sitewide_default_endpoint' ],
-				'permission_callback' => function() {
-					if ( ! current_user_can( 'manage_options' ) ) {
-						return new \WP_Error(
-							'newspack_rest_forbidden',
-							esc_html__( 'You cannot use this resource.', 'newspack' ),
-							[
-								'status' => 403,
-							]
-						);
-					}
-					return true;
-				},
+				'permission_callback' => [ $this, 'permission_callback' ],
 				'args'                => [
 					'id' => [
 						'sanitize_callback' => 'absint',
@@ -73,18 +62,7 @@ final class Newspack_Popups_API {
 			[
 				'methods'             => \WP_REST_Server::DELETABLE,
 				'callback'            => [ $this, 'unset_sitewide_default_endpoint' ],
-				'permission_callback' => function() {
-					if ( ! current_user_can( 'manage_options' ) ) {
-						return new \WP_Error(
-							'newspack_rest_forbidden',
-							esc_html__( 'You cannot use this resource.', 'newspack' ),
-							[
-								'status' => 403,
-							]
-						);
-					}
-					return true;
-				},
+				'permission_callback' => [ $this, 'permission_callback' ],
 				'args'                => [
 					'id' => [
 						'sanitize_callback' => 'absint',
@@ -92,6 +70,67 @@ final class Newspack_Popups_API {
 				],
 			]
 		);
+		\register_rest_route(
+			'newspack-popups/v1',
+			'settings',
+			[
+				'methods'             => \WP_REST_Server::EDITABLE,
+				'callback'            => [ $this, 'update_settings' ],
+				'permission_callback' => [ $this, 'permission_callback' ],
+				'args'                => [
+					'option_name'  => [
+						'validate_callback' => [ __CLASS__, 'validate_settings_option_name' ],
+						'sanitize_callback' => 'esc_attr',
+					],
+					'option_value' => [
+						'sanitize_callback' => 'esc_attr',
+					],
+				],
+			]
+		);
+	}
+
+	/**
+	 * Validate settings option key.
+	 *
+	 * @param String $key Meta key.
+	 */
+	public static function validate_settings_option_name( $key ) {
+		return in_array( $key, array_keys( \Newspack_Popups_Settings::get_settings() ) );
+	}
+
+	/**
+	 * Permission callback for authenticated requests.
+	 *
+	 * @return boolean if user can edit stuff.
+	 */
+	public static function permission_callback() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return new \WP_Error(
+				'newspack_rest_forbidden',
+				esc_html__( 'You cannot use this resource.', 'newspack' ),
+				[
+					'status' => 403,
+				]
+			);
+		}
+		return true;
+	}
+
+	/**
+	 * Handler for API settings update endpoint.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 */
+	public static function update_settings( $request ) {
+		if ( update_option( $request['option_name'], $request['option_value'] ) ) {
+			return \Newspack_Popups_Settings::get_settings();
+		} else {
+			return new \WP_Error(
+				'newspack_popups_settings_error',
+				esc_html__( 'Error updating the settings.', 'newspack' )
+			);
+		}
 	}
 
 	/**
@@ -170,6 +209,13 @@ final class Newspack_Popups_API {
 			$response['displayPopup'] = true;
 		};
 
+		$is_suppressing_newsletter_popups = get_transient( $this->get_newsletter_campaigns_suppression_transient_name( $request ), true );
+		$is_newsletter_popup              = \Newspack_Popups_Model::has_newsletter_prompt( $popup );
+		$settings                         = \Newspack_Popups_Settings::get_settings();
+		if ( $settings['suppress_all_newsletter_campaigns_if_one_dismissed'] && $is_suppressing_newsletter_popups && $is_newsletter_popup ) {
+			$response['displayPopup'] = false;
+		}
+
 		return rest_ensure_response( $response );
 	}
 
@@ -196,6 +242,15 @@ final class Newspack_Popups_API {
 			$data['count'] = (int) $data['count'] + 1;
 			$data['time']  = time();
 			if ( $request['suppress_forever'] ) {
+				$popup_id = isset( $request['popup_id'] ) ? $request['popup_id'] : false;
+				if ( $popup_id ) {
+					$popup               = \Newspack_Popups_Model::retrieve_popup_by_id( $popup_id );
+					$is_newsletter_popup = \Newspack_Popups_Model::has_newsletter_prompt( $popup );
+					if ( $is_newsletter_popup ) {
+						set_transient( $this->get_newsletter_campaigns_suppression_transient_name( $request ), true );
+					}
+				}
+
 				$data['suppress_forever'] = true;
 			}
 			if ( $this->get_mailing_list_status( $request ) ) {
@@ -246,6 +301,23 @@ final class Newspack_Popups_API {
 		}
 		if ( $reader_id && $url && $popup_id ) {
 			return $reader_id . '-' . $popup_id . '-popup';
+		}
+		return false;
+	}
+
+	/**
+	 * Get transient name for newsletter campaigns suppression feature.
+	 *
+	 * @param WP_REST_Request $request amp-access request.
+	 * @return string Transient id.
+	 */
+	public function get_newsletter_campaigns_suppression_transient_name( $request ) {
+		$reader_id = isset( $request['rid'] ) ? esc_attr( $request['rid'] ) : false;
+		if ( ! $reader_id ) {
+			$reader_id = $this->get_reader_id();
+		}
+		if ( $reader_id ) {
+			return $reader_id . '-newsletter-campaign-suppression';
 		}
 		return false;
 	}
