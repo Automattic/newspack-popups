@@ -38,7 +38,7 @@ const App = () => {
 			<Card>
 				<CheckboxControl
 					label={ __(
-						'Supress Newsletter campaigns if visitor is coming from email.',
+						'Suppress Newsletter campaigns if visitor is coming from email.',
 						'newspack-popups'
 					) }
 					disabled={ inFlight }
@@ -47,7 +47,7 @@ const App = () => {
 				/>
 				<CheckboxControl
 					label={ __(
-						'Supress all Newsletter campaigns if at least once Newsletter campaign was permanently dismissed.',
+						'Suppress all Newsletter campaigns if at least once Newsletter campaign was permanently dismissed.',
 						'newspack-popups'
 					) }
 					disabled={ inFlight }
