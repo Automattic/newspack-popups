@@ -19,7 +19,6 @@ final class Newspack_Popups_API {
 	 */
 	public function __construct() {
 		add_action( 'rest_api_init', [ $this, 'register_api_endpoints' ] );
-		add_action( 'wp_head', [ $this, 'get_utm_source' ] );
 	}
 
 	/**
@@ -169,7 +168,7 @@ final class Newspack_Popups_API {
 			$frequency = 'once';
 		}
 
-		$utm_suppression       = ! empty( $popup['options']['utm_suppression'] ) ? $popup['options']['utm_suppression'] : null;
+		$utm_suppression       = ! empty( $popup['options']['utm_suppression'] ) ? urldecode( $popup['options']['utm_suppression'] ) : null;
 		$current_views         = ! empty( $response['currentViews'] ) ? (int) $response['currentViews'] : 0;
 		$suppress_forever      = ! empty( $data['suppress_forever'] ) ? (int) $data['suppress_forever'] : false;
 		$mailing_list_status   = ! empty( $data['mailing_list_status'] ) ? (int) $data['mailing_list_status'] : false;
@@ -193,8 +192,9 @@ final class Newspack_Popups_API {
 		}
 		if ( $utm_suppression ) {
 			$referer = filter_input( INPUT_SERVER, 'HTTP_REFERER', FILTER_SANITIZE_STRING );
-			if ( ! empty( $referer ) && stripos( urldecode( $referer ), 'utm_source=' . urldecode( $utm_suppression ) ) ) {
+			if ( ! empty( $referer ) && stripos( urldecode( $referer ), 'utm_source=' . $utm_suppression ) ) {
 				$response['displayPopup'] = false;
+				$this->set_utm_source_transient( $utm_suppression );
 			}
 
 			$utm_source_transient_name = $this->get_utm_source_transient_name();
@@ -307,10 +307,11 @@ final class Newspack_Popups_API {
 	}
 
 	/**
-	 * Assess utm_source value
+	 * Set the utm_source suppression-related transient.
+	 *
+	 * @param string $utm_source utm_source param.
 	 */
-	public function get_utm_source() {
-		$utm_source = filter_input( INPUT_GET, 'utm_source', FILTER_SANITIZE_STRING );
+	public function set_utm_source_transient( $utm_source ) {
 		if ( ! empty( $utm_source ) ) {
 			$transient_name = self::get_utm_source_transient_name();
 			if ( $transient_name ) {
