@@ -76,6 +76,14 @@ class Newspack_Popups_Settings {
 			self::get_settings()
 		);
 		\wp_enqueue_script( 'newspack-popups-settings' );
+		\wp_register_style(
+			'newspack-popups-settings',
+			plugins_url( '../dist/settings.css', __FILE__ ),
+			null,
+			filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/settings.css' )
+		);
+		\wp_style_add_data( 'newspack-popups-settings', 'rtl', 'replace' );
+		\wp_enqueue_style( 'newspack-popups-settings' );
 	}
 }
 

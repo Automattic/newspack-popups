@@ -14,6 +14,11 @@ import apiFetch from '@wordpress/api-fetch';
 import { Card, Grid, FormattedHeader, CheckboxControl } from 'newspack-components';
 import HeaderIcon from '@material-ui/icons/Settings';
 
+/**
+ * Internal dependencies
+ */
+import './style.scss';
+
 const App = () => {
 	const [ inFlight, setInFlight ] = useState( false );
 	const [ settings, setSettings ] = useState( newspack_popups_settings );
