@@ -12,7 +12,8 @@ defined( 'ABSPATH' ) || exit;
  */
 final class Newspack_Popups_API {
 
-	const NEWSPACK_POPUPS_VIEW_LIMIT = 1;
+	const NEWSPACK_POPUPS_VIEW_LIMIT                                   = 1;
+	const NEWSPACK_POPUPS_NEWSLETTER_POPUPS_SUPPRESSION_TRANSIENT_NAME = '_newspack_newsletter_popups_suppression';
 
 	/**
 	 * Constructor.
@@ -124,9 +125,7 @@ final class Newspack_Popups_API {
 	 */
 	public static function update_settings( $request ) {
 		if ( update_option( $request['option_name'], $request['option_value'] ) ) {
-			return [
-				$request['option_name'] => $request['option_value'],
-			];
+			return \Newspack_Popups_Settings::get_settings();
 		} else {
 			return new \WP_Error(
 				'newspack_popups_settings_error',
@@ -211,6 +210,13 @@ final class Newspack_Popups_API {
 			$response['displayPopup'] = true;
 		};
 
+		$is_suppressing_newsletter_popups = get_transient( self::NEWSPACK_POPUPS_NEWSLETTER_POPUPS_SUPPRESSION_TRANSIENT_NAME, true );
+		$is_newsletter_popup              = \Newspack_Popups_Model::has_newsletter_prompt( $popup );
+		$settings                         = \Newspack_Popups_Settings::get_settings();
+		if ( $settings['suppress_all_newsletter_campaigns_if_one_dismissed'] && $is_suppressing_newsletter_popups && $is_newsletter_popup ) {
+			$response['displayPopup'] = false;
+		}
+
 		return rest_ensure_response( $response );
 	}
 
@@ -237,6 +243,15 @@ final class Newspack_Popups_API {
 			$data['count'] = (int) $data['count'] + 1;
 			$data['time']  = time();
 			if ( $request['suppress_forever'] ) {
+				$popup_id = isset( $request['popup_id'] ) ? $request['popup_id'] : false;
+				if ( $popup_id ) {
+					$popup               = \Newspack_Popups_Model::retrieve_popup_by_id( $popup_id );
+					$is_newsletter_popup = \Newspack_Popups_Model::has_newsletter_prompt( $popup );
+					if ( $is_newsletter_popup ) {
+						set_transient( self::NEWSPACK_POPUPS_NEWSLETTER_POPUPS_SUPPRESSION_TRANSIENT_NAME, true );
+					}
+				}
+
 				$data['suppress_forever'] = true;
 			}
 			if ( $this->get_mailing_list_status( $request ) ) {
