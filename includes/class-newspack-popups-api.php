@@ -12,8 +12,7 @@ defined( 'ABSPATH' ) || exit;
  */
 final class Newspack_Popups_API {
 
-	const NEWSPACK_POPUPS_VIEW_LIMIT                                   = 1;
-	const NEWSPACK_POPUPS_NEWSLETTER_POPUPS_SUPPRESSION_TRANSIENT_NAME = '_newspack_newsletter_popups_suppression';
+	const NEWSPACK_POPUPS_VIEW_LIMIT = 1;
 
 	/**
 	 * Constructor.
@@ -210,7 +209,7 @@ final class Newspack_Popups_API {
 			$response['displayPopup'] = true;
 		};
 
-		$is_suppressing_newsletter_popups = get_transient( self::NEWSPACK_POPUPS_NEWSLETTER_POPUPS_SUPPRESSION_TRANSIENT_NAME, true );
+		$is_suppressing_newsletter_popups = get_transient( $this->get_newsletter_campaigns_suppression_transient_name( $request ), true );
 		$is_newsletter_popup              = \Newspack_Popups_Model::has_newsletter_prompt( $popup );
 		$settings                         = \Newspack_Popups_Settings::get_settings();
 		if ( $settings['suppress_all_newsletter_campaigns_if_one_dismissed'] && $is_suppressing_newsletter_popups && $is_newsletter_popup ) {
@@ -248,7 +247,7 @@ final class Newspack_Popups_API {
 					$popup               = \Newspack_Popups_Model::retrieve_popup_by_id( $popup_id );
 					$is_newsletter_popup = \Newspack_Popups_Model::has_newsletter_prompt( $popup );
 					if ( $is_newsletter_popup ) {
-						set_transient( self::NEWSPACK_POPUPS_NEWSLETTER_POPUPS_SUPPRESSION_TRANSIENT_NAME, true );
+						set_transient( $this->get_newsletter_campaigns_suppression_transient_name( $request ), true );
 					}
 				}
 
@@ -302,6 +301,23 @@ final class Newspack_Popups_API {
 		}
 		if ( $reader_id && $url && $popup_id ) {
 			return $reader_id . '-' . $popup_id . '-popup';
+		}
+		return false;
+	}
+
+	/**
+	 * Get transient name for newsletter campaigns suppression feature.
+	 *
+	 * @param WP_REST_Request $request amp-access request.
+	 * @return string Transient id.
+	 */
+	public function get_newsletter_campaigns_suppression_transient_name( $request ) {
+		$reader_id = isset( $request['rid'] ) ? esc_attr( $request['rid'] ) : false;
+		if ( ! $reader_id ) {
+			$reader_id = $this->get_reader_id();
+		}
+		if ( $reader_id ) {
+			return $reader_id . '-newsletter-campaign-suppression';
 		}
 		return false;
 	}
