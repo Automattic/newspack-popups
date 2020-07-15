@@ -1,3 +1,10 @@
+## [1.9.1](https://github.com/Automattic/newspack-popups/compare/v1.9.0...v1.9.1) (2020-07-15)
+
+
+### Bug Fixes
+
+* utm paramers suppression conflict ([b2c577c](https://github.com/Automattic/newspack-popups/commit/b2c577c71fd910c3be6e7c0e621de34fcceaaaa2))
+
 # [1.9.0](https://github.com/Automattic/newspack-popups/compare/v1.8.0...v1.9.0) (2020-07-14)
 
 
