@@ -152,7 +152,7 @@ final class Newspack_Popups_API {
 			'displayPopup' => false,
 		];
 
-		$transient_name = $this->get_transient_name( $request );
+		$transient_name = $this->get_popup_data_transient_name( $request );
 		if ( ! $transient_name ) {
 			return rest_ensure_response( $response );
 		}
@@ -188,33 +188,56 @@ final class Newspack_Popups_API {
 				$response['displayPopup'] = false;
 				break;
 		}
+
+		$referer_url = filter_input( INPUT_SERVER, 'HTTP_REFERER', FILTER_SANITIZE_STRING );
+
+		// Suppressing based on UTM Source parameter in the URL.
+		// If the visitor came from a campaign with suppressed utm_source, then it should not be displayed.
 		if ( $utm_suppression ) {
-			$referer = filter_input( INPUT_SERVER, 'HTTP_REFERER', FILTER_SANITIZE_STRING );
-			if ( ! empty( $referer ) && stripos( urldecode( $referer ), 'utm_source=' . $utm_suppression ) ) {
+			if ( ! empty( $referer_url ) && stripos( urldecode( $referer_url ), 'utm_source=' . $utm_suppression ) ) {
 				$response['displayPopup'] = false;
 				$this->set_utm_source_transient( $utm_suppression );
 			}
 
-			$utm_source_transient_name = $this->get_utm_source_transient_name();
-			$utm_source_transient      = $this->get_utm_source_transient( $utm_source_transient_name );
+			$utm_source_transient = $this->get_utm_source_transient();
 			if ( ! empty( $utm_source_transient[ $utm_suppression ] ) ) {
 				$response['displayPopup'] = false;
 			}
 		}
+
+		// Suppressing based on UTM Medium parameter in the URL. If:
+		// - the visitor came from email,
+		// - the suppress_newsletter_campaigns setting is on,
+		// - the pop-up has a newsletter form,
+		// then it should not be displayed.
+		$settings              = \Newspack_Popups_Settings::get_settings();
+		$has_utm_medium_in_url = ! empty( $referer_url ) && stripos( $referer_url, 'utm_medium=email' );
+		if (
+			( $has_utm_medium_in_url || $this->get_utm_medium_transient() ) &&
+			$settings['suppress_newsletter_campaigns'] &&
+			\Newspack_Popups_Model::has_newsletter_prompt( $popup )
+		) {
+			$response['displayPopup'] = false;
+			$this->set_utm_medium_transient();
+		}
+
+		// Suppressing because user has dismissed the popup permanently, or signed up to the newsletter.
 		if ( $suppress_forever || $mailing_list_status ) {
 			$response['displayPopup'] = false;
 		}
 
-		if ( $this->is_preview_request( $request ) || 'test' === $frequency ) {
-			$response['displayPopup'] = true;
-		};
-
+		// Suppressing a newsletter campaign if any newsletter campaign was dismissed.
 		$is_suppressing_newsletter_popups = get_transient( $this->get_newsletter_campaigns_suppression_transient_name( $request ), true );
 		$is_newsletter_popup              = \Newspack_Popups_Model::has_newsletter_prompt( $popup );
 		$settings                         = \Newspack_Popups_Settings::get_settings();
 		if ( $settings['suppress_all_newsletter_campaigns_if_one_dismissed'] && $is_suppressing_newsletter_popups && $is_newsletter_popup ) {
 			$response['displayPopup'] = false;
 		}
+
+		// Unsuppressing for previews and test popups.
+		if ( $this->is_preview_request( $request ) || 'test' === $frequency ) {
+			$response['displayPopup'] = true;
+		};
 
 		return rest_ensure_response( $response );
 	}
@@ -236,7 +259,7 @@ final class Newspack_Popups_API {
 	 * @return WP_REST_Response with updated info about reader.
 	 */
 	public function reader_post_endpoint( $request ) {
-		$transient_name = $this->get_transient_name( $request );
+		$transient_name = $this->get_popup_data_transient_name( $request );
 		if ( $transient_name && ! $this->is_preview_request( $request ) ) {
 			$data          = get_transient( $transient_name );
 			$data['count'] = (int) $data['count'] + 1;
@@ -287,7 +310,7 @@ final class Newspack_Popups_API {
 	 * @param WP_REST_Request $request amp-access request.
 	 * @return string Transient id.
 	 */
-	public function get_transient_name( $request ) {
+	public function get_popup_data_transient_name( $request ) {
 		$reader_id = isset( $request['rid'] ) ? esc_attr( $request['rid'] ) : false;
 		if ( ! $reader_id ) {
 			$reader_id = $this->get_reader_id();
@@ -344,23 +367,33 @@ final class Newspack_Popups_API {
 	 */
 	public function set_utm_source_transient( $utm_source ) {
 		if ( ! empty( $utm_source ) ) {
-			$transient_name = self::get_utm_source_transient_name();
+			$transient_name = self::get_suppression_data_transient_name( 'utm_source' );
 			if ( $transient_name ) {
-				$transient = self::get_utm_source_transient( $transient_name );
-
+				$transient                = self::get_utm_source_transient();
 				$transient[ $utm_source ] = true;
 				set_transient( $transient_name, $transient, 0 );
 			}
 		}
 	}
 
+
+	/**
+	 * Set the utm_medium suppression-related transient.
+	 */
+	public function set_utm_medium_transient() {
+		$transient_name = self::get_suppression_data_transient_name( 'utm_medium' );
+		if ( $transient_name ) {
+			set_transient( $transient_name, true, 0 );
+		}
+	}
+
 	/**
 	 * Assess utm_source transient name
 	 *
-	 * @param string $transient_name Transient name.
 	 * @return array UTM Source Transient.
 	 */
-	public function get_utm_source_transient( $transient_name ) {
+	public function get_utm_source_transient() {
+		$transient_name = self::get_suppression_data_transient_name( 'utm_source' );
 		if ( $transient_name ) {
 			$transient = get_transient( $transient_name );
 		}
@@ -368,12 +401,27 @@ final class Newspack_Popups_API {
 	}
 
 	/**
-	 * Get utm_source transient value
+	 * Assess utm_medium transient name
+	 *
+	 * @return boolean UTM Medium Transient.
 	 */
-	public function get_utm_source_transient_name() {
+	public function get_utm_medium_transient() {
+		$transient_name = self::get_suppression_data_transient_name( 'utm_medium' );
+		if ( $transient_name ) {
+			$transient = get_transient( $transient_name );
+		}
+		return $transient ? $transient : false;
+	}
+
+	/**
+	 * Get suppression-related transient value
+	 *
+	 * @param string $prefix transient prefix.
+	 */
+	public function get_suppression_data_transient_name( $prefix ) {
 		$reader_id = $this->get_reader_id();
 		if ( $reader_id ) {
-			return 'utm_source-' . $reader_id;
+			return $prefix . '-' . $reader_id;
 		}
 		return null;
 	}
