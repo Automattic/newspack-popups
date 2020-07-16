@@ -47,6 +47,8 @@ final class Newspack_Popups {
 		add_filter( 'display_post_states', [ __CLASS__, 'display_post_states' ], 10, 2 );
 		add_action( 'rest_api_init', [ __CLASS__, 'rest_api_init' ] );
 		add_action( 'save_post_newspack_popups_cpt', [ __CLASS__, 'popup_default_fields' ], 10, 3 );
+		add_action( 'admin_menu', [ __CLASS__, 'add_all_popups_page' ] );
+		add_action( 'admin_enqueue_scripts', [ __CLASS__, 'admin_enqueue_scripts' ] );
 
 		if ( filter_input( INPUT_GET, 'newspack_popups_preview_id', FILTER_SANITIZE_STRING ) ) {
 			add_filter( 'show_admin_bar', [ __CLASS__, 'hide_admin_bar_for_preview' ], 10, 2 );
@@ -56,6 +58,87 @@ final class Newspack_Popups {
 		include_once dirname( __FILE__ ) . '/class-newspack-popups-inserter.php';
 		include_once dirname( __FILE__ ) . '/class-newspack-popups-api.php';
 		include_once dirname( __FILE__ ) . '/class-newspack-popups-settings.php';
+	}
+
+	/**
+	 * Add all popups page link.
+	 */
+	public static function add_all_popups_page() {
+		// Remove default "All Campaigns" link from submenu.
+		remove_submenu_page(
+			'edit.php?post_type=' . self::NEWSPACK_PLUGINS_CPT,
+			'edit.php?post_type=' . self::NEWSPACK_PLUGINS_CPT
+		);
+		// Remove "Categories" link from submenu.
+		remove_submenu_page(
+			'edit.php?post_type=' . self::NEWSPACK_PLUGINS_CPT,
+			'edit-tags.php?taxonomy=category&amp;post_type=' . self::NEWSPACK_PLUGINS_CPT
+		);
+		add_submenu_page(
+			'edit.php?post_type=' . self::NEWSPACK_PLUGINS_CPT,
+			__( 'Campaigns', 'newspack-popups' ),
+			__( 'All Campaigns', 'newspack-popups' ),
+			'manage_options',
+			self::NEWSPACK_PLUGINS_CPT,
+			[ __CLASS__, 'create_admin_page' ],
+			0
+		);
+	}
+
+	/**
+	 * All popups page callback.
+	 */
+	public static function create_admin_page() {
+		?>
+			<div id="newspack-popups-all-popups-admin"></div>
+		<?php
+	}
+
+	/**
+	 * Enqueue all popups admin scripts.
+	 *
+	 * @param string $handler Page handler.
+	 */
+	public static function admin_enqueue_scripts( $handler ) {
+		if ( self::NEWSPACK_PLUGINS_CPT . '_page_' . self::NEWSPACK_PLUGINS_CPT !== $handler ) {
+			return;
+		};
+
+		\wp_enqueue_script(
+			self::NEWSPACK_PLUGINS_CPT,
+			plugins_url( '../dist/all.js', __FILE__ ),
+			[ 'wp-components', 'wp-api-fetch', 'wp-date', 'wp-html-entities' ],
+			filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/all.js' ),
+			true
+		);
+
+		$recent_posts = wp_get_recent_posts(
+			[
+				'numberposts' => 1,
+				'post_status' => 'publish',
+			],
+			OBJECT
+		);
+
+		$preview_post = count( $recent_posts ) > 0 ? get_the_permalink( $recent_posts[0] ) : '';
+
+		\wp_localize_script(
+			self::NEWSPACK_PLUGINS_CPT,
+			'newspack_popups_wizard_data',
+			[
+				'preview_post' => $preview_post,
+			]
+		);
+
+
+		wp_register_style(
+			self::NEWSPACK_PLUGINS_CPT,
+			plugins_url( '../dist/all.css', __FILE__ ),
+			[ 'wp-components' ],
+			filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/all.css' )
+		);
+		wp_style_add_data( self::NEWSPACK_PLUGINS_CPT, 'rtl', 'replace' );
+		wp_enqueue_style( self::NEWSPACK_PLUGINS_CPT );
 	}
 
 	/**
@@ -378,7 +461,7 @@ final class Newspack_Popups {
 
 		update_post_meta( $post_id, 'background_color', '#FFFFFF' );
 		update_post_meta( $post_id, 'display_title', false );
-		update_post_meta( $post_id, 'dismiss_text', __( "I'm not interested", 'newspack' ) );
+		update_post_meta( $post_id, 'dismiss_text', __( "I'm not interested", 'newspack-popups' ) );
 		update_post_meta( $post_id, 'frequency', 'test' );
 		update_post_meta( $post_id, 'overlay_color', '#000000' );
 		update_post_meta( $post_id, 'overlay_opacity', 30 );

@@ -107,7 +107,7 @@ final class Newspack_Popups_API {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			return new \WP_Error(
 				'newspack_rest_forbidden',
-				esc_html__( 'You cannot use this resource.', 'newspack' ),
+				esc_html__( 'You cannot use this resource.', 'newspack-popups' ),
 				[
 					'status' => 403,
 				]
@@ -127,7 +127,7 @@ final class Newspack_Popups_API {
 		} else {
 			return new \WP_Error(
 				'newspack_popups_settings_error',
-				esc_html__( 'Error updating the settings.', 'newspack' )
+				esc_html__( 'Error updating the settings.', 'newspack-popups' )
 			);
 		}
 	}
