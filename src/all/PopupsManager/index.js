@@ -1,3 +1,5 @@
+/* global newspack_popups_frontend_data */
+
 /**
  * WordPress dependencies.
  */
@@ -43,28 +45,10 @@ class PopupsManager extends Component {
 	constructor( props ) {
 		super( props );
 		this.state = {
-			popups: {
-				inline: [],
-				overlay: [],
-			},
+			popups: this.sortPopups( newspack_popups_frontend_data.all_popups ),
 			previewUrl: null,
 		};
 	}
-	onWizardReady = () => {
-		this.getPopups();
-	};
-
-	/**
-	 * Get Pop-ups for the current wizard.
-	 */
-	getPopups = () => {
-		const { setError, wizardApiFetch } = this.props;
-		return wizardApiFetch( {
-			path: '/newspack/v1/wizard/newspack-popups-wizard/',
-		} )
-			.then( ( { popups } ) => this.setState( { popups: this.sortPopups( popups ) } ) )
-			.catch( error => setError( error ) );
-	};
 
 	/**
 	 * Designate which popup should be the sitewide default.
@@ -194,9 +178,7 @@ class PopupsManager extends Component {
 		const { placement, trigger_type: triggerType } = options;
 		const previewURL =
 			'inline' === placement || 'scroll' === triggerType
-				? window &&
-				  window.newspack_popups_wizard_data &&
-				  window.newspack_popups_wizard_data.preview_post
+				? newspack_popups_frontend_data.preview_post
 				: '/';
 		return `${ previewURL }?${ stringify( { ...options, newspack_popups_preview_id: id } ) }`;
 	};

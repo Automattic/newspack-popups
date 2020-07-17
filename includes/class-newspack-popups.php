@@ -124,9 +124,16 @@ final class Newspack_Popups {
 
 		\wp_localize_script(
 			self::NEWSPACK_PLUGINS_CPT,
-			'newspack_popups_wizard_data',
+			'newspack_popups_frontend_data',
 			[
 				'preview_post' => $preview_post,
+				'all_popups'   => array_map(
+					function( $popup ) {
+						$popup['edit_link'] = get_edit_post_link( $popup['id'] );
+						return $popup;
+					},
+					\Newspack_Popups_Model::retrieve_popups( true )
+				),
 			]
 		);
 
