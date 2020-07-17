@@ -7,6 +7,8 @@
 
 defined( 'ABSPATH' ) || exit;
 
+require_once dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/includes/analytics/class-analytics-utils.php';
+
 /**
  * API endpoints
  */
@@ -83,6 +85,28 @@ final class Newspack_Popups_API {
 					],
 					'option_value' => [
 						'sanitize_callback' => 'esc_attr',
+					],
+				],
+			]
+		);
+		register_rest_route(
+			'newspack-popups/v1',
+			'analytics/report',
+			[
+				[
+					'methods'             => \WP_REST_Server::READABLE,
+					'callback'            => [ $this, 'get_analytics_report' ],
+					'permission_callback' => [ $this, 'permission_callback' ],
+					'args'                => [
+						'offset'         => [
+							'sanitize_callback' => 'sanitize_text_field',
+						],
+						'event_label_id' => [
+							'sanitize_callback' => 'sanitize_text_field',
+						],
+						'event_action'   => [
+							'sanitize_callback' => 'sanitize_text_field',
+						],
 					],
 				],
 			]
@@ -432,6 +456,21 @@ final class Newspack_Popups_API {
 	public function get_reader_id() {
 		// TODO: Is retrieving the amp-access cookie the best way to get READER_ID outside the context of amp-access?
 		return isset( $_COOKIE['amp-access'] ) ? esc_attr( $_COOKIE['amp-access'] ) : false; // phpcs:ignore WordPressVIPMinimum.Variables.RestrictedVariables.cache_constraints___COOKIE, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+	}
+
+	/**
+	 * Get Campaigns Analytics report.
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
+	 */
+	public function get_analytics_report( $request ) {
+		$options = array(
+			'offset'         => $request['offset'],
+			'event_label_id' => $request['event_label_id'],
+			'event_action'   => $request['event_action'],
+		);
+		return rest_ensure_response( \Analytics_Utils::get_report( $options ) );
 	}
 }
 $newspack_popups_api = new Newspack_Popups_API();

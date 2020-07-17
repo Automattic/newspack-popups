@@ -31,7 +31,7 @@ const PopupAnalytics = ( { setError, errorData, isLoading, startLoading, doneLoa
 
 	useEffect(() => {
 		startLoading();
-		apiFetch( { path: `/newspack/v1/popups-analytics/report/?${ stringify( filtersState ) }` } )
+		apiFetch( { path: `/newspack-popups/v1/analytics/report/?${ stringify( filtersState ) }` } )
 			.then( response => {
 				updateState( { type: 'UPDATE_ALL', payload: response } );
 				doneLoading();
