@@ -104,7 +104,7 @@ class PopupsManager extends Component {
 	deletePopup = popupId => {
 		const { setError, wizardApiFetch } = this.props;
 		return wizardApiFetch( {
-			path: `/newspack/v1/wizard/newspack-popups-wizard/${ popupId }`,
+			path: `/newspack-popups/v1/${ popupId }`,
 			method: 'DELETE',
 		} )
 			.then( ( { popups } ) => this.setState( { popups: this.sortPopups( popups ) } ) )

@@ -60,6 +60,20 @@ final class Newspack_Popups_API {
 				],
 			]
 		);
+		register_rest_route(
+			'newspack-popups/v1',
+			'/(?P<id>\d+)',
+			[
+				'methods'             => \WP_REST_Server::DELETABLE,
+				'callback'            => [ $this, 'api_delete_popup' ],
+				'permission_callback' => [ $this, 'permission_callback' ],
+				'args'                => [
+					'id' => [
+						'sanitize_callback' => 'absint',
+					],
+				],
+			]
+		);
 		\register_rest_route(
 			'newspack-popups/v1',
 			'sitewide_default/(?P<id>\d+)',
@@ -502,6 +516,23 @@ final class Newspack_Popups_API {
 		$response = Newspack_Popups_Model::set_popup_options( $id, $options );
 		if ( is_wp_error( $response ) ) {
 			return $response;
+		}
+
+		return $this->api_get_settings();
+	}
+
+	/**
+	 * Delete a Pop-up.
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return WP_REST_Response
+	 */
+	public function api_delete_popup( $request ) {
+		$id = $request['id'];
+
+		$popup = get_post( $id );
+		if ( is_a( $popup, 'WP_Post' ) && Newspack_Popups::NEWSPACK_PLUGINS_CPT === $popup->post_type ) {
+			wp_delete_post( $id );
 		}
 
 		return $this->api_get_settings();
