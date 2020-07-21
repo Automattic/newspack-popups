@@ -75,7 +75,7 @@ class PopupsManager extends Component {
 	setCategoriesForPopup = ( popupId, categories ) => {
 		const { setError, wizardApiFetch } = this.props;
 		return wizardApiFetch( {
-			path: `/newspack/v1/wizard/newspack-popups-wizard/popup-categories/${ popupId }`,
+			path: `/newspack-popups/v1/categories/${ popupId }`,
 			method: 'POST',
 			data: {
 				categories,

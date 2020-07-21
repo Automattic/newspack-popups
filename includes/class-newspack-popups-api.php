@@ -102,6 +102,23 @@ final class Newspack_Popups_API {
 				],
 			]
 		);
+		register_rest_route(
+			'newspack-popups/v1',
+			'categories/(?P<id>\d+)',
+			[
+				'methods'             => \WP_REST_Server::EDITABLE,
+				'callback'            => [ $this, 'api_set_popup_categories' ],
+				'permission_callback' => [ $this, 'permission_callback' ],
+				'args'                => [
+					'id'         => [
+						'sanitize_callback' => 'absint',
+					],
+					'categories' => [
+						'sanitize_callback' => [ $this, 'sanitize_categories' ],
+					],
+				],
+			]
+		);
 		\register_rest_route(
 			'newspack-popups/v1',
 			'settings',
@@ -539,6 +556,23 @@ final class Newspack_Popups_API {
 	}
 
 	/**
+	 * Set categories for one Popup.
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return WP_REST_Response
+	 */
+	public function api_set_popup_categories( $request ) {
+		$id         = $request['id'];
+		$categories = $request['categories'];
+		$response   = Newspack_Popups_Model::set_popup_categories( $id, $categories );
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		return $this->api_get_settings();
+	}
+
+	/**
 	 * Validate Pop-up option updates.
 	 *
 	 * @param array $options Array of options to validate.
@@ -561,6 +595,23 @@ final class Newspack_Popups_API {
 			}
 		}
 		return true;
+	}
+
+	/**
+	 * Sanitize array of categories.
+	 *
+	 * @param array $categories Array of categories to sanitize.
+	 * @return array Sanitized array.
+	 */
+	public static function sanitize_categories( $categories ) {
+		$categories = is_array( $categories ) ? $categories : [];
+		$sanitized  = [];
+		foreach ( $categories as $category ) {
+			$category['id']   = isset( $category['id'] ) ? absint( $category['id'] ) : null;
+			$category['name'] = isset( $category['name'] ) ? sanitize_title( $category['name'] ) : null;
+			$sanitized[]      = $category;
+		}
+		return $sanitized;
 	}
 
 	/**
