@@ -323,7 +323,7 @@ final class Newspack_Popups {
 	}
 
 	/**
-	 * Load up common JS/CSS for wizards.
+	 * Load up common JS/CSS.
 	 */
 	public static function enqueue_block_editor_assets() {
 		$screen = get_current_screen();

@@ -8,8 +8,8 @@ import { OFFSETS } from './consts';
 
 const Info = ( { filtersState, labelFilters, eventActionFilters, onChange, disabled } ) => {
 	return (
-		<div className="newspack-campaigns-wizard-analytics__filters">
-			<div className="newspack-campaigns-wizard-analytics__filters__group">
+		<div className="newspack-popups-manager-analytics__filters">
+			<div className="newspack-popups-manager-analytics__filters__group">
 				<SelectControl
 					options={ [
 						{ label: __( 'All Campaigns', 'newspack-popups' ), value: '' },

@@ -71,8 +71,8 @@ const PopupAnalytics = ( { setError, errorData, isLoading, startLoading, doneLoa
 
 	return (
 		<div
-			className={ classnames( 'newspack-campaigns-wizard-analytics__wrapper', {
-				'newspack-campaigns-wizard-analytics__wrapper--loading': isLoading,
+			className={ classnames( 'newspack-popups-manager-analytics__wrapper', {
+				'newspack-popups-manager-analytics__wrapper--loading': isLoading,
 			} ) }
 		>
 			<Filters

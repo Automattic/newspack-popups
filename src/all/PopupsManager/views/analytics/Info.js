@@ -26,7 +26,7 @@ const Info = ( { keyMetrics, filtersState, labelFilters, isLoading, postEditLink
 	const notApplicable = __( 'n/a', 'newspack-popups' );
 
 	return (
-		<div className="newspack-campaigns-wizard-analytics__info">
+		<div className="newspack-popups-manager-analytics__info">
 			<h2>
 				{ nameFilter ? `${ nameFilter.label }:` : __( 'All:', 'newspack-popups' ) }
 				{ postEditLink && (
@@ -36,7 +36,7 @@ const Info = ( { keyMetrics, filtersState, labelFilters, isLoading, postEditLink
 					</Fragment>
 				) }
 			</h2>
-			<div className="newspack-campaigns-wizard-analytics__info__sections">
+			<div className="newspack-popups-manager-analytics__info__sections">
 				{ [
 					{
 						label: __( 'Seen', 'newspack-popups' ),
@@ -62,15 +62,12 @@ const Info = ( { keyMetrics, filtersState, labelFilters, isLoading, postEditLink
 					},
 				].map( ( section, i ) => (
 					<div
-						className={ classnames(
-							'newspack-campaigns-wizard-analytics__info__sections__section',
-							{
-								'newspack-campaigns-wizard-analytics__info__sections__section--with-separator':
-									section.withSeparator,
-								'newspack-campaigns-wizard-analytics__info__sections__section--dimmed':
-									! isLoading && section.value === notApplicable,
-							}
-						) }
+						className={ classnames( 'newspack-popups-manager-analytics__info__sections__section', {
+							'newspack-popups-manager-analytics__info__sections__section--with-separator':
+								section.withSeparator,
+							'newspack-popups-manager-analytics__info__sections__section--dimmed':
+								! isLoading && section.value === notApplicable,
+						} ) }
 						key={ i }
 					>
 						<h2>{ isLoading ? '-' : section.value }</h2>
