@@ -119,6 +119,23 @@ final class Newspack_Popups_API {
 				],
 			]
 		);
+		register_rest_route(
+			'newspack-popups/v1',
+			'/(?P<id>\d+)/publish',
+			[
+				'methods'             => \WP_REST_Server::EDITABLE,
+				'callback'            => [ $this, 'api_publish_popup' ],
+				'permission_callback' => [ $this, 'permission_callback' ],
+				'args'                => [
+					'id'      => [
+						'sanitize_callback' => 'absint',
+					],
+					'options' => [
+						'validate_callback' => [ $this, 'api_validate_options' ],
+					],
+				],
+			]
+		);
 		\register_rest_route(
 			'newspack-popups/v1',
 			'settings',
@@ -569,6 +586,21 @@ final class Newspack_Popups_API {
 			return $response;
 		}
 
+		return $this->api_get_settings();
+	}
+
+	/**
+	 * Publish a Pop-up.
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return WP_REST_Response
+	 */
+	public function api_publish_popup( $request ) {
+		$id    = $request['id'];
+		$popup = get_post( $id );
+		if ( is_a( $popup, 'WP_Post' ) && Newspack_Popups::NEWSPACK_PLUGINS_CPT === $popup->post_type ) {
+			wp_publish_post( $id );
+		}
 		return $this->api_get_settings();
 	}
 

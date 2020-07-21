@@ -119,7 +119,7 @@ class PopupsManager extends Component {
 	publishPopup = popupId => {
 		const { setError, wizardApiFetch } = this.props;
 		return wizardApiFetch( {
-			path: `/newspack/v1/wizard/newspack-popups-wizard/${ popupId }/publish`,
+			path: `/newspack-popups/v1/${ popupId }/publish`,
 			method: 'POST',
 		} )
 			.then( ( { popups } ) => this.setState( { popups: this.sortPopups( popups ) } ) )
