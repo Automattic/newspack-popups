@@ -41,7 +41,7 @@ class PopupSidebar extends Component {
 		const { isSiteWideDefault } = this.state;
 		if ( ! prevProps.isSavingPost && isSavingPost ) {
 			const params = {
-				path: '/newspack-popups/v1/sitewide_default/' + id,
+				path: `/newspack-popups/v1/sitewide-default/${ id }`,
 				method: isSiteWideDefault ? 'POST' : 'DELETE',
 			};
 			apiFetch( params );

@@ -76,7 +76,7 @@ final class Newspack_Popups_API {
 		);
 		\register_rest_route(
 			'newspack-popups/v1',
-			'sitewide_default/(?P<id>\d+)',
+			'sitewide-default/(?P<id>\d+)',
 			[
 				'methods'             => \WP_REST_Server::EDITABLE,
 				'callback'            => [ $this, 'set_sitewide_default_endpoint' ],
@@ -90,7 +90,7 @@ final class Newspack_Popups_API {
 		);
 		\register_rest_route(
 			'newspack-popups/v1',
-			'sitewide_default/(?P<id>\d+)',
+			'sitewide-default/(?P<id>\d+)',
 			[
 				'methods'             => \WP_REST_Server::DELETABLE,
 				'callback'            => [ $this, 'unset_sitewide_default_endpoint' ],
@@ -346,7 +346,7 @@ final class Newspack_Popups_API {
 	 */
 	public function set_sitewide_default_endpoint( $request ) {
 		$response = Newspack_Popups_Model::set_sitewide_popup( $request['id'] );
-		return is_wp_error( $response ) ? $response : [ 'success' => true ];
+		return is_wp_error( $response ) ? $response : $this->api_get_settings();
 	}
 
 	/**
@@ -356,7 +356,7 @@ final class Newspack_Popups_API {
 	 */
 	public function unset_sitewide_default_endpoint( $request ) {
 		$response = Newspack_Popups_Model::unset_sitewide_popup( $request['id'] );
-		return is_wp_error( $response ) ? $response : [ 'success' => true ];
+		return is_wp_error( $response ) ? $response : $this->api_get_settings();
 	}
 
 	/**

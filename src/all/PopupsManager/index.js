@@ -59,7 +59,7 @@ class PopupsManager extends Component {
 	setSitewideDefaultPopup = ( popupId, isSitewideDefault ) => {
 		const { setError, wizardApiFetch } = this.props;
 		return wizardApiFetch( {
-			path: `/newspack/v1/wizard/newspack-popups-wizard/sitewide-popup/${ popupId }`,
+			path: `/newspack-popups/v1/sitewide-default/${ popupId }`,
 			method: isSitewideDefault ? 'POST' : 'DELETE',
 		} )
 			.then( ( { popups } ) => this.setState( { popups: this.sortPopups( popups ) } ) )
