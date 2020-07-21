@@ -127,13 +127,7 @@ final class Newspack_Popups {
 			'newspack_popups_frontend_data',
 			[
 				'preview_post' => $preview_post,
-				'all_popups'   => array_map(
-					function( $popup ) {
-						$popup['edit_link'] = get_edit_post_link( $popup['id'] );
-						return $popup;
-					},
-					\Newspack_Popups_Model::retrieve_popups( true )
-				),
+				'all_popups'   => Newspack_Popups_Model::get_popups_list(),
 			]
 		);
 

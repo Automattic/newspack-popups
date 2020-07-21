@@ -869,4 +869,19 @@ final class Newspack_Popups_Model {
 		<?php
 		return ob_get_clean();
 	}
+
+	/**
+	 * Get popups list with edit links.
+	 *
+	 * @return Array
+	 */
+	public static function get_popups_list() {
+		return array_map(
+			function( $popup ) {
+				$popup['edit_link'] = get_edit_post_link( $popup['id'] );
+				return $popup;
+			},
+			self::retrieve_popups( true )
+		);
+	}
 }

@@ -43,6 +43,23 @@ final class Newspack_Popups_API {
 				'callback' => [ $this, 'reader_post_endpoint' ],
 			]
 		);
+		register_rest_route(
+			'newspack-popups/v1',
+			'/(?P<id>\d+)',
+			[
+				'methods'             => \WP_REST_Server::EDITABLE,
+				'callback'            => [ $this, 'api_update_popup' ],
+				'permission_callback' => [ $this, 'permission_callback' ],
+				'args'                => [
+					'id'      => [
+						'sanitize_callback' => 'absint',
+					],
+					'options' => [
+						'validate_callback' => [ $this, 'api_validate_options' ],
+					],
+				],
+			]
+		);
 		\register_rest_route(
 			'newspack-popups/v1',
 			'sitewide_default/(?P<id>\d+)',
@@ -80,7 +97,7 @@ final class Newspack_Popups_API {
 				'permission_callback' => [ $this, 'permission_callback' ],
 				'args'                => [
 					'option_name'  => [
-						'validate_callback' => [ __CLASS__, 'validate_settings_option_name' ],
+						'validate_callback' => [ $this, 'validate_settings_option_name' ],
 						'sanitize_callback' => 'esc_attr',
 					],
 					'option_value' => [
@@ -472,5 +489,61 @@ final class Newspack_Popups_API {
 		);
 		return rest_ensure_response( \Analytics_Utils::get_report( $options ) );
 	}
+
+	/**
+	 * Update settings for a Pop-up.
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return WP_REST_Response with the info.
+	 */
+	public function api_update_popup( $request ) {
+		$id       = $request['id'];
+		$options  = $request['options'];
+		$response = Newspack_Popups_Model::set_popup_options( $id, $options );
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		return $this->api_get_settings();
+	}
+
+	/**
+	 * Validate Pop-up option updates.
+	 *
+	 * @param array $options Array of options to validate.
+	 */
+	public static function api_validate_options( $options ) {
+		foreach ( $options as $key => $value ) {
+			switch ( $key ) {
+				case 'frequency':
+					if ( ! in_array( $value, [ 'test', 'never', 'once', 'daily', 'always' ] ) ) {
+						return false;
+					}
+					break;
+				case 'placement':
+					if ( ! in_array( $value, [ 'center', 'top', 'bottom', 'inline' ] ) ) {
+						return false;
+					}
+					break;
+				default:
+					return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Get data to render view.
+	 *
+	 * @return WP_REST_Response
+	 */
+	public function api_get_settings() {
+		return rest_ensure_response(
+			[
+				'popups' => Newspack_Popups_Model::get_popups_list(),
+			]
+		);
+	}
+
 }
 $newspack_popups_api = new Newspack_Popups_API();
