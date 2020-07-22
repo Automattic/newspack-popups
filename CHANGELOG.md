@@ -1,3 +1,11 @@
+## [1.9.2](https://github.com/Automattic/newspack-popups/compare/v1.9.1...v1.9.2) (2020-07-22)
+
+
+### Bug Fixes
+
+* a typo in one of the campaign settings options ([7ddd1c8](https://github.com/Automattic/newspack-popups/commit/7ddd1c8976c4583a44f7af6c984708dc8c83b57c))
+* js error on non-AMP pages ([81e01fc](https://github.com/Automattic/newspack-popups/commit/81e01fceec66fa3d83c0d6b4559bc85ffb5b45f9))
+
 ## [1.9.1](https://github.com/Automattic/newspack-popups/compare/v1.9.0...v1.9.1) (2020-07-15)
 
 
