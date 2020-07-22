@@ -52,7 +52,7 @@ const App = () => {
 				/>
 				<CheckboxControl
 					label={ __(
-						'Suppress all Newsletter campaigns if at least once Newsletter campaign was permanently dismissed.',
+						'Suppress all Newsletter campaigns if at least one Newsletter campaign was permanently dismissed.',
 						'newspack-popups'
 					) }
 					disabled={ inFlight }
