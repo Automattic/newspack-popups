@@ -122,12 +122,18 @@ final class Newspack_Popups {
 
 		$preview_post = count( $recent_posts ) > 0 ? get_the_permalink( $recent_posts[0] ) : '';
 
+		$newspack_dashboard_url = null;
+		if ( defined( 'NEWSPACK_PLUGIN_FILE' ) ) {
+			$newspack_dashboard_url = \Newspack\Wizards::get_url( 'dashboard' );
+		}
+
 		\wp_localize_script(
 			self::NEWSPACK_PLUGINS_CPT,
 			'newspack_popups_frontend_data',
 			[
-				'preview_post' => $preview_post,
-				'all_popups'   => Newspack_Popups_Model::get_popups_list(),
+				'preview_post'           => $preview_post,
+				'all_popups'             => Newspack_Popups_Model::get_popups_list(),
+				'newspack_dashboard_url' => $newspack_dashboard_url,
 			]
 		);
 

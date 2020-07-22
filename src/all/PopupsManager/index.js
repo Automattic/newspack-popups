@@ -262,4 +262,6 @@ class PopupsManager extends Component {
 
 const PopupsManagerWizard = withWizard( PopupsManager );
 
-export default () => <PopupsManagerWizard />;
+export default () => (
+	<PopupsManagerWizard logoLink={ newspack_popups_frontend_data.newspack_dashboard_url } />
+);
