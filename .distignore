@@ -35,19 +35,15 @@ PULL_REQUEST_TEMPLATE.md
 webpack.config.js
 wp-cli.local.yml
 yarn.lock
-tests
-vendor
-node_modules
 *.sql
 *.tar.gz
 *.zip
 
-node_modules/*
-.git/*
-vendor/*
-src/*
-.github/*
-.circleci/*
-tests/*
-bin/*
-release/*
+node_modules
+.git
+.github
+.circleci
+/src
+/tests
+/bin
+/release

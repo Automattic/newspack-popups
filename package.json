@@ -50,7 +50,7 @@
     "lint:scss:staged": "stylelint --syntax scss",
     "build": "calypso-build --config='./webpack.config.js'",
     "clean": "rm -rf dist/",
-    "release:archive": "mkdir -p release && zip -r release/newspack-popups.zip . -x@.distignore",
+    "release:archive": "rm -rf release && mkdir -p release && rsync -r . ./release/newspack-popups --exclude-from='./.distignore' && cd release && zip -r newspack-popups.zip newspack-popups",
     "release": "npm run build && npm run semantic-release"
   },
   "lint-staged": {
