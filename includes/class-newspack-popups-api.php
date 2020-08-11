@@ -29,16 +29,18 @@ final class Newspack_Popups_API {
 			'newspack-popups/v1',
 			'reader',
 			[
-				'methods'  => \WP_REST_Server::READABLE,
-				'callback' => [ $this, 'reader_get_endpoint' ],
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => [ $this, 'reader_get_endpoint' ],
+				'permission_callback' => '__return_true',
 			]
 		);
 		\register_rest_route(
 			'newspack-popups/v1',
 			'reader',
 			[
-				'methods'  => \WP_REST_Server::CREATABLE,
-				'callback' => [ $this, 'reader_post_endpoint' ],
+				'methods'             => \WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'reader_post_endpoint' ],
+				'permission_callback' => '__return_true',
 			]
 		);
 		\register_rest_route(
