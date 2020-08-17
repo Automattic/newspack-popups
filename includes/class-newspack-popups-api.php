@@ -160,7 +160,7 @@ final class Newspack_Popups_API {
 		}
 		$data = get_transient( $transient_name );
 
-		$response['currentViews'] = (int) $data['count'];
+		$response['currentViews'] = ! empty( $data['count'] ) ? (int) $data['count'] : 0;
 
 		$frequency = $popup['options']['frequency'];
 		$placement = $popup['options']['placement'];
@@ -264,7 +264,7 @@ final class Newspack_Popups_API {
 		$transient_name = $this->get_popup_data_transient_name( $request );
 		if ( $transient_name && ! $this->is_preview_request( $request ) ) {
 			$data          = get_transient( $transient_name );
-			$data['count'] = (int) $data['count'] + 1;
+			$data['count'] = ! empty( $data['count'] ) ? (int) $data['count'] + 1 : 1;
 			$data['time']  = time();
 			if ( $request['suppress_forever'] ) {
 				$popup_id = isset( $request['popup_id'] ) ? $request['popup_id'] : false;
@@ -432,8 +432,13 @@ final class Newspack_Popups_API {
 	 * Get AMP-Access cookie
 	 */
 	public function get_reader_id() {
+		$reader_id = ! empty( $_COOKIE['_gid'] ) ? $_COOKIE['_gid'] : false; // phpcs:ignore WordPressVIPMinimum.Variables.RestrictedVariables.cache_constraints___COOKIE, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+
+		if ( empty( $reader_id ) ) {
+			$reader_id = ! empty( $_COOKIE['amp-access'] ) ? $_COOKIE['amp-access'] : false; // phpcs:ignore WordPressVIPMinimum.Variables.RestrictedVariables.cache_constraints___COOKIE, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		}
 		// TODO: Is retrieving the amp-access cookie the best way to get READER_ID outside the context of amp-access?
-		return isset( $_COOKIE['amp-access'] ) ? esc_attr( $_COOKIE['amp-access'] ) : false; // phpcs:ignore WordPressVIPMinimum.Variables.RestrictedVariables.cache_constraints___COOKIE, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		return ! empty( $reader_id ) ? esc_attr( $reader_id ) : false;
 	}
 }
 $newspack_popups_api = new Newspack_Popups_API();

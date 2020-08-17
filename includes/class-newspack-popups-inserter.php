@@ -276,6 +276,14 @@ final class Newspack_Popups_Inserter {
 				true
 			);
 			wp_enqueue_script( 'newspack-popups-view' );
+			wp_localize_script(
+				'newspack-popups-view',
+				'newspack_popups_data',
+				[
+					'endpoint' => str_replace( 'http://', '//', get_rest_url( null, 'newspack-popups/v1/reader' ) ),
+					'url'      => esc_url( get_the_permalink() ),
+				]
+			);
 		}
 
 		\wp_register_style(
@@ -310,7 +318,9 @@ final class Newspack_Popups_Inserter {
 	 * @param object $popups The popup objects to handle.
 	 */
 	public static function insert_popups_amp_access( $popups ) {
-		if ( is_admin() || self::assess_has_disabled_popups() ) {
+		$is_amp = function_exists( 'is_amp_endpoint' ) && is_amp_endpoint();
+
+		if ( is_admin() || self::assess_has_disabled_popups() || false === $is_amp ) {
 			return;
 		}
 
@@ -329,7 +339,7 @@ final class Newspack_Popups_Inserter {
 
 			$amp_access_provider = array(
 				'namespace'                     => 'popup_' . $popup['id'],
-				'authorization'                 => esc_url( $endpoint ) . '?popup_id=' . esc_attr( $popup['id'] ) . '&rid=READER_ID&url=CANONICAL_URL&RANDOM',
+				'authorization'                 => esc_url( $endpoint ) . '?popup_id=' . esc_attr( $popup['id'] ) . '&url=CANONICAL_URL&RANDOM',
 				'noPingback'                    => true,
 				'authorizationTimeout'          => 10000, // For development purposes. If #development=1 is appended to URL the maximum timeout for amp-access is raised to 10s.
 				'authorizationFallbackResponse' => array(
@@ -365,7 +375,9 @@ final class Newspack_Popups_Inserter {
 	 * Register and enqueue all required AMP scripts, if needed.
 	 */
 	public static function register_amp_scripts() {
-		if ( self::assess_has_disabled_popups() ) {
+		$is_amp = function_exists( 'is_amp_endpoint' ) && is_amp_endpoint();
+
+		if ( self::assess_has_disabled_popups() || false === $is_amp ) {
 			return;
 		}
 		if ( ! is_admin() && ! wp_script_is( 'amp-runtime', 'registered' ) ) {
