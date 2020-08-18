@@ -1,3 +1,11 @@
+## [1.9.3-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.9.2...v1.9.3-alpha.1) (2020-08-18)
+
+
+### Bug Fixes
+
+* add permission_callback to REST route defn ([2626bb6](https://github.com/Automattic/newspack-popups/commit/2626bb6c70592fac741f0723a85f221c47782673))
+* dismissal events as non-interaction ([164ce5f](https://github.com/Automattic/newspack-popups/commit/164ce5fb91900c670a5ced2f632d7449d11538e0))
+
 ## [1.9.2](https://github.com/Automattic/newspack-popups/compare/v1.9.1...v1.9.2) (2020-07-22)
 
 
