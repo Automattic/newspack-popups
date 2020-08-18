@@ -1,3 +1,10 @@
+## [1.9.4](https://github.com/Automattic/newspack-popups/compare/v1.9.3...v1.9.4) (2020-08-18)
+
+
+### Bug Fixes
+
+* dismissal events as non-interaction ([164ce5f](https://github.com/Automattic/newspack-popups/commit/164ce5fb91900c670a5ced2f632d7449d11538e0))
+
 ## [1.9.3](https://github.com/Automattic/newspack-popups/compare/v1.9.2...v1.9.3) (2020-08-11)
 
 
