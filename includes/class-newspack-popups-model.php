@@ -565,24 +565,26 @@ final class Newspack_Popups_Model {
 		}
 		if ( $has_dismiss_form ) {
 			$analytics_events[] = [
-				'id'             => 'popupDismissed-' . $popup_id,
-				'amp_on'         => 'amp-form-submit-success',
-				'on'             => 'submit',
-				'element'        => '#' . esc_attr( $element_id ) . ' form.popup-dismiss-form',
-				'event_name'     => esc_html__( 'Dismissal', 'newspack-popups' ),
-				'event_label'    => esc_attr( $event_label ),
-				'event_category' => esc_attr( $event_category ),
+				'id'              => 'popupDismissed-' . $popup_id,
+				'amp_on'          => 'amp-form-submit-success',
+				'on'              => 'submit',
+				'element'         => '#' . esc_attr( $element_id ) . ' form.popup-dismiss-form',
+				'event_name'      => esc_html__( 'Dismissal', 'newspack-popups' ),
+				'event_label'     => esc_attr( $event_label ),
+				'event_category'  => esc_attr( $event_category ),
+				'non_interaction' => true,
 			];
 		}
 		if ( $has_not_interested_form ) {
 			$analytics_events[] = [
-				'id'             => 'popupNotInterested-' . $popup_id,
-				'amp_on'         => 'amp-form-submit-success',
-				'on'             => 'submit',
-				'element'        => '#' . esc_attr( $element_id ) . ' form.popup-not-interested-form',
-				'event_name'     => esc_html__( 'Permanent Dismissal', 'newspack-popups' ),
-				'event_label'    => esc_attr( $event_label ),
-				'event_category' => esc_attr( $event_category ),
+				'id'              => 'popupNotInterested-' . $popup_id,
+				'amp_on'          => 'amp-form-submit-success',
+				'on'              => 'submit',
+				'element'         => '#' . esc_attr( $element_id ) . ' form.popup-not-interested-form',
+				'event_name'      => esc_html__( 'Permanent Dismissal', 'newspack-popups' ),
+				'event_label'     => esc_attr( $event_label ),
+				'event_category'  => esc_attr( $event_category ),
+				'non_interaction' => true,
 			];
 		}
 
