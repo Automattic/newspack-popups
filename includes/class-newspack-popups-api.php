@@ -281,6 +281,15 @@ final class Newspack_Popups_API {
 			if ( $this->get_mailing_list_status( $request ) ) {
 				$data['mailing_list_status'] = true;
 			}
+			$email_address = $this->get_email_address( $request );
+			if ( $email_address ) {
+				do_action(
+					'newspack_popups_mailing_list_subscription',
+					[
+						'email' => $email_address,
+					]
+				);
+			}
 			set_transient( $transient_name, $data, 0 );
 		}
 		return $this->reader_get_endpoint( $request );
@@ -360,6 +369,21 @@ final class Newspack_Popups_API {
 			$mailing_list_status = isset( $body['mailing_list_status'] ) ? $body['mailing_list_status'] : false;
 		}
 		return 'subscribed' === $mailing_list_status;
+	}
+
+	/**
+	 * Get email address.
+	 *
+	 * @param WP_REST_Request $request amp-access request.
+	 * @return string Email address.
+	 */
+	public function get_email_address( $request ) {
+		$email_address = isset( $request['email'] ) ? esc_attr( $request['email'] ) : false;
+		if ( ! $email_address ) {
+			$body          = json_decode( $request->get_body(), true );
+			$email_address = isset( $body['email'] ) ? $body['email'] : false;
+		}
+		return $email_address;
 	}
 
 	/**

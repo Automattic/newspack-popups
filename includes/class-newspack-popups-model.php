@@ -445,7 +445,8 @@ final class Newspack_Popups_Model {
 								"extraUrlParams": {
 									"popup_id": "<?php echo ( esc_attr( $popup['id'] ) ); ?>",
 									"url": "<?php echo esc_url( home_url( $wp->request ) ); ?>",
-									"mailing_list_status": "subscribed"
+									"mailing_list_status": "subscribed",
+									"email": "${formFields[email]}"
 								}
 							}
 						},
