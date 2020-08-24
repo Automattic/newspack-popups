@@ -600,8 +600,11 @@ final class Newspack_Popups_Model {
 	 * @return object Block with className appended.
 	 */
 	public static function append_class_to_block( $block ) {
+		$class_name = 'newspack-popups-content-block';
 		if ( isset( $block['attrs']['className'] ) ) {
-			$block['attrs']['className'] = $block['attrs']['className'] . ' newspack-popups-content-block';
+			$block['attrs']['className'] = $block['attrs']['className'] . ' ' . $class_name;
+		} else {
+			$block['attrs']['className'] = $class_name;
 		}
 		return $block;
 	}
