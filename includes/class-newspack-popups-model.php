@@ -595,6 +595,7 @@ final class Newspack_Popups_Model {
 	/**
 	 * Add "newspack-popups-content-block" class name to a block.
 	 * This way a block rendered inside of a popup can be easily told apart.
+	 * This will not work which have HTML content assigned in the editor (most basic blocks)
 	 *
 	 * @param object $block A block.
 	 * @return object Block with className appended.
