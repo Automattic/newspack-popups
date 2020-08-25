@@ -1,3 +1,10 @@
+# [1.10.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.9.3-alpha.1...v1.10.0-alpha.1) (2020-08-25)
+
+
+### Features
+
+* add interoperation features ([#201](https://github.com/Automattic/newspack-popups/issues/201)) ([7b5e941](https://github.com/Automattic/newspack-popups/commit/7b5e941975b63cc06b6a962063ad742049b11cf1))
+
 ## [1.9.3-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.9.2...v1.9.3-alpha.1) (2020-08-18)
 
 
