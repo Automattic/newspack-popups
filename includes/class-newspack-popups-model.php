@@ -445,7 +445,8 @@ final class Newspack_Popups_Model {
 								"extraUrlParams": {
 									"popup_id": "<?php echo ( esc_attr( $popup['id'] ) ); ?>",
 									"url": "<?php echo esc_url( home_url( $wp->request ) ); ?>",
-									"mailing_list_status": "subscribed"
+									"mailing_list_status": "subscribed",
+									"email": "${formFields[email]}"
 								}
 							}
 						},
@@ -592,6 +593,27 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
+	 * Add "newspack-popups-content-block" class name to a block.
+	 * This way a block rendered inside of a popup can be easily told apart.
+	 * This will only work in dynamic blocks.
+	 *
+	 * @param object $block A block.
+	 * @return object Block with className appended.
+	 */
+	public static function append_class_to_block( $block ) {
+		$class_name = 'newspack-popups-content-block';
+		if ( isset( $block['attrs']['className'] ) ) {
+			$block['attrs']['className'] = $block['attrs']['className'] . ' ' . $class_name;
+		} else {
+			$block['attrs']['className'] = $class_name;
+		}
+
+		$block['innerBlocks'] = array_map( [ __CLASS__, 'append_class_to_block' ], $block['innerBlocks'] );
+
+		return $block;
+	}
+
+	/**
 	 * Generate markup inline popup.
 	 *
 	 * @param string $popup The popup object.
@@ -604,7 +626,7 @@ final class Newspack_Popups_Model {
 		$blocks = parse_blocks( $popup['content'] );
 		$body   = '';
 		foreach ( $blocks as $block ) {
-			$body .= render_block( $block );
+			$body .= render_block( self::append_class_to_block( $block ) );
 		}
 		do_action( 'newspack_campaigns_after_campaign_render', $popup );
 
@@ -668,7 +690,7 @@ final class Newspack_Popups_Model {
 		$blocks = parse_blocks( $popup['content'] );
 		$body   = '';
 		foreach ( $blocks as $block ) {
-			$body .= render_block( $block );
+			$body .= render_block( self::append_class_to_block( $block ) );
 		}
 		do_action( 'newspack_campaigns_after_campaign_render', $popup );
 
