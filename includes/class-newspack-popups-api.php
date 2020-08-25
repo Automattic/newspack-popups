@@ -381,7 +381,7 @@ final class Newspack_Popups_API {
 		$email_address = isset( $request['email'] ) ? esc_attr( $request['email'] ) : false;
 		if ( ! $email_address ) {
 			$body          = json_decode( $request->get_body(), true );
-			$email_address = isset( $body['email'] ) ? $body['email'] : false;
+			$email_address = isset( $body['email'] ) ? esc_attr( $body['email'] ) : false;
 		}
 		return $email_address;
 	}
