@@ -595,7 +595,7 @@ final class Newspack_Popups_Model {
 	/**
 	 * Add "newspack-popups-content-block" class name to a block.
 	 * This way a block rendered inside of a popup can be easily told apart.
-	 * This will only work in dynamic blocks. 
+	 * This will only work in dynamic blocks.
 	 *
 	 * @param object $block A block.
 	 * @return object Block with className appended.
@@ -607,6 +607,9 @@ final class Newspack_Popups_Model {
 		} else {
 			$block['attrs']['className'] = $class_name;
 		}
+
+		$block['innerBlocks'] = array_map( [ __CLASS__, 'append_class_to_block' ], $block['innerBlocks'] );
+
 		return $block;
 	}
 
