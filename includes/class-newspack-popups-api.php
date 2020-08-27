@@ -97,7 +97,15 @@ final class Newspack_Popups_API {
 	 * @param String $key Meta key.
 	 */
 	public static function validate_settings_option_name( $key ) {
-		return in_array( $key, array_keys( \Newspack_Popups_Settings::get_settings() ) );
+		return in_array(
+			$key,
+			array_map(
+				function ( $setting ) {
+					return $setting['key'];
+				},
+				\Newspack_Popups_Settings::get_settings()
+			)
+		);
 	}
 
 	/**
@@ -210,11 +218,10 @@ final class Newspack_Popups_API {
 		// - the suppress_newsletter_campaigns setting is on,
 		// - the pop-up has a newsletter form,
 		// then it should not be displayed.
-		$settings              = \Newspack_Popups_Settings::get_settings();
 		$has_utm_medium_in_url = ! empty( $referer_url ) && stripos( $referer_url, 'utm_medium=email' );
 		if (
 			( $has_utm_medium_in_url || $this->get_utm_medium_transient() ) &&
-			$settings['suppress_newsletter_campaigns'] &&
+			\Newspack_Popups_Settings::get_setting( 'suppress_newsletter_campaigns' ) &&
 			\Newspack_Popups_Model::has_newsletter_prompt( $popup )
 		) {
 			$response['displayPopup'] = false;
@@ -229,8 +236,7 @@ final class Newspack_Popups_API {
 		// Suppressing a newsletter campaign if any newsletter campaign was dismissed.
 		$is_suppressing_newsletter_popups = get_transient( $this->get_newsletter_campaigns_suppression_transient_name( $request ), true );
 		$is_newsletter_popup              = \Newspack_Popups_Model::has_newsletter_prompt( $popup );
-		$settings                         = \Newspack_Popups_Settings::get_settings();
-		if ( $settings['suppress_all_newsletter_campaigns_if_one_dismissed'] && $is_suppressing_newsletter_popups && $is_newsletter_popup ) {
+		if ( \Newspack_Popups_Settings::get_setting( 'suppress_all_newsletter_campaigns_if_one_dismissed' ) && $is_suppressing_newsletter_popups && $is_newsletter_popup ) {
 			$response['displayPopup'] = false;
 		}
 
