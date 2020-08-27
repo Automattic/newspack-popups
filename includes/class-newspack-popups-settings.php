@@ -45,12 +45,42 @@ class Newspack_Popups_Settings {
 	}
 
 	/**
+	 * Update settings.
+	 *
+	 * @param object $options options.
+	 */
+	public static function set_settings( $options ) {
+		if ( update_option( $options['option_name'], $options['option_value'] ) ) {
+			return self::get_settings();
+		} else {
+			return new \WP_Error(
+				'newspack_popups_settings_error',
+				esc_html__( 'Error updating the settings.', 'newspack' )
+			);
+		}
+	}
+
+	/**
 	 * Return all settings.
 	 */
 	public static function get_settings() {
 		return [
-			'suppress_newsletter_campaigns' => get_option( 'suppress_newsletter_campaigns', true ),
-			'suppress_all_newsletter_campaigns_if_one_dismissed' => get_option( 'suppress_all_newsletter_campaigns_if_one_dismissed', true ),
+			[
+				'key'   => 'suppress_newsletter_campaigns',
+				'value' => get_option( 'suppress_newsletter_campaigns', true ),
+				'label' => __(
+					'Suppress Newsletter campaigns if visitor is coming from email.',
+					'newspack-popups'
+				),
+			],
+			[
+				'key'   => 'suppress_all_newsletter_campaigns_if_one_dismissed',
+				'value' => get_option( 'suppress_all_newsletter_campaigns_if_one_dismissed', true ),
+				'label' => __(
+					'Suppress all Newsletter campaigns if at least one Newsletter campaign was permanently dismissed.',
+					'newspack-popups'
+				),
+			],
 		];
 	}
 

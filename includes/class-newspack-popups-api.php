@@ -124,14 +124,12 @@ final class Newspack_Popups_API {
 	 * @param WP_REST_Request $request Request object.
 	 */
 	public static function update_settings( $request ) {
-		if ( update_option( $request['option_name'], $request['option_value'] ) ) {
-			return \Newspack_Popups_Settings::get_settings();
-		} else {
-			return new \WP_Error(
-				'newspack_popups_settings_error',
-				esc_html__( 'Error updating the settings.', 'newspack' )
-			);
-		}
+		return \Newspack_Popups_Settings::set_settings(
+			[
+				'option_name'  => $request['option_name'],
+				'option_value' => $request['option_value'],
+			]
+		);
 	}
 
 	/**

@@ -41,24 +41,15 @@ const App = () => {
 				headerText={ __( 'Campaigns Settings', 'newspack-popups' ) }
 			/>
 			<Card>
-				<CheckboxControl
-					label={ __(
-						'Suppress Newsletter campaigns if visitor is coming from email.',
-						'newspack-popups'
-					) }
-					disabled={ inFlight }
-					checked={ settings.suppress_newsletter_campaigns === '1' }
-					onChange={ handleSettingChange( 'suppress_newsletter_campaigns' ) }
-				/>
-				<CheckboxControl
-					label={ __(
-						'Suppress all Newsletter campaigns if at least one Newsletter campaign was permanently dismissed.',
-						'newspack-popups'
-					) }
-					disabled={ inFlight }
-					checked={ settings.suppress_all_newsletter_campaigns_if_one_dismissed === '1' }
-					onChange={ handleSettingChange( 'suppress_all_newsletter_campaigns_if_one_dismissed' ) }
-				/>
+				{ settings.map( setting => (
+					<CheckboxControl
+						key={ setting.key }
+						label={ setting.label }
+						disabled={ inFlight }
+						checked={ setting.value === '1' }
+						onChange={ handleSettingChange( setting.key ) }
+					/>
+				) ) }
 			</Card>
 		</Grid>
 	);
