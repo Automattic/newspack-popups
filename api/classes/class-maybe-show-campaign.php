@@ -46,7 +46,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 	 * @return bool Whether campaign should be shown.
 	 */
 	public function should_campaign_be_shown() {
-		$data                = $this->get_transient( $this->transient_name() );
+		$data                = $this->get_transient( $this->get_transient_name() );
 		$current_views       = (int) $data['count'];
 		$suppress_forever    = ! empty( $data['suppress_forever'] ) ? (int) $data['suppress_forever'] : false;
 		$mailing_list_status = ! empty( $data['mailing_list_status'] ) ? (int) $data['mailing_list_status'] : false;

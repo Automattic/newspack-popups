@@ -209,7 +209,7 @@ class Lightweight_API {
 	/**
 	 * Get transient name.
 	 */
-	public function transient_name() {
+	public function get_transient_name() {
 		return sprintf( '_transient_%s-%s-popup', $this->client_id, $this->popup_id );
 	}
 
