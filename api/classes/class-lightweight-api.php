@@ -186,15 +186,22 @@ class Lightweight_API {
 				'db_password' => getenv( 'DB_PASSWORD' ),
 			];
 		}
-		$config = $_SERVER['DOCUMENT_ROOT'] . '/newspack-popups-config.php'; //phpcs:ignore
-		if ( file_exists( $config ) ) {
-			require $config;
-			return [
-				'db_host'     => DB_HOST,
-				'db_name'     => DB_NAME,
-				'db_user'     => DB_USER,
-				'db_password' => DB_PASSWORD,
-			];
+
+		$config_path = $_SERVER['DOCUMENT_ROOT'] . '/wp-config.php'; //phpcs:ignore
+		if ( file_exists( $config_path ) ) {
+			$config_contents = file_get_contents( $config_path ); // phpcs:ignore
+			$db_host         = $this->get_defined_constant_value_from_php_source( $config_contents, 'DB_HOST' );
+			$db_name         = $this->get_defined_constant_value_from_php_source( $config_contents, 'DB_NAME' );
+			$db_user         = $this->get_defined_constant_value_from_php_source( $config_contents, 'DB_USER' );
+			$db_password     = $this->get_defined_constant_value_from_php_source( $config_contents, 'DB_PASSWORD' );
+			if ( $db_host && $db_name && $db_user && $db_password ) {
+				return [
+					'db_host'     => $db_host,
+					'db_name'     => $db_name,
+					'db_user'     => $db_user,
+					'db_password' => $db_password,
+				];
+			}
 		}
 		return null;
 	}
@@ -299,5 +306,63 @@ class Lightweight_API {
 		http_response_code( 500 );
 		print json_encode( [ 'error' => $code ] ); // phpcs:ignore
 		exit;
+	}
+
+	/**
+	 * Extract DB connection constants from wp-config without creating a WordPress session.
+	 *
+	 * @param string $config_source The full source of the wp-config file.
+	 * @param string $constant_name The name of the constant to extract.
+	 */
+	public function get_defined_constant_value_from_php_source( $config_source, $constant_name ) {
+
+		// Remove all lines which do not contain the 'define' keyword.
+		$config_lines = explode( "\n", $config_source );
+		foreach ( $config_lines as $no => $line ) {
+			if ( 0 !== strpos( trim( $line ), 'define' ) ) {
+				unset( $config_lines[ $no ] );
+			}
+		}
+		$config_lines = array_values( $config_lines );
+		if ( empty( $config_lines ) ) {
+			return null;
+		}
+
+		// Parse the `define( 'NAME', 'value' );` lines.
+		foreach ( $config_lines as $no => $line ) {
+			// Remove `define`.
+			$line = trim( str_replace( 'define', '', trim( $line ) ) );
+
+			// Remove `;` from the end.
+			if ( ';' !== $line[ strlen( $line ) - 1 ] ) {
+				continue;
+			}
+			$line = substr( $line, 0, -1 );
+
+			// Remove opening and closing brackets.
+			$line = trim( trim( $line, '()' ) );
+
+			// Explode comma separated params.
+			$define_params = explode( ',', $line );
+
+			// Remove first and last char from the constant name - these are either a single or a double quote.
+			$define_params[0] = substr( trim( $define_params[0] ), 1 );
+			$define_params[0] = substr( $define_params[0], 0, -1 );
+			$define_params[0] = stripcslashes( $define_params[0] );
+
+			// If this isn't the constant, continue to next line.
+			if ( $constant_name != $define_params[0] ) {
+				continue;
+			}
+
+			// Remove first and last char from the constant name - these are either a single or a double quote.
+			$define_params[1] = substr( trim( $define_params[1] ), 1 );
+			$define_params[1] = substr( $define_params[1], 0, -1 );
+			$define_params[1] = stripcslashes( $define_params[1] );
+
+			return $define_params[1];
+		}
+
+		return null;
 	}
 }
