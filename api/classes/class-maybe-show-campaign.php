@@ -47,7 +47,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 	 */
 	public function should_campaign_be_shown() {
 		$data                = $this->get_transient( $this->get_transient_name() );
-		$current_views       = (int) $data['count'];
+		$current_views       = ! empty( $data['count'] ) ? (int) $data['count'] : 0;
 		$suppress_forever    = ! empty( $data['suppress_forever'] ) ? (int) $data['suppress_forever'] : false;
 		$mailing_list_status = ! empty( $data['mailing_list_status'] ) ? (int) $data['mailing_list_status'] : false;
 		$last_view           = ! empty( $data['time'] ) ? (int) $data['time'] : 0;

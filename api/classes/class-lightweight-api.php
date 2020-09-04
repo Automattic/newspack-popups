@@ -239,7 +239,7 @@ class Lightweight_API {
 		$this->debug['queries'][] = $query;
 		$result                   = $this->db->query( $query );
 		$row                      = $result->fetch_assoc();
-		$transient                = maybe_unserialize( $row['option_value'] );
+		$transient                = $row ? maybe_unserialize( $row['option_value'] ) : [];
 		return $transient;
 	}
 
