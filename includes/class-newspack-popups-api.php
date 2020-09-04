@@ -190,7 +190,6 @@ final class Newspack_Popups_API {
 				$response['displayPopup'] = false;
 				break;
 		}
-
 		$referer_url = filter_input( INPUT_SERVER, 'HTTP_REFERER', FILTER_SANITIZE_STRING );
 
 		// Suppressing based on UTM Source parameter in the URL.
