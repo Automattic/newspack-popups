@@ -25,9 +25,9 @@ class Lightweight_API {
 	/**
 	 * Unique client ID.
 	 *
-	 * @var rid
+	 * @var client_id
 	 */
-	public $rid;
+	public $client_id;
 
 	/**
 	 * Campaign ID.
@@ -110,7 +110,7 @@ class Lightweight_API {
 			$this->error( 'invalid_referer' );
 		}
 		$this->db              = $this->connect();
-		$this->rid             = ! empty( $_REQUEST['rid'] ) ? // phpcs:ignore
+		$this->client_id       = ! empty( $_REQUEST['rid'] ) ? // phpcs:ignore
 			filter_input( INPUT_POST | INPUT_GET, 'rid', FILTER_SANITIZE_SPECIAL_CHARS ) :
 			null; // phpcs:ignore
 		$this->popup_id        = ! empty( $_REQUEST['popup_id'] ) ? // phpcs:ignore
@@ -210,7 +210,7 @@ class Lightweight_API {
 	 * Get transient name.
 	 */
 	public function transient_name() {
-		return sprintf( '_transient_%s-%s-popup', $this->rid, $this->popup_id );
+		return sprintf( '_transient_%s-%s-popup', $this->client_id, $this->popup_id );
 	}
 
 	/**
@@ -222,7 +222,7 @@ class Lightweight_API {
 		return sprintf(
 			'_transient_%s-%s',
 			$prefix,
-			$this->rid
+			$this->client_id
 		);
 	}
 
