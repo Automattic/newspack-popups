@@ -6,6 +6,11 @@
  */
 
 /**
+ * Require some useful utility functions from WordPress without needing to load all of WP.
+ */
+require_once 'utils/wp-functions.php';
+
+/**
  * API endpoints
  */
 class Lightweight_API {
@@ -81,16 +86,26 @@ class Lightweight_API {
 	public $response = [];
 
 	/**
-	 * Array of queries, for debugging.
+	 * The referer URL.
 	 *
-	 * @var queries
+	 * @var referer_url
 	 */
-	public $queries = [];
+	public $referer_url;
+
+	/**
+	 * Debugging information.
+	 *
+	 * @var debug
+	 */
+	public $debug;
 
 	/**
 	 * Constructor.
 	 */
 	public function __construct() {
+		$this->debug = [
+			'queries' => [],
+		];
 		if ( ! $this->verify_referer() ) {
 			$this->error( 'invalid_referer' );
 		}
@@ -120,6 +135,8 @@ class Lightweight_API {
 		$this->has_newsletter_prompt = ! empty( $_REQUEST['has_newsletter_prompt'] ) ? // phpcs:ignore
 			filter_input( INPUT_POST | INPUT_GET, 'has_newsletter_prompt', FILTER_SANITIZE_SPECIAL_CHARS ) :
 			null; // phpcs:ignore
+
+		$this->referer_url = filter_input( INPUT_SERVER, 'HTTP_REFERER', FILTER_SANITIZE_STRING );
 
 		if ( 'inline' !== $this->placement && 'always' === $this->frequency ) {
 			$this->frequency = 'once';
@@ -195,7 +212,11 @@ class Lightweight_API {
 	 * @param string $prefix transient prefix.
 	 */
 	public function get_suppression_data_transient_name( $prefix ) {
-		return $prefix . '-' . $this->rid;
+		return sprintf(
+			'_transient_%s-%s',
+			$prefix,
+			$this->rid
+		);
 	}
 
 	/**
@@ -204,11 +225,14 @@ class Lightweight_API {
 	 * @param string $transient_name The transient's name.
 	 */
 	public function get_transient( $transient_name ) {
-		$query           = sprintf( "SELECT option_value FROM wp_options WHERE option_name = '%s'", $transient_name );
-		$this->queries[] = $query;
-		$result          = $this->db->query( $query );
-		$row             = $result->fetch_assoc();
-		$transient       = $this->maybe_unserialize( $row['option_value'] );
+		$query                    = sprintf(
+			"SELECT option_value FROM wp_options WHERE option_name = '%s'",
+			$this->db->real_escape_string( $transient_name )
+		);
+		$this->debug['queries'][] = $query;
+		$result                   = $this->db->query( $query );
+		$row                      = $result->fetch_assoc();
+		$transient                = maybe_unserialize( $row['option_value'] );
 		return $transient;
 	}
 
@@ -219,17 +243,25 @@ class Lightweight_API {
 	 * @param string $transient THe transient's value.
 	 */
 	public function set_transient( $transient_name, $transient ) {
-		$exists          = sprintf( "SELECT option_id FROM wp_options WHERE option_name = '%s'", $transient_name );
-		$this->queries[] = $exists;
-		$result          = $this->db->query( $exists );
-		$row             = $result->fetch_assoc();
+		$exists                   = sprintf( "SELECT option_id FROM wp_options WHERE option_name = '%s'", $transient_name );
+		$this->debug['queries'][] = $exists;
+		$result                   = $this->db->query( $exists );
+		$row                      = $result->fetch_assoc();
 		if ( $row ) {
-			$update          = sprintf( "UPDATE wp_options SET option_value = '%s' WHERE option_name = '%s'", $transient, $transient_name );
-			$this->queries[] = $update;
+			$update                 = sprintf(
+				"UPDATE wp_options SET option_value = '%s' WHERE option_name = '%s'",
+				$this->db->real_escape_string( $transient ),
+				$this->db->real_escape_string( $transient_name )
+			);
+			$this->debug->queries[] = $update;
 			$this->db->query( $update );
 		} else {
-			$insert          = sprintf( "INSERT INTO wp_options ( option_name, option_value ) VALUES ( '%s', '%s' )", $transient_name, $transient );
-			$this->queries[] = $insert;
+			$insert                 = sprintf(
+				"INSERT INTO wp_options ( option_name, option_value ) VALUES ( '%s', '%s' )",
+				$this->db->real_escape_string( $transient_name ),
+				$this->db->real_escape_string( $transient )
+			);
+			$this->debug->queries[] = $insert;
 			$this->db->query( $insert );
 		}
 	}
@@ -247,93 +279,14 @@ class Lightweight_API {
 	 * Complete the API and print response.
 	 */
 	public function respond() {
-		$this->response['queries'] = $this->queries;
+		$this->debug['query_count'] = count( $this->debug['queries'] );
+		if ( defined( 'WP_DEBUG_NEWSPACK_CAMPAIGNS' ) && WP_DEBUG_NEWSPACK_CAMPAIGNS ) {
+			$this->response['debug'] = $this->debug;
+		}
 		$this->disconnect();
 		http_response_code( 200 );
 		print json_encode( $this->response ); // phpcs:ignore
 		exit;
-	}
-
-	/**
-	 * Check value to find if it was serialized.
-	 *
-	 * If $data is not an string, then returned value will always be false.
-	 * Serialized data is always a string.
-	 *
-	 * @param string $data   Value to check to see if was serialized.
-	 * @param bool   $strict Optional. Whether to be strict about the end of the string. Default true.
-	 * @return bool False if not serialized and true if it was.
-	 */
-	public function is_serialized( $data, $strict = true ) {
-		// If it isn't a string, it isn't serialized.
-		if ( ! is_string( $data ) ) {
-			return false;
-		}
-		$data = trim( $data );
-		if ( 'N;' === $data ) {
-			return true;
-		}
-		if ( strlen( $data ) < 4 ) {
-			return false;
-		}
-		if ( ':' !== $data[1] ) {
-			return false;
-		}
-		if ( $strict ) {
-			$lastc = substr( $data, -1 );
-			if ( ';' !== $lastc && '}' !== $lastc ) {
-				return false;
-			}
-		} else {
-			$semicolon = strpos( $data, ';' );
-			$brace     = strpos( $data, '}' );
-			// Either ; or } must exist.
-			if ( false === $semicolon && false === $brace ) {
-				return false;
-			}
-			// But neither must be in the first X characters.
-			if ( false !== $semicolon && $semicolon < 3 ) {
-				return false;
-			}
-			if ( false !== $brace && $brace < 4 ) {
-				return false;
-			}
-		}
-		$token = $data[0];
-		switch ( $token ) {
-			case 's':
-				if ( $strict ) {
-					if ( '"' !== substr( $data, -2, 1 ) ) {
-						return false;
-					}
-				} elseif ( false === strpos( $data, '"' ) ) {
-					return false;
-				}
-				// Or else fall through.
-			case 'a':
-			case 'O':
-				return (bool) preg_match( "/^{$token}:[0-9]+:/s", $data );
-			case 'b':
-			case 'i':
-			case 'd':
-				$end = $strict ? '$' : '';
-				return (bool) preg_match( "/^{$token}:[0-9.E+-]+;$end/", $data );
-		}
-		return false;
-	}
-
-	/**
-	 * Unserialize data only if it was serialized.
-	 *
-	 * @param string $data Data that might be unserialized.
-	 * @return mixed Unserialized data can be any type.
-	 */
-	public function maybe_unserialize( $data ) {
-		if ( $this->is_serialized( $data ) ) { // Don't attempt to unserialize data that wasn't serialized going in.
-			return @unserialize( trim( $data ) ); // phpcs:ignore
-		}
-
-		return $data;
 	}
 
 	/**

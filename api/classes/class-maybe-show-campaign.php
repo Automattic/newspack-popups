@@ -20,56 +20,108 @@ class Maybe_Show_Campaign extends Lightweight_API {
 	 */
 	public function __construct() {
 		parent::__construct();
+		$should_show = $this->should_campaign_be_shown();
+		if ( $should_show || $this->should_perform_utm_logic() ) {
+			if ( $this->should_suppress_because_utm_suppression() ) {
+				$should_show = false;
+			}
+			if ( $this->should_suppress_because_utm_medium() ) {
+				$should_show = false;
+			}
+			if ( $should_show && $this->should_suppress_because_newsletter_campaign_dismissed() ) {
+				$show_show = false;
+			}
+		}
+
+		$this->response['displayPopup'] = $should_show;
+
+		// TODO: Preview handling.
+
+		$this->respond();
+	}
+
+	/**
+	 * Primary campaign visibility logic.
+	 *
+	 * @return bool Whether campaign should be shown.
+	 */
+	public function should_campaign_be_shown() {
 		$data                = $this->get_transient( $this->transient_name() );
 		$current_views       = (int) $data['count'];
 		$suppress_forever    = ! empty( $data['suppress_forever'] ) ? (int) $data['suppress_forever'] : false;
 		$mailing_list_status = ! empty( $data['mailing_list_status'] ) ? (int) $data['mailing_list_status'] : false;
 		$last_view           = ! empty( $data['time'] ) ? (int) $data['time'] : 0;
-		if ( $suppress_forever || $mailing_list_status ) {
-			$this->response['displayPopup'] = false;
-		} else {
-			switch ( $this->frequency ) {
-				case 'daily':
-					$this->response['displayPopup'] = $last_view < strtotime( '-1 day' );
-					break;
-				case 'once':
-					$this->response['displayPopup'] = $current_views < 1;
-					break;
-				case 'test':
-				case 'always':
-					$this->response['displayPopup'] = true;
-					break;
-				case 'never':
-				default:
-					$this->response['displayPopup'] = false;
-					break;
-			}
+
+		if ( $suppress_forever ) {
+			return false;
 		}
+		if ( $mailing_list_status ) {
+			return false;
+		}
+		if ( 'always' === $this->frequency || 'test' === $this->frequency ) {
+			return true;
+		}
+		if ( 'daily' === $this->frequency ) {
+			return $last_view < strtotime( '-1 day' );
+		}
+		if ( 'once' === $this->frequency ) {
+			return $current_views < 1;
+		}
+		return false;
+	}
 
+	/**
+	 * Assess whether the UTM logic is necessary.
+	 *
+	 * @return bool Whether UTM logic should be performed.
+	 */
+	public function should_perform_utm_logic() {
+		if ( $this->utm_suppression && stripos( urldecode( $this->referer_url ), 'utm_source=' . $this->utm_suppression ) ) {
+			return true;
+		}
+		if ( stripos( $this->referer_url, 'utm_medium=email' ) ) {
+			return true;
+		}
+		return false;
+	}
 
+	/**
+	 * Handle utm_source query param, update transients if needed.
+	 *
+	 * @return bool Should campaign be shown.
+	 */
+	public function should_suppress_because_utm_suppression() {
+		if ( ! $this->utm_suppression ) {
+			return false;
+		}
 		// Suppressing based on UTM Source parameter in the URL.
 		// If the visitor came from a campaign with suppressed utm_source, then it should not be displayed.
-		$referer_url = filter_input( INPUT_SERVER, 'HTTP_REFERER', FILTER_SANITIZE_STRING );
-		if ( $this->utm_suppression ) {
-			$utm_source_transient_name = $this->get_suppression_data_transient_name( 'utm_source' );
-			$utm_source_transient      = $this->get_transient( $utm_source_transient_name );
-			if ( $referer_url && stripos( urldecode( $referer_url ), 'utm_source=' . $utm_suppression ) ) {
-				$this->response['displayPopup']                 = false;
-				$utm_source_transient[ $this->utm_suppression ] = true;
-				$this->set_transient( $utm_source_transient_name, $utm_source_transient );
-			}
-
-			if ( ! empty( $utm_source_transient[ $utm_suppression ] ) ) {
-				$this->response['displayPopup'] = false;
-			}
+		$utm_source_transient_name = $this->get_suppression_data_transient_name( 'utm_source' );
+		$utm_source_transient      = $this->get_transient( $utm_source_transient_name );
+		if ( $this->referer_url && stripos( urldecode( $this->referer_url ), 'utm_source=' . $this->utm_suppression ) ) {
+			$utm_source_transient[ $this->utm_suppression ] = true;
+			$this->set_transient( $utm_source_transient_name, $utm_source_transient );
+			return true;
 		}
 
+		if ( ! empty( $utm_source_transient[ $utm_suppression ] ) ) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Handle utm_medium query param, update transients if needed.
+	 *
+	 * @return bool Should campaign be shown.
+	 */
+	public function should_suppress_because_utm_medium() {
 		// Suppressing based on UTM Medium parameter in the URL. If:
 		// - the visitor came from email,
 		// - the suppress_newsletter_campaigns setting is on,
 		// - the pop-up has a newsletter form,
 		// then it should not be displayed.
-		$has_utm_medium_in_url     = stripos( $referer_url, 'utm_medium=email' );
+		$has_utm_medium_in_url     = stripos( $this->referer_url, 'utm_medium=email' );
 		$utm_medium_transient_name = $this->get_suppression_data_transient_name( 'utm_medium' );
 
 		if (
@@ -77,25 +129,25 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			$this->has_newsletter_prompt &&
 			( $has_utm_medium_in_url || $this->get_transient( $utm_medium_transient_name ) )
 		) {
-			$this->response['displayPopup'] = false;
 			$this->set_transient( $utm_medium_transient_name, true );
+			return true;
 		}
+		return false;
+	}
 
-		// Suppressing because user has dismissed the popup permanently, or signed up to the newsletter.
-		if ( $suppress_forever || $mailing_list_status ) {
-			$this->response['displayPopup'] = false;
-		}
-
+	/**
+	 * Should campaign be suppressed because it is a Newsletter campaign and a Newsletter campaign was previously dismissed.
+	 *
+	 * @return bool Should campaign be shown.
+	 */
+	public function should_suppress_because_newsletter_campaign_dismissed() {
 		// Suppressing a newsletter campaign if any newsletter campaign was dismissed.
-		$name = $this->get_suppression_data_transient_name( '-newsletter-campaign-suppression' );
+		$name = $this->get_suppression_data_transient_name( 'newsletter-campaign-suppression' );
 
 		if ( $this->suppress_all_newsletter_campaigns_if_one_dismissed && $this->has_newsletter_prompt && $this->get_transient( $name ) ) {
-			$this->response['displayPopup'] = false;
+			return true;
 		}
-
-		// TODO: Preview handling.
-
-		$this->respond();
+		return false;
 	}
 
 	/**
