@@ -315,9 +315,13 @@ final class Newspack_Popups_Inserter {
 		}
 
 		$popups                  = self::popups_for_post();
-		$endpoint                = self::should_use_lightweight_api() ?
-			plugins_url( '../api/', __FILE__ ) :
-			str_replace( 'http://', '//', get_rest_url( null, 'newspack-popups/v1/reader' ) );
+		$endpoint                = str_replace(
+			'http://',
+			'//',
+			self::should_use_lightweight_api() ?
+				plugins_url( '../api/', __FILE__ ) :
+				get_rest_url( null, 'newspack-popups/v1/reader' )
+		);
 		$popups_access_providers = [];
 
 		$settings = \Newspack_Popups_Settings::get_settings();
