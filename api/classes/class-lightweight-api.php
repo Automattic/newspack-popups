@@ -94,6 +94,13 @@ class Lightweight_API {
 	public $referer_url;
 
 	/**
+	 * Database credentials.
+	 *
+	 * @var credentials
+	 */
+	public $credentials;
+
+	/**
 	 * Constructor.
 	 */
 	public function __construct() {
@@ -180,35 +187,58 @@ class Lightweight_API {
 	 * Get database credentials from environment variables (Atomic) or special config file.
 	 */
 	public function get_credentials() {
+		if ( $this->credentials ) {
+			return $this->credentials;
+		}
+		$config_path = $_SERVER['DOCUMENT_ROOT'] . '/wp-config.php'; //phpcs:ignore
+		$config_contents = file_exists( $config_path ) ? file_get_contents( $config_path ) : null; // phpcs:ignore
+
+		$db_prefix = 'wp_';
+		preg_match( '/\$table_prefix\s+=\s+(?:\'|\")(.*?)(?:\'|\")/', $config_contents, $matches, PREG_OFFSET_CAPTURE );
+
+		if ( count( $matches ) > 1 ) {
+			$db_prefix = $matches[1][0];
+		}
+
 		if ( getenv( 'DB_NAME' ) && getenv( 'DB_USER' ) && getenv( 'DB_PASSWORD' ) && getenv( 'DB_CHARSET' ) ) {
-			return [
+			$this->credentials = [
 				'db_host'     => 'localhost',
 				'db_name'     => getenv( 'DB_NAME' ),
 				'db_user'     => getenv( 'DB_USER' ),
 				'db_password' => getenv( 'DB_PASSWORD' ),
 				'db_charset'  => getenv( 'DB_CHARSET' ),
+				'db_prefix'   => $db_prefix,
 			];
+			return $this->credentials;
 		}
 
-		$config_path = $_SERVER['DOCUMENT_ROOT'] . '/wp-config.php'; //phpcs:ignore
-		if ( file_exists( $config_path ) ) {
-			$config_contents = file_get_contents( $config_path ); // phpcs:ignore
-			$db_host         = $this->get_defined_constant_value_from_php_source( $config_contents, 'DB_HOST' );
-			$db_name         = $this->get_defined_constant_value_from_php_source( $config_contents, 'DB_NAME' );
-			$db_user         = $this->get_defined_constant_value_from_php_source( $config_contents, 'DB_USER' );
-			$db_password     = $this->get_defined_constant_value_from_php_source( $config_contents, 'DB_PASSWORD' );
-			$db_charset      = $this->get_defined_constant_value_from_php_source( $config_contents, 'DB_CHARSET' );
+		if ( $config_contents ) {
+			$db_host     = $this->get_defined_constant_value_from_php_source( $config_contents, 'DB_HOST' );
+			$db_name     = $this->get_defined_constant_value_from_php_source( $config_contents, 'DB_NAME' );
+			$db_user     = $this->get_defined_constant_value_from_php_source( $config_contents, 'DB_USER' );
+			$db_password = $this->get_defined_constant_value_from_php_source( $config_contents, 'DB_PASSWORD' );
+			$db_charset  = $this->get_defined_constant_value_from_php_source( $config_contents, 'DB_CHARSET' );
 			if ( $db_host && $db_name && $db_user && $db_password && $db_charset ) {
-				return [
+				$this->credentials = [
 					'db_host'     => $db_host,
 					'db_name'     => $db_name,
 					'db_user'     => $db_user,
 					'db_password' => $db_password,
 					'db_charset'  => $db_charset,
+					'db_prefix'   => $db_prefix,
 				];
+				return $this->credentials;
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * Get the option table name.
+	 */
+	public function option_table() {
+		$credentials = $this->get_credentials();
+		return sprintf( '%soptions', $credentials['db_prefix'] );
 	}
 
 	/**
@@ -237,7 +267,9 @@ class Lightweight_API {
 	 * @param string $transient_name The transient's name.
 	 */
 	public function get_transient( $transient_name ) {
-		$query = $this->db->prepare( 'SELECT option_value FROM wp_options WHERE option_name = ?' );
+		$option_table = $this->option_table();
+
+		$query = $this->db->prepare( "SELECT option_value FROM $option_table WHERE option_name = ?" );
 		$query->execute( [ $transient_name ] );
 		$row       = $query->fetch();
 		$transient = $row ? maybe_unserialize( $row['option_value'] ) : [];
@@ -251,14 +283,16 @@ class Lightweight_API {
 	 * @param string $transient THe transient's value.
 	 */
 	public function set_transient( $transient_name, $transient ) {
-		$query = $this->db->prepare( 'SELECT option_id FROM wp_options WHERE option_name = ?' );
+		$option_table = $this->option_table();
+
+		$query = $this->db->prepare( "SELECT option_id FROM $option_table WHERE option_name = ?" );
 		$query->execute( [ $transient_name ] );
 		$exists = $query->fetch();
 		if ( $exists ) {
-			$query = $this->db->prepare( 'UPDATE wp_options SET option_value = ? WHERE option_name = ?' );
+			$query = $this->db->prepare( "UPDATE $option_table SET option_value = ? WHERE option_name = ?" );
 			$query->execute( [ $transient, $transient_name ] );
 		} else {
-			$query = $this->db->prepare( 'INSERT INTO wp_options ( option_name, option_value ) VALUES ( ?, ? )' );
+			$query = $this->db->prepare( "INSERT INTO $option_table ( option_name, option_value ) VALUES ( ?, ? )" );
 			$query->execute( [ $transient_name, $transient ] );
 		}
 	}
