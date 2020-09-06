@@ -104,7 +104,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			return true;
 		}
 
-		if ( ! empty( $utm_source_transient[ $utm_suppression ] ) ) {
+		if ( ! empty( $utm_source_transient[ $this->utm_suppression ] ) ) {
 			return true;
 		}
 		return false;
