@@ -3,6 +3,7 @@
  * Newspack Campaigns lightweight API
  *
  * @package Newspack
+ * @phpcs:disable WordPress.DB.RestrictedClasses.mysql__PDO
  */
 
 /**
@@ -93,19 +94,9 @@ class Lightweight_API {
 	public $referer_url;
 
 	/**
-	 * Debugging information.
-	 *
-	 * @var debug
-	 */
-	public $debug;
-
-	/**
 	 * Constructor.
 	 */
 	public function __construct() {
-		$this->debug = [
-			'queries' => [],
-		];
 		if ( ! $this->verify_referer() ) {
 			$this->error( 'invalid_referer' );
 		}
@@ -164,14 +155,19 @@ class Lightweight_API {
 		if ( ! $credentials ) {
 			$this->error( 'no_credentials' );
 		}
-		$db = mysqli_init(); //phpcs:ignore
-		$db->real_connect(
-			$credentials['db_host'],
-			$credentials['db_user'],
-			$credentials['db_password'],
-			$credentials['db_name']
-		);
-		return $db;
+
+		$dsn     = sprintf( 'mysql:host=%s;dbname=%s', $credentials['db_host'], $credentials['db_name'] );
+		$options = [
+			PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+			PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+			PDO::ATTR_EMULATE_PREPARES   => false,
+		];
+		try {
+			$pdo = new PDO( $dsn, $credentials['db_user'], $credentials['db_password'], $options );
+		} catch ( \PDOException $e ) {
+			throw new \PDOException( $e->getMessage(), (int) $e->getCode() );
+		}
+		return $pdo;
 	}
 
 	/**
@@ -232,14 +228,10 @@ class Lightweight_API {
 	 * @param string $transient_name The transient's name.
 	 */
 	public function get_transient( $transient_name ) {
-		$query                    = sprintf(
-			"SELECT option_value FROM wp_options WHERE option_name = '%s'",
-			$this->db->real_escape_string( $transient_name )
-		);
-		$this->debug['queries'][] = $query;
-		$result                   = $this->db->query( $query );
-		$row                      = $result->fetch_assoc();
-		$transient                = $row ? maybe_unserialize( $row['option_value'] ) : [];
+		$query = $this->db->prepare( 'SELECT option_value FROM wp_options WHERE option_name = ?' );
+		$query->execute( [ $transient_name ] );
+		$row       = $query->fetch();
+		$transient = $row ? maybe_unserialize( $row['option_value'] ) : [];
 		return $transient;
 	}
 
@@ -250,26 +242,15 @@ class Lightweight_API {
 	 * @param string $transient THe transient's value.
 	 */
 	public function set_transient( $transient_name, $transient ) {
-		$exists                   = sprintf( "SELECT option_id FROM wp_options WHERE option_name = '%s'", $transient_name );
-		$this->debug['queries'][] = $exists;
-		$result                   = $this->db->query( $exists );
-		$row                      = $result->fetch_assoc();
-		if ( $row ) {
-			$update                 = sprintf(
-				"UPDATE wp_options SET option_value = '%s' WHERE option_name = '%s'",
-				$this->db->real_escape_string( $transient ),
-				$this->db->real_escape_string( $transient_name )
-			);
-			$this->debug->queries[] = $update;
-			$this->db->query( $update );
+		$query = $this->db->prepare( 'SELECT option_id FROM wp_options WHERE option_name = ?' );
+		$query->execute( [ $transient_name ] );
+		$exists = $query->fetch();
+		if ( $exists ) {
+			$query = $this->db->prepare( 'UPDATE wp_options SET option_value = ? WHERE option_name = ?' );
+			$query->execute( [ $transient, $transient_name ] );
 		} else {
-			$insert                 = sprintf(
-				"INSERT INTO wp_options ( option_name, option_value ) VALUES ( '%s', '%s' )",
-				$this->db->real_escape_string( $transient_name ),
-				$this->db->real_escape_string( $transient )
-			);
-			$this->debug->queries[] = $insert;
-			$this->db->query( $insert );
+			$query = $this->db->prepare( 'INSERT INTO wp_options ( option_name, option_value ) VALUES ( ?, ? )' );
+			$query->execute( [ $transient_name, $transient ] );
 		}
 	}
 
@@ -277,19 +258,13 @@ class Lightweight_API {
 	 * Teardown.
 	 */
 	public function disconnect() {
-		if ( $this->db ) {
-			$this->db->close();
-		}
+		$this->db = null;
 	}
 
 	/**
 	 * Complete the API and print response.
 	 */
 	public function respond() {
-		$this->debug['query_count'] = count( $this->debug['queries'] );
-		if ( defined( 'WP_DEBUG_NEWSPACK_CAMPAIGNS' ) && WP_DEBUG_NEWSPACK_CAMPAIGNS ) {
-			$this->response['debug'] = $this->debug;
-		}
 		$this->disconnect();
 		http_response_code( 200 );
 		print json_encode( $this->response ); // phpcs:ignore
