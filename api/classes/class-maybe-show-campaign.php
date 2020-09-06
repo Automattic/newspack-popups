@@ -29,7 +29,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 				$should_show = false;
 			}
 			if ( $should_show && $this->should_suppress_because_newsletter_campaign_dismissed() ) {
-				$show_show = false;
+				$should_show = false;
 			}
 		}
 
@@ -98,6 +98,9 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		// If the visitor came from a campaign with suppressed utm_source, then it should not be displayed.
 		$utm_source_transient_name = $this->get_suppression_data_transient_name( 'utm_source' );
 		$utm_source_transient      = $this->get_transient( $utm_source_transient_name );
+		if ( ! $utm_source_transient || ! is_array( $utm_source_transient ) ) {
+			$utm_source_transient = [];
+		}
 		if ( $this->referer_url && stripos( urldecode( $this->referer_url ), 'utm_source=' . $this->utm_suppression ) ) {
 			$utm_source_transient[ $this->utm_suppression ] = true;
 			$this->set_transient( $utm_source_transient_name, $utm_source_transient );
@@ -142,7 +145,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 	 */
 	public function should_suppress_because_newsletter_campaign_dismissed() {
 		// Suppressing a newsletter campaign if any newsletter campaign was dismissed.
-		$name = $this->get_suppression_data_transient_name( 'newsletter-campaign-suppression' );
+		$name = $this->legacy_get_suppression_data_transient_name_reversed( 'newsletter-campaign-suppression' );
 
 		if ( $this->suppress_all_newsletter_campaigns_if_one_dismissed && $this->has_newsletter_prompt && $this->get_transient( $name ) ) {
 			return true;
@@ -160,7 +163,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			$transient_name           = $this->get_suppression_data_transient_name( 'utm_source' );
 			$transient                = $this->get_transient( $transient_name );
 			$transient[ $utm_source ] = true;
-			set_transient( $transient_name, true, 0 );
+			set_transient( $transient_name, true );
 		}
 	}
 }

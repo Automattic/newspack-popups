@@ -3,6 +3,7 @@
  * Some useful functions taken directly from the WordPress codebase.
  *
  * @package Newspack
+ * @phpcs:disable WordPress.PHP.NoSilencedErrors.Discouraged
  */
 
 /**
@@ -81,7 +82,32 @@ function is_serialized( $data, $strict = true ) {
  */
 function maybe_unserialize( $data ) {
 	if ( is_serialized( $data ) ) { // Don't attempt to unserialize data that wasn't serialized going in.
-		return @unserialize( trim( $data ) ); // phpcs:ignore
+		return @unserialize( trim( $data ) ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.serialize_unserialize
+	}
+
+	return $data;
+}
+
+/**
+ * Serialize data, if needed.
+ *
+ * @since 2.0.5
+ *
+ * @param string|array|object $data Data that might be serialized.
+ * @return mixed A scalar data.
+ */
+function maybe_serialize( $data ) {
+	if ( is_array( $data ) || is_object( $data ) ) {
+		return serialize( $data ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.serialize_serialize
+	}
+
+	/*
+	 * Double serialization is required for backward compatibility.
+	 * See https://core.trac.wordpress.org/ticket/12930
+	 * Also the world will end. See WP 3.6.1.
+	 */
+	if ( is_serialized( $data, false ) ) {
+		return serialize( $data ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.serialize_serialize
 	}
 
 	return $data;

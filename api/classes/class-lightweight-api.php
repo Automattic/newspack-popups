@@ -262,6 +262,19 @@ class Lightweight_API {
 	}
 
 	/**
+	 * Get suppression-related transient value for newsletter-campaign-suppression, which has the order of client_id and key reversed from the others.
+	 *
+	 * @param string $prefix transient prefix.
+	 */
+	public function legacy_get_suppression_data_transient_name_reversed( $prefix ) {
+		return sprintf(
+			'_transient_%s-%s',
+			$this->client_id,
+			$prefix
+		);
+	}
+
+	/**
 	 * Get data from transient.
 	 *
 	 * @param string $transient_name The transient's name.
@@ -284,6 +297,7 @@ class Lightweight_API {
 	 */
 	public function set_transient( $transient_name, $transient ) {
 		$option_table = $this->option_table();
+		$transient    = maybe_serialize( $transient );
 
 		$query = $this->db->prepare( "SELECT option_id FROM $option_table WHERE option_name = ?" );
 		$query->execute( [ $transient_name ] );
