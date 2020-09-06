@@ -156,7 +156,13 @@ class Lightweight_API {
 			$this->error( 'no_credentials' );
 		}
 
-		$dsn     = sprintf( 'mysql:host=%s;dbname=%s', $credentials['db_host'], $credentials['db_name'] );
+		$dsn = sprintf(
+			'mysql:host=%s;dbname=%s;charset=%s',
+			$credentials['db_host'],
+			$credentials['db_name'],
+			$credentials['db_charset']
+		);
+
 		$options = [
 			PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
 			PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
@@ -174,12 +180,13 @@ class Lightweight_API {
 	 * Get database credentials from environment variables (Atomic) or special config file.
 	 */
 	public function get_credentials() {
-		if ( getenv( 'DB_NAME' ) && getenv( 'DB_USER' ) && getenv( 'DB_PASSWORD' ) ) {
+		if ( getenv( 'DB_NAME' ) && getenv( 'DB_USER' ) && getenv( 'DB_PASSWORD' ) && getenv( 'DB_CHARSET' ) ) {
 			return [
 				'db_host'     => 'localhost',
 				'db_name'     => getenv( 'DB_NAME' ),
 				'db_user'     => getenv( 'DB_USER' ),
 				'db_password' => getenv( 'DB_PASSWORD' ),
+				'db_charset'  => getenv( 'DB_CHARSET' ),
 			];
 		}
 
@@ -190,12 +197,14 @@ class Lightweight_API {
 			$db_name         = $this->get_defined_constant_value_from_php_source( $config_contents, 'DB_NAME' );
 			$db_user         = $this->get_defined_constant_value_from_php_source( $config_contents, 'DB_USER' );
 			$db_password     = $this->get_defined_constant_value_from_php_source( $config_contents, 'DB_PASSWORD' );
-			if ( $db_host && $db_name && $db_user && $db_password ) {
+			$db_charset      = $this->get_defined_constant_value_from_php_source( $config_contents, 'DB_CHARSET' );
+			if ( $db_host && $db_name && $db_user && $db_password && $db_charset ) {
 				return [
 					'db_host'     => $db_host,
 					'db_name'     => $db_name,
 					'db_user'     => $db_user,
 					'db_password' => $db_password,
+					'db_charset'  => $db_charset,
 				];
 			}
 		}
