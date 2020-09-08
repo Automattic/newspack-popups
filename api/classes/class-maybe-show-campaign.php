@@ -163,7 +163,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			$transient_name           = $this->get_suppression_data_transient_name( 'utm_source' );
 			$transient                = $this->get_transient( $transient_name );
 			$transient[ $utm_source ] = true;
-			set_transient( $transient_name, true );
+			$this->set_transient( $transient_name, true );
 		}
 	}
 }

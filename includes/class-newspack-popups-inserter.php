@@ -485,7 +485,7 @@ final class Newspack_Popups_Inserter {
 	 * @return bool Should lightweight API be used.
 	 */
 	public static function should_use_lightweight_api() {
-		return defined( 'NEWSPACK_POPUPS_EXPERIMENTAL_MODE' ) && NEWSPACK_POPUPS_EXPERIMENTAL_MODE;
+		return file_exists( ABSPATH . 'newspack-popups-config.php' );
 	}
 }
 $newspack_popups_inserter = new Newspack_Popups_Inserter();

@@ -2,10 +2,13 @@
 
 The lightweight API is a stripped-down alternative to the WordPress REST API. Campaigns will often be present on every page of a site, which can lead to performance issues as a result of a large number of uncacheable API requests.
 
-If `DB_NAME`, `DB_USER`, and `DB_PASSWORD` environment variables are set, the lightweight API is used and database connection is made using these credentials (DB_HOST is assumed to be `localhost`). If not, `wp-config.php` will be parse to extract the DB connection constants.
-
-For the moment, the feature is only enabled if this constant is set in `wp-config.php`:
+The feature requires a custom config file named `newspack-popups-config.php` at the root of the site, with the following constants:
 
 ```
-define( 'NEWSPACK_POPUPS_EXPERIMENTAL_MODE', true );
+define( 'DB_NAME', 'dbname' );
+define( 'DB_USER', 'dbuser' );
+define( 'DB_PASSWORD', 'dbpass' );
+define( 'DB_HOST', 'localhost' );
+define( 'DB_CHARSET', 'utf8' );
+define( 'DB_PREFIX', 'wp_' );
 ```

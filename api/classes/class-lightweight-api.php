@@ -107,7 +107,6 @@ class Lightweight_API {
 		if ( ! $this->verify_referer() ) {
 			$this->error( 'invalid_referer' );
 		}
-		$this->db              = $this->connect();
 		$this->client_id       = ! empty( $_REQUEST['rid'] ) ? // phpcs:ignore
 			filter_input( INPUT_POST | INPUT_GET, 'rid', FILTER_SANITIZE_SPECIAL_CHARS ) :
 			null; // phpcs:ignore
@@ -152,35 +151,6 @@ class Lightweight_API {
 		];
 		$http_host = ! empty( $_SERVER['HTTP_HOST'] ) ? $_SERVER['HTTP_HOST'] : null; // phpcs:ignore
 		return in_array( strtolower( $http_host ), $valid_referers, true );
-	}
-
-	/**
-	 * Establish DB connection.
-	 */
-	public function connect() {
-		$credentials = $this->get_credentials();
-		if ( ! $credentials ) {
-			$this->error( 'no_credentials' );
-		}
-
-		$dsn = sprintf(
-			'mysql:host=%s;dbname=%s;charset=%s',
-			$credentials['db_host'],
-			$credentials['db_name'],
-			$credentials['db_charset']
-		);
-
-		$options = [
-			PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-			PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-			PDO::ATTR_EMULATE_PREPARES   => false,
-		];
-		try {
-			$pdo = new PDO( $dsn, $credentials['db_user'], $credentials['db_password'], $options );
-		} catch ( \PDOException $e ) {
-			throw new \PDOException( $e->getMessage(), (int) $e->getCode() );
-		}
-		return $pdo;
 	}
 
 	/**
@@ -234,18 +204,10 @@ class Lightweight_API {
 	}
 
 	/**
-	 * Get the option table name.
-	 */
-	public function option_table() {
-		$credentials = $this->get_credentials();
-		return sprintf( '%soptions', $credentials['db_prefix'] );
-	}
-
-	/**
 	 * Get transient name.
 	 */
 	public function get_transient_name() {
-		return sprintf( '_transient_%s-%s-popup', $this->client_id, $this->popup_id );
+		return sprintf( '%s-%s-popup', $this->client_id, $this->popup_id );
 	}
 
 	/**
@@ -255,7 +217,7 @@ class Lightweight_API {
 	 */
 	public function get_suppression_data_transient_name( $prefix ) {
 		return sprintf(
-			'_transient_%s-%s',
+			'%s-%s',
 			$prefix,
 			$this->client_id
 		);
@@ -268,61 +230,16 @@ class Lightweight_API {
 	 */
 	public function legacy_get_suppression_data_transient_name_reversed( $prefix ) {
 		return sprintf(
-			'_transient_%s-%s',
+			'%s-%s',
 			$this->client_id,
 			$prefix
 		);
 	}
 
 	/**
-	 * Get data from transient.
-	 *
-	 * @param string $transient_name The transient's name.
-	 */
-	public function get_transient( $transient_name ) {
-		$option_table = $this->option_table();
-
-		$query = $this->db->prepare( "SELECT option_value FROM $option_table WHERE option_name = ?" );
-		$query->execute( [ $transient_name ] );
-		$row       = $query->fetch();
-		$transient = $row ? maybe_unserialize( $row['option_value'] ) : [];
-		return $transient;
-	}
-
-	/**
-	 * Insert or update a transient.
-	 *
-	 * @param string $transient_name THe transient's name.
-	 * @param string $transient THe transient's value.
-	 */
-	public function set_transient( $transient_name, $transient ) {
-		$option_table = $this->option_table();
-		$transient    = maybe_serialize( $transient );
-
-		$query = $this->db->prepare( "SELECT option_id FROM $option_table WHERE option_name = ?" );
-		$query->execute( [ $transient_name ] );
-		$exists = $query->fetch();
-		if ( $exists ) {
-			$query = $this->db->prepare( "UPDATE $option_table SET option_value = ? WHERE option_name = ?" );
-			$query->execute( [ $transient, $transient_name ] );
-		} else {
-			$query = $this->db->prepare( "INSERT INTO $option_table ( option_name, option_value ) VALUES ( ?, ? )" );
-			$query->execute( [ $transient_name, $transient ] );
-		}
-	}
-
-	/**
-	 * Teardown.
-	 */
-	public function disconnect() {
-		$this->db = null;
-	}
-
-	/**
 	 * Complete the API and print response.
 	 */
 	public function respond() {
-		$this->disconnect();
 		http_response_code( 200 );
 		print json_encode( $this->response ); // phpcs:ignore
 		exit;
@@ -334,67 +251,39 @@ class Lightweight_API {
 	 * @param string $code The error code.
 	 */
 	public function error( $code ) {
-		$this->disconnect();
 		http_response_code( 500 );
 		print json_encode( [ 'error' => $code ] ); // phpcs:ignore
 		exit;
 	}
 
 	/**
-	 * Extract DB connection constants from wp-config without creating a WordPress session.
+	 * Get data from transient.
 	 *
-	 * @param string $config_source The full source of the wp-config file.
-	 * @param string $constant_name The name of the constant to extract.
+	 * @param string $name The transient's name.
 	 */
-	public function get_defined_constant_value_from_php_source( $config_source, $constant_name ) {
+	public function get_transient( $name ) {
+		global $wpdb;
+		$name = '_transient_' . $name;
 
-		// Remove all lines which do not contain the 'define' keyword.
-		$config_lines = explode( "\n", $config_source );
-		foreach ( $config_lines as $no => $line ) {
-			if ( 0 !== strpos( trim( $line ), 'define' ) ) {
-				unset( $config_lines[ $no ] );
-			}
+		$value = null;
+		$row  = $wpdb->get_row( $wpdb->prepare( "SELECT option_value FROM $wpdb->options WHERE option_name = %s LIMIT 1", $name ) ); // phpcs:ignore
+		if ( is_object( $row ) ) {
+			$value = $row->option_value;
 		}
-		$config_lines = array_values( $config_lines );
-		if ( empty( $config_lines ) ) {
-			return null;
-		}
+		return maybe_unserialize( $value );
+	}
 
-		// Parse the `define( 'NAME', 'value' );` lines.
-		foreach ( $config_lines as $no => $line ) {
-			// Remove `define`.
-			$line = trim( str_replace( 'define', '', trim( $line ) ) );
-
-			// Remove `;` from the end.
-			if ( ';' !== $line[ strlen( $line ) - 1 ] ) {
-				continue;
-			}
-			$line = substr( $line, 0, -1 );
-
-			// Remove opening and closing brackets.
-			$line = trim( trim( $line, '()' ) );
-
-			// Explode comma separated params.
-			$define_params = explode( ',', $line );
-
-			// Remove first and last char from the constant name - these are either a single or a double quote.
-			$define_params[0] = substr( trim( $define_params[0] ), 1 );
-			$define_params[0] = substr( $define_params[0], 0, -1 );
-			$define_params[0] = stripcslashes( $define_params[0] );
-
-			// If this isn't the constant, continue to next line.
-			if ( $constant_name != $define_params[0] ) {
-				continue;
-			}
-
-			// Remove first and last char from the constant name - these are either a single or a double quote.
-			$define_params[1] = substr( trim( $define_params[1] ), 1 );
-			$define_params[1] = substr( $define_params[1], 0, -1 );
-			$define_params[1] = stripcslashes( $define_params[1] );
-
-			return $define_params[1];
-		}
-
-		return null;
+	/**
+	 * Upsert transient.
+	 *
+	 * @param string $name THe transient's name.
+	 * @param string $value THe transient's value.
+	 */
+	public function set_transient( $name, $value ) {
+		global $wpdb;
+		$name             = '_transient_' . $name;
+		$serialized_value = maybe_serialize( $value );
+		$autoload         = 'no';
+		$result           = $wpdb->query( $wpdb->prepare( "INSERT INTO `$wpdb->options` (`option_name`, `option_value`, `autoload`) VALUES (%s, %s, %s) ON DUPLICATE KEY UPDATE `option_name` = VALUES(`option_name`), `option_value` = VALUES(`option_value`), `autoload` = VALUES(`autoload`)", $name, $serialized_value, $autoload ) ); // phpcs:ignore
 	}
 }
