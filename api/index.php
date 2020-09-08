@@ -21,11 +21,22 @@ function do_action() {}
 function has_filter() { return false;}
 function apply_filters( $f, $in ) { return $in; }
 function is_multisite() { return false;}
+function wp_suspend_cache_addition() { return false; }
 
 require_once ABSPATH . WPINC . '/wp-db.php';
+if ( file_exists( WP_CONTENT_DIR . '/object-cache.php' ) ) {
+	require WP_CONTENT_DIR . '/object-cache.php';
+} else {
+	require_once ABSPATH . WPINC . '/cache.php';
+}
 
 $wpdb = new wpdb( DB_USER, DB_PASSWORD, DB_NAME, DB_HOST );
 $wpdb->set_prefix( DB_PREFIX );
+
+global $table_prefix;
+$table_prefix = DB_PREFIX;
+
+wp_cache_init();
 
 // phpcs:enable
 

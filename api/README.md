@@ -12,3 +12,12 @@ define( 'DB_HOST', 'localhost' );
 define( 'DB_CHARSET', 'utf8' );
 define( 'DB_PREFIX', 'wp_' );
 ```
+
+Copy the WP_CACHE_KEY_SALT define from `wp-content.php`.
+
+To include information about database, cache and time in the response, add this constant:
+
+```
+define( 'NEWSPACK_POPUPS_DEBUG', true );
+```
+

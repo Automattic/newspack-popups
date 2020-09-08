@@ -271,7 +271,9 @@ final class Newspack_Popups_API {
 					$popup               = \Newspack_Popups_Model::retrieve_popup_by_id( $popup_id );
 					$is_newsletter_popup = \Newspack_Popups_Model::has_newsletter_prompt( $popup );
 					if ( $is_newsletter_popup ) {
-						set_transient( $this->get_newsletter_campaigns_suppression_transient_name( $request ), true );
+						$transient_name = $this->get_newsletter_campaigns_suppression_transient_name( $request );
+						$this->update_cache( $transient_name, true );
+						set_transient( $transient_name, true );
 					}
 				}
 
@@ -289,9 +291,29 @@ final class Newspack_Popups_API {
 					]
 				);
 			}
+			$this->update_cache( $transient_name, $data );
 			set_transient( $transient_name, $data, 0 );
 		}
 		return $this->reader_get_endpoint( $request );
+	}
+
+	/**
+	 * Update the cache after setting a transient.
+	 *
+	 * @param string $transient_name The transient name.
+	 * @param mixed  $data The transient data.
+	 */
+	public function update_cache( $transient_name, $data ) {
+		$full_name = '_transient_' . $transient_name;
+		wp_cache_add( $full_name, maybe_serialize( $data ), 'newspack-popups' );
+		$empty_transients = wp_cache_get( 'empty_transients', 'newspack-popups' );
+		if ( ! is_array( $empty_transients ) ) {
+			$empty_transients = array();
+		}
+		if ( isset( $empty_transients[ $full_name ] ) ) {
+			unset( $empty_transients[ $full_name ] );
+			wp_cache_set( 'empty_transients', $empty_transients, 'newspack-popups' );
+		}
 	}
 
 	/**
@@ -396,6 +418,7 @@ final class Newspack_Popups_API {
 			if ( $transient_name ) {
 				$transient                = self::get_utm_source_transient();
 				$transient[ $utm_source ] = true;
+				$this->update_cache( $transient_name, $transient );
 				set_transient( $transient_name, $transient, 0 );
 			}
 		}
@@ -408,6 +431,7 @@ final class Newspack_Popups_API {
 	public function set_utm_medium_transient() {
 		$transient_name = self::get_suppression_data_transient_name( 'utm_medium' );
 		if ( $transient_name ) {
+			$this->update_cache( $transient_name, true );
 			set_transient( $transient_name, true, 0 );
 		}
 	}

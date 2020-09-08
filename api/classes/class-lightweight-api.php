@@ -101,12 +101,28 @@ class Lightweight_API {
 	public $credentials;
 
 	/**
+	 * Debugging info.
+	 *
+	 * @var debug
+	 */
+	public $debug;
+
+	/**
 	 * Constructor.
 	 */
 	public function __construct() {
 		if ( ! $this->verify_referer() ) {
 			$this->error( 'invalid_referer' );
 		}
+		$this->debug = [
+			'read_query_count'  => 0,
+			'write_query_count' => 0,
+			'cache_count'       => 0,
+			'start_time'        => microtime( true ),
+			'end_time'          => null,
+			'duration'          => null,
+		];
+
 		$this->client_id       = ! empty( $_REQUEST['rid'] ) ? // phpcs:ignore
 			filter_input( INPUT_POST | INPUT_GET, 'rid', FILTER_SANITIZE_SPECIAL_CHARS ) :
 			null; // phpcs:ignore
@@ -240,6 +256,11 @@ class Lightweight_API {
 	 * Complete the API and print response.
 	 */
 	public function respond() {
+		$this->debug['end_time'] = microtime( true );
+		$this->debug['duration'] = $this->debug['end_time'] - $this->debug['start_time'];
+		if ( defined( 'NEWSPACK_POPUPS_DEBUG' ) && NEWSPACK_POPUPS_DEBUG ) {
+			$this->response['debug'] = $this->debug;
+		}
 		http_response_code( 200 );
 		print json_encode( $this->response ); // phpcs:ignore
 		exit;
@@ -265,10 +286,30 @@ class Lightweight_API {
 		global $wpdb;
 		$name = '_transient_' . $name;
 
-		$value = null;
-		$row  = $wpdb->get_row( $wpdb->prepare( "SELECT option_value FROM $wpdb->options WHERE option_name = %s LIMIT 1", $name ) ); // phpcs:ignore
-		if ( is_object( $row ) ) {
-			$value = $row->option_value;
+		$empty_transients = wp_cache_get( 'empty_transients', 'newspack-popups' );
+
+		if ( ! is_array( $empty_transients ) ) {
+			$empty_transients = array();
+		}
+
+		if ( isset( $empty_transients[ $name ] ) ) {
+			$this->debug['cache_count'] += 1;
+			return null;
+		}
+
+		$value = wp_cache_get( $name, 'newspack-popups' );
+		if ( false === $value ) {
+			$this->debug['read_query_count'] += 1;
+			$row  = $wpdb->get_row( $wpdb->prepare( "SELECT option_value FROM $wpdb->options WHERE option_name = %s LIMIT 1", $name ) ); // phpcs:ignore
+			if ( is_object( $row ) ) {
+				$value = $row->option_value;
+				wp_cache_add( $name, $value );
+			} else {
+				$empty_transients[ $name ] = true;
+				wp_cache_set( 'empty_transients', $empty_transients, 'newspack-popups' );
+			}
+		} else {
+			$this->debug['cache_count'] += 1;
 		}
 		return maybe_unserialize( $value );
 	}
@@ -284,6 +325,15 @@ class Lightweight_API {
 		$name             = '_transient_' . $name;
 		$serialized_value = maybe_serialize( $value );
 		$autoload         = 'no';
+		wp_cache_add( $name, $serialized_value, 'newspack-popups' );
 		$result           = $wpdb->query( $wpdb->prepare( "INSERT INTO `$wpdb->options` (`option_name`, `option_value`, `autoload`) VALUES (%s, %s, %s) ON DUPLICATE KEY UPDATE `option_name` = VALUES(`option_name`), `option_value` = VALUES(`option_value`), `autoload` = VALUES(`autoload`)", $name, $serialized_value, $autoload ) ); // phpcs:ignore
+
+		$empty_transients = wp_cache_get( 'empty_transients', 'newspack-popups' );
+
+		if ( is_array( $empty_transients ) && isset( $empty_transients[ $name ] ) ) {
+			unset( $empty_transients[ $name ] );
+			wp_cache_set( 'empty_transients', $empty_transients, 'newspack-popups' );
+		}
+		$this->debug['write_read_query_count'] += 1;
 	}
 }
