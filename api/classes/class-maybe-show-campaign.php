@@ -34,9 +34,6 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		}
 
 		$this->response['displayPopup'] = $should_show;
-
-		// TODO: Preview handling.
-
 		$this->respond();
 	}
 
