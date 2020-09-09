@@ -5,10 +5,14 @@
  * @package Newspack
  */
 
-define( 'ABSPATH', $_SERVER[ 'DOCUMENT_ROOT'] . '/' ); // phpcs:ignore
+define( 'ABSPATH', str_replace( 'wp-content/plugins/newspack-popups/api/index.php', '', $_SERVER['SCRIPT_FILENAME'] ) ); // phpcs:ignore
 define( 'WPINC', 'wp-includes/' );
-define( 'WP_CONTENT_DIR', ABSPATH . 'wp-content/' );
-define( 'WP_DEBUG', false );
+if ( ! defined( 'WP_CONTENT_DIR' ) ) {
+	define( 'WP_CONTENT_DIR', ABSPATH . 'wp-content/' );
+}
+if ( ! defined( 'WP_DEBUG' ) ) {
+	define( 'WP_DEBUG', false );
+}
 
 require_once ABSPATH . 'newspack-popups-config.php';
 
@@ -22,8 +26,16 @@ function has_filter() { return false;}
 function apply_filters( $f, $in ) { return $in; }
 function is_multisite() { return false;}
 function wp_suspend_cache_addition() { return false; }
+function wp_debug_backtrace_summary() { return false; }
 
-require_once ABSPATH . WPINC . '/wp-db.php';
+if ( file_exists( ABSPATH . WPINC . '/wp-db.php' ) ) {
+	require_once ABSPATH . WPINC . '/wp-db.php';
+} else if ( file_exists( ABSPATH . '__wp__/' . WPINC . '/wp-db.php' ) ) {
+	require_once ABSPATH . '__wp__/' . WPINC . '/wp-db.php';
+} else {
+	die( "{ error: 'no_wordpress' }" );
+}
+
 if ( file_exists( WP_CONTENT_DIR . '/object-cache.php' ) ) {
 	require WP_CONTENT_DIR . '/object-cache.php';
 } else {
