@@ -263,7 +263,12 @@ final class Newspack_Popups_API {
 	public function reader_post_endpoint( $request ) {
 		$transient_name = $this->get_popup_data_transient_name( $request );
 		if ( $transient_name && ! $this->is_preview_request( $request ) ) {
-			$data          = get_transient( $transient_name );
+			$data = get_transient( $transient_name );
+			if ( false === $data ) {
+				$data = [
+					'count' => 0,
+				];
+			}
 			$data['count'] = (int) $data['count'] + 1;
 			$data['time']  = time();
 			if ( $request['suppress_forever'] ) {
