@@ -151,7 +151,7 @@ class Lightweight_API {
 			// TODO: Add AMP Cache.
 		];
 		$http_host = ! empty( $_SERVER['HTTP_HOST'] ) ? $_SERVER['HTTP_HOST'] : null; // phpcs:ignore
-		return in_array( strtolower( $http_host ), $valid_referers, true );
+		return ! empty( $http_referer ) && ! empty( $http_host ) && in_array( strtolower( $http_host ), $valid_referers, true );
 	}
 
 	/**
