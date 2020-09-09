@@ -318,7 +318,7 @@ final class Newspack_Popups_Inserter {
 		$endpoint                = str_replace(
 			'http://',
 			'//',
-			self::should_use_lightweight_api() ?
+			! Newspack_Popups::previewed_popup_id() && self::should_use_lightweight_api() ?
 				plugins_url( '../api/', __FILE__ ) :
 				get_rest_url( null, 'newspack-popups/v1/reader' )
 		);
