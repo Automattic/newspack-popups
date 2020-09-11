@@ -314,6 +314,7 @@ final class Newspack_Popups_API {
 			unset( $empty_transients[ $full_name ] );
 			wp_cache_set( 'empty_transients', $empty_transients, 'newspack-popups' );
 		}
+		set_transient( $transient_name, $data, 0 );
 	}
 
 	/**
@@ -419,7 +420,6 @@ final class Newspack_Popups_API {
 				$transient                = self::get_utm_source_transient();
 				$transient[ $utm_source ] = true;
 				$this->update_cache( $transient_name, $transient );
-				set_transient( $transient_name, $transient, 0 );
 			}
 		}
 	}
@@ -432,7 +432,6 @@ final class Newspack_Popups_API {
 		$transient_name = self::get_suppression_data_transient_name( 'utm_medium' );
 		if ( $transient_name ) {
 			$this->update_cache( $transient_name, true );
-			set_transient( $transient_name, true, 0 );
 		}
 	}
 
