@@ -214,7 +214,7 @@ class Lightweight_API {
 	}
 
 	/**
-	 * Return a 500 code error.
+	 * Return a 400 code error.
 	 *
 	 * @param string $code The error code.
 	 */
