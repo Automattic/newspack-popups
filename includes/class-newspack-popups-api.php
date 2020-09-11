@@ -305,15 +305,7 @@ final class Newspack_Popups_API {
 	 */
 	public function update_cache( $transient_name, $data ) {
 		$full_name = '_transient_' . $transient_name;
-		wp_cache_add( $full_name, maybe_serialize( $data ), 'newspack-popups' );
-		$empty_transients = wp_cache_get( 'empty_transients', 'newspack-popups' );
-		if ( ! is_array( $empty_transients ) ) {
-			$empty_transients = array();
-		}
-		if ( isset( $empty_transients[ $full_name ] ) ) {
-			unset( $empty_transients[ $full_name ] );
-			wp_cache_set( 'empty_transients', $empty_transients, 'newspack-popups' );
-		}
+		wp_cache_set( $full_name, maybe_serialize( $data ), 'newspack-popups' );
 		set_transient( $transient_name, $data, 0 );
 	}
 

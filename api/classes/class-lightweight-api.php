@@ -110,12 +110,14 @@ class Lightweight_API {
 			$this->error( 'invalid_referer' );
 		}
 		$this->debug = [
-			'read_query_count'  => 0,
-			'write_query_count' => 0,
-			'cache_count'       => 0,
-			'start_time'        => microtime( true ),
-			'end_time'          => null,
-			'duration'          => null,
+			'read_query_count'       => 0,
+			'write_query_count'      => 0,
+			'cache_count'            => 0,
+			'read_empty_transients'  => 0,
+			'write_empty_transients' => 0,
+			'start_time'             => microtime( true ),
+			'end_time'               => null,
+			'duration'               => null,
 		];
 
 		$this->client_id       = ! empty( $_REQUEST['rid'] ) ? // phpcs:ignore
@@ -231,26 +233,19 @@ class Lightweight_API {
 		global $wpdb;
 		$name = '_transient_' . $name;
 
-		$empty_transients = wp_cache_get( 'empty_transients', 'newspack-popups' );
-
-		if ( ! is_array( $empty_transients ) ) {
-			$empty_transients = array();
-		}
-
-		if ( isset( $empty_transients[ $name ] ) ) {
+		$value = wp_cache_get( $name, 'newspack-popups' );
+		if ( -1 === $value ) {
+			$this->debug['read_empty_transients'] += 1;
 			$this->debug['cache_count'] += 1;
 			return null;
-		}
-
-		$value = wp_cache_get( $name, 'newspack-popups' );
-		if ( false === $value ) {
+		} elseif ( false === $value ) {
 			$this->debug['read_query_count'] += 1;
 			$value = $wpdb->get_var( $wpdb->prepare( "SELECT option_value FROM $wpdb->options WHERE option_name = %s LIMIT 1", $name ) ); // phpcs:ignore
 			if ( $value ) {
-				wp_cache_add( $name, $value );
+				wp_cache_set( $name, $value );
 			} else {
-				$empty_transients[ $name ] = true;
-				wp_cache_set( 'empty_transients', $empty_transients, 'newspack-popups' );
+				$this->debug['write_empty_transients'] += 1;
+				wp_cache_set( $name, -1, 'newspack-popups' );
 			}
 		} else {
 			$this->debug['cache_count'] += 1;
@@ -269,15 +264,9 @@ class Lightweight_API {
 		$name             = '_transient_' . $name;
 		$serialized_value = maybe_serialize( $value );
 		$autoload         = 'no';
-		wp_cache_add( $name, $serialized_value, 'newspack-popups' );
+		wp_cache_set( $name, $serialized_value, 'newspack-popups' );
 		$result           = $wpdb->query( $wpdb->prepare( "INSERT INTO `$wpdb->options` (`option_name`, `option_value`, `autoload`) VALUES (%s, %s, %s) ON DUPLICATE KEY UPDATE `option_name` = VALUES(`option_name`), `option_value` = VALUES(`option_value`), `autoload` = VALUES(`autoload`)", $name, $serialized_value, $autoload ) ); // phpcs:ignore
 
-		$empty_transients = wp_cache_get( 'empty_transients', 'newspack-popups' );
-
-		if ( is_array( $empty_transients ) && isset( $empty_transients[ $name ] ) ) {
-			unset( $empty_transients[ $name ] );
-			wp_cache_set( 'empty_transients', $empty_transients, 'newspack-popups' );
-		}
 		$this->debug['write_read_query_count'] += 1;
 	}
 }
