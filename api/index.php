@@ -5,7 +5,14 @@
  * @package Newspack
  */
 
-define( 'ABSPATH', str_replace( 'wp-content/plugins/newspack-popups/api/index.php', '', $_SERVER['SCRIPT_FILENAME'] ) ); // phpcs:ignore
+$plugin_path = str_replace( 'wp-content/plugins/newspack-popups/api/index.php', '', $_SERVER['SCRIPT_FILENAME'] ); // phpcs:ignore
+
+if ( file_exists( $plugin_path . '__wp__' ) ) {
+	define( 'ABSPATH', $plugin_path . '__wp__/' );
+} else {
+	define( 'ABSPATH', $plugin_path );
+}
+
 define( 'WPINC', 'wp-includes/' );
 if ( ! defined( 'WP_CONTENT_DIR' ) ) {
 	define( 'WP_CONTENT_DIR', ABSPATH . 'wp-content/' );
@@ -14,7 +21,7 @@ if ( ! defined( 'WP_DEBUG' ) ) {
 	define( 'WP_DEBUG', false );
 }
 
-require_once ABSPATH . 'newspack-popups-config.php';
+require_once $plugin_path . 'newspack-popups-config.php';
 
 // phpcs:disable
 
@@ -25,13 +32,10 @@ function do_action() {}
 function has_filter() { return false;}
 function apply_filters( $f, $in ) { return $in; }
 function is_multisite() { return false;}
-function wp_suspend_cache_addition() { return false; }
-function wp_debug_backtrace_summary() { return false; }
 
 if ( file_exists( ABSPATH . WPINC . '/wp-db.php' ) ) {
 	require_once ABSPATH . WPINC . '/wp-db.php';
-} else if ( file_exists( ABSPATH . '__wp__/' . WPINC . '/wp-db.php' ) ) {
-	require_once ABSPATH . '__wp__/' . WPINC . '/wp-db.php';
+	require_once ABSPATH . WPINC . '/functions.php';
 } else {
 	die( "{ error: 'no_wordpress' }" );
 }

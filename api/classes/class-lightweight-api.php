@@ -7,11 +7,6 @@
  */
 
 /**
- * Require some useful utility functions from WordPress without needing to load all of WP.
- */
-require_once 'utils/wp-functions.php';
-
-/**
  * API endpoints
  */
 class Lightweight_API {
