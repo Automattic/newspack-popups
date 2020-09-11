@@ -170,56 +170,6 @@ class Lightweight_API {
 	}
 
 	/**
-	 * Get database credentials from environment variables (Atomic) or special config file.
-	 */
-	public function get_credentials() {
-		if ( $this->credentials ) {
-			return $this->credentials;
-		}
-		$config_path = $_SERVER['DOCUMENT_ROOT'] . '/wp-config.php'; //phpcs:ignore
-		$config_contents = file_exists( $config_path ) ? file_get_contents( $config_path ) : null; // phpcs:ignore
-
-		$db_prefix = 'wp_';
-		preg_match( '/\$table_prefix\s+=\s+(?:\'|\")(.*?)(?:\'|\")/', $config_contents, $matches, PREG_OFFSET_CAPTURE );
-
-		if ( count( $matches ) > 1 ) {
-			$db_prefix = $matches[1][0];
-		}
-
-		if ( getenv( 'DB_NAME' ) && getenv( 'DB_USER' ) && getenv( 'DB_PASSWORD' ) && getenv( 'DB_CHARSET' ) ) {
-			$this->credentials = [
-				'db_host'     => 'localhost',
-				'db_name'     => getenv( 'DB_NAME' ),
-				'db_user'     => getenv( 'DB_USER' ),
-				'db_password' => getenv( 'DB_PASSWORD' ),
-				'db_charset'  => getenv( 'DB_CHARSET' ),
-				'db_prefix'   => $db_prefix,
-			];
-			return $this->credentials;
-		}
-
-		if ( $config_contents ) {
-			$db_host     = $this->get_defined_constant_value_from_php_source( $config_contents, 'DB_HOST' );
-			$db_name     = $this->get_defined_constant_value_from_php_source( $config_contents, 'DB_NAME' );
-			$db_user     = $this->get_defined_constant_value_from_php_source( $config_contents, 'DB_USER' );
-			$db_password = $this->get_defined_constant_value_from_php_source( $config_contents, 'DB_PASSWORD' );
-			$db_charset  = $this->get_defined_constant_value_from_php_source( $config_contents, 'DB_CHARSET' );
-			if ( $db_host && $db_name && $db_user && $db_password && $db_charset ) {
-				$this->credentials = [
-					'db_host'     => $db_host,
-					'db_name'     => $db_name,
-					'db_user'     => $db_user,
-					'db_password' => $db_password,
-					'db_charset'  => $db_charset,
-					'db_prefix'   => $db_prefix,
-				];
-				return $this->credentials;
-			}
-		}
-		return null;
-	}
-
-	/**
 	 * Get transient name.
 	 */
 	public function get_transient_name() {
