@@ -222,7 +222,7 @@ class Lightweight_API {
 	 * @param string $code The error code.
 	 */
 	public function error( $code ) {
-		http_response_code( 500 );
+		http_response_code( 400 );
 		print json_encode( [ 'error' => $code ] ); // phpcs:ignore
 		exit;
 	}
