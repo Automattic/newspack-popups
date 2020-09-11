@@ -245,9 +245,8 @@ class Lightweight_API {
 		$value = wp_cache_get( $name, 'newspack-popups' );
 		if ( false === $value ) {
 			$this->debug['read_query_count'] += 1;
-			$row  = $wpdb->get_row( $wpdb->prepare( "SELECT option_value FROM $wpdb->options WHERE option_name = %s LIMIT 1", $name ) ); // phpcs:ignore
-			if ( is_object( $row ) ) {
-				$value = $row->option_value;
+			$value = $wpdb->get_var( $wpdb->prepare( "SELECT option_value FROM $wpdb->options WHERE option_name = %s LIMIT 1", $name ) ); // phpcs:ignore
+			if ( $value ) {
 				wp_cache_add( $name, $value );
 			} else {
 				$empty_transients[ $name ] = true;
