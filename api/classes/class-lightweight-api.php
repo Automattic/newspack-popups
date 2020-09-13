@@ -267,6 +267,6 @@ class Lightweight_API {
 		wp_cache_set( $name, $serialized_value, 'newspack-popups' );
 		$result           = $wpdb->query( $wpdb->prepare( "INSERT INTO `$wpdb->options` (`option_name`, `option_value`, `autoload`) VALUES (%s, %s, %s) ON DUPLICATE KEY UPDATE `option_name` = VALUES(`option_name`), `option_value` = VALUES(`option_value`), `autoload` = VALUES(`autoload`)", $name, $serialized_value, $autoload ) ); // phpcs:ignore
 
-		$this->debug['write_read_query_count'] += 1;
+		$this->debug['write_query_count'] += 1;
 	}
 }
