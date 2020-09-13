@@ -21,7 +21,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 	public function __construct() {
 		parent::__construct();
 		$should_show = $this->should_campaign_be_shown();
-		if ( $should_show || $this->should_perform_utm_logic() ) {
+		if ( ( $should_show || $this->should_perform_utm_logic() ) && 'test' !== $this->frequency ) {
 			if ( $this->should_suppress_because_utm_suppression() ) {
 				$should_show = false;
 			}
@@ -73,9 +73,6 @@ class Maybe_Show_Campaign extends Lightweight_API {
 	 * @return bool Whether UTM logic should be performed.
 	 */
 	public function should_perform_utm_logic() {
-		if ( 'test' === $this->frequency ) {
-			return false;
-		}
 		if ( $this->utm_suppression && stripos( urldecode( $this->referer_url ), 'utm_source=' . $this->utm_suppression ) ) {
 			return true;
 		}
@@ -91,9 +88,6 @@ class Maybe_Show_Campaign extends Lightweight_API {
 	 * @return bool Should campaign be shown.
 	 */
 	public function should_suppress_because_utm_suppression() {
-		if ( 'test' === $this->frequency ) {
-			return false;
-		}
 		if ( ! $this->utm_suppression ) {
 			return false;
 		}
@@ -127,9 +121,6 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		// - the suppress_newsletter_campaigns setting is on,
 		// - the pop-up has a newsletter form,
 		// then it should not be displayed.
-		if ( 'test' === $this->frequency ) {
-			return false;
-		}
 		$has_utm_medium_in_url     = stripos( $this->referer_url, 'utm_medium=email' );
 		$utm_medium_transient_name = $this->get_suppression_data_transient_name( 'utm_medium' );
 
@@ -150,9 +141,6 @@ class Maybe_Show_Campaign extends Lightweight_API {
 	 * @return bool Should campaign be shown.
 	 */
 	public function should_suppress_because_newsletter_campaign_dismissed() {
-		if ( 'test' === $this->frequency ) {
-			return false;
-		}
 		// Suppressing a newsletter campaign if any newsletter campaign was dismissed.
 		$name = $this->legacy_get_suppression_data_transient_name_reversed( 'newsletter-campaign-suppression' );
 
