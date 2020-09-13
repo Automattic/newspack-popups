@@ -271,9 +271,8 @@ final class Newspack_Popups_API {
 					$popup               = \Newspack_Popups_Model::retrieve_popup_by_id( $popup_id );
 					$is_newsletter_popup = \Newspack_Popups_Model::has_newsletter_prompt( $popup );
 					if ( $is_newsletter_popup ) {
-						$transient_name = $this->get_newsletter_campaigns_suppression_transient_name( $request );
-						$this->update_cache( $transient_name, true );
-						set_transient( $transient_name, true );
+						$suppression_transient_name = $this->get_newsletter_campaigns_suppression_transient_name( $request );
+						$this->update_cache( $suppression_transient_name, true );
 					}
 				}
 
@@ -292,7 +291,6 @@ final class Newspack_Popups_API {
 				);
 			}
 			$this->update_cache( $transient_name, $data );
-			set_transient( $transient_name, $data, 0 );
 		}
 		return $this->reader_get_endpoint( $request );
 	}
