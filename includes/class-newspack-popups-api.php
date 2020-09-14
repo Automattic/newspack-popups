@@ -190,7 +190,6 @@ final class Newspack_Popups_API {
 				$response['displayPopup'] = false;
 				break;
 		}
-
 		$referer_url = filter_input( INPUT_SERVER, 'HTTP_REFERER', FILTER_SANITIZE_STRING );
 
 		// Suppressing based on UTM Source parameter in the URL.
@@ -272,7 +271,8 @@ final class Newspack_Popups_API {
 					$popup               = \Newspack_Popups_Model::retrieve_popup_by_id( $popup_id );
 					$is_newsletter_popup = \Newspack_Popups_Model::has_newsletter_prompt( $popup );
 					if ( $is_newsletter_popup ) {
-						set_transient( $this->get_newsletter_campaigns_suppression_transient_name( $request ), true );
+						$suppression_transient_name = $this->get_newsletter_campaigns_suppression_transient_name( $request );
+						$this->update_cache( $suppression_transient_name, true );
 					}
 				}
 
@@ -290,9 +290,21 @@ final class Newspack_Popups_API {
 					]
 				);
 			}
-			set_transient( $transient_name, $data, 0 );
+			$this->update_cache( $transient_name, $data );
 		}
 		return $this->reader_get_endpoint( $request );
+	}
+
+	/**
+	 * Update the cache after setting a transient.
+	 *
+	 * @param string $transient_name The transient name.
+	 * @param mixed  $data The transient data.
+	 */
+	public function update_cache( $transient_name, $data ) {
+		$full_name = '_transient_' . $transient_name;
+		wp_cache_set( $full_name, maybe_serialize( $data ), 'newspack-popups' );
+		set_transient( $transient_name, $data, 0 );
 	}
 
 	/**
@@ -397,7 +409,7 @@ final class Newspack_Popups_API {
 			if ( $transient_name ) {
 				$transient                = self::get_utm_source_transient();
 				$transient[ $utm_source ] = true;
-				set_transient( $transient_name, $transient, 0 );
+				$this->update_cache( $transient_name, $transient );
 			}
 		}
 	}
@@ -409,7 +421,7 @@ final class Newspack_Popups_API {
 	public function set_utm_medium_transient() {
 		$transient_name = self::get_suppression_data_transient_name( 'utm_medium' );
 		if ( $transient_name ) {
-			set_transient( $transient_name, true, 0 );
+			$this->update_cache( $transient_name, true );
 		}
 	}
 
