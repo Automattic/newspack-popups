@@ -197,4 +197,14 @@ class Lightweight_API {
 		}
 		return $data;
 	}
+
+	/**
+	 * Save client data.
+	 *
+	 * @param string $client_id Client ID.
+	 * @param string $client_data Client data.
+	 */
+	public function save_client_data( $client_id, $client_data ) {
+		return $this->set_transient( $this->get_transient_name( $client_id ), $client_data );
+	}
 }

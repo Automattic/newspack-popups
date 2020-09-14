@@ -324,16 +324,9 @@ final class Newspack_Popups_Inserter {
 			return;
 		}
 
-		$endpoint               = str_replace(
-			'http://',
-			'//',
-			! Newspack_Popups::previewed_popup_id() && self::should_use_lightweight_api() ?
-				plugins_url( '../api/', __FILE__ ) :
-				get_rest_url( null, 'newspack-popups/v1/reader' )
-		);
 		$popups_access_provider = [
 			'namespace'     => 'popups',
-			'authorization' => esc_url( $endpoint ) . '?cid=CLIENT_ID(newspack-cid)',
+			'authorization' => esc_url( Newspack_Popups_Model::get_reader_endpoint() ) . '?cid=CLIENT_ID(newspack-cid)',
 			'noPingback'    => true,
 		];
 
@@ -468,15 +461,6 @@ final class Newspack_Popups_Inserter {
 		return self::assess_is_post( $popup ) &&
 			self::assess_test_mode( $popup ) &&
 			self::assess_categories_filter( $popup );
-	}
-
-	/**
-	 * Should the lightweight API be used.
-	 *
-	 * @return bool Should lightweight API be used.
-	 */
-	public static function should_use_lightweight_api() {
-		return file_exists( WP_CONTENT_DIR . '/../newspack-popups-config.php' );
 	}
 }
 $newspack_popups_inserter = new Newspack_Popups_Inserter();

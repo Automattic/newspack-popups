@@ -885,16 +885,20 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
-	 * Endpoint to dismiss Pop-up.
+	 * Endpoint to report Pop-up data.
 	 *
 	 * @return string Endpoint URL.
 	 */
 	public static function get_reader_endpoint() {
-		return str_replace( 'http://', '//', get_rest_url( null, 'newspack-popups/v1/reader' ) );
+		return str_replace(
+			'http://',
+			'//',
+			plugins_url( '../api/', __FILE__ )
+		);
 	}
 
 	/**
-	 * Generate hidden fields to be used in all dismiss FORMs.
+	 * Generate hidden fields to be used in all forms.
 	 *
 	 * @param  object $popup A Pop-up object.
 	 * @return string Hidden fields markup.
