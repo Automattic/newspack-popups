@@ -41,6 +41,7 @@ final class Newspack_Popups {
 	 * Constructor.
 	 */
 	public function __construct() {
+		add_action( 'init', [ __CLASS__, 'create_lightweight_api_config' ] );
 		add_action( 'init', [ __CLASS__, 'register_cpt' ] );
 		add_action( 'init', [ __CLASS__, 'register_meta' ] );
 		add_action( 'enqueue_block_editor_assets', [ __CLASS__, 'enqueue_block_editor_assets' ] );
@@ -387,6 +388,29 @@ final class Newspack_Popups {
 		update_post_meta( $post_id, 'trigger_delay', 3 );
 		update_post_meta( $post_id, 'trigger_scroll_progress', 30 );
 		update_post_meta( $post_id, 'utm_suppression', '' );
+	}
+
+	public static function create_lightweight_api_config() {
+		$config_path = WP_CONTENT_DIR . '/../newspack-popups-config.php';
+		$has_config  = file_exists( $config_path );
+		if ( false === $has_config ) {
+			global $wpdb;
+			$config_file = fopen( $config_path, 'w' );
+			if ( $config_file ) {
+				fwrite(
+					$config_file,
+					"<?php
+define( 'DB_USER', '" . DB_USER . "' );
+define( 'DB_PASSWORD', '" . DB_PASSWORD . "' );
+define( 'DB_NAME', '" . DB_NAME . "' );
+define( 'DB_HOST', '" . DB_HOST . "' );
+define( 'DB_PREFIX', '" . $wpdb->prefix . "' );
+"
+				);
+				error_log( 'Created the config file: ' . $config_path );
+				fclose( $config_file );
+			}
+		}
 	}
 }
 Newspack_Popups::instance();
