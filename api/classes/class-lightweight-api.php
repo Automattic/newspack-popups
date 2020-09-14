@@ -117,7 +117,7 @@ class Lightweight_API {
 	 * @param string $name The transient's name.
 	 */
 	public function get_transient( $name ) {
-		global $wpdb;
+		global $api_wpdb;
 		$name = '_transient_' . $name;
 
 		$value = wp_cache_get( $name, 'newspack-popups' );
@@ -127,7 +127,7 @@ class Lightweight_API {
 			return null;
 		} elseif ( false === $value ) {
 			$this->debug['read_query_count'] += 1;
-			$value = $wpdb->get_var( $wpdb->prepare( "SELECT option_value FROM $wpdb->options WHERE option_name = %s LIMIT 1", $name ) ); // phpcs:ignore
+			$value = $api_wpdb->get_var( $api_wpdb->prepare( "SELECT option_value FROM $api_wpdb->options WHERE option_name = %s LIMIT 1", $name ) ); // phpcs:ignore
 			if ( $value ) {
 				wp_cache_set( $name, $value, 'newspack-popups' );
 			} else {
@@ -147,12 +147,12 @@ class Lightweight_API {
 	 * @param string $value THe transient's value.
 	 */
 	public function set_transient( $name, $value ) {
-		global $wpdb;
+		global $api_wpdb;
 		$name             = '_transient_' . $name;
 		$serialized_value = maybe_serialize( $value );
 		$autoload         = 'no';
 		wp_cache_set( $name, $serialized_value, 'newspack-popups' );
-		$result           = $wpdb->query( $wpdb->prepare( "INSERT INTO `$wpdb->options` (`option_name`, `option_value`, `autoload`) VALUES (%s, %s, %s) ON DUPLICATE KEY UPDATE `option_name` = VALUES(`option_name`), `option_value` = VALUES(`option_value`), `autoload` = VALUES(`autoload`)", $name, $serialized_value, $autoload ) ); // phpcs:ignore
+		$result           = $api_wpdb->query( $api_wpdb->prepare( "INSERT INTO `$api_wpdb->options` (`option_name`, `option_value`, `autoload`) VALUES (%s, %s, %s) ON DUPLICATE KEY UPDATE `option_name` = VALUES(`option_name`), `option_value` = VALUES(`option_value`), `autoload` = VALUES(`autoload`)", $name, $serialized_value, $autoload ) ); // phpcs:ignore
 
 		$this->debug['write_query_count'] += 1;
 	}

@@ -46,8 +46,9 @@ if ( file_exists( WP_CONTENT_DIR . '/object-cache.php' ) ) {
 	require_once ABSPATH . WPINC . '/cache.php';
 }
 
-$wpdb = new wpdb( DB_USER, DB_PASSWORD, DB_NAME, DB_HOST );
-$wpdb->set_prefix( DB_PREFIX );
+global $api_wpdb;
+$api_wpdb = new wpdb( DB_USER, DB_PASSWORD, DB_NAME, DB_HOST );
+$api_wpdb->set_prefix( DB_PREFIX );
 
 global $table_prefix;
 $table_prefix = DB_PREFIX;
@@ -55,6 +56,8 @@ $table_prefix = DB_PREFIX;
 wp_cache_init();
 
 // phpcs:enable
+
+require_once 'classes/class-segmentation.php';
 
 switch ( $_SERVER['REQUEST_METHOD'] ) { //phpcs:ignore
 	case 'GET':
