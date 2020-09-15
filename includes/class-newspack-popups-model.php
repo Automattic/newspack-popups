@@ -99,7 +99,7 @@ final class Newspack_Popups_Model {
 	 * @param array   $categories Array of categories to be set.
 	 */
 	public static function set_popup_categories( $id, $categories ) {
-		$popup = self::retrieve_popup_by_id( $id );
+		$popup = self::retrieve_popup_by_id( $id, true );
 		if ( ! $popup ) {
 			return new \WP_Error(
 				'newspack_popups_popup_doesnt_exist',
@@ -126,7 +126,7 @@ final class Newspack_Popups_Model {
 	 * @param array   $options Array of options to update.
 	 */
 	public static function set_popup_options( $id, $options ) {
-		$popup = self::retrieve_popup_by_id( $id );
+		$popup = self::retrieve_popup_by_id( $id, true );
 		if ( ! $popup ) {
 			return new \WP_Error(
 				'newspack_popups_popup_doesnt_exist',
@@ -260,13 +260,15 @@ final class Newspack_Popups_Model {
 	 * @param string $post_id Post id.
 	 * @return object Popup object.
 	 */
-	public static function retrieve_popup_by_id( $post_id ) {
+	public static function retrieve_popup_by_id( $post_id, $include_drafts = false ) {
 		$args = [
 			'post_type'      => Newspack_Popups::NEWSPACK_PLUGINS_CPT,
-			'post_status'    => 'publish',
 			'posts_per_page' => 1,
 			'p'              => $post_id,
 		];
+		if ( false === $include_drafts ) {
+			$args['post_status'] = 'publish';
+		}
 
 		$popups = self::retrieve_popups_with_query( new WP_Query( $args ) );
 		return count( $popups ) > 0 ? $popups[0] : null;
