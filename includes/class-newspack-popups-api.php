@@ -159,6 +159,11 @@ final class Newspack_Popups_API {
 			return rest_ensure_response( $response );
 		}
 		$data = get_transient( $transient_name );
+		if ( false === $data ) {
+			$data = [
+				'count' => 0,
+			];
+		}
 
 		$response['currentViews'] = (int) $data['count'];
 
