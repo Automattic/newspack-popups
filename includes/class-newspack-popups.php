@@ -402,13 +402,15 @@ final class Newspack_Popups {
 		file_put_contents(
 			$config_path,
 			'<?php' .
-			( defined( 'DB_USER' ) ? "\ndefine( 'DB_USER', '" . DB_USER . "' );" : '' ) .
-			( defined( 'DB_PASSWORD' ) ? "\ndefine( 'DB_PASSWORD', '" . DB_PASSWORD . "' );" : '' ) .
-			( defined( 'DB_NAME' ) ? "\ndefine( 'DB_NAME', '" . DB_NAME . "' );" : '' ) .
-			( defined( 'DB_HOST' ) ? "\ndefine( 'DB_HOST', '" . DB_HOST . "' );" : '' ) .
-			( defined( 'DB_CHARSET' ) ? "\ndefine( 'DB_CHARSET', '" . DB_CHARSET . "' );" : '' ) .
-			( defined( 'WP_CACHE_KEY_SALT' ) ? "\ndefine( 'WP_CACHE_KEY_SALT', '" . WP_CACHE_KEY_SALT . "' );" : '' ) .
-			( defined( 'DB_PREFIX' ) ? '' : "\ndefine( 'DB_PREFIX', '" . $wpdb->prefix . "' );" ) .
+			// Insert these only if they are defined, but not in the as environment variables.
+			// This way only variables which are already declared in wp-config.php should be inserted in this config file.
+			( ! getenv( 'DB_USER' ) && defined( 'DB_USER' ) ? "\ndefine( 'DB_USER', '" . DB_USER . "' );" : '' ) .
+			( ! getenv( 'DB_PASSWORD' ) && defined( 'DB_PASSWORD' ) ? "\ndefine( 'DB_PASSWORD', '" . DB_PASSWORD . "' );" : '' ) .
+			( ! getenv( 'DB_NAME' ) && defined( 'DB_NAME' ) ? "\ndefine( 'DB_NAME', '" . DB_NAME . "' );" : '' ) .
+			( ! getenv( 'DB_HOST' ) && defined( 'DB_HOST' ) ? "\ndefine( 'DB_HOST', '" . DB_HOST . "' );" : '' ) .
+			( ! getenv( 'DB_CHARSET' ) && defined( 'DB_CHARSET' ) ? "\ndefine( 'DB_CHARSET', '" . DB_CHARSET . "' );" : '' ) .
+			( ! getenv( 'WP_CACHE_KEY_SALT' ) && defined( 'WP_CACHE_KEY_SALT' ) ? "\ndefine( 'WP_CACHE_KEY_SALT', '" . WP_CACHE_KEY_SALT . "' );" : '' ) .
+			"\ndefine( 'DB_PREFIX', '" . $wpdb->prefix . "' );" .
 			"\n"
 		);
 		error_log( 'Created the config file: ' . $config_path );
