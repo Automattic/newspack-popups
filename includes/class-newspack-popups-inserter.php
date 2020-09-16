@@ -485,7 +485,7 @@ final class Newspack_Popups_Inserter {
 	 * @return bool Should lightweight API be used.
 	 */
 	public static function should_use_lightweight_api() {
-		return file_exists( WP_CONTENT_DIR . '/../newspack-popups-config.php' );
+		return file_exists( Newspack_Popups::LIGHTWEIGHT_API_CONFIG_FILE_PATH );
 	}
 }
 $newspack_popups_inserter = new Newspack_Popups_Inserter();

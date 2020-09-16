@@ -17,6 +17,8 @@ final class Newspack_Popups {
 
 	const NEWSPACK_POPUP_PREVIEW_QUERY_PARAM = 'newspack_popups_preview_id';
 
+	const LIGHTWEIGHT_API_CONFIG_FILE_PATH = WP_CONTENT_DIR . '/../newspack-popups-config.php';
+
 	/**
 	 * The single instance of the class.
 	 *
@@ -394,14 +396,13 @@ final class Newspack_Popups {
 	 * Create the config file for the API, unless it exists.
 	 */
 	public static function create_lightweight_api_config() {
-		$config_path          = WP_CONTENT_DIR . '/../newspack-popups-config.php';
 		$has_db_config_in_env = getenv( 'DB_USER' ) && getenv( 'DB_PASSWORD' ) && getenv( 'DB_NAME' ) && getenv( 'DB_HOST' );
-		if ( ! $has_db_config_in_env || file_exists( $config_path ) ) {
+		if ( ! $has_db_config_in_env || file_exists( self::LIGHTWEIGHT_API_CONFIG_FILE_PATH ) ) {
 			return;
 		}
 		global $wpdb;
 		file_put_contents(
-			$config_path,
+			self::LIGHTWEIGHT_API_CONFIG_FILE_PATH,
 			'<?php' .
 			// Insert these only if they are defined, but not in the as environment variables.
 			// This way only variables which are already declared in wp-config.php should be inserted in this config file.
@@ -410,7 +411,7 @@ final class Newspack_Popups {
 			"\ndefine( 'DB_PREFIX', '" . $wpdb->prefix . "' );" .
 			"\n"
 		);
-		error_log( 'Created the config file: ' . $config_path );
+		error_log( 'Created the config file: ' . self::LIGHTWEIGHT_API_CONFIG_FILE_PATH );
 	}
 }
 Newspack_Popups::instance();
