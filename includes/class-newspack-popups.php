@@ -390,27 +390,28 @@ final class Newspack_Popups {
 		update_post_meta( $post_id, 'utm_suppression', '' );
 	}
 
+	/**
+	 * Create the config file for the API, unless it exists.
+	 */
 	public static function create_lightweight_api_config() {
 		$config_path = WP_CONTENT_DIR . '/../newspack-popups-config.php';
-		$has_config  = file_exists( $config_path );
-		if ( false === $has_config ) {
-			global $wpdb;
-			$config_file = fopen( $config_path, 'w' );
-			if ( $config_file ) {
-				fwrite(
-					$config_file,
-					"<?php
-define( 'DB_USER', '" . DB_USER . "' );
-define( 'DB_PASSWORD', '" . DB_PASSWORD . "' );
-define( 'DB_NAME', '" . DB_NAME . "' );
-define( 'DB_HOST', '" . DB_HOST . "' );
-define( 'DB_PREFIX', '" . $wpdb->prefix . "' );
-"
-				);
-				error_log( 'Created the config file: ' . $config_path );
-				fclose( $config_file );
-			}
+		if ( file_exists( $config_path ) ) {
+			return;
 		}
+		global $wpdb;
+		file_put_contents(
+			$config_path,
+			'<?php' .
+			( defined( 'DB_USER' ) ? "\ndefine( 'DB_USER', '" . DB_USER . "' );" : '' ) .
+			( defined( 'DB_PASSWORD' ) ? "\ndefine( 'DB_PASSWORD', '" . DB_PASSWORD . "' );" : '' ) .
+			( defined( 'DB_NAME' ) ? "\ndefine( 'DB_NAME', '" . DB_NAME . "' );" : '' ) .
+			( defined( 'DB_HOST' ) ? "\ndefine( 'DB_HOST', '" . DB_HOST . "' );" : '' ) .
+			( defined( 'DB_CHARSET' ) ? "\ndefine( 'DB_CHARSET', '" . DB_CHARSET . "' );" : '' ) .
+			( defined( 'WP_CACHE_KEY_SALT' ) ? "\ndefine( 'WP_CACHE_KEY_SALT', '" . WP_CACHE_KEY_SALT . "' );" : '' ) .
+			( defined( 'DB_PREFIX' ) ? '' : "\ndefine( 'DB_PREFIX', '" . $wpdb->prefix . "' );" ) .
+			"\n"
+		);
+		error_log( 'Created the config file: ' . $config_path );
 	}
 }
 Newspack_Popups::instance();
