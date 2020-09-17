@@ -308,7 +308,7 @@ final class Newspack_Popups_Model {
 	 * @param object  $options Popup options to use instead of the options retrieved from the post. Used for popup previews.
 	 * @return object Popup object
 	 */
-	protected static function create_popup_object( $campaign_post, $include_categories = false, $options = null ) {
+	public static function create_popup_object( $campaign_post, $include_categories = false, $options = null ) {
 		$id = $campaign_post->ID;
 
 		$post_options = isset( $options ) ? $options : [

@@ -365,6 +365,12 @@ final class Newspack_Popups {
 		);
 	}
 
+	/**
+	 * Get the default dismiss text.
+	 */
+	public static function get_default_dismiss_text() {
+		return __( "I'm not interested", 'newspack' );
+	}
 
 	/**
 	 * Set default fields when Pop-up is created.
@@ -382,7 +388,7 @@ final class Newspack_Popups {
 
 		update_post_meta( $post_id, 'background_color', '#FFFFFF' );
 		update_post_meta( $post_id, 'display_title', false );
-		update_post_meta( $post_id, 'dismiss_text', __( "I'm not interested", 'newspack' ) );
+		update_post_meta( $post_id, 'dismiss_text', self::get_default_dismiss_text() );
 		update_post_meta( $post_id, 'frequency', 'test' );
 		update_post_meta( $post_id, 'overlay_color', '#000000' );
 		update_post_meta( $post_id, 'overlay_opacity', 30 );

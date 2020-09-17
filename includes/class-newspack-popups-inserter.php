@@ -133,8 +133,9 @@ final class Newspack_Popups_Inserter {
 	 * Process popups and insert into post and page content if needed.
 	 *
 	 * @param string $content The content of the post.
+	 * @param bool   $enqueue_assets Whether assets should be enqueued.
 	 */
-	public static function insert_popups_in_content( $content = '' ) {
+	public static function insert_popups_in_content( $content = '', $enqueue_assets = true ) {
 		// Avoid duplicate execution.
 		if ( true === self::$the_content_has_rendered ) {
 			return $content;
@@ -238,7 +239,9 @@ final class Newspack_Popups_Inserter {
 			$output = '<!-- wp:html -->' . Newspack_Popups_Model::generate_popup( $overlay_popup ) . '<!-- /wp:html -->' . $output;
 		}
 
-		self::enqueue_popup_assets();
+		if ( $enqueue_assets ) {
+			self::enqueue_popup_assets();
+		}
 		self::$the_content_has_rendered = true;
 		return $output;
 	}
