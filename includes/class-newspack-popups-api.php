@@ -12,8 +12,6 @@ defined( 'ABSPATH' ) || exit;
  */
 final class Newspack_Popups_API {
 
-	const NEWSPACK_POPUPS_VIEW_LIMIT = 1;
-
 	/**
 	 * Constructor.
 	 */
