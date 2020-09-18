@@ -120,7 +120,7 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
-	 * Set options for a Popup.
+	 * Set options for a Popup. Can be used by other plugins to set popup's options.
 	 *
 	 * @param integer $id ID of Popup.
 	 * @param array   $options Array of options to update.
@@ -164,6 +164,9 @@ final class Newspack_Popups_Model {
 						);
 					}
 					update_post_meta( $id, $key, $value );
+					break;
+				case 'utm_suppression':
+					update_post_meta( $id, $key, esc_attr( $value ) );
 					break;
 				default:
 					return new \WP_Error(
