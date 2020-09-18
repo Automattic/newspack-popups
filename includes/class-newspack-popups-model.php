@@ -484,13 +484,13 @@ final class Newspack_Popups_Model {
 								"popup_id": "<?php echo esc_attr( self::canonize_popup_id( $popup['id'] ) ); ?>",
 								"cid": "CLIENT_ID(newspack-cid)"
 							}
-						},
-						"transport": {
-							"beacon": true,
-							"xhrpost": true,
-							"useBody": true,
-							"image": false
 						}
+					},
+					"transport": {
+						"beacon": true,
+						"xhrpost": true,
+						"useBody": true,
+						"image": false
 					}
 				}
 			</script>
