@@ -305,6 +305,25 @@ final class Newspack_Popups_Inserter {
 	}
 
 	/**
+	 * Create the popup definition for sending to the API.
+	 *
+	 * @param object $popup A popup.
+	 */
+	public static function create_single_popup_access_payload( $popup ) {
+		$popup_id_string = Newspack_Popups_Model::canonize_popup_id( esc_attr( $popup['id'] ) );
+		$frequency       = $popup['options']['frequency'];
+		if ( 'inline' !== $popup['options']['placement'] && 'always' === $frequency ) {
+			$frequency = 'once';
+		}
+		return [
+			'id'  => $popup_id_string,
+			'f'   => $frequency,
+			'utm' => $popup['options']['utm_suppression'],
+			'n'   => \Newspack_Popups_Model::has_newsletter_prompt( $popup ),
+		];
+	}
+
+	/**
 	 * Add amp-access header code.
 	 */
 	public static function insert_popups_amp_access() {
@@ -332,17 +351,7 @@ final class Newspack_Popups_Inserter {
 
 		$popups_configs = [];
 		foreach ( $popups as $popup ) {
-			$popup_id_string = Newspack_Popups_Model::canonize_popup_id( esc_attr( $popup['id'] ) );
-			$frequency       = $popup['options']['frequency'];
-			if ( 'inline' !== $popup['options']['placement'] && 'always' === $frequency ) {
-				$frequency = 'once';
-			}
-			$popups_configs[] = [
-				'id'  => $popup_id_string,
-				'f'   => $frequency,
-				'utm' => $popup['options']['utm_suppression'],
-				'n'   => \Newspack_Popups_Model::has_newsletter_prompt( $popup ),
-			];
+			$popups_configs[] = self::create_single_popup_access_payload( $popup );
 		}
 
 		$popups_access_provider['authorization'] .= '&popups=' . wp_json_encode( $popups_configs );
