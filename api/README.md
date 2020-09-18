@@ -9,3 +9,17 @@ To include information about database, cache and time in the response, add this 
 ```
 define( 'NEWSPACK_POPUPS_DEBUG', true );
 ```
+
+## Manually creating the config file
+
+If the config file was not created automatically, you can add it yourself. Here's an example:
+
+```
+<?php
+define( 'DB_USER', 'wp' );
+define( 'DB_PASSWORD', 'wp' );
+define( 'DB_NAME', 'local' );
+define( 'DB_HOST', 'localhost' );
+define( 'DB_CHARSET', 'utf8' );
+define( 'DB_PREFIX', 'wp_' );
+```

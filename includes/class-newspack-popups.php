@@ -44,6 +44,7 @@ final class Newspack_Popups {
 	 */
 	public function __construct() {
 		add_action( 'init', [ __CLASS__, 'create_lightweight_api_config' ] );
+		add_action( 'admin_notices', [ __CLASS__, 'api_config_missing_notice' ] );
 		add_action( 'init', [ __CLASS__, 'register_cpt' ] );
 		add_action( 'init', [ __CLASS__, 'register_meta' ] );
 		add_action( 'enqueue_block_editor_assets', [ __CLASS__, 'enqueue_block_editor_assets' ] );
@@ -416,6 +417,25 @@ final class Newspack_Popups {
 			"\n"
 		);
 		error_log( 'Created the config file: ' . self::LIGHTWEIGHT_API_CONFIG_FILE_PATH );
+	}
+
+	/**
+	 * Add an admin notice if config is missing.
+	 */
+	public static function api_config_missing_notice() {
+		if ( file_exists( self::LIGHTWEIGHT_API_CONFIG_FILE_PATH ) ) {
+			return;
+		}
+		?>
+			<div class="notice notice-error">
+				<p>
+					<?php _e( 'The Newspack Campaigns API config file is missing,', 'newspack-popups' ); ?>
+					<a href="https://github.com/Automattic/newspack-popups/blob/master/api/README.md">
+						<?php _e( 'please create it.', 'newspack-popups' ); ?>
+					</a>
+				</p>
+			</div>
+		<?php
 	}
 }
 Newspack_Popups::instance();
