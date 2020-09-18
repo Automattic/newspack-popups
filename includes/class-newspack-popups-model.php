@@ -463,27 +463,25 @@ final class Newspack_Popups_Model {
 			</amp-analytics>
 		<?php endif; ?>
 
-		<?php if ( $is_inline ) : ?>
-			<amp-analytics>
-				<script type="application/json">
-					{
-						"requests": {
-							"event": "<?php echo esc_url( $endpoint ); ?>"
-						},
-						"triggers": {
-							"trackPageview": {
-								"on": "visible",
-								"request": "event",
-								"visibilitySpec": {
-									"selector": "#<?php echo esc_attr( $element_id ); ?>",
-									"visiblePercentageMin": 90,
-									"totalTimeMin": 500,
-									"continuousTimeMin": 200
-								},
-								"extraUrlParams": {
-									"popup_id": "<?php echo ( esc_attr( $popup['id'] ) ); ?>",
-									"url": "<?php echo esc_url( home_url( $wp->request ) ); ?>"
-								}
+		<amp-analytics>
+			<script type="application/json">
+				{
+					"requests": {
+						"event": "<?php echo esc_url( $endpoint ); ?>"
+					},
+					"triggers": {
+						"trackPageview": {
+							"on": "visible",
+							"request": "event",
+							"visibilitySpec": {
+								"selector": "#<?php echo esc_attr( $element_id ); ?>",
+								"visiblePercentageMin": 90,
+								"totalTimeMin": 500,
+								"continuousTimeMin": 200
+							},
+							"extraUrlParams": {
+								"popup_id": "<?php echo ( esc_attr( $popup['id'] ) ); ?>",
+								"url": "<?php echo esc_url( home_url( $wp->request ) ); ?>"
 							}
 						},
 						"transport": {
@@ -493,9 +491,9 @@ final class Newspack_Popups_Model {
 							"image": false
 						}
 					}
-				</script>
-			</amp-analytics>
-		<?php endif; ?>
+				}
+			</script>
+		</amp-analytics>
 		<?php
 	}
 
