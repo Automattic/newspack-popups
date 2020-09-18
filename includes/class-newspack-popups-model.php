@@ -258,6 +258,7 @@ final class Newspack_Popups_Model {
 	 * Retrieve popup CPT post by ID.
 	 *
 	 * @param string $post_id Post id.
+	 * @param bool   $include_drafts Include drafts.
 	 * @return object Popup object.
 	 */
 	public static function retrieve_popup_by_id( $post_id, $include_drafts = false ) {
@@ -410,6 +411,7 @@ final class Newspack_Popups_Model {
 	 * Insert amp-analytics tracking code.
 	 *
 	 * @param object $popup The popup object.
+	 * @param string $body Post body.
 	 * @param string $element_id The id of the popup element.
 	 * @return string Prints the generated amp-analytics element.
 	 */
@@ -445,7 +447,7 @@ final class Newspack_Popups_Model {
 								"request": "event",
 								"selector": "#<?php echo esc_attr( $element_id ); ?> <?php echo esc_attr( $mailchimp_form_selector ); ?>",
 								"extraUrlParams": {
-									"popup_id": "<?php echo self::canonize_popup_id( esc_attr( $popup['id'] ) ); ?>",
+									"popup_id": "<?php echo esc_attr( self::canonize_popup_id( $popup['id'] ) ); ?>",
 									"cid": "CLIENT_ID(newspack-cid)",
 									"mailing_list_status": "subscribed",
 									"email": "${formFields[email]}"
@@ -481,7 +483,7 @@ final class Newspack_Popups_Model {
 									"continuousTimeMin": 200
 								},
 								"extraUrlParams": {
-									"popup_id": "<?php echo self::canonize_popup_id( esc_attr( $popup['id'] ) ); ?>",
+									"popup_id": "<?php echo esc_attr( self::canonize_popup_id( $popup['id'] ) ); ?>",
 									"cid": "CLIENT_ID(newspack-cid)"
 								}
 							}
@@ -503,6 +505,7 @@ final class Newspack_Popups_Model {
 	 * Add tracked analytics events to use in Newspack Plugin's newspack_analytics_events filter.
 	 *
 	 * @param object $popup The popup object.
+	 * @param string $body Post body.
 	 * @param string $element_id The id of the popup element.
 	 */
 	protected static function get_analytics_events( $popup, $body, $element_id ) {
@@ -680,7 +683,7 @@ final class Newspack_Popups_Model {
 		ob_start();
 		?>
 			<?php self::insert_event_tracking( $popup, $body, $element_id ); ?>
-			<amp-layout <?php echo self::get_access_attrs( $popup ); ?> class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>" role="button" tabindex="0" style="<?php echo esc_attr( self::container_style( $popup ) ); ?>" id="<?php echo esc_attr( $element_id ); ?>">
+			<amp-layout <?php echo self::get_access_attrs( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?> class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>" role="button" tabindex="0" style="<?php echo esc_attr( self::container_style( $popup ) ); ?>" id="<?php echo esc_attr( $element_id ); ?>">
 						<?php if ( ! empty( $popup['title'] ) && $display_title ) : ?>
 					<h1 class="newspack-popup-title"><?php echo esc_html( $popup['title'] ); ?></h1>
 				<?php endif; ?>
@@ -745,7 +748,7 @@ final class Newspack_Popups_Model {
 
 		ob_start();
 		?>
-		<amp-layout <?php echo self::get_access_attrs( $popup ); ?> class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>" role="button" tabindex="0" id="<?php echo esc_attr( $element_id ); ?>">
+		<amp-layout <?php echo self::get_access_attrs( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?> class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>" role="button" tabindex="0" id="<?php echo esc_attr( $element_id ); ?>">
 			<div class="newspack-popup-wrapper" style="<?php echo esc_attr( self::container_style( $popup ) ); ?>">
 				<div class="newspack-popup">
 					<?php if ( ! empty( $popup['title'] ) && $display_title ) : ?>
@@ -911,14 +914,14 @@ final class Newspack_Popups_Model {
 		<input
 			name="popup_id"
 			type="hidden"
-			value="<?php echo self::canonize_popup_id( esc_attr( $popup['id'] ) ); ?>"
+			value="<?php echo esc_attr( self::canonize_popup_id( $popup['id'] ) ); ?>"
 		/>
 		<input
-		 name="cid"
-		 type="hidden"
-		 value="CLIENT_ID(newspack-cid)"
-		 data-amp-replace="CLIENT_ID"
-	   />
+			name="cid"
+			type="hidden"
+			value="CLIENT_ID(newspack-cid)"
+			data-amp-replace="CLIENT_ID"
+		/>
 		<input
 			name="mailing_list_status"
 			type="hidden"
@@ -927,7 +930,7 @@ final class Newspack_Popups_Model {
 		<input
 			name="is_newsletter_popup"
 			type="hidden"
-			value="<?php echo self::has_newsletter_prompt( $popup ); ?>"
+			value="<?php echo esc_attr( self::has_newsletter_prompt( $popup ) ); ?>"
 		/>
 		<?php
 		return ob_get_clean();
