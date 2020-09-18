@@ -12,25 +12,11 @@
 class Lightweight_API {
 
 	/**
-	 * Database object.
-	 *
-	 * @var db
-	 */
-	public $db;
-
-	/**
 	 * Response object.
 	 *
 	 * @var response
 	 */
 	public $response = [];
-
-	/**
-	 * Database credentials.
-	 *
-	 * @var credentials
-	 */
-	public $credentials;
 
 	/**
 	 * Debugging info.
