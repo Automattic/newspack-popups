@@ -17,6 +17,8 @@ class Maybe_Show_Campaign extends Lightweight_API {
 
 	/**
 	 * Constructor.
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function __construct() {
 		parent::__construct();
@@ -45,9 +47,13 @@ class Maybe_Show_Campaign extends Lightweight_API {
 	 * @param object $campaign Campaign.
 	 * @param object $settings Settings.
 	 * @param string $referer_url Referer URL.
+	 * @param string $now Current timestamp.
 	 * @return bool Whether campaign should be shown.
 	 */
-	public function should_campaign_be_shown( $client_id, $campaign, $settings, $referer_url = '' ) {
+	public function should_campaign_be_shown( $client_id, $campaign, $settings, $referer_url = '', $now = false ) {
+		if ( false === $now ) {
+			$now = time();
+		}
 		$campaign_data      = $this->get_campaign_data( $client_id, $campaign->id );
 		$init_campaign_data = $campaign_data;
 
@@ -61,7 +67,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		$frequency = $campaign->f;
 		switch ( $frequency ) {
 			case 'daily':
-				$should_display = $campaign_data['last_viewed'] < strtotime( '-1 day' );
+				$should_display = $campaign_data['last_viewed'] < strtotime( '-1 day', $now );
 				break;
 			case 'once':
 				$should_display = $campaign_data['count'] < 1;

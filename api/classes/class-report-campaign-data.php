@@ -17,6 +17,8 @@ class Report_Campaign_Data extends Lightweight_API {
 
 	/**
 	 * Constructor.
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function __construct() {
 		parent::__construct();
