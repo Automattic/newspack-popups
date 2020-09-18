@@ -42,7 +42,8 @@ class Maybe_Show_Campaign extends Lightweight_API {
 	 * @return bool Whether campaign should be shown.
 	 */
 	public function should_campaign_be_shown( $client_id, $campaign, $settings ) {
-		$campaign_data = $this->get_campaign_data( $client_id, $campaign->id );
+		$campaign_data      = $this->get_campaign_data( $client_id, $campaign->id );
+		$init_campaign_data = $campaign_data;
 
 		if ( $campaign_data['suppress_forever'] ) {
 			return false;
@@ -105,7 +106,9 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			$campaign_data['suppress_forever'] = true;
 		}
 
-		$this->save_campaign_data( $client_id, $campaign->id, $campaign_data );
+		if ( ! empty( array_diff( $init_campaign_data, $campaign_data ) ) ) {
+			$this->save_campaign_data( $client_id, $campaign->id, $campaign_data );
+		}
 
 		return $should_display;
 	}
