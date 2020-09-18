@@ -236,7 +236,7 @@ class Lightweight_API {
 		$value = wp_cache_get( $name, 'newspack-popups' );
 		if ( -1 === $value ) {
 			$this->debug['read_empty_transients'] += 1;
-			$this->debug['cache_count'] += 1;
+			$this->debug['cache_count']           += 1;
 			return null;
 		} elseif ( false === $value ) {
 			$this->debug['read_query_count'] += 1;
