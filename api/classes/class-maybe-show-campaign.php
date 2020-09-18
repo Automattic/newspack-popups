@@ -20,148 +20,97 @@ class Maybe_Show_Campaign extends Lightweight_API {
 	 */
 	public function __construct() {
 		parent::__construct();
-		$should_show = $this->should_campaign_be_shown();
-		if ( ( $should_show || $this->should_perform_utm_logic() ) && 'test' !== $this->frequency ) {
-			if ( $this->should_suppress_because_utm_suppression() ) {
-				$should_show = false;
-			}
-			if ( $this->should_suppress_because_utm_medium() ) {
-				$should_show = false;
-			}
-			if ( $should_show && $this->should_suppress_because_newsletter_campaign_dismissed() ) {
-				$should_show = false;
-			}
+		if ( ! isset( $_REQUEST['popups'], $_REQUEST['settings'], $_REQUEST['cid'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return;
 		}
-
-		$this->response['displayPopup'] = $should_show;
+		$campaigns = json_decode( $_REQUEST['popups'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$settings  = json_decode( $_REQUEST['settings'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$response  = [];
+		foreach ( $campaigns as $campaign ) {
+			$response[ $campaign->id ] = $this->should_campaign_be_shown( $_REQUEST['cid'], $campaign, $settings ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		}
+		$this->response = $response;
 		$this->respond();
 	}
 
 	/**
 	 * Primary campaign visibility logic.
 	 *
+	 * @param string $client_id Client ID.
+	 * @param object $campaign Campaign.
+	 * @param object $settings Settings.
 	 * @return bool Whether campaign should be shown.
 	 */
-	public function should_campaign_be_shown() {
-		$data                = $this->get_transient( $this->get_transient_name() );
-		$current_views       = ! empty( $data['count'] ) ? (int) $data['count'] : 0;
-		$suppress_forever    = ! empty( $data['suppress_forever'] ) ? (int) $data['suppress_forever'] : false;
-		$mailing_list_status = ! empty( $data['mailing_list_status'] ) ? (int) $data['mailing_list_status'] : false;
-		$last_view           = ! empty( $data['time'] ) ? (int) $data['time'] : 0;
+	public function should_campaign_be_shown( $client_id, $campaign, $settings ) {
+		$campaign_data      = $this->get_campaign_data( $client_id, $campaign->id );
+		$init_campaign_data = $campaign_data;
 
-		if ( $suppress_forever ) {
+		if ( $campaign_data['suppress_forever'] ) {
 			return false;
 		}
-		if ( $mailing_list_status ) {
-			return false;
-		}
-		if ( 'always' === $this->frequency || 'test' === $this->frequency ) {
-			return true;
-		}
-		if ( 'daily' === $this->frequency ) {
-			return $last_view < strtotime( '-1 day' );
-		}
-		if ( 'once' === $this->frequency ) {
-			return $current_views < 1;
-		}
-		return false;
-	}
 
-	/**
-	 * Assess whether the UTM logic is necessary.
-	 *
-	 * @return bool Whether UTM logic should be performed.
-	 */
-	public function should_perform_utm_logic() {
-		if ( $this->utm_suppression && stripos( urldecode( $this->referer_url ), 'utm_source=' . $this->utm_suppression ) ) {
-			return true;
-		}
-		if ( stripos( $this->referer_url, 'utm_medium=email' ) ) {
-			return true;
-		}
-		return false;
-	}
+		$should_display = true;
 
-	/**
-	 * Handle utm_source query param, update transients if needed.
-	 *
-	 * @return bool Should campaign be shown.
-	 */
-	public function should_suppress_because_utm_suppression() {
-		if ( ! $this->utm_suppression ) {
-			return false;
-		}
-		// Suppressing based on UTM Source parameter in the URL.
-		// If the visitor came from a campaign with suppressed utm_source, then it should not be displayed.
-		$utm_source_transient_name = $this->get_suppression_data_transient_name( 'utm_source' );
-		$utm_source_transient      = $this->get_transient( $utm_source_transient_name );
-		if ( ! $utm_source_transient || ! is_array( $utm_source_transient ) ) {
-			$utm_source_transient = [];
-		}
-		if ( $this->referer_url && stripos( urldecode( $this->referer_url ), 'utm_source=' . $this->utm_suppression ) ) {
-			$utm_source_transient[ $this->utm_suppression ] = true;
-			$this->set_transient( $utm_source_transient_name, $utm_source_transient );
-			return true;
+		// Handle frequency.
+		$frequency = $campaign->f;
+		switch ( $frequency ) {
+			case 'daily':
+				$should_display = $campaign_data['last_viewed'] < strtotime( '-1 day' );
+				break;
+			case 'once':
+				$should_display = $campaign_data['count'] < 1;
+				break;
+			case 'always':
+				$should_display = true;
+				break;
+			case 'never':
+			default:
+				$should_display = false;
+				break;
 		}
 
-		if ( ! empty( $utm_source_transient[ $this->utm_suppression ] ) ) {
-			return true;
+		$has_newsletter_prompt = $campaign->n;
+
+		// Handle referer-based conditions.
+		$referer_url = filter_input( INPUT_SERVER, 'HTTP_REFERER', FILTER_SANITIZE_STRING );
+		if ( ! empty( $referer_url ) ) {
+			// Suppressing based on UTM Source parameter in the URL.
+			$utm_suppression = ! empty( $campaign->utm ) ? urldecode( $campaign->utm ) : null;
+			if ( $utm_suppression && stripos( urldecode( $referer_url ), 'utm_source=' . $utm_suppression ) ) {
+				$should_display                    = false;
+				$campaign_data['suppress_forever'] = true;
+			}
+
+			// Suppressing based on UTM Medium parameter in the URL.
+			$has_utm_medium_in_url = stripos( $referer_url, 'utm_medium=email' );
+			if (
+				$has_utm_medium_in_url &&
+				$settings->suppress_newsletter_campaigns &&
+				$has_newsletter_prompt
+			) {
+				$should_display                    = false;
+				$campaign_data['suppress_forever'] = true;
+			}
 		}
-		return false;
-	}
 
-	/**
-	 * Handle utm_medium query param, update transients if needed.
-	 *
-	 * @return bool Should campaign be shown.
-	 */
-	public function should_suppress_because_utm_medium() {
-		// Suppressing based on UTM Medium parameter in the URL. If:
-		// - the visitor came from email,
-		// - the suppress_newsletter_campaigns setting is on,
-		// - the pop-up has a newsletter form,
-		// then it should not be displayed.
-		$has_utm_medium_in_url     = stripos( $this->referer_url, 'utm_medium=email' );
-		$utm_medium_transient_name = $this->get_suppression_data_transient_name( 'utm_medium' );
+		$client_data                        = $this->get_client_data( $client_id );
+		$has_suppressed_newsletter_campaign = $client_data['suppressed_newsletter_campaign'];
 
+		// Handle suppressing a newsletter campaign if any newsletter campaign was dismissed.
 		if (
-			$this->suppress_newsletter_campaigns &&
-			$this->has_newsletter_prompt &&
-			( $has_utm_medium_in_url || $this->get_transient( $utm_medium_transient_name ) )
+			$has_newsletter_prompt &&
+			$settings->suppress_all_newsletter_campaigns_if_one_dismissed &&
+			$has_suppressed_newsletter_campaign
 		) {
-			$this->set_transient( $utm_medium_transient_name, true );
-			return true;
+			$should_display                    = false;
+			$campaign_data['suppress_forever'] = true;
 		}
-		return false;
-	}
 
-	/**
-	 * Should campaign be suppressed because it is a Newsletter campaign and a Newsletter campaign was previously dismissed.
-	 *
-	 * @return bool Should campaign be shown.
-	 */
-	public function should_suppress_because_newsletter_campaign_dismissed() {
-		// Suppressing a newsletter campaign if any newsletter campaign was dismissed.
-		$name = $this->legacy_get_suppression_data_transient_name_reversed( 'newsletter-campaign-suppression' );
-
-		if ( $this->suppress_all_newsletter_campaigns_if_one_dismissed && $this->has_newsletter_prompt && $this->get_transient( $name ) ) {
-			return true;
+		if ( ! empty( array_diff( $init_campaign_data, $campaign_data ) ) ) {
+			$this->save_campaign_data( $client_id, $campaign->id, $campaign_data );
 		}
-		return false;
-	}
 
-	/**
-	 * Set the utm_source suppression-related transient.
-	 *
-	 * @param string $utm_source utm_source param.
-	 */
-	public function set_utm_source_transient( $utm_source ) {
-		if ( ! empty( $utm_source ) ) {
-			$transient_name           = $this->get_suppression_data_transient_name( 'utm_source' );
-			$transient                = $this->get_transient( $transient_name );
-			$transient[ $utm_source ] = true;
-			$this->set_transient( $transient_name, true );
-		}
+		return $should_display;
 	}
 }
 new Maybe_Show_Campaign();

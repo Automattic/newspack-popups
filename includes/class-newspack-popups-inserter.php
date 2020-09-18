@@ -306,69 +306,53 @@ final class Newspack_Popups_Inserter {
 
 	/**
 	 * Add amp-access header code.
-	 *
-	 * @param object $popups The popup objects to handle.
 	 */
-	public static function insert_popups_amp_access( $popups ) {
+	public static function insert_popups_amp_access() {
 		if ( is_admin() || self::assess_has_disabled_popups() ) {
 			return;
 		}
 
-		$popups                  = self::popups_for_post();
-		$endpoint                = str_replace(
-			'http://',
-			'//',
-			! Newspack_Popups::previewed_popup_id() && self::should_use_lightweight_api() ?
-				plugins_url( '../api/', __FILE__ ) :
-				get_rest_url( null, 'newspack-popups/v1/reader' )
-		);
-		$popups_access_providers = [];
+		$popups = self::popups_for_post();
 
-		$settings = \Newspack_Popups_Settings::get_settings();
+		if (
+			empty( $popups ) ||
+			(
+				// A preview (or a single test popup) – no need to hit the API.
+				1 === count( $popups ) && '' === Newspack_Popups_Model::get_access_attrs( reset( $popups ) )
+			)
+		) {
+			return;
+		}
 
+		$popups_access_provider = [
+			'namespace'     => 'popups',
+			'authorization' => esc_url( Newspack_Popups_Model::get_reader_endpoint() ) . '?cid=CLIENT_ID(newspack-cid)',
+			'noPingback'    => true,
+		];
+
+		$popups_configs = [];
 		foreach ( $popups as $popup ) {
-			// In test frequency cases (logged in site editor) and when previewing,
-			// fallback to authorization of true to avoid possible amp-access timeouts.
-			$authorization_fallback_response = (
-				( 'test' === $popup['options']['frequency'] || Newspack_Popups::previewed_popup_id() ) &&
-				is_user_logged_in() &&
-				current_user_can( 'edit_others_pages' )
-			);
-
-			$authorization =
-				esc_url( $endpoint ) .
-				'?popup_id=' . esc_attr( $popup['id'] ) .
-				'&rid=READER_ID&url=CANONICAL_URL&RANDOM&' .
-				'frequency=' . esc_attr( $popup['options']['frequency'] ) .
-				'&placement=' . esc_attr( $popup['options']['placement'] ) .
-				'&utm_suppression=' . esc_attr( $popup['options']['utm_suppression'] ) .
-				'&suppress_newsletter_campaigns=' . esc_attr( $settings['suppress_newsletter_campaigns'] ) .
-				'&suppress_all_newsletter_campaigns_if_one_dismissed=' . esc_attr( $settings['suppress_all_newsletter_campaigns_if_one_dismissed'] ) .
-				'&has_newsletter_prompt=' . esc_attr( \Newspack_Popups_Model::has_newsletter_prompt( $popup ) );
-
-			$amp_access_provider = array(
-				'namespace'                     => 'popup_' . $popup['id'],
-				'authorization'                 => $authorization,
-				'noPingback'                    => true,
-				'authorizationTimeout'          => 10000, // For development purposes. If #development=1 is appended to URL the maximum timeout for amp-access is raised to 10s.
-				'authorizationFallbackResponse' => array(
-					'displayPopup' => $authorization_fallback_response,
-				),
-			);
-
-			array_push(
-				$popups_access_providers,
-				$amp_access_provider
-			);
+			$popup_id_string = Newspack_Popups_Model::canonize_popup_id( esc_attr( $popup['id'] ) );
+			$frequency       = $popup['options']['frequency'];
+			if ( 'inline' !== $popup['options']['placement'] && 'always' === $frequency ) {
+				$frequency = 'once';
+			}
+			$popups_configs[] = [
+				'id'  => $popup_id_string,
+				'f'   => $frequency,
+				'utm' => $popup['options']['utm_suppression'],
+				'n'   => \Newspack_Popups_Model::has_newsletter_prompt( $popup ),
+			];
 		}
 
-		if ( ! empty( $popups_access_providers ) ) {
-			?>
-			<script id="amp-access" type="application/json">
-				<?php echo wp_json_encode( $popups_access_providers ); ?>
-			</script>
-			<?php
-		}
+		$popups_access_provider['authorization'] .= '&popups=' . wp_json_encode( $popups_configs );
+		$popups_access_provider['authorization'] .= '&settings=' . wp_json_encode( \Newspack_Popups_Settings::get_settings() );
+
+		?>
+		<script id="amp-access" type="application/json">
+			<?php echo wp_json_encode( $popups_access_provider ); ?>
+		</script>
+		<?php
 	}
 
 	/**
@@ -477,15 +461,6 @@ final class Newspack_Popups_Inserter {
 		return self::assess_is_post( $popup ) &&
 			self::assess_test_mode( $popup ) &&
 			self::assess_categories_filter( $popup );
-	}
-
-	/**
-	 * Should the lightweight API be used.
-	 *
-	 * @return bool Should lightweight API be used.
-	 */
-	public static function should_use_lightweight_api() {
-		return file_exists( Newspack_Popups::LIGHTWEIGHT_API_CONFIG_FILE_PATH );
 	}
 }
 $newspack_popups_inserter = new Newspack_Popups_Inserter();
