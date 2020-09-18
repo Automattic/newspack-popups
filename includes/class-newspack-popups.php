@@ -429,9 +429,9 @@ final class Newspack_Popups {
 		?>
 			<div class="notice notice-error">
 				<p>
-					<?php _e( 'The Newspack Campaigns API config file is missing,', 'newspack-popups' ); ?>
+					<?php _e( 'Newspack Campaigns requires a custom configuration file, which is missing. Please create this file following instructions found ', 'newspack-popups' ); ?>
 					<a href="https://github.com/Automattic/newspack-popups/blob/master/api/README.md">
-						<?php _e( 'please create it.', 'newspack-popups' ); ?>
+						<?php _e( 'here.', 'newspack-popups' ); ?>
 					</a>
 				</p>
 			</div>
