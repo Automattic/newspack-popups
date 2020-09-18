@@ -421,8 +421,7 @@ final class Newspack_Popups_Model {
 		}
 		global $wp;
 
-		$is_inline = self::is_inline( $popup );
-		$endpoint  = self::get_reader_endpoint();
+		$endpoint = self::get_reader_endpoint();
 
 		// Mailchimp.
 		$mailchimp_form_selector = '';
@@ -465,39 +464,37 @@ final class Newspack_Popups_Model {
 			</amp-analytics>
 		<?php endif; ?>
 
-		<?php if ( $is_inline ) : ?>
-			<amp-analytics>
-				<script type="application/json">
-					{
-						"requests": {
-							"event": "<?php echo esc_url( $endpoint ); ?>"
-						},
-						"triggers": {
-							"trackPageview": {
-								"on": "visible",
-								"request": "event",
-								"visibilitySpec": {
-									"selector": "#<?php echo esc_attr( $element_id ); ?>",
-									"visiblePercentageMin": 90,
-									"totalTimeMin": 500,
-									"continuousTimeMin": 200
-								},
-								"extraUrlParams": {
-									"popup_id": "<?php echo esc_attr( self::canonize_popup_id( $popup['id'] ) ); ?>",
-									"cid": "CLIENT_ID(newspack-cid)"
-								}
+		<amp-analytics>
+			<script type="application/json">
+				{
+					"requests": {
+						"event": "<?php echo esc_url( $endpoint ); ?>"
+					},
+					"triggers": {
+						"trackPageview": {
+							"on": "visible",
+							"request": "event",
+							"visibilitySpec": {
+								"selector": "#<?php echo esc_attr( $element_id ); ?>",
+								"visiblePercentageMin": 90,
+								"totalTimeMin": 500,
+								"continuousTimeMin": 200
+							},
+							"extraUrlParams": {
+								"popup_id": "<?php echo esc_attr( self::canonize_popup_id( $popup['id'] ) ); ?>",
+								"cid": "CLIENT_ID(newspack-cid)"
 							}
-						},
-						"transport": {
-							"beacon": true,
-							"xhrpost": true,
-							"useBody": true,
-							"image": false
 						}
+					},
+					"transport": {
+						"beacon": true,
+						"xhrpost": true,
+						"useBody": true,
+						"image": false
 					}
-				</script>
-			</amp-analytics>
-		<?php endif; ?>
+				}
+			</script>
+		</amp-analytics>
 		<?php
 	}
 
