@@ -421,8 +421,7 @@ final class Newspack_Popups_Model {
 		}
 		global $wp;
 
-		$is_inline = self::is_inline( $popup );
-		$endpoint  = self::get_reader_endpoint();
+		$endpoint = self::get_reader_endpoint();
 
 		// Mailchimp.
 		$mailchimp_form_selector = '';
