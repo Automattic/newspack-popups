@@ -24,7 +24,7 @@ class Report_Campaign_Data extends Lightweight_API {
 		if ( null == $payload ) {
 			// A POST request made by amp-analytics has to be parsed in this way.
 			// $_POST contains the payload if the request has FormData.
-			$payload = wpcom_vip_file_get_contents( 'php://input' );
+			$payload = file_get_contents( 'php://input' ); // phpcs:ignore WordPressVIPMinimum.Performance.FetchingRemoteData.FileGetContentsRemoteFile
 			if ( ! empty( $payload ) ) {
 				$payload = (array) json_decode( $payload );
 			}
