@@ -45,7 +45,7 @@ class Report_Campaign_Data extends Lightweight_API {
 		$campaign_data = $this->get_campaign_data( $client_id, $campaign_id );
 		$client_data   = $this->get_client_data( $client_id );
 
-		$campaign_data['count']       = (int) $campaign_data['count'] + 1;
+		$campaign_data['count']++;
 		$campaign_data['last_viewed'] = time();
 
 		// Handle permanent suppression.
