@@ -74,6 +74,9 @@ class Lightweight_API {
 
 	/**
 	 * Get transient name.
+	 *
+	 * @param string $client_id Client ID.
+	 * @param string $popup_id Popup ID.
 	 */
 	public function get_transient_name( $client_id, $popup_id = null ) {
 		if ( null === $popup_id ) {

@@ -20,11 +20,11 @@ class Report_Campaign_Data extends Lightweight_API {
 	 */
 	public function __construct() {
 		parent::__construct();
-		$payload = $_POST;
+		$payload = $_POST; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		if ( null == $payload ) {
 			// A POST request made by amp-analytics has to be parsed in this way.
 			// $_POST contains the payload if the request has FormData.
-			$payload = file_get_contents( 'php://input' );
+			$payload = wpcom_vip_file_get_contents( 'php://input' );
 			if ( ! empty( $payload ) ) {
 				$payload = (array) json_decode( $payload );
 			}
@@ -36,8 +36,7 @@ class Report_Campaign_Data extends Lightweight_API {
 	/**
 	 * Handle reporting campaign data – e.g. views, dismissals.
 	 *
-	 * @param string $client_id Client ID.
-	 * @param string $campaign_id Campaign ID.
+	 * @param object $request A request.
 	 */
 	public function report_campaign( $request ) {
 		$client_id     = $this->get_request_param( 'cid', $request );
@@ -78,6 +77,7 @@ class Report_Campaign_Data extends Lightweight_API {
 	/**
 	 * Get request param.
 	 *
+	 * @param string $param Param name.
 	 * @param object $request A POST request.
 	 */
 	public function get_request_param( $param, $request ) {

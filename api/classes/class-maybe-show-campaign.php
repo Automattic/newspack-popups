@@ -20,11 +20,14 @@ class Maybe_Show_Campaign extends Lightweight_API {
 	 */
 	public function __construct() {
 		parent::__construct();
-		$campaigns = json_decode( $_REQUEST['popups'] );
-		$settings  = json_decode( $_REQUEST['settings'] );
+		if ( ! isset( $_REQUEST['popups'], $_REQUEST['settings'], $_REQUEST['cid'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return;
+		}
+		$campaigns = json_decode( $_REQUEST['popups'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$settings  = json_decode( $_REQUEST['settings'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		$response  = [];
 		foreach ( $campaigns as $campaign ) {
-			$response[ $campaign->id ] = $this->should_campaign_be_shown( $_REQUEST['cid'], $campaign, $settings );
+			$response[ $campaign->id ] = $this->should_campaign_be_shown( $_REQUEST['cid'], $campaign, $settings ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		}
 		$this->response = $response;
 		$this->respond();
@@ -34,7 +37,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 	 * Primary campaign visibility logic.
 	 *
 	 * @param string $client_id Client ID.
-	 * @param string $campaign_id Campaign ID.
+	 * @param object $campaign Campaign.
 	 * @param object $settings Settings.
 	 * @return bool Whether campaign should be shown.
 	 */
@@ -94,9 +97,9 @@ class Maybe_Show_Campaign extends Lightweight_API {
 
 		// Handle suppressing a newsletter campaign if any newsletter campaign was dismissed.
 		if (
-		   $has_newsletter_prompt &&
-		   $settings->suppress_all_newsletter_campaigns_if_one_dismissed &&
-		   $has_suppressed_newsletter_campaign
+			$has_newsletter_prompt &&
+			$settings->suppress_all_newsletter_campaigns_if_one_dismissed &&
+			$has_suppressed_newsletter_campaign
 		) {
 			$should_display                    = false;
 			$campaign_data['suppress_forever'] = true;
