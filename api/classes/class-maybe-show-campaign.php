@@ -27,7 +27,12 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		$settings  = json_decode( $_REQUEST['settings'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		$response  = [];
 		foreach ( $campaigns as $campaign ) {
-			$response[ $campaign->id ] = $this->should_campaign_be_shown( $_REQUEST['cid'], $campaign, $settings ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			$response[ $campaign->id ] = $this->should_campaign_be_shown(
+				$_REQUEST['cid'], // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+				$campaign,
+				$settings,
+				filter_input( INPUT_SERVER, 'HTTP_REFERER', FILTER_SANITIZE_STRING )
+			);
 		}
 		$this->response = $response;
 		$this->respond();
@@ -39,9 +44,10 @@ class Maybe_Show_Campaign extends Lightweight_API {
 	 * @param string $client_id Client ID.
 	 * @param object $campaign Campaign.
 	 * @param object $settings Settings.
+	 * @param string $referer_url Referer URL.
 	 * @return bool Whether campaign should be shown.
 	 */
-	public function should_campaign_be_shown( $client_id, $campaign, $settings ) {
+	public function should_campaign_be_shown( $client_id, $campaign, $settings, $referer_url = '' ) {
 		$campaign_data      = $this->get_campaign_data( $client_id, $campaign->id );
 		$init_campaign_data = $campaign_data;
 
@@ -72,7 +78,6 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		$has_newsletter_prompt = $campaign->n;
 
 		// Handle referer-based conditions.
-		$referer_url = filter_input( INPUT_SERVER, 'HTTP_REFERER', FILTER_SANITIZE_STRING );
 		if ( ! empty( $referer_url ) ) {
 			// Suppressing based on UTM Source parameter in the URL.
 			$utm_suppression = ! empty( $campaign->utm ) ? urldecode( $campaign->utm ) : null;
