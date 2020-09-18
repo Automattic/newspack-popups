@@ -41,6 +41,8 @@ class Lightweight_API {
 
 	/**
 	 * Constructor.
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function __construct() {
 		if ( ! $this->verify_referer() ) {
@@ -61,6 +63,8 @@ class Lightweight_API {
 
 	/**
 	 * Verify referer is valid.
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function verify_referer() {
 		$http_referer = ! empty( $_SERVER['HTTP_REFERER'] ) ? parse_url( $_SERVER['HTTP_REFERER'] , PHP_URL_HOST ) : null; // phpcs:ignore
@@ -88,6 +92,8 @@ class Lightweight_API {
 
 	/**
 	 * Complete the API and print response.
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function respond() {
 		$this->debug['end_time'] = microtime( true );

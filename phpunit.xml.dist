@@ -7,6 +7,12 @@
 	convertNoticesToExceptions="true"
 	convertWarningsToExceptions="true"
 	>
+	<filter>
+		<whitelist addUncoveredFilesFromWhitelist="true">
+			<directory>./includes</directory>
+			<directory>./api/classes</directory>
+		</whitelist>
+	</filter>
 	<testsuites>
 		<testsuite>
 			<directory prefix="test-" suffix=".php">./tests/</directory>
