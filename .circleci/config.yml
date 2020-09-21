@@ -21,7 +21,7 @@ jobs:
           paths:
             - project
 
-  lint:
+  lint-js-scss:
     docker:
       - image: circleci/node:12
     steps:
@@ -29,6 +29,17 @@ jobs:
       - run:
           name: Run Linter
           command: npm run lint
+
+  lint-php:
+    docker:
+      - image: circleci/php:7.2
+    steps:
+      - checkout
+      - run:
+          name: Lint PHP Files
+          command: |
+            composer install
+            ./vendor/bin/phpcs
 
   release:
     docker:
@@ -61,7 +72,8 @@ workflows:
   all:
     jobs:
       - build
-      - lint:
+      - lint-php
+      - lint-js-scss:
           requires:
             - build
       - release:
