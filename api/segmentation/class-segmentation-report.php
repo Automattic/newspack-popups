@@ -28,9 +28,8 @@ class Segmentation_Report extends Lightweight_API {
 	 *
 	 * @param string $client_id Client ID.
 	 * @param object $visit_data visit data.
-	 * @param string $ga_client_id GA's Client ID.
 	 */
-	public function add_visit_data( $client_id, $visit_data, $ga_client_id = null ) {
+	public function add_visit_data( $client_id, $visit_data ) {
 		global $api_wpdb;
 		$clients_table_name = Segmentation::get_clients_table_name();
 		$visits_table_name  = Segmentation::get_visits_table_name();
@@ -43,9 +42,6 @@ class Segmentation_Report extends Lightweight_API {
 				'created_at' => gmdate( 'Y-m-d' ),
 				'updated_at' => gmdate( 'Y-m-d' ),
 			];
-			if ( null !== $ga_client_id ) {
-				$updates['ga_client_id'] = $ga_client_id;
-			}
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 			$api_wpdb->insert(
 				$clients_table_name,
@@ -55,9 +51,6 @@ class Segmentation_Report extends Lightweight_API {
 			$updates = [
 				'updated_at' => gmdate( 'Y-m-d' ),
 			];
-			if ( null !== $ga_client_id && null === $found_client->ga_client_id ) {
-				$updates['ga_client_id'] = $ga_client_id;
-			}
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 			$api_wpdb->update(
 				$clients_table_name,
@@ -102,28 +95,8 @@ class Segmentation_Report extends Lightweight_API {
 				'date'           => gmdate( 'Y-m-d', time() ),
 				'categories_ids' => $payload['categories'],
 			];
-
-			$ga_client_id = self::get_ga_client_id();
-			if ( $ga_client_id ) {
-				self::add_visit_data( $client_id, $visit_data_payload, $ga_client_id );
-			} else {
-				self::add_visit_data( $client_id, $visit_data_payload );
-			}
+			self::add_visit_data( $client_id, $visit_data_payload );
 		}
-	}
-
-	/**
-	 * Get GA's cookie with client id.
-	 */
-	public function get_ga_client_id() {
-		$ga_cookie = isset( $_COOKIE['_ga'] ) ? filter_var( $_COOKIE['_ga'], FILTER_SANITIZE_STRING ) : false; // phpcs:ignore WordPressVIPMinimum.Variables.RestrictedVariables.cache_constraints___COOKIE, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		if ( isset( $ga_cookie ) ) {
-			// Remove the prefix:
-			// In AMP standard mode, the value of `_ga` cookie will be the client id,
-			// In non-AMP contexts it will be prefixed with `GA1.<domain-level>.` (e.g. `GA1.3.`).
-			return preg_replace( '/GA\d\.\d\./', '', $ga_cookie );
-		}
-		return false;
 	}
 }
 

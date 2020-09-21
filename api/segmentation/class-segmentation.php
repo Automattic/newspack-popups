@@ -64,8 +64,6 @@ class Segmentation {
 				created_at date NOT NULL,
 				updated_at date NOT NULL,
 				client_id varchar(100) NOT NULL,
-				-- Client ID from GA's cookie
-				ga_client_id varchar(100),
 				-- If the user is logged in, they can be linked to a user id
 				wp_user_id bigint(20),
 				-- Track donations
