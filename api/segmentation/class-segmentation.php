@@ -10,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Manages Segmentation.
  */
-class Newspack_Popups_Segmentation {
+class Segmentation {
 	/**
 	 * Initialize.
 	 */
@@ -20,6 +20,8 @@ class Newspack_Popups_Segmentation {
 
 	/**
 	 * Get client's read posts.
+	 *
+	 * @param string $client_id Client ID.
 	 */
 	public static function get_client_read_posts( $client_id ) {
 		global $api_wpdb;
@@ -98,4 +100,4 @@ class Newspack_Popups_Segmentation {
 	}
 }
 
-Newspack_Popups_Segmentation::init();
+Segmentation::init();

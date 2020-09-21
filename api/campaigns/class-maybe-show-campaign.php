@@ -31,7 +31,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			function ( $post_visit ) {
 				return $post_visit->post_id;
 			},
-			Newspack_Popups_Segmentation::get_client_read_posts( $client_id )
+			Segmentation::get_client_read_posts( $client_id )
 		);
 		foreach ( $campaigns as $campaign ) {
 			$response[ $campaign->id ] = $this->should_campaign_be_shown( $client_id, $campaign, $settings );
@@ -83,7 +83,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 
 			// Increment read count if reading a new article now.
 			if ( false === array_search( $settings->article_id, $read_posts ) ) {
-				$read_count += 1;
+				++$read_count;
 			}
 			if ( $min_posts_read > $read_count ) {
 				$should_display = false;

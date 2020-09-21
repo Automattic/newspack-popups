@@ -1,6 +1,6 @@
 <?php
 /**
- * Newspack Popups Segmentation
+ * Newspack Popups Segmentation Report
  *
  * @package Newspack
  */
@@ -13,7 +13,7 @@ require_once '../classes/class-lightweight-api.php';
 /**
  * Manages Segmentation.
  */
-class Newspack_Popups_Segmentation_Report extends Lightweight_API {
+class Segmentation_Report extends Lightweight_API {
 	/**
 	 * Constructor.
 	 */
@@ -32,8 +32,8 @@ class Newspack_Popups_Segmentation_Report extends Lightweight_API {
 	 */
 	public function add_visit_data( $client_id, $visit_data, $ga_client_id = null ) {
 		global $api_wpdb;
-		$clients_table_name = Newspack_Popups_Segmentation::get_clients_table_name();
-		$visits_table_name  = Newspack_Popups_Segmentation::get_visits_table_name();
+		$clients_table_name = Segmentation::get_clients_table_name();
+		$visits_table_name  = Segmentation::get_visits_table_name();
 		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$found_client = $api_wpdb->get_row( $api_wpdb->prepare( "SELECT * FROM $clients_table_name WHERE client_id = %s", $client_id ) );
 
@@ -86,6 +86,11 @@ class Newspack_Popups_Segmentation_Report extends Lightweight_API {
 	/**
 	 * Handle visitor.
 	 *
+	 * May or may not add a visit to the visits table – ideally the request should be made
+	 * only on single posts, but in order to make amp-analytics set the client ID cookie,
+	 * the code has to be placed on each page. There may be a better solution, as that non-visit-adding
+	 * request is not necessary.
+	 *
 	 * @param object $payload a payload.
 	 */
 	public function api_handle_visit( $payload ) {
@@ -122,4 +127,4 @@ class Newspack_Popups_Segmentation_Report extends Lightweight_API {
 	}
 }
 
-new Newspack_Popups_Segmentation_Report();
+new Segmentation_Report();
