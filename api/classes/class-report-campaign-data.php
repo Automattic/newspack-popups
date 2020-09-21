@@ -17,6 +17,8 @@ class Report_Campaign_Data extends Lightweight_API {
 
 	/**
 	 * Constructor.
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function __construct() {
 		parent::__construct();
@@ -29,8 +31,11 @@ class Report_Campaign_Data extends Lightweight_API {
 				$payload = (array) json_decode( $payload );
 			}
 		}
-		$this->report_campaign( $payload );
-		$this->respond();
+		if ( empty( $payload ) ) {
+			return;
+		}
+		self::report_campaign( $payload );
+		self::respond();
 	}
 
 	/**
