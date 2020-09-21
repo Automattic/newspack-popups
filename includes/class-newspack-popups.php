@@ -230,6 +230,19 @@ final class Newspack_Popups {
 			]
 		);
 
+		// Segmentation meta fields.
+		\register_meta(
+			'post',
+			'min_posts_read',
+			[
+				'object_subtype' => self::NEWSPACK_PLUGINS_CPT,
+				'show_in_rest'   => true,
+				'type'           => 'integer',
+				'single'         => true,
+				'auth_callback'  => '__return_true',
+			]
+		);
+
 		// Meta field for all post types.
 		\register_meta(
 			'post',
@@ -392,6 +405,8 @@ final class Newspack_Popups {
 		update_post_meta( $post_id, 'trigger_delay', 3 );
 		update_post_meta( $post_id, 'trigger_scroll_progress', 30 );
 		update_post_meta( $post_id, 'utm_suppression', '' );
+
+		update_post_meta( $post_id, 'min_posts_read', 0 );
 	}
 
 	/**

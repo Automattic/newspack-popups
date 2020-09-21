@@ -147,7 +147,7 @@ final class Newspack_Segmentation {
 			// This will only be performed on a proxy site (like AMP cache) by default.
 			// https://amp.dev/documentation/components/amp-analytics/?format=websites#linkers.
 			'linkers'  => [
-				'enabled'                                => true,
+				'enabled' => true,
 				self::NEWSPACK_SEGMENTATION_CID_LINKER_PARAM => [
 					'ids' => [
 						$linker_id => 'CLIENT_ID(' . self::NEWSPACK_SEGMENTATION_CID_NAME . ')',
@@ -157,7 +157,7 @@ final class Newspack_Segmentation {
 			// If the linker parameter is found, the cookie value will be overwritten by it.
 			// https://amp.dev/documentation/components/amp-analytics/?format=websites#cookies.
 			'cookies'  => [
-				'enabled'                        => true,
+				'enabled'                            => true,
 				self::NEWSPACK_SEGMENTATION_CID_NAME => [
 					'value' => 'LINKER_PARAM(' . self::NEWSPACK_SEGMENTATION_CID_LINKER_PARAM . ', ' . $linker_id . ')',
 				],

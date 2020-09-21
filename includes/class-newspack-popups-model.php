@@ -320,6 +320,7 @@ final class Newspack_Popups_Model {
 			'trigger_delay'           => get_post_meta( $id, 'trigger_delay', true ),
 			'trigger_scroll_progress' => get_post_meta( $id, 'trigger_scroll_progress', true ),
 			'utm_suppression'         => get_post_meta( $id, 'utm_suppression', true ),
+			'min_posts_read'          => get_post_meta( $id, 'min_posts_read', true ),
 		];
 
 		$popup = [
@@ -341,6 +342,7 @@ final class Newspack_Popups_Model {
 					'trigger_delay'           => 0,
 					'trigger_scroll_progress' => 0,
 					'utm_suppression'         => null,
+					'min_posts_read'          => 0,
 				]
 			),
 		];

@@ -19,6 +19,18 @@ class Newspack_Popups_Segmentation {
 	}
 
 	/**
+	 * Get client's read posts.
+	 */
+	public static function get_client_read_posts( $client_id ) {
+		global $api_wpdb;
+		$visits_table_name = self::get_visits_table_name();
+		$clients_visits    = $api_wpdb->get_results(
+			$api_wpdb->prepare( "SELECT * FROM $visits_table_name WHERE client_id = %s", $client_id )
+		);
+		return $clients_visits;
+	}
+
+	/**
 	 * Get clients table name.
 	 */
 	public static function get_clients_table_name() {
