@@ -49,7 +49,7 @@ final class Newspack_Popups_Inserter {
 
 		// Check if there's an overlay popup with matching category.
 		$category_overlay_popup = Newspack_Popups_Model::retrieve_category_overlay_popup();
-		if ( $category_overlay_popup ) {
+		if ( $category_overlay_popup && self::should_display($category_overlay_popup) ) {
 			array_push(
 				$popups_to_maybe_display,
 				$category_overlay_popup

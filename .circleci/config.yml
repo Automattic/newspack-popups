@@ -21,7 +21,7 @@ jobs:
           paths:
             - project
 
-  lint:
+  lint-js-scss:
     docker:
       - image: circleci/node:12
     steps:
@@ -59,6 +59,17 @@ jobs:
             bash bin/install-wp-tests.sh wordpress_test root '' 127.0.0.1 latest
             phpunit
 
+  lint-php:
+    docker:
+      - image: circleci/php:7.2
+    steps:
+      - checkout
+      - run:
+          name: Lint PHP Files
+          command: |
+            composer install
+            ./vendor/bin/phpcs
+
   release:
     docker:
       - image: circleci/node:12
@@ -91,7 +102,8 @@ workflows:
     jobs:
       - test-php
       - build
-      - lint:
+      - lint-php
+      - lint-js-scss:
           requires:
             - build
       - release:
