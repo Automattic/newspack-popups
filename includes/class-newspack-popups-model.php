@@ -887,16 +887,12 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
-	 * Endpoint to report Pop-up data.
+	 * Endpoint to handle Pop-up data.
 	 *
 	 * @return string Endpoint URL.
 	 */
 	public static function get_reader_endpoint() {
-		return str_replace(
-			'http://',
-			'//',
-			plugins_url( '../api/', __FILE__ )
-		);
+		return plugins_url( '../api/campaigns/index.php', __FILE__ );
 	}
 
 	/**

@@ -8,7 +8,7 @@
 /**
  * Extend the base Lightweight_API class.
  */
-require_once 'class-lightweight-api.php';
+require_once '../classes/class-lightweight-api.php';
 
 /**
  * POST endpoint to report campaign data.
@@ -20,16 +20,7 @@ class Report_Campaign_Data extends Lightweight_API {
 	 */
 	public function __construct() {
 		parent::__construct();
-		$payload = $_POST; // phpcs:ignore WordPress.Security.NonceVerification.Missing
-		if ( null == $payload ) {
-			// A POST request made by amp-analytics has to be parsed in this way.
-			// $_POST contains the payload if the request has FormData.
-			$payload = file_get_contents( 'php://input' ); // phpcs:ignore WordPressVIPMinimum.Performance.FetchingRemoteData.FileGetContentsRemoteFile
-			if ( ! empty( $payload ) ) {
-				$payload = (array) json_decode( $payload );
-			}
-		}
-		$this->report_campaign( $payload );
+		$this->report_campaign( $this->get_post_payload() );
 		$this->respond();
 	}
 
@@ -72,17 +63,6 @@ class Report_Campaign_Data extends Lightweight_API {
 
 		$this->save_client_data( $client_id, $client_data );
 		$this->save_campaign_data( $client_id, $campaign_id, $campaign_data );
-	}
-
-	/**
-	 * Get request param.
-	 *
-	 * @param string $param Param name.
-	 * @param object $request A POST request.
-	 */
-	public function get_request_param( $param, $request ) {
-		$value = isset( $request[ $param ] ) ? $request[ $param ] : false;
-		return $value;
 	}
 }
 new Report_Campaign_Data();

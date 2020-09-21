@@ -8,7 +8,7 @@
 /**
  * Extend the base Lightweight_API class.
  */
-require_once 'class-lightweight-api.php';
+require_once '../classes/class-lightweight-api.php';
 
 /**
  * GET endpoint to determine if campaign is shown or not.

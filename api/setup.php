@@ -1,16 +1,16 @@
 <?php
 /**
- * Route Newspack Campaigns API requests based on method.
+ * Setup Campaigns API.
  *
  * @package Newspack
  */
 
-$plugin_path = str_replace( 'wp-content/plugins/newspack-popups/api/index.php', '', $_SERVER['SCRIPT_FILENAME'] ); // phpcs:ignore
+$wp_root_path = substr( $_SERVER['SCRIPT_FILENAME'], 0, strrpos($_SERVER['SCRIPT_FILENAME'], 'wp-content/plugins/newspack-popups')  ); // phpcs:ignore
 
-if ( file_exists( $plugin_path . '__wp__' ) ) {
-	define( 'ABSPATH', $plugin_path . '__wp__/' );
+if ( file_exists( $wp_root_path . '__wp__' ) ) {
+	define( 'ABSPATH', $wp_root_path . '__wp__/' );
 } else {
-	define( 'ABSPATH', $plugin_path );
+	define( 'ABSPATH', $wp_root_path );
 }
 
 define( 'WPINC', 'wp-includes/' );
@@ -21,7 +21,7 @@ if ( ! defined( 'WP_DEBUG' ) ) {
 	define( 'WP_DEBUG', false );
 }
 
-require_once $plugin_path . 'newspack-popups-config.php';
+require_once $wp_root_path . 'newspack-popups-config.php';
 
 // phpcs:disable
 
@@ -31,7 +31,8 @@ function add_filter() {}
 function do_action() {}
 function has_filter() { return false;}
 function apply_filters( $f, $in ) { return $in; }
-function is_multisite() { return false;}
+function is_multisite() { return false; }
+function is_wp_error( $thing ) { return ( $thing instanceof WP_Error ); }
 
 if ( file_exists( ABSPATH . WPINC . '/wp-db.php' ) ) {
 	require_once ABSPATH . WPINC . '/wp-db.php';
@@ -57,15 +58,4 @@ wp_cache_init();
 
 // phpcs:enable
 
-require_once 'classes/class-segmentation.php';
-
-switch ( $_SERVER['REQUEST_METHOD'] ) { //phpcs:ignore
-	case 'GET':
-		include 'classes/class-maybe-show-campaign.php';
-		break;
-	case 'POST':
-		include 'classes/class-report-campaign-data.php';
-		break;
-	default:
-		die( "{ error: 'unsupported_method' }" );
-}
+require_once 'segmentation/class-segmentation.php';
