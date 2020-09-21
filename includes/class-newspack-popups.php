@@ -406,7 +406,7 @@ final class Newspack_Popups {
 			return;
 		}
 		global $wpdb;
-		file_put_contents(
+		file_put_contents( // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_file_put_contents -- VIP will have to create a config manually
 			self::LIGHTWEIGHT_API_CONFIG_FILE_PATH,
 			'<?php' .
 			// Insert these only if they are defined, but not in the as environment variables.
@@ -416,7 +416,7 @@ final class Newspack_Popups {
 			"\ndefine( 'DB_PREFIX', '" . $wpdb->prefix . "' );" .
 			"\n"
 		);
-		error_log( 'Created the config file: ' . self::LIGHTWEIGHT_API_CONFIG_FILE_PATH );
+		error_log( 'Created the config file: ' . self::LIGHTWEIGHT_API_CONFIG_FILE_PATH ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 	}
 
 	/**
