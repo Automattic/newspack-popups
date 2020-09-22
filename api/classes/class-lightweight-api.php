@@ -56,9 +56,12 @@ class Lightweight_API {
 		$http_referer = ! empty( $_SERVER['HTTP_REFERER'] ) ? parse_url( $_SERVER['HTTP_REFERER'] , PHP_URL_HOST ) : null; // phpcs:ignore
 		$valid_referers = [
 			$http_referer,
-			// TODO: Add AMP Cache.
 		];
 		$http_host = ! empty( $_SERVER['HTTP_HOST'] ) ? $_SERVER['HTTP_HOST'] : null; // phpcs:ignore
+		// Enable requests from AMP Cache.
+		if ( preg_match( '/\.cdn\.ampproject\.org/', $http_referer ) ) {
+			return true;
+		}
 		return ! empty( $http_referer ) && ! empty( $http_host ) && in_array( strtolower( $http_host ), $valid_referers, true );
 	}
 
@@ -87,6 +90,8 @@ class Lightweight_API {
 		if ( defined( 'NEWSPACK_POPUPS_DEBUG' ) && NEWSPACK_POPUPS_DEBUG ) {
 			$this->response['debug'] = $this->debug;
 		}
+		header( 'Access-Control-Allow-Origin: https://' . parse_url( $_SERVER['HTTP_REFERER'] )['host'], false ); // phpcs:ignore
+		header( 'Access-Control-Allow-Credentials: true', false );
 		http_response_code( 200 );
 		print json_encode( $this->response ); // phpcs:ignore
 		exit;
