@@ -403,10 +403,7 @@ final class Newspack_Popups {
 	 * Create the config file for the API, unless it exists.
 	 */
 	public static function create_lightweight_api_config() {
-		if ( ! ( defined( 'ATOMIC_SITE_ID' ) && ATOMIC_SITE_ID ) ) {
-			return;
-		}
-		if ( file_exists( self::LIGHTWEIGHT_API_CONFIG_FILE_PATH ) ) {
+		if ( ! ( defined( 'ATOMIC_SITE_ID' ) && ATOMIC_SITE_ID ) || file_exists( self::LIGHTWEIGHT_API_CONFIG_FILE_PATH ) ) {
 			return;
 		}
 		global $wpdb;
