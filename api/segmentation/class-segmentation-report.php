@@ -60,11 +60,11 @@ class Segmentation_Report extends Lightweight_API {
 		}
 
 		$post_id              = $visit_data['post_id'];
-		$existing_post_visits = $wpdb->get_row(
-			$wpdb->prepare( "SELECT * FROM $visits_table_name WHERE post_id = %s AND client_id = %s", $post_id, $client_id )
+		$existing_post_visits = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->prepare( "SELECT * FROM $visits_table_name WHERE post_id = %s AND client_id = %s", $post_id, $client_id ) // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		);
 		if ( null === $existing_post_visits ) {
-			$wpdb->insert(
+			$wpdb->insert( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 				$visits_table_name,
 				[
 					'client_id'      => $client_id,

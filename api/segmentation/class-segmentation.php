@@ -26,8 +26,8 @@ class Segmentation {
 	public static function get_client_read_posts( $client_id ) {
 		global $wpdb;
 		$visits_table_name = self::get_visits_table_name();
-		$clients_visits    = $wpdb->get_results(
-			$wpdb->prepare( "SELECT * FROM $visits_table_name WHERE client_id = %s", $client_id )
+		$clients_visits    = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->prepare( "SELECT * FROM $visits_table_name WHERE client_id = %s", $client_id ) // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		);
 		return $clients_visits;
 	}
@@ -73,7 +73,7 @@ class Segmentation {
 				PRIMARY KEY  (id)
 			) $charset_collate;";
 
-			$wpdb->query( $sql );
+			$wpdb->query( $sql ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
 		}
 
 		$visits_table_name = self::get_visits_table_name();
@@ -93,7 +93,7 @@ class Segmentation {
 				PRIMARY KEY  (id)
 			) $charset_collate;";
 
-			$wpdb->query( $sql );
+			$wpdb->query( $sql ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
 		}
 	}
 }
