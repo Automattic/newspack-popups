@@ -8,7 +8,7 @@
 /**
  * Extend the base Lightweight_API class.
  */
-require_once '../classes/class-lightweight-api.php';
+require_once dirname( __FILE__ ) . '/../classes/class-lightweight-api.php';
 
 /**
  * POST endpoint to report campaign data.
