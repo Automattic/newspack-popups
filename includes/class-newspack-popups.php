@@ -403,10 +403,9 @@ final class Newspack_Popups {
 	 * Create the config file for the API, unless it exists.
 	 */
 	public static function create_lightweight_api_config() {
-		if ( get_option( 'newspack_has_tried_to_create_lightweight_api_config' ) ) {
+		if ( ! ( defined( 'ATOMIC_SITE_ID' ) && ATOMIC_SITE_ID ) ) {
 			return;
-		};
-		add_option( 'newspack_has_tried_to_create_lightweight_api_config', true );
+		}
 		if ( file_exists( self::LIGHTWEIGHT_API_CONFIG_FILE_PATH ) ) {
 			return;
 		}
