@@ -10,11 +10,11 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Main Newspack Segmentation Plugin Class.
  */
-final class Newspack_Segmentation {
+final class Newspack_Popups_Segmentation {
 	/**
 	 * The single instance of the class.
 	 *
-	 * @var Newspack_Segmentation
+	 * @var Newspack_Popups_Segmentation
 	 */
 	protected static $instance = null;
 
@@ -182,4 +182,4 @@ final class Newspack_Segmentation {
 		return plugins_url( '../api/segmentation/index.php', __FILE__ );
 	}
 }
-Newspack_Segmentation::instance();
+Newspack_Popups_Segmentation::instance();
