@@ -51,6 +51,7 @@ class InsertionTest extends WP_UnitTestCase {
 				'trigger_delay'           => '3',
 				'trigger_scroll_progress' => 0,
 				'utm_suppression'         => null,
+				'min_posts_read'          => 0,
 			],
 			'Default options are as expected.'
 		);
