@@ -24,10 +24,10 @@ class Segmentation {
 	 * @param string $client_id Client ID.
 	 */
 	public static function get_client_read_posts( $client_id ) {
-		global $api_wpdb;
+		global $wpdb;
 		$visits_table_name = self::get_visits_table_name();
-		$clients_visits    = $api_wpdb->get_results(
-			$api_wpdb->prepare( "SELECT * FROM $visits_table_name WHERE client_id = %s", $client_id )
+		$clients_visits    = $wpdb->get_results(
+			$wpdb->prepare( "SELECT * FROM $visits_table_name WHERE client_id = %s", $client_id )
 		);
 		return $clients_visits;
 	}
@@ -36,28 +36,28 @@ class Segmentation {
 	 * Get clients table name.
 	 */
 	public static function get_clients_table_name() {
-		global $api_wpdb;
-		return $api_wpdb->prefix . 'newspack_campaigns_clients';
+		global $wpdb;
+		return $wpdb->prefix . 'newspack_campaigns_clients';
 	}
 
 	/**
 	 * Get visits table name.
 	 */
 	public static function get_visits_table_name() {
-		global $api_wpdb;
-		return $api_wpdb->prefix . 'newspack_campaigns_visits';
+		global $wpdb;
+		return $wpdb->prefix . 'newspack_campaigns_visits';
 	}
 
 	/**
 	 * Create the clients and visits tables.
 	 */
 	public static function create_segmentation_tables() {
-		global $api_wpdb;
+		global $wpdb;
 		$clients_table_name = self::get_clients_table_name();
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		if ( $api_wpdb->get_var( $api_wpdb->prepare( 'SHOW TABLES LIKE %s', $clients_table_name ) ) != $clients_table_name ) {
-			$charset_collate = $api_wpdb->get_charset_collate();
+		if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $clients_table_name ) ) != $clients_table_name ) {
+			$charset_collate = $wpdb->get_charset_collate();
 
 			$sql = "CREATE TABLE $clients_table_name (
 				id bigint(20) NOT NULL AUTO_INCREMENT,
@@ -73,14 +73,14 @@ class Segmentation {
 				PRIMARY KEY  (id)
 			) $charset_collate;";
 
-			$api_wpdb->query( $sql );
+			$wpdb->query( $sql );
 		}
 
 		$visits_table_name = self::get_visits_table_name();
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		if ( $api_wpdb->get_var( $api_wpdb->prepare( 'SHOW TABLES LIKE %s', $visits_table_name ) ) != $visits_table_name ) {
-			$charset_collate = $api_wpdb->get_charset_collate();
+		if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $visits_table_name ) ) != $visits_table_name ) {
+			$charset_collate = $wpdb->get_charset_collate();
 
 			$sql = "CREATE TABLE $visits_table_name (
 				id bigint(20) NOT NULL AUTO_INCREMENT,
@@ -93,7 +93,7 @@ class Segmentation {
 				PRIMARY KEY  (id)
 			) $charset_collate;";
 
-			$api_wpdb->query( $sql );
+			$wpdb->query( $sql );
 		}
 	}
 }

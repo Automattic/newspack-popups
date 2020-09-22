@@ -30,11 +30,11 @@ class Segmentation_Report extends Lightweight_API {
 	 * @param object $visit_data visit data.
 	 */
 	public function add_visit_data( $client_id, $visit_data ) {
-		global $api_wpdb;
+		global $wpdb;
 		$clients_table_name = Segmentation::get_clients_table_name();
 		$visits_table_name  = Segmentation::get_visits_table_name();
 		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$found_client = $api_wpdb->get_row( $api_wpdb->prepare( "SELECT * FROM $clients_table_name WHERE client_id = %s", $client_id ) );
+		$found_client = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $clients_table_name WHERE client_id = %s", $client_id ) );
 
 		if ( null === $found_client ) {
 			$updates = [
@@ -43,7 +43,7 @@ class Segmentation_Report extends Lightweight_API {
 				'updated_at' => gmdate( 'Y-m-d' ),
 			];
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-			$api_wpdb->insert(
+			$wpdb->insert(
 				$clients_table_name,
 				$updates
 			);
@@ -52,7 +52,7 @@ class Segmentation_Report extends Lightweight_API {
 				'updated_at' => gmdate( 'Y-m-d' ),
 			];
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-			$api_wpdb->update(
+			$wpdb->update(
 				$clients_table_name,
 				$updates,
 				[ 'ID' => $found_client->id ]
@@ -60,11 +60,11 @@ class Segmentation_Report extends Lightweight_API {
 		}
 
 		$post_id              = $visit_data['post_id'];
-		$existing_post_visits = $api_wpdb->get_row(
-			$api_wpdb->prepare( "SELECT * FROM $visits_table_name WHERE post_id = %s AND client_id = %s", $post_id, $client_id )
+		$existing_post_visits = $wpdb->get_row(
+			$wpdb->prepare( "SELECT * FROM $visits_table_name WHERE post_id = %s AND client_id = %s", $post_id, $client_id )
 		);
 		if ( null === $existing_post_visits ) {
-			$api_wpdb->insert(
+			$wpdb->insert(
 				$visits_table_name,
 				[
 					'client_id'      => $client_id,

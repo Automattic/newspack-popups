@@ -47,9 +47,9 @@ if ( file_exists( WP_CONTENT_DIR . '/object-cache.php' ) ) {
 	require_once ABSPATH . WPINC . '/cache.php';
 }
 
-global $api_wpdb;
-$api_wpdb = new wpdb( DB_USER, DB_PASSWORD, DB_NAME, DB_HOST );
-$api_wpdb->set_prefix( DB_PREFIX );
+global $wpdb;
+$wpdb = new wpdb( DB_USER, DB_PASSWORD, DB_NAME, DB_HOST );
+$wpdb->set_prefix( DB_PREFIX );
 
 global $table_prefix;
 $table_prefix = DB_PREFIX;
