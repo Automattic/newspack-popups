@@ -49,7 +49,7 @@ final class Newspack_Popups_Inserter {
 
 		// Check if there's an overlay popup with matching category.
 		$category_overlay_popup = Newspack_Popups_Model::retrieve_category_overlay_popup();
-		if ( $category_overlay_popup && self::should_display($category_overlay_popup) ) {
+		if ( $category_overlay_popup && self::should_display( $category_overlay_popup ) ) {
 			array_push(
 				$popups_to_maybe_display,
 				$category_overlay_popup
@@ -133,8 +133,9 @@ final class Newspack_Popups_Inserter {
 	 * Process popups and insert into post and page content if needed.
 	 *
 	 * @param string $content The content of the post.
+	 * @param bool   $enqueue_assets Whether assets should be enqueued.
 	 */
-	public static function insert_popups_in_content( $content = '' ) {
+	public static function insert_popups_in_content( $content = '', $enqueue_assets = true ) {
 		// Avoid duplicate execution.
 		if ( true === self::$the_content_has_rendered ) {
 			return $content;
@@ -238,7 +239,9 @@ final class Newspack_Popups_Inserter {
 			$output = '<!-- wp:html -->' . Newspack_Popups_Model::generate_popup( $overlay_popup ) . '<!-- /wp:html -->' . $output;
 		}
 
-		self::enqueue_popup_assets();
+		if ( $enqueue_assets ) {
+			self::enqueue_popup_assets();
+		}
 		self::$the_content_has_rendered = true;
 		return $output;
 	}
@@ -305,6 +308,26 @@ final class Newspack_Popups_Inserter {
 	}
 
 	/**
+	 * Create the popup definition for sending to the API.
+	 *
+	 * @param object $popup A popup.
+	 */
+	public static function create_single_popup_access_payload( $popup ) {
+		$popup_id_string = Newspack_Popups_Model::canonize_popup_id( esc_attr( $popup['id'] ) );
+		$frequency       = $popup['options']['frequency'];
+		if ( 'inline' !== $popup['options']['placement'] && 'always' === $frequency ) {
+			$frequency = 'once';
+		}
+		return [
+			'id'  => $popup_id_string,
+			'f'   => $frequency,
+			'utm' => $popup['options']['utm_suppression'],
+			'min' => $popup['options']['min_posts_read'],
+			'n'   => \Newspack_Popups_Model::has_newsletter_prompt( $popup ),
+		];
+	}
+
+	/**
 	 * Add amp-access header code.
 	 */
 	public static function insert_popups_amp_access() {
@@ -332,18 +355,7 @@ final class Newspack_Popups_Inserter {
 
 		$popups_configs = [];
 		foreach ( $popups as $popup ) {
-			$popup_id_string = Newspack_Popups_Model::canonize_popup_id( esc_attr( $popup['id'] ) );
-			$frequency       = $popup['options']['frequency'];
-			if ( 'inline' !== $popup['options']['placement'] && 'always' === $frequency ) {
-				$frequency = 'once';
-			}
-			$popups_configs[] = [
-				'id'  => $popup_id_string,
-				'f'   => $frequency,
-				'utm' => $popup['options']['utm_suppression'],
-				'min' => $popup['options']['min_posts_read'],
-				'n'   => \Newspack_Popups_Model::has_newsletter_prompt( $popup ),
-			];
+			$popups_configs[] = self::create_single_popup_access_payload( $popup );
 		}
 
 		$popups_access_provider['authorization'] .= '&popups=' . wp_json_encode( $popups_configs );
