@@ -407,8 +407,7 @@ final class Newspack_Popups {
 			return;
 		};
 		add_option( 'newspack_has_tried_to_create_lightweight_api_config', true );
-		$has_db_config_in_env = getenv( 'DB_USER' ) && getenv( 'DB_PASSWORD' ) && getenv( 'DB_NAME' ) && getenv( 'DB_HOST' );
-		if ( ! $has_db_config_in_env || file_exists( self::LIGHTWEIGHT_API_CONFIG_FILE_PATH ) ) {
+		if ( file_exists( self::LIGHTWEIGHT_API_CONFIG_FILE_PATH ) ) {
 			return;
 		}
 		global $wpdb;
