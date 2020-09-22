@@ -5,7 +5,7 @@
  * @package Newspack
  */
 
-$plugin_path = str_replace( 'wp-content/plugins/newspack-popups/api/index.php', '', $_SERVER['SCRIPT_FILENAME'] ); // phpcs:ignore
+$plugin_path = substr($_SERVER['SCRIPT_FILENAME'], 0, strrpos($_SERVER['SCRIPT_FILENAME'], 'wp-content/plugins/')); // phpcs:ignore
 
 if ( file_exists( $plugin_path . '__wp__' ) ) {
 	define( 'ABSPATH', $plugin_path . '__wp__/' );
@@ -59,6 +59,9 @@ wp_cache_init();
 switch ( $_SERVER['REQUEST_METHOD'] ) { //phpcs:ignore
 	case 'GET':
 		include 'classes/class-maybe-show-campaign.php';
+		break;
+	case 'POST':
+		include 'classes/class-report-campaign-data.php';
 		break;
 	default:
 		die( "{ error: 'unsupported_method' }" );
