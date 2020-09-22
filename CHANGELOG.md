@@ -1,3 +1,10 @@
+# [1.12.0-alpha.2](https://github.com/Automattic/newspack-popups/compare/v1.12.0-alpha.1...v1.12.0-alpha.2) (2020-09-22)
+
+
+### Bug Fixes
+
+* **api:** config creation ([#228](https://github.com/Automattic/newspack-popups/issues/228)) ([d06daa5](https://github.com/Automattic/newspack-popups/commit/d06daa5af2e2a076b5925f7de69f673253cb0ffe))
+
 # [1.12.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.11.0...v1.12.0-alpha.1) (2020-09-22)
 
 
