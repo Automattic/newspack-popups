@@ -14,38 +14,13 @@ require_once dirname( __FILE__ ) . '/../classes/class-lightweight-api.php';
  * Manages Segmentation.
  */
 class Segmentation_Report extends Lightweight_API {
-	const IS_PARSING_FILE_PATH = WP_CONTENT_DIR . '/../.is-parsing';
-	const LOG_FILE_PATH        = WP_CONTENT_DIR . '/../newspack-popups-visits.log';
-
 	/**
 	 * Constructor.
 	 */
 	public function __construct() {
-		if ( isset( $_SERVER['SHELL'] ) ) {
-			// Called by a shell script, no need for response.
-			return;
-		}
-
-		// TODO CRON
-
 		parent::__construct();
 		$this->api_handle_visit( $this->get_post_payload() );
 		$this->respond();
-	}
-
-	/**
-	 * Parse the log file, write data to the DB, and remove the file.
-	 */
-	public static function parse_visit_logs() {
-		$arguments = [
-			Segmentation::get_visits_table_name(),
-			Segmentation::get_clients_table_name(),
-			self::LOG_FILE_PATH,
-			self::IS_PARSING_FILE_PATH,
-			dirname( __FILE__ ),
-		];
-		$command   = 'php ' . dirname( __FILE__ ) . '/parse-logs.php ' . implode( ' ', $arguments );
-		exec( $command );
 	}
 
 	/**
@@ -55,7 +30,7 @@ class Segmentation_Report extends Lightweight_API {
 	 * @param object $visit_data visit data.
 	 */
 	public function log_visit_data( $client_id, $visit_data ) {
-		if ( file_exists( self::IS_PARSING_FILE_PATH ) ) {
+		if ( file_exists( Segmentation::IS_PARSING_FILE_PATH ) ) {
 			return;
 		}
 
@@ -71,7 +46,7 @@ class Segmentation_Report extends Lightweight_API {
 		);
 
 		file_put_contents( // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_file_put_contents
-			self::LOG_FILE_PATH,
+			Segmentation::LOG_FILE_PATH,
 			$line . PHP_EOL,
 			FILE_APPEND
 		);

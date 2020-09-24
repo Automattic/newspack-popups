@@ -11,6 +11,9 @@ defined( 'ABSPATH' ) || exit;
  * Manages Segmentation.
  */
 class Segmentation {
+	const IS_PARSING_FILE_PATH = WP_CONTENT_DIR . '/../.is-parsing';
+	const LOG_FILE_PATH        = WP_CONTENT_DIR . '/../newspack-popups-visits.log';
+
 	/**
 	 * Initialize.
 	 */
