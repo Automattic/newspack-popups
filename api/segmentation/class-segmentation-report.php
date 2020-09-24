@@ -8,19 +8,44 @@
 /**
  * Extend the base Lightweight_API class.
  */
-require_once '../classes/class-lightweight-api.php';
+require_once dirname( __FILE__ ) . '/../classes/class-lightweight-api.php';
 
 /**
  * Manages Segmentation.
  */
 class Segmentation_Report extends Lightweight_API {
+	const IS_PARSING_FILE_PATH = WP_CONTENT_DIR . '/../.is-parsing';
+	const LOG_FILE_PATH        = WP_CONTENT_DIR . '/../newspack-popups-visits.log';
+
 	/**
 	 * Constructor.
 	 */
 	public function __construct() {
+		if ( isset( $_SERVER['SHELL'] ) ) {
+			// Called by a shell script, no need for response.
+			return;
+		}
+
+		// TODO CRON
+
 		parent::__construct();
 		$this->api_handle_visit( $this->get_post_payload() );
 		$this->respond();
+	}
+
+	/**
+	 * Parse the log file, write data to the DB, and remove the file.
+	 */
+	public static function parse_visit_logs() {
+		$arguments = [
+			Segmentation::get_visits_table_name(),
+			Segmentation::get_clients_table_name(),
+			self::LOG_FILE_PATH,
+			self::IS_PARSING_FILE_PATH,
+			dirname( __FILE__ ),
+		];
+		$command   = 'php ' . dirname( __FILE__ ) . '/parse-logs.php ' . implode( ' ', $arguments );
+		exec( $command );
 	}
 
 	/**
@@ -29,51 +54,27 @@ class Segmentation_Report extends Lightweight_API {
 	 * @param string $client_id Client ID.
 	 * @param object $visit_data visit data.
 	 */
-	public function add_visit_data( $client_id, $visit_data ) {
-		global $wpdb;
-		$clients_table_name = Segmentation::get_clients_table_name();
-		$visits_table_name  = Segmentation::get_visits_table_name();
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$found_client = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $clients_table_name WHERE client_id = %s", $client_id ) );
-
-		if ( null === $found_client ) {
-			$updates = [
-				'client_id'  => $client_id,
-				'created_at' => gmdate( 'Y-m-d' ),
-				'updated_at' => gmdate( 'Y-m-d' ),
-			];
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-			$wpdb->insert(
-				$clients_table_name,
-				$updates
-			);
-		} else {
-			$updates = [
-				'updated_at' => gmdate( 'Y-m-d' ),
-			];
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-			$wpdb->update(
-				$clients_table_name,
-				$updates,
-				[ 'ID' => $found_client->id ]
-			);
+	public function log_visit_data( $client_id, $visit_data ) {
+		if ( file_exists( self::IS_PARSING_FILE_PATH ) ) {
+			return;
 		}
 
-		$post_id              = $visit_data['post_id'];
-		$existing_post_visits = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-			$wpdb->prepare( "SELECT * FROM $visits_table_name WHERE post_id = %s AND client_id = %s", $post_id, $client_id ) // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// Add line to log file.
+		$line = implode(
+			';',
+			[
+				$client_id,
+				$visit_data['date'],
+				$visit_data['post_id'],
+				$visit_data['categories_ids'],
+			]
 		);
-		if ( null === $existing_post_visits ) {
-			$wpdb->insert( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-				$visits_table_name,
-				[
-					'client_id'      => $client_id,
-					'created_at'     => $visit_data['date'],
-					'post_id'        => $post_id,
-					'categories_ids' => $visit_data['categories_ids'],
-				]
-			);
-		}
+
+		file_put_contents( // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_file_put_contents
+			self::LOG_FILE_PATH,
+			$line . PHP_EOL,
+			FILE_APPEND
+		);
 	}
 
 	/**
@@ -95,7 +96,7 @@ class Segmentation_Report extends Lightweight_API {
 				'date'           => gmdate( 'Y-m-d', time() ),
 				'categories_ids' => $payload['categories'],
 			];
-			self::add_visit_data( $client_id, $visit_data_payload );
+			self::log_visit_data( $client_id, $visit_data_payload );
 		}
 	}
 }
