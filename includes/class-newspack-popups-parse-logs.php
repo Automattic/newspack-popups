@@ -71,6 +71,10 @@ final class Newspack_Popups_Parse_Logs {
 		$log_file_path        = Segmentation::LOG_FILE_PATH;
 		$is_parsing_file_path = Segmentation::IS_PARSING_FILE_PATH;
 
+		if ( file_exists( Segmentation::IS_PARSING_FILE_PATH ) ) {
+			return;
+		}
+
 		file_put_contents( $is_parsing_file_path, '' ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_file_put_contents
 
 		$log_file = fopen( $log_file_path, 'r' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_fopen
