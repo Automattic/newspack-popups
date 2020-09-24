@@ -59,7 +59,52 @@ final class Newspack_Popups_Parse_Logs {
 	}
 
 	/**
-	 *  Parse the log file, write data to the DB, and remove the file.
+	 * Insert multiple rows in one DB transaction.
+	 *
+	 * @param string $table_name Table name.
+	 * @param array  $rows Rows to insert.
+	 * @param array  $column_names Names of the columns.
+	 * @param array  $placeholder Row placeholder for wpdb->prepare (e.g. `(%s, %s)`).
+	 */
+	public static function bulk_db_insert( $table_name, $rows, $column_names, $placeholder ) {
+		if ( 0 === count( $rows ) ) {
+			return;
+		}
+
+		global $wpdb;
+
+		$column_names = implode( ', ', $column_names );
+		$query        = "INSERT INTO $table_name ($column_names) VALUES ";
+		$query       .= implode(
+			', ',
+			array_map(
+				function( $row ) use ( $placeholder ) {
+					return $placeholder;
+				},
+				$rows
+			)
+		);
+
+		// Flatten the rows two-dimensional array.
+		$values = array_reduce(
+			$rows,
+			function( $acc, $arr ) {
+				return array_merge( $acc, $arr );
+			},
+			[]
+		);
+
+		$sql = $wpdb->prepare( "$query ", $values ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
+
+		if ( $wpdb->query( $sql ) ) { // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * Parse the log file, write data to the DB, and remove the file.
 	 */
 	public static function parse_visit_logs() {
 		global $wpdb;
@@ -90,6 +135,8 @@ final class Newspack_Popups_Parse_Logs {
 		error_log( 'Parsing ' . count( $lines ) . ' lines of log file: ' . $log_file_path ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 
 		$lines = array_unique( $lines );
+
+		$visits_rows = [];
 
 		foreach ( $lines as $line ) {
 			$result    = explode( ';', $line );
@@ -126,17 +173,21 @@ final class Newspack_Popups_Parse_Logs {
 				$wpdb->prepare( "SELECT * FROM $visits_table_name WHERE post_id = %s AND client_id = %s", $post_id, $client_id ) // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			);
 			if ( null === $existing_post_visits ) {
-				$wpdb->insert( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-					$visits_table_name,
-					[
-						'client_id'      => $client_id,
-						'created_at'     => $result[1],
-						'post_id'        => $post_id,
-						'categories_ids' => $result[3],
-					]
-				);
+				$visits_rows[] = [ $client_id, $result[1], $post_id, $result[3] ];
 			}
 		}
+
+		self::bulk_db_insert(
+			$visits_table_name,
+			$visits_rows,
+			[
+				'client_id',
+				'created_at',
+				'post_id',
+				'categories_ids',
+			],
+			'( %s, %s, %s, %s )'
+		);
 
 		fclose( $log_file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_fclose
 
