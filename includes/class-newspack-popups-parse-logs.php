@@ -112,7 +112,6 @@ final class Newspack_Popups_Parse_Logs {
 		$start_time = microtime( true );
 
 		$visits_table_name    = Segmentation::get_visits_table_name();
-		$clients_table_name   = Segmentation::get_clients_table_name();
 		$log_file_path        = Segmentation::LOG_FILE_PATH;
 		$is_parsing_file_path = Segmentation::IS_PARSING_FILE_PATH;
 
@@ -142,32 +141,6 @@ final class Newspack_Popups_Parse_Logs {
 			$result    = explode( ';', $line );
 			$client_id = $result[0];
 			$post_id   = $result[2];
-
-			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-			$found_client = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $clients_table_name WHERE client_id = %s", $client_id ) );
-
-			if ( null === $found_client ) {
-				$updates = [
-					'client_id'  => $client_id,
-					'created_at' => gmdate( 'Y-m-d' ),
-					'updated_at' => gmdate( 'Y-m-d' ),
-				];
-				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-				$wpdb->insert(
-					$clients_table_name,
-					$updates
-				);
-			} else {
-				$updates = [
-					'updated_at' => gmdate( 'Y-m-d' ),
-				];
-				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-				$wpdb->update(
-					$clients_table_name,
-					$updates,
-					[ 'ID' => $found_client->id ]
-				);
-			}
 
 			$existing_post_visits = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 				$wpdb->prepare( "SELECT * FROM $visits_table_name WHERE post_id = %s AND client_id = %s", $post_id, $client_id ) // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
