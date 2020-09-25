@@ -38,7 +38,7 @@ final class Newspack_Popups_Parse_Logs {
 	 */
 	public function __construct() {
 		add_filter( 'cron_schedules', [ __CLASS__, 'add_cron_interval' ] ); // phpcs:ignore WordPress.WP.CronInterval.CronSchedulesInterval
-		add_action( 'newspack_popups_segmentation_cron_hook', [ __CLASS__, 'parse_visit_logs' ] );
+		add_action( 'newspack_popups_segmentation_cron_hook', [ __CLASS__, 'parse_events_logs' ] );
 		if ( ! wp_next_scheduled( 'newspack_popups_segmentation_cron_hook' ) ) {
 			wp_schedule_event( time(), 'every_minute', 'newspack_popups_segmentation_cron_hook' );
 		}
@@ -106,12 +106,12 @@ final class Newspack_Popups_Parse_Logs {
 	/**
 	 * Parse the log file, write data to the DB, and remove the file.
 	 */
-	public static function parse_visit_logs() {
+	public static function parse_events_logs() {
 		global $wpdb;
 
 		$start_time = microtime( true );
 
-		$visits_table_name    = Segmentation::get_visits_table_name();
+		$events_table_name    = Segmentation::get_events_table_name();
 		$log_file_path        = Segmentation::LOG_FILE_PATH;
 		$is_parsing_file_path = Segmentation::IS_PARSING_FILE_PATH;
 
@@ -135,24 +135,24 @@ final class Newspack_Popups_Parse_Logs {
 
 		$lines = array_unique( $lines );
 
-		$visits_rows = [];
+		$events_rows = [];
 
 		foreach ( $lines as $line ) {
 			$result    = explode( ';', $line );
 			$client_id = $result[0];
 			$post_id   = $result[2];
 
-			$existing_post_visits = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-				$wpdb->prepare( "SELECT * FROM $visits_table_name WHERE post_id = %s AND client_id = %s", $post_id, $client_id ) // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			$existing_post_events = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+				$wpdb->prepare( "SELECT * FROM $events_table_name WHERE post_id = %s AND client_id = %s", $post_id, $client_id ) // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			);
-			if ( null === $existing_post_visits ) {
-				$visits_rows[] = [ $client_id, $result[1], $post_id, $result[3] ];
+			if ( null === $existing_post_events ) {
+				$events_rows[] = [ $client_id, $result[1], $post_id, $result[3] ];
 			}
 		}
 
 		self::bulk_db_insert(
-			$visits_table_name,
-			$visits_rows,
+			$events_table_name,
+			$events_rows,
 			[
 				'client_id',
 				'created_at',

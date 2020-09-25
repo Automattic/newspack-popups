@@ -12,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
  */
 class Segmentation {
 	const IS_PARSING_FILE_PATH = WP_CONTENT_DIR . '/../.is-parsing';
-	const LOG_FILE_PATH        = WP_CONTENT_DIR . '/../newspack-popups-visits.log';
+	const LOG_FILE_PATH        = WP_CONTENT_DIR . '/../newspack-popups-events.log';
 
 	/**
 	 * Initialize.
@@ -28,33 +28,33 @@ class Segmentation {
 	 */
 	public static function get_client_read_posts( $client_id ) {
 		global $wpdb;
-		$visits_table_name = self::get_visits_table_name();
-		$clients_visits    = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-			$wpdb->prepare( "SELECT * FROM $visits_table_name WHERE client_id = %s", $client_id ) // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$events_table_name = self::get_events_table_name();
+		$clients_events    = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->prepare( "SELECT * FROM $events_table_name WHERE client_id = %s", $client_id ) // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		);
-		return $clients_visits;
+		return $clients_events;
 	}
 
 	/**
-	 * Get visits table name.
+	 * Get events table name.
 	 */
-	public static function get_visits_table_name() {
+	public static function get_events_table_name() {
 		global $wpdb;
-		return $wpdb->prefix . 'newspack_campaigns_visits';
+		return $wpdb->prefix . 'newspack_campaigns_events';
 	}
 
 	/**
-	 * Create the clients and visits tables.
+	 * Create the clients and events tables.
 	 */
 	public static function create_segmentation_tables() {
 		global $wpdb;
-		$visits_table_name = self::get_visits_table_name();
+		$events_table_name = self::get_events_table_name();
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $visits_table_name ) ) != $visits_table_name ) {
+		if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $events_table_name ) ) != $events_table_name ) {
 			$charset_collate = $wpdb->get_charset_collate();
 
-			$sql = "CREATE TABLE $visits_table_name (
+			$sql = "CREATE TABLE $events_table_name (
 				id bigint(20) NOT NULL AUTO_INCREMENT,
 				created_at date NOT NULL,
 				client_id varchar(100) NOT NULL,
