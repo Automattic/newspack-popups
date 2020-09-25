@@ -131,7 +131,7 @@ final class Newspack_Popups_Segmentation {
 		$amp_analytics_config = [
 			'requests' => [
 				// The clientId value will be read from cookie.
-				'event' => esc_url( $endpoint ) . '?add_visit=' . ( is_single() ? 1 : 0 ) . '&clientId=${clientId(' . esc_attr( self::NEWSPACK_SEGMENTATION_CID_NAME ) . ')}',
+				'event' => esc_url( $endpoint ) . '?is_post=' . ( is_single() ? 1 : 0 ) . '&clientId=${clientId(' . esc_attr( self::NEWSPACK_SEGMENTATION_CID_NAME ) . ')}',
 			],
 			'triggers' => [
 				'trackPageview' => [

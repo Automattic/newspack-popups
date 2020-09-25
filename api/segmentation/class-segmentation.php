@@ -37,7 +37,7 @@ class Segmentation {
 		global $wpdb;
 		$events_table_name = self::get_events_table_name();
 		$clients_events    = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-			$wpdb->prepare( "SELECT * FROM $events_table_name WHERE client_id = %s", $client_id ) // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			$wpdb->prepare( "SELECT * FROM $events_table_name WHERE client_id = %s AND type = 'post_read'", $client_id ) // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		);
 		return $clients_events;
 	}
@@ -64,6 +64,9 @@ class Segmentation {
 			$sql = "CREATE TABLE $events_table_name (
 				id bigint(20) NOT NULL AUTO_INCREMENT,
 				created_at date NOT NULL,
+				-- type of event
+				type varchar(20) NOT NULL,
+				-- Unique id of a device/browser pair
 				client_id varchar(100) NOT NULL,
 				-- Article ID
 				post_id bigint(20),

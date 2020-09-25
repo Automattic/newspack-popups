@@ -30,8 +30,8 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		$response                        = [];
 		$client_id                       = $_REQUEST['cid']; // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		$settings->client_read_posts_ids = array_map(
-			function ( $post_visit ) {
-				return $post_visit->post_id;
+			function ( $post_read ) {
+				return $post_read->post_id;
 			},
 			Segmentation::get_client_read_posts( $client_id )
 		);
