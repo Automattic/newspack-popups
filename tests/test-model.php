@@ -32,7 +32,7 @@ class ModelTest extends WP_UnitTestCase {
 				'background_color'        => '#FFFFFF',
 				'display_title'           => false,
 				'dismiss_text'            => Newspack_Popups::get_default_dismiss_text(),
-				'frequency'               => 'once',
+				'frequency'               => 'test',
 				'overlay_color'           => '#000000',
 				'overlay_opacity'         => '30',
 				'placement'               => 'center',
