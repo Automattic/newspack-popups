@@ -7,6 +7,8 @@
 
 defined( 'ABSPATH' ) || exit;
 
+require_once dirname( __FILE__ ) . '/../api/segmentation/class-segmentation.php';
+
 /**
  * Main Newspack Segmentation Plugin Class.
  */
@@ -45,7 +47,8 @@ final class Newspack_Popups_Segmentation {
 	 * Constructor.
 	 */
 	public function __construct() {
-		add_action( 'wp_footer', [ $this, 'insert_amp_analytics' ], 20 );
+		add_action( 'init', [ __CLASS__, 'create_database_table' ] );
+		add_action( 'wp_footer', [ __CLASS__, 'insert_amp_analytics' ], 20 );
 		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'wp_enqueue_scripts' ] );
 	}
 
@@ -106,7 +109,7 @@ final class Newspack_Popups_Segmentation {
 	 * Insert amp-analytics tracking code.
 	 * Has to be included on every page to set the cookie.
 	 */
-	public function insert_amp_analytics() {
+	public static function insert_amp_analytics() {
 		if ( ! self::is_tracking() ) {
 			return;
 		}
@@ -181,5 +184,36 @@ final class Newspack_Popups_Segmentation {
 	public static function get_segmentation_endpoint() {
 		return plugins_url( '../api/segmentation/index.php', __FILE__ );
 	}
+
+	/**
+	 * Create the clients and events tables.
+	 */
+	public static function create_database_table() {
+		global $wpdb;
+		$events_table_name = Segmentation::get_events_table_name();
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $events_table_name ) ) != $events_table_name ) {
+			$charset_collate = $wpdb->get_charset_collate();
+
+			$sql = "CREATE TABLE $events_table_name (
+				id bigint(20) NOT NULL AUTO_INCREMENT,
+				created_at date NOT NULL,
+				-- type of event
+				type varchar(20) NOT NULL,
+				-- Unique id of a device/browser pair
+				client_id varchar(100) NOT NULL,
+				-- Article ID
+				post_id bigint(20),
+				-- Article categories IDs
+				categories_ids varchar(100),
+				PRIMARY KEY  (id)
+			) $charset_collate;";
+
+			require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+			dbDelta( $sql ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.dbDelta_dbdelta
+		}
+	}
+
 }
 Newspack_Popups_Segmentation::instance();
