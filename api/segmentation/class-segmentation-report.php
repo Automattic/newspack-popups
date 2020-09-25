@@ -24,35 +24,6 @@ class Segmentation_Report extends Lightweight_API {
 	}
 
 	/**
-	 * Add visit data to the table.
-	 *
-	 * @param string $client_id Client ID.
-	 * @param object $visit_data visit data.
-	 */
-	public function log_visit_data( $client_id, $visit_data ) {
-		if ( file_exists( Segmentation::IS_PARSING_FILE_PATH ) ) {
-			return;
-		}
-
-		// Add line to log file.
-		$line = implode(
-			';',
-			[
-				$client_id,
-				$visit_data['date'],
-				$visit_data['post_id'],
-				$visit_data['categories_ids'],
-			]
-		);
-
-		file_put_contents( // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_file_put_contents
-			Segmentation::LOG_FILE_PATH,
-			$line . PHP_EOL,
-			FILE_APPEND
-		);
-	}
-
-	/**
 	 * Handle visitor.
 	 *
 	 * May or may not add a visit to the visits table – ideally the request should be made
@@ -63,15 +34,28 @@ class Segmentation_Report extends Lightweight_API {
 	 * @param object $payload a payload.
 	 */
 	public function api_handle_visit( $payload ) {
+		if ( file_exists( Segmentation::IS_PARSING_FILE_PATH ) ) {
+			return;
+		}
+
 		$add_visit = $payload['add_visit'];
 		if ( '1' === $add_visit ) {
-			$client_id          = $payload['clientId'];
-			$visit_data_payload = [
-				'post_id'        => $payload['id'],
-				'date'           => gmdate( 'Y-m-d', time() ),
-				'categories_ids' => $payload['categories'],
-			];
-			self::log_visit_data( $client_id, $visit_data_payload );
+			// Add line to log file.
+			$line = implode(
+				';',
+				[
+					$payload['clientId'],
+					gmdate( 'Y-m-d', time() ),
+					$payload['id'],
+					$payload['categories'],
+				]
+			);
+
+			file_put_contents( // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_file_put_contents
+				Segmentation::LOG_FILE_PATH,
+				$line . PHP_EOL,
+				FILE_APPEND
+			);
 		}
 	}
 }
