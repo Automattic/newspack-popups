@@ -22,7 +22,7 @@ class Report_Campaign_Data extends Lightweight_API {
 	 */
 	public function __construct() {
 		parent::__construct();
-		if ( ! $_POST && ! $_GET ) { // phpcs:ignore
+		if ( empty( $this->get_post_payload() ) ) {
 			return;
 		}
 		$this->report_campaign( $this->get_post_payload() );
