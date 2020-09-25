@@ -19,6 +19,9 @@ class Segmentation_Report extends Lightweight_API {
 	 */
 	public function __construct() {
 		parent::__construct();
+		if ( ! $_POST && ! $_GET ) { // phpcs:ignore
+			return;
+		}
 		$this->api_handle_post_read( $this->get_post_payload() );
 		$this->respond();
 	}
@@ -33,7 +36,7 @@ class Segmentation_Report extends Lightweight_API {
 	 *
 	 * @param object $payload a payload.
 	 */
-	public function api_handle_post_read( $payload ) {
+	public static function api_handle_post_read( $payload ) {
 		if ( file_exists( Segmentation::IS_PARSING_FILE_PATH ) ) {
 			return;
 		}

@@ -39,7 +39,15 @@ class Segmentation {
 		$clients_events    = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare( "SELECT * FROM $events_table_name WHERE client_id = %s AND type = 'post_read'", $client_id ) // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		);
-		return $clients_events;
+		return array_map(
+			function ( $item ) {
+				return [
+					'post_id'        => $item->post_id,
+					'categories_ids' => $item->categories_ids,
+				];
+			},
+			$clients_events
+		);
 	}
 
 	/**
