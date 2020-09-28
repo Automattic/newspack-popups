@@ -27,7 +27,6 @@ import { ColorPaletteControl } from '@wordpress/block-editor';
  */
 import { optionsFieldsSelector, updateEditorColors } from './utils';
 import PopupPreview from './PopupPreview';
-import './SegmentationSettings';
 
 class PopupSidebar extends Component {
 	state = {
@@ -225,7 +224,10 @@ const PopupSidebarWithData = compose( [
 
 registerPlugin( 'newspack-popups', {
 	render: () => (
-		<PluginDocumentSettingPanel name="popup-settings-panel" title={ __( 'Campaign Settings' ) }>
+		<PluginDocumentSettingPanel
+			name="popup-settings-panel"
+			title={ __( 'Campaign Settings', 'newspack-popups' ) }
+		>
 			<PopupSidebarWithData />
 		</PluginDocumentSettingPanel>
 	),

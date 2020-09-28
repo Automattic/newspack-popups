@@ -25,16 +25,10 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		if ( ! isset( $_REQUEST['popups'], $_REQUEST['settings'], $_REQUEST['cid'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			return;
 		}
-		$campaigns                       = json_decode( $_REQUEST['popups'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		$settings                        = json_decode( $_REQUEST['settings'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		$response                        = [];
-		$client_id                       = $_REQUEST['cid']; // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		$settings->client_read_posts_ids = array_map(
-			function ( $post_visit ) {
-				return $post_visit->post_id;
-			},
-			Segmentation::get_client_read_posts( $client_id )
-		);
+		$campaigns = json_decode( $_REQUEST['popups'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$settings  = json_decode( $_REQUEST['settings'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$response  = [];
+		$client_id = $_REQUEST['cid']; // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		foreach ( $campaigns as $campaign ) {
 			$response[ $campaign->id ] = $this->should_campaign_be_shown(
 				$client_id,
@@ -86,20 +80,6 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			default:
 				$should_display = false;
 				break;
-		}
-
-		$min_posts_read = (int) $campaign->min;
-		if ( $min_posts_read > 0 ) {
-			$read_posts = $settings->client_read_posts_ids;
-			$read_count = count( $read_posts );
-
-			// Increment read count if reading a new article now.
-			if ( false === array_search( $settings->article_id, $read_posts ) ) {
-				++$read_count;
-			}
-			if ( $min_posts_read > $read_count ) {
-				$should_display = false;
-			}
 		}
 
 		$has_newsletter_prompt = $campaign->n;
