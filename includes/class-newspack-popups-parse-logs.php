@@ -109,11 +109,11 @@ final class Newspack_Popups_Parse_Logs {
 		global $wpdb;
 
 
-		if ( ! file_exists( Segmentation::LOG_FILE_PATH ) ) {
+		if ( ! file_exists( Segmentation::get_log_file_path() ) ) {
 			return;
 		}
 
-		$log_file = fopen( Segmentation::LOG_FILE_PATH, 'r+' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_fopen
+		$log_file = fopen( Segmentation::get_log_file_path(), 'r+' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_fopen
 
 		if ( flock( $log_file, LOCK_EX ) ) { // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_flock
 			$lines = [];
@@ -159,7 +159,7 @@ final class Newspack_Popups_Parse_Logs {
 			flock( $log_file, LOCK_UN ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_flock
 
 			// Clear the log file.
-			file_put_contents( Segmentation::LOG_FILE_PATH, '' ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_file_put_contents
+			file_put_contents( Segmentation::get_log_file_path(), '' ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_file_put_contents
 			fclose( $log_file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_fclose
 		}
 	}

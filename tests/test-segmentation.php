@@ -20,8 +20,8 @@ class SegmentationTest extends WP_UnitTestCase {
 		global $wpdb;
 		$events_table_name = Segmentation::get_events_table_name();
 		$wpdb->query( "DELETE FROM $events_table_name;" ); // phpcs:ignore
-		if ( file_exists( Segmentation::LOG_FILE_PATH ) ) {
-			unlink( Segmentation::LOG_FILE_PATH ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_unlink
+		if ( file_exists( Segmentation::get_log_file_path() ) ) {
+			unlink( Segmentation::get_log_file_path() ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_unlink
 		}
 	}
 
@@ -44,7 +44,7 @@ class SegmentationTest extends WP_UnitTestCase {
 
 		self::assertEquals(
 			$expected_log_line,
-			file_get_contents( Segmentation::LOG_FILE_PATH ),
+			file_get_contents( Segmentation::get_log_file_path() ),
 			'Log file contains the expected line.'
 		);
 
@@ -59,7 +59,7 @@ class SegmentationTest extends WP_UnitTestCase {
 
 		self::assertEquals(
 			$expected_log_line,
-			file_get_contents( Segmentation::LOG_FILE_PATH ),
+			file_get_contents( Segmentation::get_log_file_path() ),
 			'Log file is not updated after a non-post visit is reported.'
 		);
 	}
@@ -102,7 +102,7 @@ class SegmentationTest extends WP_UnitTestCase {
 
 		self::assertEquals(
 			'',
-			file_get_contents( Segmentation::LOG_FILE_PATH ),
+			file_get_contents( Segmentation::get_log_file_path() ),
 			'Log file is emptied after parsing logs.'
 		);
 	}

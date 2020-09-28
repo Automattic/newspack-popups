@@ -52,7 +52,7 @@ class Segmentation_Report extends Lightweight_API {
 			);
 
 			file_put_contents( // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_file_put_contents
-				Segmentation::LOG_FILE_PATH,
+				Segmentation::get_log_file_path(),
 				$line . PHP_EOL,
 				FILE_APPEND
 			);

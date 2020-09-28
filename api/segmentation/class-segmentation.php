@@ -12,11 +12,6 @@ defined( 'ABSPATH' ) || exit;
  */
 class Segmentation {
 	/**
-	 * The log file path.
-	 */
-	const LOG_FILE_PATH = '/tmp/newspack-popups-events.log';
-
-	/**
 	 * Get client's read posts.
 	 *
 	 * @param string $client_id Client ID.
@@ -36,6 +31,13 @@ class Segmentation {
 			},
 			$clients_events
 		);
+	}
+
+	/**
+	 * Get log file path.
+	 */
+	public static function get_log_file_path() {
+		return get_temp_dir() . 'newspack-popups-events.log';
 	}
 
 	/**
