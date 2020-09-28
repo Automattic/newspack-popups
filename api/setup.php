@@ -5,7 +5,7 @@
  * @package Newspack
  */
 
-$wp_root_path = substr($_SERVER['SCRIPT_FILENAME'], 0, strrpos($_SERVER['SCRIPT_FILENAME'], 'wp-content/plugins/')); // phpcs:ignore
+$wp_root_path = substr( $_SERVER['SCRIPT_FILENAME'], 0, strrpos( $_SERVER['SCRIPT_FILENAME'], 'wp-content/plugins/' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.InputNotValidated
 
 if ( file_exists( $wp_root_path . '__wp__' ) ) {
 	define( 'ABSPATH', $wp_root_path . '__wp__/' );
