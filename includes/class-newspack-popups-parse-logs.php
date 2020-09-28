@@ -108,8 +108,6 @@ final class Newspack_Popups_Parse_Logs {
 	public static function parse_events_logs() {
 		global $wpdb;
 
-		$start_time        = microtime( true );
-		$events_table_name = Segmentation::get_events_table_name();
 
 		if ( ! file_exists( Segmentation::LOG_FILE_PATH ) ) {
 			return;
@@ -143,7 +141,7 @@ final class Newspack_Popups_Parse_Logs {
 
 			try {
 				self::bulk_db_insert(
-					$events_table_name,
+					Segmentation::get_events_table_name(),
 					$events_rows,
 					[
 						'type',
