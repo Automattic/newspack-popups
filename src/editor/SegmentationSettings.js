@@ -41,7 +41,7 @@ registerPlugin( 'newspack-popups-segmentation-settings', {
 	render: () => (
 		<PluginDocumentSettingPanel
 			name="popup-segmentation-settings-panel"
-			title={ __( 'Campaign Segmentation' ) }
+			title={ __( 'Campaign Segmentation', 'newspack-popups' ) }
 		>
 			<SegmentationSettingsWithData />
 		</PluginDocumentSettingPanel>
