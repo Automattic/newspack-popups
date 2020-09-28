@@ -40,7 +40,7 @@ final class Newspack_Popups_Parse_Logs {
 		add_filter( 'cron_schedules', [ __CLASS__, 'add_cron_interval' ] ); // phpcs:ignore WordPress.WP.CronInterval.CronSchedulesInterval
 		add_action( 'newspack_popups_segmentation_cron_hook', [ __CLASS__, 'parse_events_logs' ] );
 		if ( ! wp_next_scheduled( 'newspack_popups_segmentation_cron_hook' ) ) {
-			wp_schedule_event( time(), 'every_minute', 'newspack_popups_segmentation_cron_hook' );
+			wp_schedule_event( time(), 'every_quarter_hour', 'newspack_popups_segmentation_cron_hook' );
 		}
 	}
 
@@ -51,9 +51,9 @@ final class Newspack_Popups_Parse_Logs {
 	 * @param object $schedules The schedules.
 	 */
 	public static function add_cron_interval( $schedules ) {
-		$schedules['every_minute'] = [
-			'interval' => 60,
-			'display'  => esc_html__( 'Every Minute' ),
+		$schedules['every_quarter_hour'] = [
+			'interval' => 60 * 15,
+			'display'  => esc_html__( 'Every Quarter-Hour' ),
 		];
 		return $schedules;
 	}
