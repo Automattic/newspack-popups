@@ -116,10 +116,10 @@ final class Newspack_Popups_Segmentation {
 
 		$endpoint = self::get_segmentation_endpoint();
 
-		$categories     = get_the_category();
-		$categories_ids = '';
+		$categories   = get_the_category();
+		$category_ids = '';
 		if ( ! empty( $categories ) ) {
-			$categories_ids = implode(
+			$category_ids = implode(
 				',',
 				array_map(
 					function( $cat ) {
@@ -142,7 +142,7 @@ final class Newspack_Popups_Segmentation {
 					'request'        => 'event',
 					'extraUrlParams' => [
 						'id'         => esc_attr( get_the_ID() ),
-						'categories' => esc_attr( $categories_ids ),
+						'categories' => esc_attr( $category_ids ),
 					],
 				],
 			],
@@ -206,7 +206,7 @@ final class Newspack_Popups_Segmentation {
 				-- Article ID
 				post_id bigint(20),
 				-- Article categories IDs
-				categories_ids varchar(100),
+				category_ids varchar(100),
 				PRIMARY KEY  (id)
 			) $charset_collate;";
 

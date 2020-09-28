@@ -30,8 +30,8 @@ class Segmentation {
 		return array_map(
 			function ( $item ) {
 				return [
-					'post_id'        => $item->post_id,
-					'categories_ids' => $item->categories_ids,
+					'post_id'      => $item->post_id,
+					'category_ids' => $item->category_ids,
 				];
 			},
 			$clients_events

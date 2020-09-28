@@ -155,7 +155,7 @@ final class Newspack_Popups_Parse_Logs {
 					'client_id',
 					'created_at',
 					'post_id',
-					'categories_ids',
+					'category_ids',
 				],
 				'( %s, %s, %s, %s, %s )'
 			);

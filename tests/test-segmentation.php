@@ -84,8 +84,8 @@ class SegmentationTest extends WP_UnitTestCase {
 
 		self::assertEquals(
 			[
-				'post_id'        => self::$post_read_payload['id'],
-				'categories_ids' => self::$post_read_payload['categories'],
+				'post_id'      => self::$post_read_payload['id'],
+				'category_ids' => self::$post_read_payload['categories'],
 			],
 			$read_posts[0],
 			'The read posts array contains the reported post after logs parsing.'
