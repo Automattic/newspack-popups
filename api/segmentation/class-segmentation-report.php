@@ -37,10 +37,6 @@ class Segmentation_Report extends Lightweight_API {
 	 * @param object $payload a payload.
 	 */
 	public static function api_handle_post_read( $payload ) {
-		if ( file_exists( Segmentation::IS_PARSING_FILE_PATH ) ) {
-			return;
-		}
-
 		$is_post = $payload['is_post'];
 		if ( '1' === $is_post ) {
 			// Add line to log file.

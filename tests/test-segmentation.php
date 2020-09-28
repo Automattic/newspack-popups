@@ -23,9 +23,6 @@ class SegmentationTest extends WP_UnitTestCase {
 		if ( file_exists( Segmentation::LOG_FILE_PATH ) ) {
 			unlink( Segmentation::LOG_FILE_PATH ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_unlink
 		}
-		if ( file_exists( Segmentation::IS_PARSING_FILE_PATH ) ) {
-			unlink( Segmentation::IS_PARSING_FILE_PATH ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_unlink
-		}
 	}
 
 	/**

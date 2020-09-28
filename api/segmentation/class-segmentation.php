@@ -12,11 +12,6 @@ defined( 'ABSPATH' ) || exit;
  */
 class Segmentation {
 	/**
-	 * An empty file, the presence of which will prevent log file modifications while the log is being parsed.
-	 */
-	const IS_PARSING_FILE_PATH = WP_CONTENT_DIR . '/../.is-parsing';
-
-	/**
 	 * The log file path.
 	 */
 	const LOG_FILE_PATH = '/tmp/newspack-popups-events.log';

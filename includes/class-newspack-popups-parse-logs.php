@@ -112,65 +112,66 @@ final class Newspack_Popups_Parse_Logs {
 		$start_time        = microtime( true );
 		$events_table_name = Segmentation::get_events_table_name();
 
-		if ( file_exists( Segmentation::IS_PARSING_FILE_PATH ) || ! file_exists( Segmentation::LOG_FILE_PATH ) ) {
+		if ( ! file_exists( Segmentation::LOG_FILE_PATH ) ) {
 			return;
 		}
 
-		file_put_contents( Segmentation::IS_PARSING_FILE_PATH, '' ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_file_put_contents
+		$log_file = fopen( Segmentation::LOG_FILE_PATH, 'r+' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_fopen
 
-		$log_file = fopen( Segmentation::LOG_FILE_PATH, 'r' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_fopen
-		$lines    = [];
+		if ( flock( $log_file, LOCK_EX ) ) { // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_flock
+			$lines = [];
 
-		while ( ! feof( $log_file ) ) {
-			$line = trim( fgets( $log_file ) );
-			if ( ! empty( $line ) ) {
-				$lines[] = $line;
+			while ( ! feof( $log_file ) ) {
+				$line = trim( fgets( $log_file ) );
+				if ( ! empty( $line ) ) {
+					$lines[] = $line;
+				}
 			}
-		}
 
-		error_log( 'Parsing ' . count( $lines ) . ' lines of log file: ' . Segmentation::LOG_FILE_PATH ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+			error_log( 'Parsing ' . count( $lines ) . ' lines of log file: ' . Segmentation::LOG_FILE_PATH ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 
-		$lines       = array_unique( $lines );
-		$events_rows = [];
+			$lines       = array_unique( $lines );
+			$events_rows = [];
 
-		foreach ( $lines as $line ) {
-			$result     = explode( ';', $line );
-			$event_type = $result[0];
-			$client_id  = $result[1];
-			$date       = $result[2];
-			$post_id    = $result[3];
-			$categories = $result[4];
+			foreach ( $lines as $line ) {
+				$result     = explode( ';', $line );
+				$event_type = $result[0];
+				$client_id  = $result[1];
+				$date       = $result[2];
+				$post_id    = $result[3];
+				$categories = $result[4];
 
-			$existing_post_events = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-				$wpdb->prepare( "SELECT * FROM $events_table_name WHERE post_id = %s AND client_id = %s", $post_id, $client_id ) // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				$existing_post_events = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+					$wpdb->prepare( "SELECT * FROM $events_table_name WHERE post_id = %s AND client_id = %s", $post_id, $client_id ) // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				);
+				if ( null === $existing_post_events ) {
+					$events_rows[] = [ $event_type, $client_id, $date, $post_id, $categories ];
+				}
+			}
+
+			self::bulk_db_insert(
+				$events_table_name,
+				$events_rows,
+				[
+					'type',
+					'client_id',
+					'created_at',
+					'post_id',
+					'categories_ids',
+				],
+				'( %s, %s, %s, %s, %s )'
 			);
-			if ( null === $existing_post_events ) {
-				$events_rows[] = [ $event_type, $client_id, $date, $post_id, $categories ];
-			}
+
+			error_log( 'parsing duration: ' . round( ( microtime( true ) - $start_time ) * 1000 ) . 'ms' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+
+			flock( $log_file, LOCK_UN ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_flock
+
+			// Clear the log file.
+			file_put_contents( Segmentation::LOG_FILE_PATH, '' ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_file_put_contents
+			fclose( $log_file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_fclose
+		} else {
+			error_log( 'Log file locking unsuccessful, logs were not parsed.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 		}
-
-		self::bulk_db_insert(
-			$events_table_name,
-			$events_rows,
-			[
-				'type',
-				'client_id',
-				'created_at',
-				'post_id',
-				'categories_ids',
-			],
-			'( %s, %s, %s, %s, %s )'
-		);
-
-		fclose( $log_file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_fclose
-
-		// Clear the log file.
-		file_put_contents( Segmentation::LOG_FILE_PATH, '' ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_file_put_contents
-
-		// Remove the is-parsing file to enable logging again.
-		unlink( Segmentation::IS_PARSING_FILE_PATH ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_unlink
-
-		error_log( 'parsing duration: ' . round( ( microtime( true ) - $start_time ) * 1000 ) . 'ms' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 	}
 }
 Newspack_Popups_Parse_Logs::instance();
