@@ -128,8 +128,6 @@ final class Newspack_Popups_Parse_Logs {
 				}
 			}
 
-			error_log( 'Parsing ' . count( $lines ) . ' lines of log file: ' . Segmentation::LOG_FILE_PATH ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-
 			$lines       = array_unique( $lines );
 			$events_rows = [];
 
@@ -162,15 +160,11 @@ final class Newspack_Popups_Parse_Logs {
 				'( %s, %s, %s, %s, %s )'
 			);
 
-			error_log( 'parsing duration: ' . round( ( microtime( true ) - $start_time ) * 1000 ) . 'ms' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-
 			flock( $log_file, LOCK_UN ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_flock
 
 			// Clear the log file.
 			file_put_contents( Segmentation::LOG_FILE_PATH, '' ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_file_put_contents
 			fclose( $log_file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_fclose
-		} else {
-			error_log( 'Log file locking unsuccessful, logs were not parsed.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 		}
 	}
 }
