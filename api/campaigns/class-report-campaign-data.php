@@ -22,10 +22,11 @@ class Report_Campaign_Data extends Lightweight_API {
 	 */
 	public function __construct() {
 		parent::__construct();
-		if ( empty( $this->get_post_payload() ) ) {
+		$payload = $this->get_post_payload();
+		if ( empty( $payload ) ) {
 			return;
 		}
-		$this->report_campaign( $this->get_post_payload() );
+		$this->report_campaign( $payload );
 		$this->respond();
 	}
 
