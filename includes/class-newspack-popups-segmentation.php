@@ -208,6 +208,7 @@ final class Newspack_Popups_Segmentation {
 				-- Article categories IDs
 				category_ids varchar(100),
 				UNIQUE KEY client_id_post_id (client_id, post_id),
+				KEY client_id_type (client_id, type),
 				PRIMARY KEY  (id)
 			) $charset_collate;";
 
