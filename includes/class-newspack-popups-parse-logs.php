@@ -96,11 +96,10 @@ final class Newspack_Popups_Parse_Logs {
 
 		$sql = $wpdb->prepare( "$query ", $values ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
 
-		if ( $wpdb->query( $sql ) ) { // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
-			return true;
-		} else {
-			return false;
-		}
+		// Update the event if a the duplicate has a different date.
+		$sql .= ' ON DUPLICATE KEY UPDATE created_at = VALUES(created_at)';
+
+		$wpdb->query( $sql ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
 	}
 
 	/**
@@ -139,26 +138,25 @@ final class Newspack_Popups_Parse_Logs {
 				$post_id    = $result[3];
 				$categories = $result[4];
 
-				$existing_post_events = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-					$wpdb->prepare( "SELECT * FROM $events_table_name WHERE post_id = %s AND client_id = %s", $post_id, $client_id ) // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-				);
-				if ( null === $existing_post_events ) {
-					$events_rows[] = [ $event_type, $client_id, $date, $post_id, $categories ];
-				}
+				$events_rows[] = [ $event_type, $client_id, $date, $post_id, $categories ];
 			}
 
-			self::bulk_db_insert(
-				$events_table_name,
-				$events_rows,
-				[
-					'type',
-					'client_id',
-					'created_at',
-					'post_id',
-					'category_ids',
-				],
-				'( %s, %s, %s, %s, %s )'
-			);
+			try {
+				self::bulk_db_insert(
+					$events_table_name,
+					$events_rows,
+					[
+						'type',
+						'client_id',
+						'created_at',
+						'post_id',
+						'category_ids',
+					],
+					'( %s, %s, %s, %s, %s )'
+				);
+			} catch ( \Exception $e ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch
+				// An error will be thrown for rows violating the UNIQUE constraint.
+			}
 
 			flock( $log_file, LOCK_UN ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_flock
 

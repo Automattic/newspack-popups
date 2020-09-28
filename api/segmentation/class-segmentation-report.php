@@ -45,7 +45,7 @@ class Segmentation_Report extends Lightweight_API {
 				[
 					'post_read',
 					$payload['clientId'],
-					gmdate( 'Y-m-d', time() ),
+					isset( $payload['date'] ) ? $payload['date'] : gmdate( 'Y-m-d', time() ),
 					$payload['id'],
 					$payload['categories'],
 				]

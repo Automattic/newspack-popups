@@ -68,6 +68,15 @@ class SegmentationTest extends WP_UnitTestCase {
 	 * Log file parsing.
 	 */
 	public function test_log_parsing() {
+		// Duplicate article read, but on a different date.
+		Segmentation_Report::api_handle_post_read(
+			array_merge(
+				self::$post_read_payload,
+				[
+					'date' => gmdate( 'Y-m-d', strtotime( '-1 week' ) ),
+				]
+			)
+		);
 		Segmentation_Report::api_handle_post_read( self::$post_read_payload );
 		// Duplicate log entry – to ensure that unique lines are processed.
 		Segmentation_Report::api_handle_post_read( self::$post_read_payload );
