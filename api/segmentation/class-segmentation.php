@@ -19,7 +19,7 @@ class Segmentation {
 	/**
 	 * The log file path.
 	 */
-	const LOG_FILE_PATH = WP_CONTENT_DIR . '/../newspack-popups-events.log';
+	const LOG_FILE_PATH = '/tmp/newspack-popups-events.log';
 
 	/**
 	 * Get client's read posts.
