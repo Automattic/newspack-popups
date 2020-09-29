@@ -234,3 +234,9 @@ $color__secondary-variation: darken( $color__secondary, 10% );
 		}
 	}
 }
+
+// This is needed for the scroll-triggered popups to function properly.
+// (#page-position-marker element is an absolutely-placed child of .entry-content)
+.entry-content {
+	position: relative !important;
+}
