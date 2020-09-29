@@ -33,12 +33,13 @@ function has_filter() { return false;}
 function apply_filters( $f, $in ) { return $in; }
 function is_multisite() { return false; }
 function is_wp_error( $thing ) { return ( $thing instanceof WP_Error ); }
+function trailingslashit( $string ) {
+	return rtrim( $string, '/\\' ) . '/';
+}
 
 if ( file_exists( ABSPATH . WPINC . '/wp-db.php' ) ) {
 	require_once ABSPATH . WPINC . '/wp-db.php';
 	require_once ABSPATH . WPINC . '/functions.php';
-	// Needed for get_temp_dir function.
-	require_once ABSPATH . WPINC . '/formatting.php';
 } else {
 	die( "{ error: 'no_wordpress' }" );
 }
