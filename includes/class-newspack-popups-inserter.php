@@ -322,7 +322,6 @@ final class Newspack_Popups_Inserter {
 			'id'  => $popup_id_string,
 			'f'   => $frequency,
 			'utm' => $popup['options']['utm_suppression'],
-			'min' => $popup['options']['min_posts_read'],
 			'n'   => \Newspack_Popups_Model::has_newsletter_prompt( $popup ),
 		];
 	}
@@ -359,9 +358,7 @@ final class Newspack_Popups_Inserter {
 		}
 
 		$popups_access_provider['authorization'] .= '&popups=' . wp_json_encode( $popups_configs );
-		$settings                                 = \Newspack_Popups_Settings::get_settings();
-		$settings['article_id']                   = is_single() ? get_the_ID() : '';
-		$popups_access_provider['authorization'] .= '&settings=' . wp_json_encode( $settings );
+		$popups_access_provider['authorization'] .= '&settings=' . wp_json_encode( \Newspack_Popups_Settings::get_settings() );
 
 		?>
 		<script id="amp-access" type="application/json">
