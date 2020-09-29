@@ -12,90 +12,39 @@ defined( 'ABSPATH' ) || exit;
  */
 class Segmentation {
 	/**
-	 * Initialize.
-	 */
-	public static function init() {
-		self::create_segmentation_tables();
-	}
-
-	/**
 	 * Get client's read posts.
 	 *
 	 * @param string $client_id Client ID.
 	 */
 	public static function get_client_read_posts( $client_id ) {
 		global $wpdb;
-		$visits_table_name = self::get_visits_table_name();
-		$clients_visits    = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-			$wpdb->prepare( "SELECT * FROM $visits_table_name WHERE client_id = %s", $client_id ) // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$events_table_name = self::get_events_table_name();
+		$clients_events    = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->prepare( "SELECT * FROM $events_table_name WHERE client_id = %s AND type = 'post_read'", $client_id ) // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		);
-		return $clients_visits;
+		return array_map(
+			function ( $item ) {
+				return [
+					'post_id'      => $item->post_id,
+					'category_ids' => $item->category_ids,
+				];
+			},
+			$clients_events
+		);
 	}
 
 	/**
-	 * Get clients table name.
+	 * Get log file path.
 	 */
-	public static function get_clients_table_name() {
-		global $wpdb;
-		return $wpdb->prefix . 'newspack_campaigns_clients';
+	public static function get_log_file_path() {
+		return get_temp_dir() . 'newspack-popups-events.log';
 	}
 
 	/**
-	 * Get visits table name.
+	 * Get events table name.
 	 */
-	public static function get_visits_table_name() {
+	public static function get_events_table_name() {
 		global $wpdb;
-		return $wpdb->prefix . 'newspack_campaigns_visits';
-	}
-
-	/**
-	 * Create the clients and visits tables.
-	 */
-	public static function create_segmentation_tables() {
-		global $wpdb;
-		$clients_table_name = self::get_clients_table_name();
-
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $clients_table_name ) ) != $clients_table_name ) {
-			$charset_collate = $wpdb->get_charset_collate();
-
-			$sql = "CREATE TABLE $clients_table_name (
-				id bigint(20) NOT NULL AUTO_INCREMENT,
-				created_at date NOT NULL,
-				updated_at date NOT NULL,
-				client_id varchar(100) NOT NULL,
-				-- If the user is logged in, they can be linked to a user id
-				wp_user_id bigint(20),
-				-- Track donations
-				donations text,
-				-- Email subscriptions status
-				email_subscriptions text,
-				PRIMARY KEY  (id)
-			) $charset_collate;";
-
-			$wpdb->query( $sql ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
-		}
-
-		$visits_table_name = self::get_visits_table_name();
-
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $visits_table_name ) ) != $visits_table_name ) {
-			$charset_collate = $wpdb->get_charset_collate();
-
-			$sql = "CREATE TABLE $visits_table_name (
-				id bigint(20) NOT NULL AUTO_INCREMENT,
-				created_at date NOT NULL,
-				client_id varchar(100) NOT NULL,
-				-- Article ID
-				post_id bigint(20),
-				-- Article categories IDs
-				categories_ids varchar(100),
-				PRIMARY KEY  (id)
-			) $charset_collate;";
-
-			$wpdb->query( $sql ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
-		}
+		return $wpdb->prefix . 'newspack_campaigns_events';
 	}
 }
-
-Segmentation::init();
