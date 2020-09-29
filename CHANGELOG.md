@@ -1,3 +1,10 @@
+## [1.12.1-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.12.0...v1.12.1-alpha.1) (2020-09-29)
+
+
+### Bug Fixes
+
+* scroll-triggered popups ([#232](https://github.com/Automattic/newspack-popups/issues/232)) ([cff67c6](https://github.com/Automattic/newspack-popups/commit/cff67c6db04a7aafb9c092fe18f8ec499e93e0be)), closes [#217](https://github.com/Automattic/newspack-popups/issues/217) [#231](https://github.com/Automattic/newspack-popups/issues/231)
+
 # [1.12.0](https://github.com/Automattic/newspack-popups/compare/v1.11.0...v1.12.0) (2020-09-22)
 
 
