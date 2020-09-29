@@ -33,30 +33,6 @@ class InsertionTest extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Test default options.
-	 */
-	public function test_default_options() {
-		$popup_object = Newspack_Popups_Model::create_popup_object( get_post( self::$popup_id ) );
-		self::assertEquals(
-			$popup_object['options'],
-			[
-				'background_color'        => '#FFFFFF',
-				'display_title'           => false,
-				'dismiss_text'            => Newspack_Popups::get_default_dismiss_text(),
-				'frequency'               => 'once',
-				'overlay_color'           => '#000000',
-				'overlay_opacity'         => '30',
-				'placement'               => 'center',
-				'trigger_type'            => 'time',
-				'trigger_delay'           => '3',
-				'trigger_scroll_progress' => 0,
-				'utm_suppression'         => null,
-			],
-			'Default options are as expected.'
-		);
-	}
-
-	/**
 	 * Test popup insertion into a post.
 	 */
 	public function test_insertion() {

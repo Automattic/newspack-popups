@@ -419,9 +419,7 @@ final class Newspack_Popups_Inserter {
 	public static function assess_is_post( $popup ) {
 		if (
 			// Inline Pop-ups can only appear in Posts.
-			'inline' === $popup['options']['placement'] ||
-			// Pop-ups triggered by scroll position can only appear on Posts.
-			'scroll' === $popup['options']['trigger_type']
+			'inline' === $popup['options']['placement']
 		) {
 			return is_single();
 		}
