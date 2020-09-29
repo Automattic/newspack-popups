@@ -157,6 +157,7 @@ $color__secondary-variation: darken( $color__secondary, 10% );
 
 // Alignment
 .entry-content {
+	/* stylelint-disable-next-line no-duplicate-selectors */
 	.newspack-lightbox {
 		.newspack-popup {
 			.alignfull,
@@ -233,4 +234,11 @@ $color__secondary-variation: darken( $color__secondary, 10% );
 			}
 		}
 	}
+}
+
+// This is needed for the scroll-triggered popups to function properly.
+// (#page-position-marker element is an absolutely-placed child of .entry-content)
+/* stylelint-disable-next-line no-duplicate-selectors */
+.entry-content {
+	position: relative !important;
 }
