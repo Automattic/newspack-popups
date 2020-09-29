@@ -12,7 +12,7 @@ class SegmentationTest extends WP_UnitTestCase {
 	private static $post_read_payload = [ // phpcs:ignore Squiz.Commenting.VariableComment.Missing
 		'is_post'    => '1',
 		'clientId'   => 'test-1',
-		'id'         => '42',
+		'post_id'    => '42',
 		'categories' => '5,6',
 	];
 
@@ -37,7 +37,7 @@ class SegmentationTest extends WP_UnitTestCase {
 				'post_read',
 				self::$post_read_payload['clientId'],
 				gmdate( 'Y-m-d', time() ),
-				self::$post_read_payload['id'],
+				self::$post_read_payload['post_id'],
 				self::$post_read_payload['categories'],
 			]
 		) . "\n";
@@ -93,7 +93,7 @@ class SegmentationTest extends WP_UnitTestCase {
 
 		self::assertEquals(
 			[
-				'post_id'      => self::$post_read_payload['id'],
+				'post_id'      => self::$post_read_payload['post_id'],
 				'category_ids' => self::$post_read_payload['categories'],
 			],
 			$read_posts[0],

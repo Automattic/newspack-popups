@@ -108,48 +108,24 @@ final class Newspack_Popups_Segmentation {
 	/**
 	 * Insert amp-analytics tracking code.
 	 * Has to be included on every page to set the cookie.
+	 *
+	 * This amp-analytics tag will not report any analytics, it's only responsible for settings the cookie
+	 * bearing the client ID, as well as handling the linker paramerer when navigating from a proxy site.
+	 *
+	 * There is a known issue with amp-analytics & amp-access interoperation – more on that at
+	 * https://github.com/Automattic/newspack-popups/pull/224#discussion_r496655085.
 	 */
 	public static function insert_amp_analytics() {
 		if ( ! self::is_tracking() ) {
 			return;
 		}
 
-		$endpoint = self::get_segmentation_endpoint();
-
-		$categories   = get_the_category();
-		$category_ids = '';
-		if ( ! empty( $categories ) ) {
-			$category_ids = implode(
-				',',
-				array_map(
-					function( $cat ) {
-						return $cat->term_id;
-					},
-					$categories
-				)
-			);
-		}
-
 		$linker_id            = 'cid';
 		$amp_analytics_config = [
-			'requests' => [
-				// The clientId value will be read from cookie.
-				'event' => esc_url( $endpoint ) . '?is_post=' . ( is_single() ? 1 : 0 ) . '&clientId=${clientId(' . esc_attr( self::NEWSPACK_SEGMENTATION_CID_NAME ) . ')}',
-			],
-			'triggers' => [
-				'trackPageview' => [
-					'on'             => 'visible',
-					'request'        => 'event',
-					'extraUrlParams' => [
-						'id'         => esc_attr( get_the_ID() ),
-						'categories' => esc_attr( $category_ids ),
-					],
-				],
-			],
 			// Linker will append a query param to all internal links.
 			// This will only be performed on a proxy site (like AMP cache) by default.
 			// https://amp.dev/documentation/components/amp-analytics/?format=websites#linkers.
-			'linkers'  => [
+			'linkers' => [
 				'enabled' => true,
 				self::NEWSPACK_SEGMENTATION_CID_LINKER_PARAM => [
 					'ids' => [
@@ -159,7 +135,7 @@ final class Newspack_Popups_Segmentation {
 			],
 			// If the linker parameter is found, the cookie value will be overwritten by it.
 			// https://amp.dev/documentation/components/amp-analytics/?format=websites#cookies.
-			'cookies'  => [
+			'cookies' => [
 				'enabled'                            => true,
 				self::NEWSPACK_SEGMENTATION_CID_NAME => [
 					'value' => 'LINKER_PARAM(' . self::NEWSPACK_SEGMENTATION_CID_LINKER_PARAM . ', ' . $linker_id . ')',
@@ -174,15 +150,6 @@ final class Newspack_Popups_Segmentation {
 				</script>
 			</amp-analytics>
 		<?php
-	}
-
-	/**
-	 * Endpoint to handle Pop-up data.
-	 *
-	 * @return string Endpoint URL.
-	 */
-	public static function get_segmentation_endpoint() {
-		return plugins_url( '../api/segmentation/index.php', __FILE__ );
 	}
 
 	/**

@@ -6,39 +6,16 @@
  */
 
 /**
- * Extend the base Lightweight_API class.
+ * Manages reporting data for segmentation features.
  */
-require_once dirname( __FILE__ ) . '/../classes/class-lightweight-api.php';
-
-/**
- * Manages Segmentation.
- */
-class Segmentation_Report extends Lightweight_API {
-	/**
-	 * Constructor.
-	 */
-	public function __construct() {
-		parent::__construct();
-		if ( ! $_POST && ! $_GET ) { // phpcs:ignore
-			return;
-		}
-		$this->api_handle_post_read( $this->get_post_payload() );
-		$this->respond();
-	}
-
+class Segmentation_Report {
 	/**
 	 * Handle visitor.
-	 *
-	 * May or may not add a post read to the events table – ideally the request should be made
-	 * only on single posts, but in order to make amp-analytics set the client ID cookie,
-	 * the code has to be placed on each page. There may be a better solution, as that non-event-adding
-	 * request is not necessary.
 	 *
 	 * @param object $payload a payload.
 	 */
 	public static function api_handle_post_read( $payload ) {
-		$is_post = $payload['is_post'];
-		if ( '1' === $is_post ) {
+		if ( $payload['is_post'] ) {
 			// Add line to log file.
 			$line = implode(
 				';',
@@ -46,7 +23,7 @@ class Segmentation_Report extends Lightweight_API {
 					'post_read',
 					$payload['clientId'],
 					isset( $payload['date'] ) ? $payload['date'] : gmdate( 'Y-m-d', time() ),
-					$payload['id'],
+					$payload['post_id'],
 					$payload['categories'],
 				]
 			);
@@ -59,5 +36,3 @@ class Segmentation_Report extends Lightweight_API {
 		}
 	}
 }
-
-new Segmentation_Report();

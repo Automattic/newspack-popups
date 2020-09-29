@@ -328,27 +328,21 @@ final class Newspack_Popups_Inserter {
 
 	/**
 	 * Add amp-access header code.
+	 *
+	 * The amp-access endpoint is also responsible for reporting visits, in order to minimise
+	 * the number of requests. For this reason it is placed on every page, not only those
+	 * with popups.
 	 */
 	public static function insert_popups_amp_access() {
-		if ( is_admin() || self::assess_has_disabled_popups() ) {
+		if ( ! Newspack_Popups_Segmentation::is_tracking() ) {
 			return;
 		}
 
 		$popups = self::popups_for_post();
 
-		if (
-			empty( $popups ) ||
-			(
-				// A preview (or a single test popup) – no need to hit the API.
-				1 === count( $popups ) && '' === Newspack_Popups_Model::get_access_attrs( reset( $popups ) )
-			)
-		) {
-			return;
-		}
-
 		$popups_access_provider = [
 			'namespace'     => 'popups',
-			'authorization' => esc_url( Newspack_Popups_Model::get_reader_endpoint() ) . '?cid=CLIENT_ID(newspack-cid)',
+			'authorization' => esc_url( Newspack_Popups_Model::get_reader_endpoint() ) . '?cid=CLIENT_ID(' . Newspack_Popups_Segmentation::NEWSPACK_SEGMENTATION_CID_NAME . ')',
 			'noPingback'    => true,
 		];
 
@@ -357,8 +351,29 @@ final class Newspack_Popups_Inserter {
 			$popups_configs[] = self::create_single_popup_access_payload( $popup );
 		}
 
+		$categories   = get_the_category();
+		$category_ids = '';
+		if ( ! empty( $categories ) ) {
+			$category_ids = implode(
+				',',
+				array_map(
+					function( $cat ) {
+						return $cat->term_id;
+					},
+					$categories
+				)
+			);
+		}
+
 		$popups_access_provider['authorization'] .= '&popups=' . wp_json_encode( $popups_configs );
 		$popups_access_provider['authorization'] .= '&settings=' . wp_json_encode( \Newspack_Popups_Settings::get_settings() );
+		$popups_access_provider['authorization'] .= '&visit=' . wp_json_encode(
+			[
+				'post_id'    => esc_attr( get_the_ID() ),
+				'categories' => esc_attr( $category_ids ),
+				'is_post'    => is_single(),
+			] 
+		);
 
 		?>
 		<script id="amp-access" type="application/json">
@@ -380,7 +395,7 @@ final class Newspack_Popups_Inserter {
 	 * Register and enqueue all required AMP scripts, if needed.
 	 */
 	public static function register_amp_scripts() {
-		if ( self::assess_has_disabled_popups() ) {
+		if ( ! Newspack_Popups_Segmentation::is_tracking() ) {
 			return;
 		}
 		if ( ! is_admin() && ! wp_script_is( 'amp-runtime', 'registered' ) ) {
