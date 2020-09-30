@@ -789,7 +789,7 @@ final class Newspack_Popups_Model {
 			</form>
 		</amp-layout>
 		<div id="page-position-marker" style="position: absolute; top: <?php echo esc_attr( $popup['options']['trigger_scroll_progress'] ); ?>%"></div>
-		<amp-position-observer target="page-position-marker" on="enter:showAnim.start;" once layout="nodisplay" />
+		<amp-position-observer target="page-position-marker" on="enter:showAnim.start;" once layout="nodisplay"></amp-position-observer>
 		<amp-animation id="showAnim" layout="nodisplay">
 			<script type="application/json">
 				{
