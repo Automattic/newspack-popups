@@ -1,3 +1,10 @@
+## [1.12.2](https://github.com/Automattic/newspack-popups/compare/v1.12.1...v1.12.2) (2020-09-30)
+
+
+### Bug Fixes
+
+* scroll-triggered popups on non-AMP pages ([6b55e13](https://github.com/Automattic/newspack-popups/commit/6b55e1360aeb0c3d9896917cf10c39904ee29fac))
+
 ## [1.12.1](https://github.com/Automattic/newspack-popups/compare/v1.12.0...v1.12.1) (2020-09-29)
 
 
