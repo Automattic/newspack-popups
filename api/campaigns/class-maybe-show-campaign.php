@@ -33,14 +33,16 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		$response  = [];
 		$client_id = $_REQUEST['cid']; // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 
-		Segmentation_Report::api_handle_post_read(
-			array_merge(
-				[
-					'clientId' => $client_id,
-				],
-				(array) $visit
-			)
-		);
+		if ( defined( 'ENABLE_CAMPAIGN_EVENT_LOGGING' ) && ENABLE_CAMPAIGN_EVENT_LOGGING ) {
+			Segmentation_Report::api_handle_post_read(
+				array_merge(
+					[
+						'clientId' => $client_id,
+					],
+					(array) $visit
+				)
+			);
+		}
 
 		foreach ( $campaigns as $campaign ) {
 			$response[ $campaign->id ] = $this->should_campaign_be_shown(

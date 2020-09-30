@@ -37,10 +37,12 @@ final class Newspack_Popups_Parse_Logs {
 	 * Constructor.
 	 */
 	public function __construct() {
-		add_filter( 'cron_schedules', [ __CLASS__, 'add_cron_interval' ] ); // phpcs:ignore WordPress.WP.CronInterval.CronSchedulesInterval
-		add_action( 'newspack_popups_segmentation_cron_hook', [ __CLASS__, 'parse_events_logs' ] );
-		if ( ! wp_next_scheduled( 'newspack_popups_segmentation_cron_hook' ) ) {
-			wp_schedule_event( time(), 'every_quarter_hour', 'newspack_popups_segmentation_cron_hook' );
+		if ( file_exists( Segmentation::get_log_file_path() ) ) {
+			add_filter( 'cron_schedules', [ __CLASS__, 'add_cron_interval' ] ); // phpcs:ignore WordPress.WP.CronInterval.CronSchedulesInterval
+			add_action( 'newspack_popups_segmentation_cron_hook', [ __CLASS__, 'parse_events_logs' ] );
+			if ( ! wp_next_scheduled( 'newspack_popups_segmentation_cron_hook' ) ) {
+				wp_schedule_event( time(), 'every_quarter_hour', 'newspack_popups_segmentation_cron_hook' );
+			}
 		}
 	}
 
