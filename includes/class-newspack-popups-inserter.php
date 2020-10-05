@@ -339,9 +339,8 @@ final class Newspack_Popups_Inserter {
 		}
 
 		$popups = self::popups_for_post();
-
 		// "Escape hatch" if there's a need to block adding amp-access for pages that have no campaigns.
-		if ( apply_filters( 'newspack_popups_suppress_insert_amp_access', $popups ) ) {
+		if ( apply_filters( 'newspack_popups_suppress_insert_amp_access', false, $popups ) ) {
 			return;
 		}
 

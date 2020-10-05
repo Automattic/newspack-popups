@@ -29,8 +29,13 @@ The segmentation feature causes amp-access to be added to all pages whether or n
 ```
 add_filter(
 	'newspack_popups_suppress_insert_amp_access',
-	function( $campaigns ) {
-		return empty( $campaigns );
-	}
+	function( $should_suppress, $campaigns ) {
+		if ( empty( $campaigns ) ) {
+			return true;
+		}
+		return $should_suppress;
+	},
+	10,
+	2
 );
 ```
