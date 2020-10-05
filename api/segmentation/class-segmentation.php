@@ -37,7 +37,8 @@ class Segmentation {
 	 * Get log file path.
 	 */
 	public static function get_log_file_path() {
-		return get_temp_dir() . 'newspack-popups-events.log';
+		global $table_prefix;
+		return get_temp_dir() . $table_prefix . 'newspack-popups-events.log';
 	}
 
 	/**
