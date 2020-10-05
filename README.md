@@ -25,3 +25,14 @@ The segmentation features rely on visit logging. This is currently opt-in, manag
 ```
 define( 'ENABLE_CAMPAIGN_EVENT_LOGGING', true );
 ```
+
+The segmentation feature causes amp-access to be added to all pages whether or not campaigns are present. To override this behavior use the `newspack_popups_suppress_insert_amp_access` filter. The filter receives an array of campaigns for the current page. To suppress, return true, for example:
+
+```
+add_filter(
+	'newspack_popups_suppress_insert_amp_access',
+	function( $campaigns ) {
+		return empty( $campaigns );
+	}
+);
+```

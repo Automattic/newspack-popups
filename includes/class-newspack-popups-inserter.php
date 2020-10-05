@@ -340,6 +340,11 @@ final class Newspack_Popups_Inserter {
 
 		$popups = self::popups_for_post();
 
+		// "Escape hatch" if there's a need to block adding amp-access for pages that have no campaigns.
+		if ( apply_filters( 'newspack_popups_suppress_insert_amp_access', $popups ) ) {
+			return;
+		}
+
 		$popups_access_provider = [
 			'namespace'     => 'popups',
 			'authorization' => esc_url( Newspack_Popups_Model::get_reader_endpoint() ) . '?cid=CLIENT_ID(' . Newspack_Popups_Segmentation::NEWSPACK_SEGMENTATION_CID_NAME . ')',
@@ -372,9 +377,8 @@ final class Newspack_Popups_Inserter {
 				'post_id'    => esc_attr( get_the_ID() ),
 				'categories' => esc_attr( $category_ids ),
 				'is_post'    => is_single(),
-			] 
+			]
 		);
-
 		?>
 		<script id="amp-access" type="application/json">
 			<?php echo wp_json_encode( $popups_access_provider ); ?>
