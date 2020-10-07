@@ -1,3 +1,10 @@
+# [1.13.0](https://github.com/Automattic/newspack-popups/compare/v1.12.2...v1.13.0) (2020-10-07)
+
+
+### Features
+
+* segmentation data collection ([ff5ffdc](https://github.com/Automattic/newspack-popups/commit/ff5ffdca2969418fa58a4dd59df8dabd1381b2cd)), closes [#233](https://github.com/Automattic/newspack-popups/issues/233)
+
 ## [1.12.2](https://github.com/Automattic/newspack-popups/compare/v1.12.1...v1.12.2) (2020-09-30)
 
 
