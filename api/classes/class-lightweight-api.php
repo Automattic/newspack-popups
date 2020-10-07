@@ -207,4 +207,35 @@ class Lightweight_API {
 	public function save_client_data( $client_id, $client_data ) {
 		return $this->set_transient( $this->get_transient_name( $client_id ), $client_data );
 	}
+
+	/**
+	 * Get request param.
+	 *
+	 * @param string $param Param name.
+	 * @param object $request A POST request.
+	 */
+	public function get_request_param( $param, $request ) {
+		$value = isset( $request[ $param ] ) ? $request[ $param ] : false; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		return $value;
+	}
+
+	/**
+	 * Get POST request payload.
+	 */
+	public function get_post_payload() {
+		$payload = $_POST; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		if ( null == $payload ) {
+			// A POST request made by amp-analytics has to be parsed in this way.
+			// $_POST contains the payload if the request has FormData.
+			$payload = file_get_contents( 'php://input' ); // phpcs:ignore WordPressVIPMinimum.Performance.FetchingRemoteData.FileGetContentsRemoteFile
+			if ( ! empty( $payload ) ) {
+				$payload = (array) json_decode( $payload );
+			}
+		}
+		if ( null == $payload ) {
+			// Of all else fails, look for payload in query string.
+			return $_GET; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended
+		}
+		return $payload;
+	}
 }
