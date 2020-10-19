@@ -450,7 +450,7 @@ final class Newspack_Popups_Model {
 								"selector": "#<?php echo esc_attr( $element_id ); ?> <?php echo esc_attr( $mailchimp_form_selector ); ?>",
 								"extraUrlParams": {
 									"popup_id": "<?php echo esc_attr( self::canonize_popup_id( $popup['id'] ) ); ?>",
-									"cid": "CLIENT_ID(newspack-cid)",
+									"cid": "CLIENT_ID( <?php echo esc_attr( Newspack_Popups_Segmentation::NEWSPACK_SEGMENTATION_CID_NAME ); ?> )",
 									"mailing_list_status": "subscribed",
 									"email": "${formFields[email]}"
 								}
@@ -485,7 +485,7 @@ final class Newspack_Popups_Model {
 							},
 							"extraUrlParams": {
 								"popup_id": "<?php echo esc_attr( self::canonize_popup_id( $popup['id'] ) ); ?>",
-								"cid": "CLIENT_ID(newspack-cid)"
+								"cid": "CLIENT_ID( <?php echo esc_attr( Newspack_Popups_Segmentation::NEWSPACK_SEGMENTATION_CID_NAME ); ?> )"
 							}
 						}
 					},
@@ -791,7 +791,7 @@ final class Newspack_Popups_Model {
 		</amp-layout>
 		<?php if ( $is_scroll_triggered ) : ?>
 			<div id="page-position-marker" style="position: absolute; top: <?php echo esc_attr( $popup['options']['trigger_scroll_progress'] ); ?>%"></div>
-			<amp-position-observer target="page-position-marker" on="enter:showAnim.start;" once layout="nodisplay"/>
+			<amp-position-observer target="page-position-marker" on="enter:showAnim.start;" once layout="nodisplay"></amp-position-observer>
 		<?php endif; ?>
 		<amp-animation id="showAnim" layout="nodisplay" <?php echo $is_scroll_triggered ? '' : 'trigger="visibility"'; ?>>
 			<script type="application/json">
@@ -892,16 +892,12 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
-	 * Endpoint to report Pop-up data.
+	 * Endpoint to handle Pop-up data.
 	 *
 	 * @return string Endpoint URL.
 	 */
 	public static function get_reader_endpoint() {
-		return str_replace(
-			'http://',
-			'//',
-			plugins_url( '../api/', __FILE__ )
-		);
+		return plugins_url( '../api/campaigns/index.php', __FILE__ );
 	}
 
 	/**
@@ -921,7 +917,7 @@ final class Newspack_Popups_Model {
 		<input
 			name="cid"
 			type="hidden"
-			value="CLIENT_ID(newspack-cid)"
+			value="CLIENT_ID(<?php echo esc_attr( Newspack_Popups_Segmentation::NEWSPACK_SEGMENTATION_CID_NAME ); ?>)"
 			data-amp-replace="CLIENT_ID"
 		/>
 		<input

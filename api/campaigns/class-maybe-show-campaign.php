@@ -8,7 +8,9 @@
 /**
  * Extend the base Lightweight_API class.
  */
-require_once 'class-lightweight-api.php';
+require_once dirname( __FILE__ ) . '/../classes/class-lightweight-api.php';
+
+require_once dirname( __FILE__ ) . '/../segmentation/class-segmentation-report.php';
 
 /**
  * GET endpoint to determine if campaign is shown or not.
@@ -27,10 +29,24 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		}
 		$campaigns = json_decode( $_REQUEST['popups'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		$settings  = json_decode( $_REQUEST['settings'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$visit     = json_decode( $_REQUEST['visit'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.InputNotValidated
 		$response  = [];
+		$client_id = $_REQUEST['cid']; // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+
+		if ( defined( 'ENABLE_CAMPAIGN_EVENT_LOGGING' ) && ENABLE_CAMPAIGN_EVENT_LOGGING ) {
+			Segmentation_Report::api_handle_post_read(
+				array_merge(
+					[
+						'clientId' => $client_id,
+					],
+					(array) $visit
+				)
+			);
+		}
+
 		foreach ( $campaigns as $campaign ) {
 			$response[ $campaign->id ] = $this->should_campaign_be_shown(
-				$_REQUEST['cid'], // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+				$client_id,
 				$campaign,
 				$settings,
 				filter_input( INPUT_SERVER, 'HTTP_REFERER', FILTER_SANITIZE_STRING )

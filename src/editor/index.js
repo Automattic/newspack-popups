@@ -222,13 +222,15 @@ const PopupSidebarWithData = compose( [
 	} ),
 ] )( PopupSidebar );
 
-const PluginDocumentSettingPanelDemo = () => (
-	<PluginDocumentSettingPanel name="popup-settings-panel" title={ __( 'Campaign Settings' ) }>
-		<PopupSidebarWithData />
-	</PluginDocumentSettingPanel>
-);
 registerPlugin( 'newspack-popups', {
-	render: PluginDocumentSettingPanelDemo,
+	render: () => (
+		<PluginDocumentSettingPanel
+			name="popup-settings-panel"
+			title={ __( 'Campaign Settings', 'newspack-popups' ) }
+		>
+			<PopupSidebarWithData />
+		</PluginDocumentSettingPanel>
+	),
 	icon: null,
 } );
 
