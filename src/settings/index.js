@@ -60,8 +60,9 @@ const App = () => {
 					onChange={ handleSettingChange( 'suppress_all_newsletter_campaigns_if_one_dismissed' ) }
 				/>
 				<CheckboxControl
-					label={ __(
-						'Non-interactive mode. When enabled, campaigns will not be dismissible and overlay campaigns will not be displayed. This will lessen the load on the server.',
+					label={ __( 'Enable non-interactive mode.', 'newspack-popups' ) }
+					help={ __(
+						'Use this setting in high traffic scenarios. No API requests will be made, reducing server load. Inline campaigns will be shown to all users without dismissal buttons, and overlay campaigns will be suppressed.',
 						'newspack-popups'
 					) }
 					disabled={ inFlight }

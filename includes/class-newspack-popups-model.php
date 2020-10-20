@@ -637,11 +637,13 @@ final class Newspack_Popups_Model {
 	 * @param object $popup Popup.
 	 */
 	public static function get_access_attrs( $popup ) {
+		if ( Newspack_Popups_Settings::is_non_interactive() ) {
+			return '';
+		}
 		if (
 			( 'test' === $popup['options']['frequency'] || Newspack_Popups::previewed_popup_id() ) &&
 			is_user_logged_in() &&
-			current_user_can( 'edit_others_pages' ) ||
-			Newspack_Popups_Settings::is_non_interactive()
+			current_user_can( 'edit_others_pages' )
 		) {
 			return '';
 		}
