@@ -59,6 +59,15 @@ const App = () => {
 					checked={ settings.suppress_all_newsletter_campaigns_if_one_dismissed === '1' }
 					onChange={ handleSettingChange( 'suppress_all_newsletter_campaigns_if_one_dismissed' ) }
 				/>
+				<CheckboxControl
+					label={ __(
+						'Non-interactive mode. When enabled, campaigns will not be dismissible and overlay campaigns will not be displayed. This will lessen the load on the server.',
+						'newspack-popups'
+					) }
+					disabled={ inFlight }
+					checked={ settings.newspack_newsletters_non_interative_mode === '1' }
+					onChange={ handleSettingChange( 'newspack_newsletters_non_interative_mode' ) }
+				/>
 			</Card>
 		</Grid>
 	);

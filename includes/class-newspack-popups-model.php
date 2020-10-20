@@ -396,7 +396,7 @@ final class Newspack_Popups_Model {
 	 * @param object $popup The popup object.
 	 * @return boolean True if it is an inline popup.
 	 */
-	protected static function is_inline( $popup ) {
+	public static function is_inline( $popup ) {
 		return 'inline' === $popup['options']['placement'];
 	}
 
@@ -419,7 +419,11 @@ final class Newspack_Popups_Model {
 	 * @return string Prints the generated amp-analytics element.
 	 */
 	protected static function insert_event_tracking( $popup, $body, $element_id ) {
-		if ( Newspack_Popups::previewed_popup_id() || 'test' === $popup['options']['frequency'] ) {
+		if (
+			Newspack_Popups::previewed_popup_id() ||
+			'test' === $popup['options']['frequency'] ||
+			Newspack_Popups_Settings::is_non_interactive()
+		) {
 			return '';
 		}
 		global $wp;
@@ -636,7 +640,8 @@ final class Newspack_Popups_Model {
 		if (
 			( 'test' === $popup['options']['frequency'] || Newspack_Popups::previewed_popup_id() ) &&
 			is_user_logged_in() &&
-			current_user_can( 'edit_others_pages' )
+			current_user_can( 'edit_others_pages' ) ||
+			Newspack_Popups_Settings::is_non_interactive()
 		) {
 			return '';
 		}
@@ -688,7 +693,7 @@ final class Newspack_Popups_Model {
 					<h1 class="newspack-popup-title"><?php echo esc_html( $popup['title'] ); ?></h1>
 				<?php endif; ?>
 						<?php echo ( $body ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-						<?php if ( $dismiss_text ) : ?>
+						<?php if ( $dismiss_text && ! Newspack_Popups_Settings::is_non_interactive() ) : ?>
 					<form class="popup-not-interested-form popup-action-form"
 						method="POST"
 						action-xhr="<?php echo esc_url( $endpoint ); ?>"
