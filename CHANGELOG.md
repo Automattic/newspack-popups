@@ -1,3 +1,16 @@
+# [1.14.0](https://github.com/Automattic/newspack-popups/compare/v1.13.0...v1.14.0) (2020-10-20)
+
+
+### Bug Fixes
+
+* inline markup ([#254](https://github.com/Automattic/newspack-popups/issues/254)) ([bc26e7b](https://github.com/Automattic/newspack-popups/commit/bc26e7b0d57d10bf8027c7cad740333e305b1af7)), closes [#246](https://github.com/Automattic/newspack-popups/issues/246)
+* time-triggered popups ([#242](https://github.com/Automattic/newspack-popups/issues/242)) ([9bee014](https://github.com/Automattic/newspack-popups/commit/9bee0149c335b05ba2f1e544b357e1311e56ee25)), closes [#241](https://github.com/Automattic/newspack-popups/issues/241) [#247](https://github.com/Automattic/newspack-popups/issues/247)
+
+
+### Features
+
+* non-interactive mode ([#253](https://github.com/Automattic/newspack-popups/issues/253)) ([36774f8](https://github.com/Automattic/newspack-popups/commit/36774f830436300b1a62ab4ed76a114d84fc2c15)), closes [#248](https://github.com/Automattic/newspack-popups/issues/248)
+
 # [1.13.0](https://github.com/Automattic/newspack-popups/compare/v1.12.2...v1.13.0) (2020-10-07)
 
 
