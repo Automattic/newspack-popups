@@ -745,6 +745,7 @@ final class Newspack_Popups_Model {
 		$classes              = array( 'newspack-lightbox', 'newspack-lightbox-placement-' . $popup['options']['placement'] );
 		$classes[]            = ( ! empty( $popup['title'] ) && $display_title ) ? 'newspack-lightbox-has-title' : null;
 		$classes[]            = $is_newsletter_prompt ? 'newspack-newsletter-prompt-overlay' : null;
+		$is_scroll_triggered  = 'scroll' === $popup['options']['trigger_type'];
 
 		add_filter(
 			'newspack_analytics_events',
@@ -795,9 +796,11 @@ final class Newspack_Popups_Model {
 				<button style="opacity: <?php echo floatval( $overlay_opacity ); ?>;background-color:<?php echo esc_attr( $overlay_color ); ?>;" class="newspack-lightbox-shim" on="tap:<?php echo esc_attr( $element_id ); ?>.hide"></button>
 			</form>
 		</amp-layout>
-		<div id="page-position-marker" style="position: absolute; top: <?php echo esc_attr( $popup['options']['trigger_scroll_progress'] ); ?>%"></div>
-		<amp-position-observer target="page-position-marker" on="enter:showAnim.start;" once layout="nodisplay"></amp-position-observer>
-		<amp-animation id="showAnim" layout="nodisplay">
+		<?php if ( $is_scroll_triggered ) : ?>
+			<div id="page-position-marker" style="position: absolute; top: <?php echo esc_attr( $popup['options']['trigger_scroll_progress'] ); ?>%"></div>
+			<amp-position-observer target="page-position-marker" on="enter:showAnim.start;" once layout="nodisplay"></amp-position-observer>
+		<?php endif; ?>
+		<amp-animation id="showAnim" layout="nodisplay" <?php echo $is_scroll_triggered ? '' : 'trigger="visibility"'; ?>>
 			<script type="application/json">
 				{
 					"duration": "125ms",

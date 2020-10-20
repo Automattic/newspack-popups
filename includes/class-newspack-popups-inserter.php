@@ -401,9 +401,6 @@ final class Newspack_Popups_Inserter {
 	 * Register and enqueue all required AMP scripts, if needed.
 	 */
 	public static function register_amp_scripts() {
-		if ( ! Newspack_Popups_Segmentation::is_tracking() ) {
-			return;
-		}
 		if ( ! is_admin() && ! wp_script_is( 'amp-runtime', 'registered' ) ) {
 		// phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion
 			wp_register_script(

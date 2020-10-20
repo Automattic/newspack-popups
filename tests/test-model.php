@@ -69,13 +69,37 @@ class ModelTest extends WP_UnitTestCase {
 		@$dom->loadHTML( Newspack_Popups_Model::generate_popup( $popup_object_default ) ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
 		$xpath = new DOMXpath( $dom );
 
+		self::assertEquals(
+			0,
+			$xpath->query( '//*[@id="page-position-marker"]' )->length,
+			'The page position marker is not output for a default (time-triggered) popup.'
+		);
+
+		self::assertEquals(
+			'visibility',
+			$xpath->query( '//amp-animation' )->item( 0 )->getAttribute( 'trigger' ),
+			'The amp-animation trigger is set to "visibility" for default (time-triggered) popup.'
+		);
+
+		$popup_object_with_just_scroll = Newspack_Popups_Model::create_popup_object(
+			get_post( self::$popup_id ),
+			false,
+			[
+				'trigger_type' => 'scroll',
+			]
+		);
+
+		$dom = new DomDocument();
+		@$dom->loadHTML( Newspack_Popups_Model::generate_popup( $popup_object_with_just_scroll ) ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+		$xpath = new DOMXpath( $dom );
+
 		self::assertContains(
 			'top: 0%',
 			$xpath->query( '//*[@id="page-position-marker"]' )->item( 0 )->getAttribute( 'style' ),
 			'The position marker is set at 0% by default.'
 		);
 
-		$popup_object = Newspack_Popups_Model::create_popup_object(
+		$popup_object_with_set_scroll_progress = Newspack_Popups_Model::create_popup_object(
 			get_post( self::$popup_id ),
 			false,
 			[
@@ -85,7 +109,7 @@ class ModelTest extends WP_UnitTestCase {
 		);
 
 		$dom = new DomDocument();
-		@$dom->loadHTML( Newspack_Popups_Model::generate_popup( $popup_object ) ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+		@$dom->loadHTML( Newspack_Popups_Model::generate_popup( $popup_object_with_set_scroll_progress ) ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
 		$xpath = new DOMXpath( $dom );
 
 		self::assertContains(
