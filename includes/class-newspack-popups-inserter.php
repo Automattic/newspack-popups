@@ -25,7 +25,7 @@ final class Newspack_Popups_Inserter {
 	 *
 	 * @var boolean
 	 */
-	protected static $the_content_has_rendered = false;
+	public static $the_content_has_rendered = false;
 
 	/**
 	 * Retrieve the appropriate popups for the current post.
@@ -269,6 +269,9 @@ final class Newspack_Popups_Inserter {
 	 * Enqueue the assets needed to display the popups.
 	 */
 	public static function enqueue_popup_assets() {
+		if ( defined( 'IS_TEST_ENV' ) && IS_TEST_ENV ) {
+			return;
+		}
 		$is_amp = function_exists( 'is_amp_endpoint' ) && is_amp_endpoint();
 		if ( ! $is_amp ) {
 			wp_register_script(
@@ -484,6 +487,10 @@ final class Newspack_Popups_Inserter {
 	public static function should_display( $popup ) {
 		// Hide non-test mode campaigns for logged-in users.
 		if ( is_user_logged_in() && 'test' !== $popup['options']['frequency'] ) {
+			return false;
+		}
+		// Hide overlay campaigns in non-interactive mode, for non-logged-in users.
+		if ( ! is_user_logged_in() && Newspack_Popups_Settings::is_non_interactive() && ! Newspack_Popups_Model::is_inline( $popup ) ) {
 			return false;
 		}
 		return self::assess_is_post( $popup ) &&

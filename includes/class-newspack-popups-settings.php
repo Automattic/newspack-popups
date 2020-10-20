@@ -49,9 +49,17 @@ class Newspack_Popups_Settings {
 	 */
 	public static function get_settings() {
 		return [
-			'suppress_newsletter_campaigns' => get_option( 'suppress_newsletter_campaigns', true ),
+			'suppress_newsletter_campaigns'            => get_option( 'suppress_newsletter_campaigns', true ),
 			'suppress_all_newsletter_campaigns_if_one_dismissed' => get_option( 'suppress_all_newsletter_campaigns_if_one_dismissed', true ),
+			'newspack_newsletters_non_interative_mode' => self::is_non_interactive(),
 		];
+	}
+
+	/**
+	 * Is the non-interactive setting on?
+	 */
+	public static function is_non_interactive() {
+		return get_option( 'newspack_newsletters_non_interative_mode', false );
 	}
 
 	/**
