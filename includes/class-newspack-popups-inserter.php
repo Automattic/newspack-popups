@@ -25,7 +25,7 @@ final class Newspack_Popups_Inserter {
 	 *
 	 * @var boolean
 	 */
-	protected static $the_content_has_rendered = false;
+	public static $the_content_has_rendered = false;
 
 	/**
 	 * Retrieve the appropriate popups for the current post.
@@ -269,6 +269,9 @@ final class Newspack_Popups_Inserter {
 	 * Enqueue the assets needed to display the popups.
 	 */
 	public static function enqueue_popup_assets() {
+		if ( defined( 'IS_TEST_ENV' ) && IS_TEST_ENV ) {
+			return;
+		}
 		$is_amp = function_exists( 'is_amp_endpoint' ) && is_amp_endpoint();
 		if ( ! $is_amp ) {
 			wp_register_script(
@@ -304,7 +307,9 @@ final class Newspack_Popups_Inserter {
 		} elseif ( isset( $atts['id'] ) ) {
 			$found_popup = Newspack_Popups_Model::retrieve_popup_by_id( $atts['id'] );
 		}
-		return Newspack_Popups_Model::generate_popup( $found_popup );
+		// Wrapping the inline popup in an aside element prevents the markup from being mangled
+		// if the shortcode is the first block.
+		return '<aside>' . Newspack_Popups_Model::generate_popup( $found_popup ) . '</aside>';
 	}
 
 	/**
@@ -398,9 +403,6 @@ final class Newspack_Popups_Inserter {
 	 * Register and enqueue all required AMP scripts, if needed.
 	 */
 	public static function register_amp_scripts() {
-		if ( ! Newspack_Popups_Segmentation::is_tracking() ) {
-			return;
-		}
 		if ( ! is_admin() && ! wp_script_is( 'amp-runtime', 'registered' ) ) {
 		// phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion
 			wp_register_script(
@@ -484,6 +486,10 @@ final class Newspack_Popups_Inserter {
 	public static function should_display( $popup ) {
 		// Hide non-test mode campaigns for logged-in users.
 		if ( is_user_logged_in() && 'test' !== $popup['options']['frequency'] ) {
+			return false;
+		}
+		// Hide overlay campaigns in non-interactive mode, for non-logged-in users.
+		if ( ! is_user_logged_in() && Newspack_Popups_Settings::is_non_interactive() && ! Newspack_Popups_Model::is_inline( $popup ) ) {
 			return false;
 		}
 		return self::assess_is_post( $popup ) &&
