@@ -307,7 +307,9 @@ final class Newspack_Popups_Inserter {
 		} elseif ( isset( $atts['id'] ) ) {
 			$found_popup = Newspack_Popups_Model::retrieve_popup_by_id( $atts['id'] );
 		}
-		return Newspack_Popups_Model::generate_popup( $found_popup );
+		// Wrapping the inline popup in an aside element prevents the markup from being mangled
+		// if the shortcode is the first block.
+		return '<aside>' . Newspack_Popups_Model::generate_popup( $found_popup ) . '</aside>';
 	}
 
 	/**
