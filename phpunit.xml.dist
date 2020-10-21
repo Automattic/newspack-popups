@@ -10,7 +10,7 @@
 	<filter>
 		<whitelist addUncoveredFilesFromWhitelist="true">
 			<directory>./includes</directory>
-			<directory>./api/classes</directory>
+			<directory>./api</directory>
 		</whitelist>
 	</filter>
 	<testsuites>
