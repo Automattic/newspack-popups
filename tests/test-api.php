@@ -361,17 +361,17 @@ class APITest extends WP_UnitTestCase {
 	 * Suppression caused by a newsletter subscription.
 	 */
 	public function test_newsletter_subscription() {
-		$test_popup = self::create_test_popup(
+		$test_popup_with_subscription_block = self::create_test_popup(
 			[
 				'placement' => 'inline',
 				'frequency' => 'always',
 			],
 			'<!-- wp:jetpack/mailchimp --><!-- wp:jetpack/button {"element":"button","uniqueId":"mailchimp-widget-id","text":"Join my email list"} /--><!-- /wp:jetpack/mailchimp -->'
 		);
-		$client_id  = 'amp-123';
+		$client_id                          = 'amp-123';
 
 		self::assertTrue(
-			self::$maybe_show_campaign->should_campaign_be_shown( $client_id, $test_popup['payload'], self::$settings ),
+			self::$maybe_show_campaign->should_campaign_be_shown( $client_id, $test_popup_with_subscription_block['payload'], self::$settings ),
 			'Assert initially visible.'
 		);
 
@@ -379,15 +379,63 @@ class APITest extends WP_UnitTestCase {
 		self::$report_campaign_data->report_campaign(
 			[
 				'cid'                 => $client_id,
-				'popup_id'            => Newspack_Popups_Model::canonize_popup_id( $test_popup['id'] ),
+				'popup_id'            => Newspack_Popups_Model::canonize_popup_id( $test_popup_with_subscription_block['id'] ),
 				'mailing_list_status' => 'subscribed',
 				'email'               => 'foo@bar.com',
 			]
 		);
 
 		self::assertFalse(
-			self::$maybe_show_campaign->should_campaign_be_shown( $client_id, $test_popup['payload'], self::$settings ),
+			self::$maybe_show_campaign->should_campaign_be_shown( $client_id, $test_popup_with_subscription_block['payload'], self::$settings ),
 			'Assert not shown after subscribed.'
 		);
+	}
+
+	/**
+	 * Collecting of the email address used for newsletter subscription.
+	 */
+	public function test_newsletter_subscription_data_collection() {
+		$test_popup_with_subscription_block = self::create_test_popup(
+			[
+				'placement' => 'inline',
+				'frequency' => 'always',
+			],
+			'<!-- wp:jetpack/mailchimp --><!-- wp:jetpack/button {"element":"button","uniqueId":"mailchimp-widget-id","text":"Join my email list"} /--><!-- /wp:jetpack/mailchimp -->'
+		);
+		$client_id                          = 'amp-123';
+
+		self::assertEquals(
+			self::$report_campaign_data->get_client_data( $client_id ),
+			[
+				'suppressed_newsletter_campaign' => false,
+				'email_subscriptions'            => [],
+			],
+			'The initial client data has expected shape.'
+		);
+
+		$email_address = 'foo@bar.com';
+		// Report a subscription.
+		self::$report_campaign_data->report_campaign(
+			[
+				'cid'                 => $client_id,
+				'popup_id'            => Newspack_Popups_Model::canonize_popup_id( $test_popup_with_subscription_block['id'] ),
+				'mailing_list_status' => 'subscribed',
+				'email'               => $email_address,
+			]
+		);
+
+		self::assertEquals(
+			self::$report_campaign_data->get_client_data( $client_id ),
+			[
+				'suppressed_newsletter_campaign' => false,
+				'email_subscriptions'            => [
+					[
+						'email' => $email_address,
+					],
+				],
+			],
+			'The client data after a subscription contains the provided email address.'
+		);
+
 	}
 }

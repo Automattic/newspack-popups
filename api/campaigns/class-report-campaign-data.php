@@ -54,15 +54,16 @@ class Report_Campaign_Data extends Lightweight_API {
 			}
 		}
 
-		// Subscribed to a newsletter.
+		// Subscribed to a newsletter – suppress this campaign.
 		if ( 'subscribed' === $this->get_request_param( 'mailing_list_status', $request ) ) {
 			$campaign_data['suppress_forever'] = true;
 		}
 
-		// Add an email subscription to client.
+		// Add an email subscription to client data.
 		$email_address = $this->get_request_param( 'email', $request );
 		if ( $email_address ) {
-			$client_data['email_subscriptions'] = [
+			// This is an array, so it's possible to collect data for separate lists in the future.
+			$client_data['email_subscriptions'][] = [
 				'email' => $email_address,
 			];
 		}
