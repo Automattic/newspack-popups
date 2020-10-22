@@ -193,6 +193,7 @@ class Lightweight_API {
 		if ( ! $data ) {
 			return [
 				'suppressed_newsletter_campaign' => false,
+				'donations'                      => [],
 			];
 		}
 		return $data;
