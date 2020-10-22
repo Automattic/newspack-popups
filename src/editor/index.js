@@ -26,6 +26,7 @@ import { ColorPaletteControl } from '@wordpress/block-editor';
  */
 import { optionsFieldsSelector, updateEditorColors } from './utils';
 import PopupPreview from './PopupPreview';
+import './style.scss';
 
 class PopupSidebar extends Component {
 	componentDidMount() {
