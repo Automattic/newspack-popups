@@ -150,7 +150,7 @@ class PopupSidebar extends Component {
 						label={ __( 'Approximate position (in percent)' ) }
 						value={ trigger_scroll_progress }
 						onChange={ value => onMetaFieldChange( 'trigger_scroll_progress', value ) }
-						min={ 1 }
+						min={ 0 }
 						max={ 100 }
 					/>
 				) }
