@@ -6,7 +6,6 @@
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
-import apiFetch from '@wordpress/api-fetch';
 import { withSelect, withDispatch } from '@wordpress/data';
 import { compose } from '@wordpress/compose';
 import { Component, Fragment } from '@wordpress/element';
@@ -29,23 +28,12 @@ import { optionsFieldsSelector, updateEditorColors } from './utils';
 import PopupPreview from './PopupPreview';
 
 class PopupSidebar extends Component {
-	state = {
-		isSiteWideDefault: this.props.newspack_popups_is_sitewide_default,
-	};
 	componentDidMount() {
 		const { background_color } = this.props;
 		updateEditorColors( background_color );
 	}
 	componentDidUpdate( prevProps ) {
-		const { background_color, isSavingPost, id } = this.props;
-		const { isSiteWideDefault } = this.state;
-		if ( ! prevProps.isSavingPost && isSavingPost ) {
-			const params = {
-				path: '/newspack-popups/v1/sitewide_default/' + id,
-				method: isSiteWideDefault ? 'POST' : 'DELETE',
-			};
-			apiFetch( params );
-		}
+		const { background_color } = this.props;
 		if ( background_color !== prevProps.background_color ) {
 			updateEditorColors( background_color );
 		}
@@ -80,25 +68,18 @@ class PopupSidebar extends Component {
 			trigger_type,
 			utm_suppression,
 			onSitewideDefaultChange,
-			isCurrentPostPublished,
 		} = this.props;
-		const { isSiteWideDefault } = this.state;
 		const isInline = 'inline' === placement;
-
-		// The sitewide default option is for overlay popups only.
-		const canBeSiteWideDefault = ! isInline && isCurrentPostPublished;
 
 		return (
 			<Fragment>
-				{ canBeSiteWideDefault && (
+				{ // The sitewide default option is for overlay popups only.
+				! isInline && (
 					<CheckboxControl
 						label={ __( 'Sitewide Default', 'newspack-popups' ) }
-						checked={ isSiteWideDefault }
-						onChange={ _isSiteWideDefault => {
-							this.setState( { isSiteWideDefault: _isSiteWideDefault } );
-							// an ugly hack to update the post attribute, just to make the editor aware of a change,
-							// so that "update" button becomes enabled
-							onSitewideDefaultChange( Math.random() );
+						checked={ this.props.newspack_popups_is_sitewide_default }
+						onChange={ value => {
+							onSitewideDefaultChange( value );
 						} }
 					/>
 				) }
