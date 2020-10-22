@@ -478,6 +478,24 @@ final class Newspack_Popups_Inserter {
 	}
 
 	/**
+	 * If Pop-up has tags, it should only be shown on posts/pages with those.
+	 *
+	 * @param object $popup The popup to assess.
+	 * @return bool Should popup be shown based on tags it has.
+	 */
+	public static function assess_tags_filter( $popup ) {
+		$post_tags  = get_the_tags();
+		$popup_tags = get_the_tags( $popup['id'] );
+		if ( $popup_tags && count( $popup_tags ) ) {
+			return array_intersect(
+				array_column( $post_tags, 'term_id' ),
+				array_column( $popup_tags, 'term_id' )
+			);
+		}
+		return true;
+	}
+
+	/**
 	 * Should Popup be rendered, based on universal conditions.
 	 *
 	 * @param object $popup The popup to assess.
@@ -494,7 +512,8 @@ final class Newspack_Popups_Inserter {
 		}
 		return self::assess_is_post( $popup ) &&
 			self::assess_test_mode( $popup ) &&
-			self::assess_categories_filter( $popup );
+			self::assess_categories_filter( $popup ) &&
+			self::assess_tags_filter( $popup );
 	}
 }
 $newspack_popups_inserter = new Newspack_Popups_Inserter();
