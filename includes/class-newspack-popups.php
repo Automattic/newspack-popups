@@ -50,7 +50,7 @@ final class Newspack_Popups {
 		add_action( 'enqueue_block_editor_assets', [ __CLASS__, 'enqueue_block_editor_assets' ] );
 		add_filter( 'display_post_states', [ __CLASS__, 'display_post_states' ], 10, 2 );
 		add_action( 'rest_api_init', [ __CLASS__, 'rest_api_init' ] );
-		add_action( 'save_post_newspack_popups_cpt', [ __CLASS__, 'popup_default_fields' ], 10, 3 );
+		add_action( 'save_post_' . self::NEWSPACK_PLUGINS_CPT, [ __CLASS__, 'popup_default_fields' ], 10, 3 );
 
 		if ( filter_input( INPUT_GET, 'newspack_popups_preview_id', FILTER_SANITIZE_STRING ) ) {
 			add_filter( 'show_admin_bar', [ __CLASS__, 'hide_admin_bar_for_preview' ], 10, 2 );
@@ -354,15 +354,16 @@ final class Newspack_Popups {
 			[ self::NEWSPACK_PLUGINS_CPT ],
 			'newspack_popups_is_sitewide_default',
 			[
-				'get_callback' => function( $post ) {
+				'get_callback'    => function( $post ) {
 					return absint( $post['id'] ) === absint( get_option( self::NEWSPACK_POPUPS_SITEWIDE_DEFAULT, null ) );
 				},
-				'schema'       => [
-					'context' => [
-						'edit',
-					],
-					'type'    => 'array',
-				],
+				'update_callback' => function ( $value, $post ) {
+					if ( $value ) {
+						return Newspack_Popups_Model::set_sitewide_popup( $post->ID );
+					} else {
+						return Newspack_Popups_Model::unset_sitewide_popup( $post->ID );
+					}
+				},
 			]
 		);
 	}
