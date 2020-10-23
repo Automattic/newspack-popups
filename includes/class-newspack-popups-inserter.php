@@ -42,10 +42,18 @@ final class Newspack_Popups_Inserter {
 			return [ Newspack_Popups_Model::retrieve_preview_popup( Newspack_Popups::previewed_popup_id() ) ];
 		}
 
-		// 1. Get all inline popups in there first.
+		// 1. Get all inline popups.
 		$popups_to_maybe_display = Newspack_Popups_Model::retrieve_inline_popups();
 
-		// 2. Get the overlay popup.
+		// 2. Get the overlay popup/s. There can be only one displayed, unless in test mode.
+
+		// Any overlay test popups, if the user is logged in.
+		if ( is_user_logged_in() ) {
+			$popups_to_maybe_display = array_merge(
+				$popups_to_maybe_display,
+				Newspack_Popups_Model::retrieve_overlay_test_popups()
+			);
+		}
 
 		// Check if there's an overlay popup with matching category.
 		$category_overlay_popup = Newspack_Popups_Model::retrieve_category_overlay_popup();
