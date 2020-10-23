@@ -38,18 +38,6 @@ class PopupSidebar extends Component {
 			updateEditorColors( background_color );
 		}
 	}
-	frequencyOptions = placement => {
-		const options = [
-			{ value: 'test', label: __( 'Test mode', 'newspack-popups' ) },
-			{ value: 'never', label: __( 'Never', 'newspack-popups' ) },
-			{ value: 'once', label: __( 'Once', 'newspack-popups' ) },
-			{ value: 'daily', label: __( 'Once a day', 'newspack-popups' ) },
-		];
-		if ( 'inline' === placement ) {
-			options.push( { value: 'always', label: __( 'Every page', 'newspack-popups' ) } );
-		}
-		return options;
-	};
 	/**
 	 * Render
 	 */
@@ -71,6 +59,13 @@ class PopupSidebar extends Component {
 		} = this.props;
 		const isInline = 'inline' === placement;
 
+		const updatePlacement = value => {
+			onMetaFieldChange( 'placement', value );
+			if ( value !== 'inline' && frequency === 'always' ) {
+				onMetaFieldChange( 'frequency', 'once' );
+			}
+		};
+
 		return (
 			<Fragment>
 				{ // The sitewide default option is for overlay popups only.
@@ -86,7 +81,7 @@ class PopupSidebar extends Component {
 				<SelectControl
 					label={ __( 'Placement' ) }
 					value={ placement }
-					onChange={ value => onMetaFieldChange( 'placement', value ) }
+					onChange={ updatePlacement }
 					options={ [
 						{ value: 'center', label: __( 'Center' ) },
 						{ value: 'top', label: __( 'Top' ) },
@@ -139,7 +134,17 @@ class PopupSidebar extends Component {
 					label={ __( 'Frequency' ) }
 					value={ frequency }
 					onChange={ value => onMetaFieldChange( 'frequency', value ) }
-					options={ this.frequencyOptions( placement ) }
+					options={ [
+						{ value: 'test', label: __( 'Test mode', 'newspack-popups' ) },
+						{ value: 'never', label: __( 'Never', 'newspack-popups' ) },
+						{ value: 'once', label: __( 'Once', 'newspack-popups' ) },
+						{ value: 'daily', label: __( 'Once a day', 'newspack-popups' ) },
+						{
+							value: 'always',
+							label: __( 'Every page', 'newspack-popups' ),
+							disabled: 'inline' !== placement,
+						},
+					] }
 					help={ __(
 						'In "Test Mode" logged-in admins will see the Campaign every time, and non-admins will never see them.',
 						'newspack-popups'

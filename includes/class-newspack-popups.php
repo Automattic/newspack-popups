@@ -53,7 +53,7 @@ final class Newspack_Popups {
 		add_action( 'save_post_' . self::NEWSPACK_PLUGINS_CPT, [ __CLASS__, 'popup_default_fields' ], 10, 3 );
 
 		if ( filter_input( INPUT_GET, 'newspack_popups_preview_id', FILTER_SANITIZE_STRING ) ) {
-			add_filter( 'show_admin_bar', [ __CLASS__, 'hide_admin_bar_for_preview' ], 10, 2 );
+			add_filter( 'show_admin_bar', [ __CLASS__, 'hide_admin_bar_for_preview' ], 10, 2 ); // phpcs:ignore WordPressVIPMinimum.UserExperience.AdminBarRemoval.RemovalDetected
 		}
 
 		include_once dirname( __FILE__ ) . '/class-newspack-popups-model.php';
