@@ -91,7 +91,7 @@ final class Newspack_Popups {
 			'show_ui'      => true,
 			'show_in_rest' => true,
 			'supports'     => [ 'editor', 'title', 'custom-fields' ],
-			'taxonomies'   => [ 'category' ],
+			'taxonomies'   => [ 'category', 'post_tag' ],
 			'menu_icon'    => 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBmaWxsPSIjYTBhNWFhIiBkPSJNMTEuOTkgMTguNTRsLTcuMzctNS43M0wzIDE0LjA3bDkgNyA5LTctMS42My0xLjI3LTcuMzggNS43NHpNMTIgMTZsNy4zNi01LjczTDIxIDlsLTktNy05IDcgMS42MyAxLjI3TDEyIDE2eiIvPjwvc3ZnPgo=',
 		];
 		\register_post_type( self::NEWSPACK_PLUGINS_CPT, $cpt_args );
