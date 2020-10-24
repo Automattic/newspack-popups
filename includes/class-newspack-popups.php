@@ -272,20 +272,34 @@ final class Newspack_Popups {
 			filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/editor.js' ),
 			true
 		);
-		$recent_posts = wp_get_recent_posts(
+
+		$query                  = new WP_Query(
 			[
-				'numberposts' => 1,
-				'post_status' => 'publish',
-			],
-			OBJECT
+				'posts_per_page' => 1,
+				'post_status'    => 'publish',
+				'orderby'        => 'post_date',
+				'order'          => 'DESC',
+				'meta_query'     => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+					'relation' => 'OR',
+					[
+						'key'     => 'newspack_popups_has_disabled_popups',
+						'compare' => 'NOT EXISTS',
+					],
+					[
+						'key'   => 'newspack_popups_has_disabled_popups',
+						'value' => '',
+					],
+				],
+			]
 		);
-		$preview_post = count( $recent_posts ) > 0 ? get_the_permalink( $recent_posts[0] ) : '';
+		$recent_posts           = $query->get_posts();
+		$preview_post_permalink = $recent_posts && count( $recent_posts ) > 0 ? get_the_permalink( $recent_posts[0] ) : '';
 
 		\wp_localize_script(
 			'newspack-popups',
 			'newspack_popups_data',
 			[
-				'preview_post' => $preview_post,
+				'preview_post' => $preview_post_permalink,
 			]
 		);
 		\wp_enqueue_style(
