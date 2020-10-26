@@ -52,6 +52,9 @@ final class Newspack_Popups {
 		add_action( 'rest_api_init', [ __CLASS__, 'rest_api_init' ] );
 		add_action( 'save_post_' . self::NEWSPACK_PLUGINS_CPT, [ __CLASS__, 'popup_default_fields' ], 10, 3 );
 
+		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'report_custom_dimensions' ] );
+		add_filter( 'newspack_custom_dimensions', [ __CLASS__, 'add_custom_dimensions' ] );
+
 		if ( filter_input( INPUT_GET, 'newspack_popups_preview_id', FILTER_SANITIZE_STRING ) ) {
 			add_filter( 'show_admin_bar', [ __CLASS__, 'hide_admin_bar_for_preview' ], 10, 2 ); // phpcs:ignore WordPressVIPMinimum.UserExperience.AdminBarRemoval.RemovalDetected
 		}
@@ -454,6 +457,87 @@ final class Newspack_Popups {
 				</p>
 			</div>
 		<?php
+	}
+
+	/**
+	 * Add an admin notice if config is missing.
+	 */
+	public static function report_custom_dimensions() {
+		if ( ! class_exists( 'Newspack\Analytics_Wizard' ) ) {
+			return;
+		}
+		$custom_dimensions = Newspack\Analytics_Wizard::list_configured_custom_dimensions();
+		foreach ( $custom_dimensions as $custom_dimension ) {
+			if ( 'popups_reader_frequency' === $custom_dimension['role'] ) {
+				$dimension_id = substr( $custom_dimension['gaID'], 3 );
+
+				if ( isset( $_COOKIE['newspack-cid'] ) ) {
+					$reader_frequency = wp_safe_remote_get(
+						add_query_arg(
+							'cid',
+							sanitize_text_field( $_COOKIE['newspack-cid'] ), // phpcs:ignore WordPressVIPMinimum.Variables.RestrictedVariables.cache_constraints___COOKIE
+							plugins_url( '../api/segmentation/index.php', __FILE__ )
+						)
+					);
+					if ( is_wp_error( $reader_frequency ) ) {
+						return;
+					}
+					$reader_data = json_decode( $reader_frequency['body'] );
+
+					self::add_custom_dimension_to_ga_config(
+						$dimension_id,
+						$reader_data->f
+					);
+				} else {
+					self::add_custom_dimension_to_ga_config(
+						$dimension_id,
+						'casual'
+					);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Add custom custom dimensions.
+	 *
+	 * @param array $default_dimensions Default custom dimensions.
+	 */
+	public static function add_custom_dimensions( $default_dimensions ) {
+		$default_dimensions[] = [
+			'role'   => 'popups_reader_frequency',
+			'option' => [
+				'value' => 'popups_reader_frequency',
+				'label' => __( 'Reader frequency', 'newspack' ),
+			],
+		];
+		return $default_dimensions;
+	}
+
+	/**
+	 * Add custom dimension to GA config via Site Kit filters.
+	 *
+	 * @param string $dimension_id Dimension ID.
+	 * @param string $payload Payload.
+	 */
+	public static function add_custom_dimension_to_ga_config( $dimension_id, $payload ) {
+		// Non-AMP.
+		add_filter(
+			'googlesitekit_gtag_opt',
+			function ( $gtag_opt ) use ( $payload, $dimension_id ) {
+				$gtag_opt[ $dimension_id ] = $payload;
+				return $gtag_opt;
+			}
+		);
+		// AMP.
+		add_filter(
+			'googlesitekit_amp_gtag_opt',
+			function ( $gtag_amp_opt ) use ( $payload, $dimension_id ) {
+				$tracking_id = $gtag_amp_opt['vars']['gtag_id'];
+				$gtag_amp_opt['vars']['config'][ $tracking_id ][ $dimension_id ] = $payload;
+				return $gtag_amp_opt;
+			}
+		);
 	}
 }
 Newspack_Popups::instance();
