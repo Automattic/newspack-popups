@@ -35,16 +35,16 @@ class Segmentation_Client_Data extends Lightweight_API {
 	 * @param object $request A request.
 	 */
 	public function report_client_data( $request ) {
-		$client_id   = $this->get_request_param( 'client_id', $request );
-		$client_data = $this->get_client_data( $client_id );
+		$client_id          = $this->get_request_param( 'client_id', $request );
+		$client_data_update = [];
 
 		// Add a donation to client.
 		$donation = $this->get_request_param( 'donation', $request );
 		if ( $donation ) {
-			$client_data['donations'][] = $donation;
+			$client_data_update['donations'][] = $donation;
 		}
 
-		$this->save_client_data( $client_id, $client_data );
+		$this->save_client_data( $client_id, $client_data_update );
 	}
 }
 new Segmentation_Client_Data();
