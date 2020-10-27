@@ -457,11 +457,13 @@ final class Newspack_Popups_Model {
 
 		// Mailchimp.
 		$mailchimp_form_selector = '';
+		$email_form_field_name   = 'email';
 		if ( preg_match( '/wp-block-jetpack-mailchimp/', $body ) !== 0 ) {
 			$mailchimp_form_selector = '.wp-block-jetpack-mailchimp form';
 		}
 		if ( preg_match( '/mc4wp-form/', $body ) !== 0 ) {
 			$mailchimp_form_selector = '.mc4wp-form';
+			$email_form_field_name   = 'EMAIL';
 		}
 
 		?>
@@ -481,7 +483,7 @@ final class Newspack_Popups_Model {
 									"popup_id": "<?php echo esc_attr( self::canonize_popup_id( $popup['id'] ) ); ?>",
 									"cid": "CLIENT_ID( <?php echo esc_attr( Newspack_Popups_Segmentation::NEWSPACK_SEGMENTATION_CID_NAME ); ?> )",
 									"mailing_list_status": "subscribed",
-									"email": "${formFields[email]}"
+									"email": "${formFields[<?php echo esc_attr( $email_form_field_name ); ?>]}"
 								}
 							}
 						},
