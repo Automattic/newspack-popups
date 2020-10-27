@@ -131,6 +131,7 @@ class SegmentationTest extends WP_UnitTestCase {
 			[
 				'post_id'      => self::$post_read_payload['post_id'],
 				'category_ids' => self::$post_read_payload['categories'],
+				'date'         => gmdate( 'Y-m-d' ),
 			],
 			$read_posts[0],
 			'The read posts array contains the reported post.'
