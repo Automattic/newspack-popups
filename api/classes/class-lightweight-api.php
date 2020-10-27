@@ -33,6 +33,7 @@ class Lightweight_API {
 	private $client_data_blueprint = [
 		'suppressed_newsletter_campaign' => false,
 		'posts_read'                     => [],
+		'donations'                      => [],
 		'email_subscriptions'            => [],
 	];
 

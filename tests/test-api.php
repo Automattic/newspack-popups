@@ -404,6 +404,7 @@ class APITest extends WP_UnitTestCase {
 				'suppressed_newsletter_campaign' => false,
 				'posts_read'                     => [],
 				'email_subscriptions'            => [],
+				'donations'                      => [],
 			],
 			'Returns expected data blueprint in absence of saved data.'
 		);
@@ -428,6 +429,7 @@ class APITest extends WP_UnitTestCase {
 				'suppressed_newsletter_campaign' => false,
 				'posts_read'                     => $posts_read,
 				'email_subscriptions'            => [],
+				'donations'                      => [],
 			],
 			'Returns data with saved post after an article reading was reported.'
 		);
@@ -446,6 +448,7 @@ class APITest extends WP_UnitTestCase {
 				'posts_read'                     => $posts_read,
 				'email_subscriptions'            => [],
 				'some_other_data'                => 42,
+				'donations'                      => [],
 			],
 			'Returns data without overwriting the existing data.'
 		);
@@ -470,6 +473,7 @@ class APITest extends WP_UnitTestCase {
 				'suppressed_newsletter_campaign' => false,
 				'posts_read'                     => [],
 				'email_subscriptions'            => [],
+				'donations'                      => [],
 			],
 			'The initial client data has expected shape.'
 		);
@@ -490,6 +494,7 @@ class APITest extends WP_UnitTestCase {
 			[
 				'suppressed_newsletter_campaign' => false,
 				'posts_read'                     => [],
+				'donations'                      => [],
 				'email_subscriptions'            => [
 					[
 						'email' => $email_address,
