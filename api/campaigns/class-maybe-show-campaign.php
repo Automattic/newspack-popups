@@ -155,6 +155,19 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			$campaign_data['suppress_forever'] = true;
 		}
 
+		$has_donated        = count( $client_data['donations'] ) > 0;
+		$has_donation_block = $campaign->d;
+
+		// Handle suppressing a donation campaign if reader is a donor and appropriate setting is active.
+		if (
+			$has_donation_block &&
+			$settings->suppress_donation_campaigns_if_donor &&
+			$has_donated
+		) {
+			$should_display                    = false;
+			$campaign_data['suppress_forever'] = true;
+		}
+
 		if ( ! empty( array_diff( $init_campaign_data, $campaign_data ) ) ) {
 			$this->save_campaign_data( $client_id, $campaign->id, $campaign_data );
 		}
