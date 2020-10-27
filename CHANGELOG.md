@@ -1,3 +1,10 @@
+# [1.15.0-alpha.2](https://github.com/Automattic/newspack-popups/compare/v1.15.0-alpha.1...v1.15.0-alpha.2) (2020-10-27)
+
+
+### Bug Fixes
+
+* handle no WooCommerce installed ([d6b7b7c](https://github.com/Automattic/newspack-popups/commit/d6b7b7c1dd24f822c872f8d2a2212d97c02d7c96))
+
 # [1.15.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.14.0...v1.15.0-alpha.1) (2020-10-27)
 
 
