@@ -390,4 +390,61 @@ class APITest extends WP_UnitTestCase {
 			'Assert not shown after subscribed.'
 		);
 	}
+
+	/**
+	 * Client data saving and retrieval.
+	 */
+	public function test_client_data() {
+		$client_id = 'amp-456';
+		$api       = new Lightweight_API();
+
+		self::assertEquals(
+			$api->get_client_data( $client_id ),
+			[
+				'suppressed_newsletter_campaign' => false,
+				'posts_read'                     => [],
+			],
+			'Returns expected data blueprint in absence of saved data.'
+		);
+
+		$posts_read = [
+			[
+				'post_id'      => '142',
+				'category_ids' => '',
+			],
+		];
+
+		$api->save_client_data(
+			$client_id,
+			[
+				'posts_read' => $posts_read,
+			]
+		);
+
+		self::assertEquals(
+			$api->get_client_data( $client_id ),
+			[
+				'suppressed_newsletter_campaign' => false,
+				'posts_read'                     => $posts_read,
+			],
+			'Returns data with saved post after an article reading was reported.'
+		);
+
+		$api->save_client_data(
+			$client_id,
+			[
+				'some_other_data' => 42,
+			]
+		);
+
+		self::assertEquals(
+			$api->get_client_data( $client_id ),
+			[
+				'suppressed_newsletter_campaign' => false,
+				'posts_read'                     => $posts_read,
+				'some_other_data'                => 42,
+			],
+			'Returns data without overwriting the existing data.'
+		);
+	}
 }

@@ -31,7 +31,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		$response  = [];
 		$client_id = $_REQUEST['cid']; // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 
-		if ( defined( 'ENABLE_CAMPAIGN_EVENT_LOGGING' ) && ENABLE_CAMPAIGN_EVENT_LOGGING ) {
+		if ( $visit['is_post'] && defined( 'ENABLE_CAMPAIGN_EVENT_LOGGING' ) && ENABLE_CAMPAIGN_EVENT_LOGGING ) {
 			// Update the cache.
 			$posts_read        = $this->get_client_data( $client_id )['posts_read'];
 			$already_read_post = count(

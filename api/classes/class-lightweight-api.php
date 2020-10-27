@@ -199,49 +199,53 @@ class Lightweight_API {
 	 *
 	 * @param string $client_id Client ID.
 	 */
-	public function get_client_data( $client_id ) {
+	public function get_client_data( $client_id, $do_not_rebuild = false ) {
 		$data = $this->get_transient( $this->get_transient_name( $client_id ) );
-		if ( ! $data ) {
-			// Rebuild cache, it might've been purged.
-
-			global $wpdb;
-			$events_table_name       = Segmentation::get_events_table_name();
-			$client_post_read_events = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-				$wpdb->prepare( "SELECT * FROM $events_table_name WHERE client_id = %s AND type = 'post_read'", $client_id ) // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-			);
-
-			$this->save_client_data(
-				$client_id,
-				[
-					'posts_read' => array_map(
-						function ( $item ) {
-							return [
-								'post_id'      => $item->post_id,
-								'category_ids' => $item->category_ids,
-							];
-						},
-						$client_post_read_events
-					),
-				]
-			);
-
+		if ( $data ) {
+			return $data;
+		}
+		if ( $do_not_rebuild ) {
 			return $this->client_data_blueprint;
 		}
-		return $data;
+
+		// Rebuild cache, it might've been purged or it's the first time.
+		global $wpdb;
+		$events_table_name       = Segmentation::get_events_table_name();
+		$client_post_read_events = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->prepare( "SELECT * FROM $events_table_name WHERE client_id = %s AND type = 'post_read'", $client_id ) // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		);
+
+		$this->save_client_data(
+			$client_id,
+			[
+				'posts_read' => array_map(
+					function ( $item ) {
+						return [
+							'post_id'      => $item->post_id,
+							'category_ids' => $item->category_ids,
+						];
+					},
+					$client_post_read_events
+				),
+			]
+		);
+
+		return $this->get_transient( $this->get_transient_name( $client_id ) );
 	}
 
 	/**
 	 * Save client data.
 	 *
 	 * @param string $client_id Client ID.
-	 * @param string $client_data Client data.
+	 * @param string $client_data_update Client data.
 	 */
-	public function save_client_data( $client_id, $client_data ) {
+	public function save_client_data( $client_id, $client_data_update ) {
+		$existing_client_data = $this->get_client_data( $client_id, true );
 		return $this->set_transient(
 			$this->get_transient_name( $client_id ),
 			array_merge(
-				$this->client_data_blueprint,
-				$client_data
+				$existing_client_data,
+				$client_data_update
 			)
 		);
 	}
