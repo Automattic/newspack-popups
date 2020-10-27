@@ -12,13 +12,16 @@ class APITest extends WP_UnitTestCase {
 	private static $settings             = []; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
 	private static $maybe_show_campaign  = null; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
 	private static $report_campaign_data = null; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
+	private static $report_client_data   = null; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
 
 	public static function wpSetUpBeforeClass() { // phpcs:ignore Squiz.Commenting.FunctionComment.Missing
 		self::$maybe_show_campaign  = new Maybe_Show_Campaign();
 		self::$report_campaign_data = new Report_Campaign_Data();
+		self::$report_client_data   = new Segmentation_Client_Data();
 		self::$settings             = (object) [ // phpcs:ignore Squiz.Commenting.VariableComment.Missing
-			'suppress_newsletter_campaigns' => true,
+			'suppress_newsletter_campaigns'        => true,
 			'suppress_all_newsletter_campaigns_if_one_dismissed' => true,
+			'suppress_donation_campaigns_if_donor' => true,
 		];
 	}
 
@@ -502,6 +505,42 @@ class APITest extends WP_UnitTestCase {
 				],
 			],
 			'The client data after a subscription contains the provided email address.'
+		);
+	}
+
+	/**
+	 * Suppression caused by reader having donated.
+	 */
+	public function test_donor_suppression() {
+		$test_popup_with_donate_block = self::create_test_popup(
+			[
+				'placement' => 'inline',
+				'frequency' => 'always',
+			],
+			'<!-- wp:newspack-blocks/donate /-->'
+		);
+		$client_id                    = 'amp-123';
+
+		self::assertTrue(
+			self::$maybe_show_campaign->should_campaign_be_shown( $client_id, $test_popup_with_donate_block['payload'], self::$settings ),
+			'Assert initially visible.'
+		);
+
+		// Report a donation.
+		self::$report_client_data->report_client_data(
+			[
+				'client_id' => $client_id,
+				'donation'  => [
+					'order_id' => '120',
+					'date'     => '2020-10-28',
+					'amount'   => '180.00',
+				],
+			]
+		);
+
+		self::assertFalse(
+			self::$maybe_show_campaign->should_campaign_be_shown( $client_id, $test_popup_with_donate_block['payload'], self::$settings ),
+			'Assert not shown after reader donated.'
 		);
 	}
 }

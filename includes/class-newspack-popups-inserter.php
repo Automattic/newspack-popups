@@ -336,6 +336,7 @@ final class Newspack_Popups_Inserter {
 			'f'   => $frequency,
 			'utm' => $popup['options']['utm_suppression'],
 			'n'   => \Newspack_Popups_Model::has_newsletter_prompt( $popup ),
+			'd'   => \Newspack_Popups_Model::has_donation_block( $popup ),
 		];
 	}
 

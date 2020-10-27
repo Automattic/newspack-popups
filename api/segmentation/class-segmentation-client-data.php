@@ -44,7 +44,9 @@ class Segmentation_Client_Data extends Lightweight_API {
 			$client_data_update['donations'][] = $donation;
 		}
 
-		$this->save_client_data( $client_id, $client_data_update );
+		if ( ! empty( $client_data_update ) ) {
+			$this->save_client_data( $client_id, $client_data_update );
+		}
 	}
 }
 new Segmentation_Client_Data();
