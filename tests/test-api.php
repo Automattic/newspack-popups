@@ -408,6 +408,7 @@ class APITest extends WP_UnitTestCase {
 			self::$report_campaign_data->get_client_data( $client_id ),
 			[
 				'suppressed_newsletter_campaign' => false,
+				'posts_read'                     => [],
 				'email_subscriptions'            => [],
 			],
 			'The initial client data has expected shape.'
@@ -428,6 +429,7 @@ class APITest extends WP_UnitTestCase {
 			self::$report_campaign_data->get_client_data( $client_id ),
 			[
 				'suppressed_newsletter_campaign' => false,
+				'posts_read'                     => [],
 				'email_subscriptions'            => [
 					[
 						'email' => $email_address,
