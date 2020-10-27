@@ -19,8 +19,6 @@ class Maybe_Show_Campaign extends Lightweight_API {
 
 	/**
 	 * Constructor.
-	 *
-	 * @codeCoverageIgnore
 	 */
 	public function __construct() {
 		parent::__construct();
@@ -29,17 +27,41 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		}
 		$campaigns = json_decode( $_REQUEST['popups'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		$settings  = json_decode( $_REQUEST['settings'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		$visit     = json_decode( $_REQUEST['visit'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.InputNotValidated
+		$visit     = (array) json_decode( $_REQUEST['visit'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.InputNotValidated
 		$response  = [];
 		$client_id = $_REQUEST['cid']; // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 
-		if ( defined( 'ENABLE_CAMPAIGN_EVENT_LOGGING' ) && ENABLE_CAMPAIGN_EVENT_LOGGING ) {
-			Segmentation_Report::api_handle_post_read(
+		if ( $visit['is_post'] && defined( 'ENABLE_CAMPAIGN_EVENT_LOGGING' ) && ENABLE_CAMPAIGN_EVENT_LOGGING ) {
+			// Update the cache.
+			$posts_read        = $this->get_client_data( $client_id )['posts_read'];
+			$already_read_post = count(
+				array_filter(
+					$posts_read,
+					function ( $post_data ) use ( $visit ) {
+						return $post_data['post_id'] == $visit['post_id'];
+					}
+				)
+			) > 0;
+
+			if ( false === $already_read_post ) {
+				$posts_read[] = [
+					'post_id'      => $visit['post_id'],
+					'category_ids' => $visit['categories'],
+				];
+				$this->save_client_data(
+					$client_id,
+					[
+						'posts_read' => $posts_read,
+					]
+				);
+			}
+
+			Segmentation_Report::log_single_visit(
 				array_merge(
 					[
 						'clientId' => $client_id,
 					],
-					(array) $visit
+					$visit
 				)
 			);
 		}
