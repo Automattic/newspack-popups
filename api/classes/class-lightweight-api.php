@@ -26,6 +26,17 @@ class Lightweight_API {
 	public $debug;
 
 	/**
+	 * Default client data.
+	 *
+	 * @var client_data_blueprint
+	 */
+	private $client_data_blueprint = [
+		'suppressed_newsletter_campaign' => false,
+		'posts_read'                     => [],
+		'donations'                      => [],
+	];
+
+	/**
 	 * Constructor.
 	 *
 	 * @codeCoverageIgnore
@@ -49,8 +60,6 @@ class Lightweight_API {
 
 	/**
 	 * Verify referer is valid.
-	 *
-	 * @codeCoverageIgnore
 	 */
 	public function verify_referer() {
 		$http_referer = ! empty( $_SERVER['HTTP_REFERER'] ) ? parse_url( $_SERVER['HTTP_REFERER'] , PHP_URL_HOST ) : null; // phpcs:ignore
@@ -85,6 +94,9 @@ class Lightweight_API {
 	 * @codeCoverageIgnore
 	 */
 	public function respond() {
+		if ( defined( 'IS_TEST_ENV' ) && IS_TEST_ENV ) {
+			return;
+		}
 		$this->debug['end_time'] = microtime( true );
 		$this->debug['duration'] = $this->debug['end_time'] - $this->debug['start_time'];
 		if ( defined( 'NEWSPACK_POPUPS_DEBUG' ) && NEWSPACK_POPUPS_DEBUG ) {
@@ -190,13 +202,33 @@ class Lightweight_API {
 	 */
 	public function get_client_data( $client_id ) {
 		$data = $this->get_transient( $this->get_transient_name( $client_id ) );
-		if ( ! $data ) {
-			return [
-				'suppressed_newsletter_campaign' => false,
-				'donations'                      => [],
-			];
+		if ( $data ) {
+			return $data;
 		}
-		return $data;
+
+		// Rebuild cache, it might've been purged.
+		global $wpdb;
+		$events_table_name       = Segmentation::get_events_table_name();
+		$client_post_read_events = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->prepare( "SELECT * FROM $events_table_name WHERE client_id = %s AND type = 'post_read'", $client_id ) // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		);
+
+		$this->save_client_data(
+			$client_id,
+			[
+				'posts_read' => array_map(
+					function ( $item ) {
+						return [
+							'post_id'      => $item->post_id,
+							'category_ids' => $item->category_ids,
+						];
+					},
+					$client_post_read_events
+				),
+			]
+		);
+
+		return $this->get_transient( $this->get_transient_name( $client_id ) );
 	}
 
 	/**
@@ -206,7 +238,13 @@ class Lightweight_API {
 	 * @param string $client_data Client data.
 	 */
 	public function save_client_data( $client_id, $client_data ) {
-		return $this->set_transient( $this->get_transient_name( $client_id ), $client_data );
+		return $this->set_transient(
+			$this->get_transient_name( $client_id ),
+			array_merge(
+				$this->client_data_blueprint,
+				$client_data
+			)
+		);
 	}
 
 	/**
