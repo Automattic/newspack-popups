@@ -198,7 +198,7 @@ class Lightweight_API {
 	 * Retrieve client data.
 	 *
 	 * @param string $client_id Client ID.
-	 * @param bool $do_not_rebuild Whether to rebuild cache if not found.
+	 * @param bool   $do_not_rebuild Whether to rebuild cache if not found.
 	 */
 	public function get_client_data( $client_id, $do_not_rebuild = false ) {
 		$data = $this->get_transient( $this->get_transient_name( $client_id ) );
