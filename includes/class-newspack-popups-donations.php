@@ -67,6 +67,9 @@ final class Newspack_Popups_Donations {
 	 * Create a WooCommerce webhook.
 	 */
 	public static function create_wc_webhook() {
+		if ( ! class_exists( 'WC_Webhook' ) ) {
+			return;
+		}
 		$webhook_id = get_option( self::WC_WEBHOOK_ID, 0 );
 		if ( empty( $webhook_id ) ) {
 			$webhook = new \WC_Webhook();
