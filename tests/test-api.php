@@ -392,6 +392,66 @@ class APITest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Client data saving and retrieval.
+	 */
+	public function test_client_data() {
+		$client_id = 'amp-456';
+		$api       = new Lightweight_API();
+
+		self::assertEquals(
+			$api->get_client_data( $client_id ),
+			[
+				'suppressed_newsletter_campaign' => false,
+				'posts_read'                     => [],
+				'email_subscriptions'            => [],
+			],
+			'Returns expected data blueprint in absence of saved data.'
+		);
+
+		$posts_read = [
+			[
+				'post_id'      => '142',
+				'category_ids' => '',
+			],
+		];
+
+		$api->save_client_data(
+			$client_id,
+			[
+				'posts_read' => $posts_read,
+			]
+		);
+
+		self::assertEquals(
+			$api->get_client_data( $client_id ),
+			[
+				'suppressed_newsletter_campaign' => false,
+				'posts_read'                     => $posts_read,
+				'email_subscriptions'            => [],
+			],
+			'Returns data with saved post after an article reading was reported.'
+		);
+
+		$api->save_client_data(
+			$client_id,
+			[
+				'some_other_data' => 42,
+			]
+		);
+
+		self::assertEquals(
+			$api->get_client_data( $client_id ),
+			[
+				'suppressed_newsletter_campaign' => false,
+				'posts_read'                     => $posts_read,
+				'email_subscriptions'            => [],
+				'some_other_data'                => 42,
+			],
+			'Returns data without overwriting the existing data.'
+		);
+	}
+
+	/**
 	 * Collecting of the email address used for newsletter subscription.
 	 */
 	public function test_newsletter_subscription_data_collection() {
@@ -438,6 +498,5 @@ class APITest extends WP_UnitTestCase {
 			],
 			'The client data after a subscription contains the provided email address.'
 		);
-
 	}
 }

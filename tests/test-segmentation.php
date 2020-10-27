@@ -156,5 +156,25 @@ class SegmentationTest extends WP_UnitTestCase {
 			count( $read_posts ),
 			'The read posts array is of expected length after reading another post.'
 		);
+
+		// Now a non-post visit.
+		$_REQUEST            = self::$request;
+		$_REQUEST['visit']   = wp_json_encode(
+			array_merge(
+				(array) json_decode( self::$request['visit'] ),
+				[
+					'post_id' => '12345',
+					'is_post' => false,
+				]
+			)
+		);
+		$maybe_show_campaign = new Maybe_Show_Campaign();
+		$read_posts          = $maybe_show_campaign->get_client_data( self::$post_read_payload['clientId'] )['posts_read'];
+
+		self::assertEquals(
+			2,
+			count( $read_posts ),
+			'The read posts array is not updated after a non-post visit was made.'
+		);
 	}
 }
