@@ -6,7 +6,6 @@
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
-import apiFetch from '@wordpress/api-fetch';
 import { withSelect, withDispatch } from '@wordpress/data';
 import { compose } from '@wordpress/compose';
 import { Component, Fragment } from '@wordpress/element';
@@ -27,41 +26,19 @@ import { ColorPaletteControl } from '@wordpress/block-editor';
  */
 import { optionsFieldsSelector, updateEditorColors } from './utils';
 import PopupPreview from './PopupPreview';
+import './style.scss';
 
 class PopupSidebar extends Component {
-	state = {
-		isSiteWideDefault: this.props.newspack_popups_is_sitewide_default,
-	};
 	componentDidMount() {
 		const { background_color } = this.props;
 		updateEditorColors( background_color );
 	}
 	componentDidUpdate( prevProps ) {
-		const { background_color, isSavingPost, id } = this.props;
-		const { isSiteWideDefault } = this.state;
-		if ( ! prevProps.isSavingPost && isSavingPost ) {
-			const params = {
-				path: '/newspack-popups/v1/sitewide_default/' + id,
-				method: isSiteWideDefault ? 'POST' : 'DELETE',
-			};
-			apiFetch( params );
-		}
+		const { background_color } = this.props;
 		if ( background_color !== prevProps.background_color ) {
 			updateEditorColors( background_color );
 		}
 	}
-	frequencyOptions = placement => {
-		const options = [
-			{ value: 'test', label: __( 'Test mode', 'newspack-popups' ) },
-			{ value: 'never', label: __( 'Never', 'newspack-popups' ) },
-			{ value: 'once', label: __( 'Once', 'newspack-popups' ) },
-			{ value: 'daily', label: __( 'Once a day', 'newspack-popups' ) },
-		];
-		if ( 'inline' === placement ) {
-			options.push( { value: 'always', label: __( 'Every page', 'newspack-popups' ) } );
-		}
-		return options;
-	};
 	/**
 	 * Render
 	 */
@@ -80,32 +57,32 @@ class PopupSidebar extends Component {
 			trigger_type,
 			utm_suppression,
 			onSitewideDefaultChange,
-			isCurrentPostPublished,
 		} = this.props;
-		const { isSiteWideDefault } = this.state;
 		const isInline = 'inline' === placement;
 
-		// The sitewide default option is for overlay popups only.
-		const canBeSiteWideDefault = ! isInline && isCurrentPostPublished;
+		const updatePlacement = value => {
+			onMetaFieldChange( 'placement', value );
+			if ( value !== 'inline' && frequency === 'always' ) {
+				onMetaFieldChange( 'frequency', 'once' );
+			}
+		};
 
 		return (
 			<Fragment>
-				{ canBeSiteWideDefault && (
+				{ // The sitewide default option is for overlay popups only.
+				! isInline && (
 					<CheckboxControl
 						label={ __( 'Sitewide Default', 'newspack-popups' ) }
-						checked={ isSiteWideDefault }
-						onChange={ _isSiteWideDefault => {
-							this.setState( { isSiteWideDefault: _isSiteWideDefault } );
-							// an ugly hack to update the post attribute, just to make the editor aware of a change,
-							// so that "update" button becomes enabled
-							onSitewideDefaultChange( Math.random() );
+						checked={ this.props.newspack_popups_is_sitewide_default }
+						onChange={ value => {
+							onSitewideDefaultChange( value );
 						} }
 					/>
 				) }
 				<SelectControl
 					label={ __( 'Placement' ) }
 					value={ placement }
-					onChange={ value => onMetaFieldChange( 'placement', value ) }
+					onChange={ updatePlacement }
 					options={ [
 						{ value: 'center', label: __( 'Center' ) },
 						{ value: 'top', label: __( 'Top' ) },
@@ -150,7 +127,7 @@ class PopupSidebar extends Component {
 						label={ __( 'Approximate position (in percent)' ) }
 						value={ trigger_scroll_progress }
 						onChange={ value => onMetaFieldChange( 'trigger_scroll_progress', value ) }
-						min={ 1 }
+						min={ 0 }
 						max={ 100 }
 					/>
 				) }
@@ -158,7 +135,17 @@ class PopupSidebar extends Component {
 					label={ __( 'Frequency' ) }
 					value={ frequency }
 					onChange={ value => onMetaFieldChange( 'frequency', value ) }
-					options={ this.frequencyOptions( placement ) }
+					options={ [
+						{ value: 'test', label: __( 'Test mode', 'newspack-popups' ) },
+						{ value: 'never', label: __( 'Never', 'newspack-popups' ) },
+						{ value: 'once', label: __( 'Once', 'newspack-popups' ) },
+						{ value: 'daily', label: __( 'Once a day', 'newspack-popups' ) },
+						{
+							value: 'always',
+							label: __( 'Every page', 'newspack-popups' ),
+							disabled: 'inline' !== placement,
+						},
+					] }
 					help={ __(
 						'In "Test Mode" logged-in admins will see the Campaign every time, and non-admins will never see them.',
 						'newspack-popups'

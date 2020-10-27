@@ -199,6 +199,31 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
+	 * Get overlay test popups.
+	 *
+	 * @return array Overlay test popup objects.
+	 */
+	public static function retrieve_overlay_test_popups() {
+		$args = [
+			'post_type'   => Newspack_Popups::NEWSPACK_PLUGINS_CPT,
+			'post_status' => 'publish',
+			'meta_query'  => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+				[
+					'key'     => 'placement',
+					'value'   => 'inline',
+					'compare' => '!=',
+				],
+				[
+					'key'   => 'frequency',
+					'value' => 'test',
+				],
+			],
+		];
+
+		return self::retrieve_popups_with_query( new WP_Query( $args ) );
+	}
+
+	/**
 	 * Retrieve first overlay popup matching post categries.
 	 *
 	 * @return object|null Popup object.
@@ -432,11 +457,13 @@ final class Newspack_Popups_Model {
 
 		// Mailchimp.
 		$mailchimp_form_selector = '';
+		$email_form_field_name   = 'email';
 		if ( preg_match( '/wp-block-jetpack-mailchimp/', $body ) !== 0 ) {
 			$mailchimp_form_selector = '.wp-block-jetpack-mailchimp form';
 		}
 		if ( preg_match( '/mc4wp-form/', $body ) !== 0 ) {
 			$mailchimp_form_selector = '.mc4wp-form';
+			$email_form_field_name   = 'EMAIL';
 		}
 
 		?>
@@ -456,7 +483,7 @@ final class Newspack_Popups_Model {
 									"popup_id": "<?php echo esc_attr( self::canonize_popup_id( $popup['id'] ) ); ?>",
 									"cid": "CLIENT_ID( <?php echo esc_attr( Newspack_Popups_Segmentation::NEWSPACK_SEGMENTATION_CID_NAME ); ?> )",
 									"mailing_list_status": "subscribed",
-									"email": "${formFields[email]}"
+									"email": "${formFields[<?php echo esc_attr( $email_form_field_name ); ?>]}"
 								}
 							}
 						},
