@@ -19,12 +19,8 @@ const PopupPreviewSetting = ( { autosavePost, isSavingPost, postId, metaFields }
 		...metaFields,
 	} );
 
-	// For inline and scroll-triggered popups, use most recent post to preview. For anything else, use the home.
-	const shouldDisplayOnPost =
-		'inline' === metaFields.placement || 'scroll' === metaFields.trigger_type;
-	const previewURL = shouldDisplayOnPost
-		? window && window.newspack_popups_data && window.newspack_popups_data.preview_post
-		: '/';
+	const previewURL =
+		( window && window.newspack_popups_data && window.newspack_popups_data.preview_post ) || '/';
 
 	return (
 		<WebPreview

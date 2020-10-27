@@ -5,6 +5,7 @@
  * @package Newspack
  */
 
+// @codeCoverageIgnoreStart
 require_once '../setup.php';
 
 switch ( $_SERVER['REQUEST_METHOD'] ) { //phpcs:ignore
@@ -17,3 +18,4 @@ switch ( $_SERVER['REQUEST_METHOD'] ) { //phpcs:ignore
 	default:
 		die( "{ error: 'unsupported_method' }" );
 }
+// @codeCoverageIgnoreEnd

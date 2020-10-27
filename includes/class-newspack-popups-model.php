@@ -199,6 +199,31 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
+	 * Get overlay test popups.
+	 *
+	 * @return array Overlay test popup objects.
+	 */
+	public static function retrieve_overlay_test_popups() {
+		$args = [
+			'post_type'   => Newspack_Popups::NEWSPACK_PLUGINS_CPT,
+			'post_status' => 'publish',
+			'meta_query'  => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+				[
+					'key'     => 'placement',
+					'value'   => 'inline',
+					'compare' => '!=',
+				],
+				[
+					'key'   => 'frequency',
+					'value' => 'test',
+				],
+			],
+		];
+
+		return self::retrieve_popups_with_query( new WP_Query( $args ) );
+	}
+
+	/**
 	 * Retrieve first overlay popup matching post categries.
 	 *
 	 * @return object|null Popup object.
