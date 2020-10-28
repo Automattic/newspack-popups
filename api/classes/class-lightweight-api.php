@@ -205,6 +205,10 @@ class Lightweight_API {
 	public function get_client_data( $client_id, $do_not_rebuild = false ) {
 		$data = $this->get_transient( $this->get_transient_name( $client_id ) );
 		if ( $data ) {
+			// Handle legacy data without the posts_read array.
+			if ( ! isset( $data['posts_read'] ) ) {
+				$data['posts_read'] = [];
+			}
 			return $data;
 		}
 		if ( $do_not_rebuild ) {
