@@ -205,7 +205,11 @@ class Lightweight_API {
 	public function get_client_data( $client_id, $do_not_rebuild = false ) {
 		$data = $this->get_transient( $this->get_transient_name( $client_id ) );
 		if ( $data ) {
-			return $data;
+			// Handle legacy data which might not have some default keys.
+			return array_merge(
+				$this->client_data_blueprint,
+				$data
+			);
 		}
 		if ( $do_not_rebuild ) {
 			return $this->client_data_blueprint;
