@@ -1,3 +1,10 @@
+## [1.15.1](https://github.com/Automattic/newspack-popups/compare/v1.15.0...v1.15.1) (2020-10-28)
+
+
+### Bug Fixes
+
+* add posts_read array to legacy client data ([#281](https://github.com/Automattic/newspack-popups/issues/281)) ([126a5f3](https://github.com/Automattic/newspack-popups/commit/126a5f330f133dc6446dda427b36851f054e726f))
+
 # [1.15.0](https://github.com/Automattic/newspack-popups/compare/v1.14.0...v1.15.0) (2020-10-27)
 
 
