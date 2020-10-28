@@ -82,7 +82,7 @@ const manageForms = container => {
 			}, {} );
 			performXHRequest( {
 				url: form.attributes[ 'action-xhr' ].value,
-				data,
+				data: processFormData( data, form ),
 			} );
 			event.preventDefault();
 		} );
