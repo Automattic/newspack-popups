@@ -80,10 +80,28 @@ final class Newspack_Popups_Inserter {
 			}
 		}
 
-		$popups_to_display = array_filter(
+		// Allow only one overlay campaign.
+		$has_overlay                     = false;
+		$popups_to_maybe_display_deduped = array_filter(
 			$popups_to_maybe_display,
+			function ( $campaign ) use ( &$has_overlay ) {
+				if ( 'inline' !== $campaign['options']['placement'] ) {
+					if ( $has_overlay ) {
+						return false;
+					} else {
+						$has_overlay = true;
+						return true;
+					}
+				}
+				return true;
+			}
+		);
+
+		$popups_to_display = array_filter(
+			$popups_to_maybe_display_deduped,
 			[ __CLASS__, 'should_display' ]
 		);
+
 		if ( ! empty( $popups_to_display ) ) {
 			return $popups_to_display;
 		}
