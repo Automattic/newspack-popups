@@ -432,7 +432,10 @@ final class Newspack_Popups_Model {
 	 * @return boolean True if popup has a newsletter prompt.
 	 */
 	public static function has_newsletter_prompt( $popup ) {
-		return false !== strpos( $popup['content'], 'wp:jetpack/mailchimp' );
+		return (
+			false !== strpos( $popup['content'], 'wp:jetpack/mailchimp' ) ||
+			false !== strpos( $popup['content'], 'wp:mailchimp-for-wp/form' )
+		);
 	}
 
 	/**
