@@ -28,6 +28,7 @@ function _manually_load_plugin() {
 	require dirname( dirname( __FILE__ ) ) . '/newspack-popups.php';
 	require dirname( dirname( __FILE__ ) ) . '/api/campaigns/class-maybe-show-campaign.php';
 	require dirname( dirname( __FILE__ ) ) . '/api/campaigns/class-report-campaign-data.php';
+	require dirname( dirname( __FILE__ ) ) . '/api/segmentation/class-segmentation-client-data.php';
 }
 tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
 

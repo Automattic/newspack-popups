@@ -436,6 +436,16 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
+	 * Does the popup have a donation block?
+	 *
+	 * @param object $popup The popup object.
+	 * @return boolean True if popup has a donation block.
+	 */
+	public static function has_donation_block( $popup ) {
+		return false !== strpos( $popup['content'], 'wp:newspack-blocks/donate' );
+	}
+
+	/**
 	 * Insert amp-analytics tracking code.
 	 *
 	 * @param object $popup The popup object.

@@ -60,6 +60,15 @@ const App = () => {
 					onChange={ handleSettingChange( 'suppress_all_newsletter_campaigns_if_one_dismissed' ) }
 				/>
 				<CheckboxControl
+					label={ __(
+						'Suppress all donation campaigns if the reader has donated.',
+						'newspack-popups'
+					) }
+					disabled={ inFlight }
+					checked={ settings.suppress_donation_campaigns_if_donor === '1' }
+					onChange={ handleSettingChange( 'suppress_donation_campaigns_if_donor' ) }
+				/>
+				<CheckboxControl
 					label={ __( 'Enable non-interactive mode.', 'newspack-popups' ) }
 					help={ __(
 						'Use this setting in high traffic scenarios. No API requests will be made, reducing server load. Inline campaigns will be shown to all users without dismissal buttons, and overlay campaigns will be suppressed.',

@@ -51,6 +51,7 @@ class Newspack_Popups_Settings {
 		return [
 			'suppress_newsletter_campaigns'            => get_option( 'suppress_newsletter_campaigns', true ),
 			'suppress_all_newsletter_campaigns_if_one_dismissed' => get_option( 'suppress_all_newsletter_campaigns_if_one_dismissed', true ),
+			'suppress_donation_campaigns_if_donor'     => get_option( 'suppress_donation_campaigns_if_donor', false ),
 			'newspack_newsletters_non_interative_mode' => self::is_non_interactive(),
 		];
 	}
