@@ -348,6 +348,7 @@ final class Newspack_Popups_Model {
 			'trigger_delay'           => get_post_meta( $id, 'trigger_delay', true ),
 			'trigger_scroll_progress' => get_post_meta( $id, 'trigger_scroll_progress', true ),
 			'utm_suppression'         => get_post_meta( $id, 'utm_suppression', true ),
+			'selected_segment_id'     => get_post_meta( $id, 'selected_segment_id', true ),
 		];
 
 		$popup = [
@@ -369,6 +370,7 @@ final class Newspack_Popups_Model {
 					'trigger_delay'           => 0,
 					'trigger_scroll_progress' => 0,
 					'utm_suppression'         => null,
+					'selected_segment_id'     => '',
 				]
 			),
 		];
