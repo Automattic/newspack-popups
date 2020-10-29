@@ -1,3 +1,16 @@
+# [1.16.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.15.1...v1.16.0-alpha.1) (2020-10-29)
+
+
+### Bug Fixes
+
+* allow only one overlay campaign per page ([#286](https://github.com/Automattic/newspack-popups/issues/286)) ([231d862](https://github.com/Automattic/newspack-popups/commit/231d862554a64c895b4af7c3238d8da5034c4199))
+
+
+### Features
+
+* handle non-amp amp-analytics submission event ([#283](https://github.com/Automattic/newspack-popups/issues/283)) ([44e7587](https://github.com/Automattic/newspack-popups/commit/44e7587143ac9389df6d627acbaa37729fe802dc)), closes [#200](https://github.com/Automattic/newspack-popups/issues/200) [#257](https://github.com/Automattic/newspack-popups/issues/257)
+* suppression donation campaigns for donors ([1f53b60](https://github.com/Automattic/newspack-popups/commit/1f53b60a94f7d5be095d5212a98c184de60ada5f)), closes [#141](https://github.com/Automattic/newspack-popups/issues/141)
+
 ## [1.15.1](https://github.com/Automattic/newspack-popups/compare/v1.15.0...v1.15.1) (2020-10-28)
 
 
