@@ -166,6 +166,7 @@ final class Newspack_Popups_Model {
 					update_post_meta( $id, $key, $value );
 					break;
 				case 'utm_suppression':
+				case 'selected_segment_id':
 					update_post_meta( $id, $key, esc_attr( $value ) );
 					break;
 				default:
