@@ -62,6 +62,8 @@ class Newspack_Popups_Settings {
 
 	/**
 	 * Return a single setting value.
+	 *
+	 * @param string $key Key name.
 	 */
 	public static function get_setting( $key ) {
 		return get_option( $key, true );

@@ -121,6 +121,7 @@ final class Newspack_Popups_API {
 	}
 
 	/**
+	 * Set sitewide default.
 	 *
 	 * @param WP_REST_Request $request Request object.
 	 */
