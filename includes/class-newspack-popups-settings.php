@@ -103,7 +103,7 @@ class Newspack_Popups_Settings {
 					'Enable non-interactive mode.',
 					'newspack-popups'
 				),
-				'help' => __(
+				'help'  => __(
 					'Use this setting in high traffic scenarios. No API requests will be made, reducing server load. Inline campaigns will be shown to all users without dismissal buttons, and overlay campaigns will be suppressed.',
 					'newspack-popups'
 				),
