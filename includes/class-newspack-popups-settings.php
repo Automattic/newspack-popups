@@ -88,7 +88,34 @@ class Newspack_Popups_Settings {
 					'newspack-popups'
 				),
 			],
+			[
+				'key'   => 'suppress_donation_campaigns_if_donor',
+				'value' => get_option( 'suppress_donation_campaigns_if_donor', false ),
+				'label' => __(
+					'Suppress all donation campaigns if the reader has donated.',
+					'newspack-popups'
+				),
+			],
+			[
+				'key'   => 'newspack_newsletters_non_interative_mode',
+				'value' => self::is_non_interactive(),
+				'label' => __(
+					'Enable non-interactive mode.',
+					'newspack-popups'
+				),
+				'help' => __(
+					'Use this setting in high traffic scenarios. No API requests will be made, reducing server load. Inline campaigns will be shown to all users without dismissal buttons, and overlay campaigns will be suppressed.',
+					'newspack-popups'
+				),
+			],
 		];
+	}
+
+	/**
+	 * Is the non-interactive setting on?
+	 */
+	public static function is_non_interactive() {
+		return get_option( 'newspack_newsletters_non_interative_mode', false );
 	}
 
 	/**

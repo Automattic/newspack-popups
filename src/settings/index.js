@@ -45,6 +45,7 @@ const App = () => {
 					<CheckboxControl
 						key={ setting.key }
 						label={ setting.label }
+						help={ setting.help }
 						disabled={ inFlight }
 						checked={ setting.value === '1' }
 						onChange={ handleSettingChange( setting.key ) }

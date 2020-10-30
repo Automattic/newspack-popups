@@ -17,6 +17,8 @@ final class Newspack_Popups {
 
 	const NEWSPACK_POPUP_PREVIEW_QUERY_PARAM = 'newspack_popups_preview_id';
 
+	const LIGHTWEIGHT_API_CONFIG_FILE_PATH = WP_CONTENT_DIR . '/../newspack-popups-config.php';
+
 	/**
 	 * The single instance of the class.
 	 *
@@ -41,21 +43,26 @@ final class Newspack_Popups {
 	 * Constructor.
 	 */
 	public function __construct() {
+		add_action( 'init', [ __CLASS__, 'create_lightweight_api_config' ] );
+		add_action( 'admin_notices', [ __CLASS__, 'api_config_missing_notice' ] );
 		add_action( 'init', [ __CLASS__, 'register_cpt' ] );
 		add_action( 'init', [ __CLASS__, 'register_meta' ] );
 		add_action( 'enqueue_block_editor_assets', [ __CLASS__, 'enqueue_block_editor_assets' ] );
 		add_filter( 'display_post_states', [ __CLASS__, 'display_post_states' ], 10, 2 );
 		add_action( 'rest_api_init', [ __CLASS__, 'rest_api_init' ] );
-		add_action( 'save_post_newspack_popups_cpt', [ __CLASS__, 'popup_default_fields' ], 10, 3 );
+		add_action( 'save_post_' . self::NEWSPACK_PLUGINS_CPT, [ __CLASS__, 'popup_default_fields' ], 10, 3 );
 
 		if ( filter_input( INPUT_GET, 'newspack_popups_preview_id', FILTER_SANITIZE_STRING ) ) {
-			add_filter( 'show_admin_bar', [ __CLASS__, 'hide_admin_bar_for_preview' ], 10, 2 );
+			add_filter( 'show_admin_bar', [ __CLASS__, 'hide_admin_bar_for_preview' ], 10, 2 ); // phpcs:ignore WordPressVIPMinimum.UserExperience.AdminBarRemoval.RemovalDetected
 		}
 
 		include_once dirname( __FILE__ ) . '/class-newspack-popups-model.php';
 		include_once dirname( __FILE__ ) . '/class-newspack-popups-inserter.php';
 		include_once dirname( __FILE__ ) . '/class-newspack-popups-api.php';
 		include_once dirname( __FILE__ ) . '/class-newspack-popups-settings.php';
+		include_once dirname( __FILE__ ) . '/class-newspack-popups-segmentation.php';
+		include_once dirname( __FILE__ ) . '/class-newspack-popups-parse-logs.php';
+		include_once dirname( __FILE__ ) . '/class-newspack-popups-donations.php';
 	}
 
 	/**
@@ -85,7 +92,7 @@ final class Newspack_Popups {
 			'show_ui'      => true,
 			'show_in_rest' => true,
 			'supports'     => [ 'editor', 'title', 'custom-fields' ],
-			'taxonomies'   => [ 'category' ],
+			'taxonomies'   => [ 'category', 'post_tag' ],
 			'menu_icon'    => 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBmaWxsPSIjYTBhNWFhIiBkPSJNMTEuOTkgMTguNTRsLTcuMzctNS43M0wzIDE0LjA3bDkgNyA5LTctMS42My0xLjI3LTcuMzggNS43NHpNMTIgMTZsNy4zNi01LjczTDIxIDlsLTktNy05IDcgMS42MyAxLjI3TDEyIDE2eiIvPjwvc3ZnPgo=',
 		];
 		\register_post_type( self::NEWSPACK_PLUGINS_CPT, $cpt_args );
@@ -266,20 +273,34 @@ final class Newspack_Popups {
 			filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/editor.js' ),
 			true
 		);
-		$recent_posts = wp_get_recent_posts(
+
+		$query                  = new WP_Query(
 			[
-				'numberposts' => 1,
-				'post_status' => 'publish',
-			],
-			OBJECT
+				'posts_per_page' => 1,
+				'post_status'    => 'publish',
+				'orderby'        => 'post_date',
+				'order'          => 'DESC',
+				'meta_query'     => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+					'relation' => 'OR',
+					[
+						'key'     => 'newspack_popups_has_disabled_popups',
+						'compare' => 'NOT EXISTS',
+					],
+					[
+						'key'   => 'newspack_popups_has_disabled_popups',
+						'value' => '',
+					],
+				],
+			]
 		);
-		$preview_post = count( $recent_posts ) > 0 ? get_the_permalink( $recent_posts[0] ) : '';
+		$recent_posts           = $query->get_posts();
+		$preview_post_permalink = $recent_posts && count( $recent_posts ) > 0 ? get_the_permalink( $recent_posts[0] ) : '';
 
 		\wp_localize_script(
 			'newspack-popups',
 			'newspack_popups_data',
 			[
-				'preview_post' => $preview_post,
+				'preview_post' => $preview_post_permalink,
 			]
 		);
 		\wp_enqueue_style(
@@ -348,19 +369,26 @@ final class Newspack_Popups {
 			[ self::NEWSPACK_PLUGINS_CPT ],
 			'newspack_popups_is_sitewide_default',
 			[
-				'get_callback' => function( $post ) {
+				'get_callback'    => function( $post ) {
 					return absint( $post['id'] ) === absint( get_option( self::NEWSPACK_POPUPS_SITEWIDE_DEFAULT, null ) );
 				},
-				'schema'       => [
-					'context' => [
-						'edit',
-					],
-					'type'    => 'array',
-				],
+				'update_callback' => function ( $value, $post ) {
+					if ( $value ) {
+						return Newspack_Popups_Model::set_sitewide_popup( $post->ID );
+					} else {
+						return Newspack_Popups_Model::unset_sitewide_popup( $post->ID );
+					}
+				},
 			]
 		);
 	}
 
+	/**
+	 * Get the default dismiss text.
+	 */
+	public static function get_default_dismiss_text() {
+		return __( "I'm not interested", 'newspack' );
+	}
 
 	/**
 	 * Set default fields when Pop-up is created.
@@ -378,7 +406,7 @@ final class Newspack_Popups {
 
 		update_post_meta( $post_id, 'background_color', '#FFFFFF' );
 		update_post_meta( $post_id, 'display_title', false );
-		update_post_meta( $post_id, 'dismiss_text', __( "I'm not interested", 'newspack' ) );
+		update_post_meta( $post_id, 'dismiss_text', self::get_default_dismiss_text() );
 		update_post_meta( $post_id, 'frequency', 'test' );
 		update_post_meta( $post_id, 'overlay_color', '#000000' );
 		update_post_meta( $post_id, 'overlay_opacity', 30 );
@@ -387,6 +415,46 @@ final class Newspack_Popups {
 		update_post_meta( $post_id, 'trigger_delay', 3 );
 		update_post_meta( $post_id, 'trigger_scroll_progress', 30 );
 		update_post_meta( $post_id, 'utm_suppression', '' );
+	}
+
+	/**
+	 * Create the config file for the API, unless it exists.
+	 */
+	public static function create_lightweight_api_config() {
+		if ( ! ( defined( 'ATOMIC_SITE_ID' ) && ATOMIC_SITE_ID ) || file_exists( self::LIGHTWEIGHT_API_CONFIG_FILE_PATH ) ) {
+			return;
+		}
+		global $wpdb;
+		file_put_contents( // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_file_put_contents -- VIP will have to create a config manually
+			self::LIGHTWEIGHT_API_CONFIG_FILE_PATH,
+			'<?php' .
+			// Insert these only if they are defined, but not in the as environment variables.
+			// This way only variables which are already declared in wp-config.php should be inserted in this config file.
+			( ! getenv( 'DB_CHARSET' ) && defined( 'DB_CHARSET' ) ? "\ndefine( 'DB_CHARSET', '" . DB_CHARSET . "' );" : '' ) .
+			( ! getenv( 'WP_CACHE_KEY_SALT' ) && defined( 'WP_CACHE_KEY_SALT' ) ? "\ndefine( 'WP_CACHE_KEY_SALT', '" . WP_CACHE_KEY_SALT . "' );" : '' ) .
+			"\ndefine( 'DB_PREFIX', '" . $wpdb->prefix . "' );" .
+			"\n"
+		);
+		error_log( 'Created the config file: ' . self::LIGHTWEIGHT_API_CONFIG_FILE_PATH ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+	}
+
+	/**
+	 * Add an admin notice if config is missing.
+	 */
+	public static function api_config_missing_notice() {
+		if ( file_exists( self::LIGHTWEIGHT_API_CONFIG_FILE_PATH ) ) {
+			return;
+		}
+		?>
+			<div class="notice notice-error">
+				<p>
+					<?php _e( 'Newspack Campaigns requires a custom configuration file, which is missing. Please create this file following instructions found ', 'newspack-popups' ); ?>
+					<a href="https://github.com/Automattic/newspack-popups/blob/master/api/README.md">
+						<?php _e( 'here.', 'newspack-popups' ); ?>
+					</a>
+				</p>
+			</div>
+		<?php
 	}
 }
 Newspack_Popups::instance();

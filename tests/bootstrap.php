@@ -12,7 +12,7 @@ if ( ! $_tests_dir ) {
 }
 
 if ( ! file_exists( $_tests_dir . '/includes/functions.php' ) ) {
-	echo "Could not find $_tests_dir/includes/functions.php, have you run bin/install-wp-tests.sh ?" . PHP_EOL; // WPCS: XSS ok.
+	echo "Could not find $_tests_dir/includes/functions.php, have you run bin/install-wp-tests.sh ?" . PHP_EOL; // phpcs:ignore
 	exit( 1 );
 }
 
@@ -23,9 +23,17 @@ require_once $_tests_dir . '/includes/functions.php';
  * Manually load the plugin being tested.
  */
 function _manually_load_plugin() {
+	$_SERVER['HTTP_REFERER'] = 'https://' . $_SERVER['HTTP_HOST']; // phpcs:ignore
+
 	require dirname( dirname( __FILE__ ) ) . '/newspack-popups.php';
+	require dirname( dirname( __FILE__ ) ) . '/api/campaigns/class-maybe-show-campaign.php';
+	require dirname( dirname( __FILE__ ) ) . '/api/campaigns/class-report-campaign-data.php';
+	require dirname( dirname( __FILE__ ) ) . '/api/segmentation/class-segmentation-client-data.php';
 }
 tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
+
+define( 'IS_TEST_ENV', 1 );
+define( 'ENABLE_CAMPAIGN_EVENT_LOGGING', 1 );
 
 // Start up the WP testing environment.
 require $_tests_dir . '/includes/bootstrap.php';
