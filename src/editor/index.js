@@ -58,11 +58,14 @@ class PopupSidebar extends Component {
 			utm_suppression,
 			onSitewideDefaultChange,
 		} = this.props;
-		const isInline = 'inline' === placement;
+		const canInsertOnEveryPage = placementValue =>
+			[ 'inline', 'above_header' ].indexOf( placementValue ) >= 0;
+
+		const isOverlay = ! canInsertOnEveryPage( placement );
 
 		const updatePlacement = value => {
 			onMetaFieldChange( 'placement', value );
-			if ( value !== 'inline' && frequency === 'always' ) {
+			if ( ! canInsertOnEveryPage( value ) && frequency === 'always' ) {
 				onMetaFieldChange( 'frequency', 'once' );
 			}
 		};
@@ -70,7 +73,7 @@ class PopupSidebar extends Component {
 		return (
 			<Fragment>
 				{ // The sitewide default option is for overlay popups only.
-				! isInline && (
+				isOverlay && (
 					<CheckboxControl
 						label={ __( 'Sitewide Default', 'newspack-popups' ) }
 						checked={ this.props.newspack_popups_is_sitewide_default }
@@ -88,9 +91,10 @@ class PopupSidebar extends Component {
 						{ value: 'top', label: __( 'Top' ) },
 						{ value: 'bottom', label: __( 'Bottom' ) },
 						{ value: 'inline', label: __( 'Inline' ) },
+						{ value: 'above_header', label: __( 'Above site header' ) },
 					] }
 				/>
-				{ ! isInline && (
+				{ isOverlay && (
 					<Fragment>
 						<RadioControl
 							label={ __( 'Trigger' ) }
@@ -122,7 +126,7 @@ class PopupSidebar extends Component {
 						) }
 					</Fragment>
 				) }
-				{ isInline && (
+				{ placement === 'inline' && (
 					<RangeControl
 						label={ __( 'Approximate position (in percent)' ) }
 						value={ trigger_scroll_progress }
@@ -143,7 +147,7 @@ class PopupSidebar extends Component {
 						{
 							value: 'always',
 							label: __( 'Every page', 'newspack-popups' ),
-							disabled: 'inline' !== placement,
+							disabled: ! canInsertOnEveryPage( placement ),
 						},
 					] }
 					help={ __(
@@ -164,7 +168,7 @@ class PopupSidebar extends Component {
 					onChange={ value => onMetaFieldChange( 'background_color', value || '#FFFFFF' ) }
 					label={ __( 'Background Color' ) }
 				/>
-				{ ! isInline && (
+				{ isOverlay && (
 					<Fragment>
 						<ColorPaletteControl
 							value={ overlay_color }

@@ -42,8 +42,11 @@ final class Newspack_Popups_Inserter {
 			return [ Newspack_Popups_Model::retrieve_preview_popup( Newspack_Popups::previewed_popup_id() ) ];
 		}
 
-		// 1. Get all inline popups.
-		$popups_to_maybe_display = Newspack_Popups_Model::retrieve_inline_popups();
+		// 1. Get all inline, above header popups.
+		$popups_to_maybe_display = array_merge(
+			Newspack_Popups_Model::retrieve_inline_popups(),
+			Newspack_Popups_Model::retrieve_above_header_popups()
+		);
 
 		// 2. Get the overlay popup/s. There can be only one displayed, unless in test mode.
 
@@ -69,8 +72,8 @@ final class Newspack_Popups_Inserter {
 				$found_popup = Newspack_Popups_Model::retrieve_popup_by_id( $sitewide_default );
 				if (
 					$found_popup &&
-					// Prevent inline sitewide default from being added - all inline popups are there.
-					'inline' !== $found_popup['options']['placement']
+					// Prevent non-overlay sitewide default from being added.
+					Newspack_Popups_Model::is_overlay( $found_popup )
 				) {
 					array_push(
 						$popups_to_maybe_display,
@@ -85,7 +88,7 @@ final class Newspack_Popups_Inserter {
 		$popups_to_maybe_display_deduped = array_filter(
 			$popups_to_maybe_display,
 			function ( $campaign ) use ( &$has_overlay ) {
-				if ( 'inline' !== $campaign['options']['placement'] ) {
+				if ( Newspack_Popups_Model::is_overlay( $campaign ) ) {
 					if ( $has_overlay ) {
 						return false;
 					} else {
@@ -118,6 +121,7 @@ final class Newspack_Popups_Inserter {
 		add_action( 'after_header', [ $this, 'insert_popups_after_header' ] ); // This is a Newspack theme hook. When used with other themes, popups won't be inserted on archive pages.
 		add_action( 'wp_head', [ $this, 'insert_popups_amp_access' ] );
 		add_action( 'wp_head', [ $this, 'register_amp_scripts' ] );
+		add_action( 'before_header', [ $this, 'inject_above_header_popup' ] );
 
 		add_filter(
 			'newspack_newsletters_assess_has_disabled_popups',
@@ -225,12 +229,12 @@ final class Newspack_Popups_Inserter {
 		$inline_popups  = [];
 		$overlay_popups = [];
 		foreach ( $popups as $popup ) {
-			if ( 'inline' === $popup['options']['placement'] ) {
+			if ( Newspack_Popups_Model::is_inline( $popup ) ) {
 				$percentage                = intval( $popup['options']['trigger_scroll_progress'] ) / 100;
 				$popup['precise_position'] = $total_length * $percentage;
 				$popup['is_inserted']      = false;
 				$inline_popups[]           = $popup;
-			} else {
+			} elseif ( Newspack_Popups_Model::is_overlay( $popup ) ) {
 				$overlay_popups[] = $popup;
 			}
 		}
@@ -322,6 +326,27 @@ final class Newspack_Popups_Inserter {
 
 	/**
 	 * The popup shortcode function.
+	 */
+	public static function inject_above_header_popup() {
+		$previewed_popup_id = Newspack_Popups::previewed_popup_id();
+		$popups             = [];
+		if ( $previewed_popup_id ) {
+			$popups = [ Newspack_Popups_Model::retrieve_preview_popup( $previewed_popup_id ) ];
+		} else {
+			$popups = Newspack_Popups_Model::retrieve_above_header_popups();
+		}
+		if ( ! empty( $popups ) ) {
+			foreach ( $popups as $popup ) {
+				if ( $previewed_popup_id || self::should_display( $popup ) ) {
+					echo Newspack_Popups_Model::generate_popup( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				}
+			}
+			self::enqueue_popup_assets();
+		}
+	}
+
+	/**
+	 * The popup shortcode function.
 	 *
 	 * @param array $atts Shortcode attributes.
 	 * @return HTML
@@ -346,7 +371,7 @@ final class Newspack_Popups_Inserter {
 	public static function create_single_popup_access_payload( $popup ) {
 		$popup_id_string = Newspack_Popups_Model::canonize_popup_id( esc_attr( $popup['id'] ) );
 		$frequency       = $popup['options']['frequency'];
-		if ( 'inline' !== $popup['options']['placement'] && 'always' === $frequency ) {
+		if ( Newspack_Popups_Model::is_overlay( $popup ) && 'always' === $frequency ) {
 			$frequency = 'once';
 		}
 		return [
