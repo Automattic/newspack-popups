@@ -353,6 +353,7 @@ final class Newspack_Popups_Inserter {
 			'id'  => $popup_id_string,
 			'f'   => $frequency,
 			'utm' => $popup['options']['utm_suppression'],
+			's'   => $popup['options']['selected_segment_id'],
 			'n'   => \Newspack_Popups_Model::has_newsletter_prompt( $popup ),
 			'd'   => \Newspack_Popups_Model::has_donation_block( $popup ),
 		];

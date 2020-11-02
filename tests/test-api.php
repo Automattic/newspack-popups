@@ -22,6 +22,16 @@ class APITest extends WP_UnitTestCase {
 			'suppress_newsletter_campaigns'        => true,
 			'suppress_all_newsletter_campaigns_if_one_dismissed' => true,
 			'suppress_donation_campaigns_if_donor' => true,
+			'all_segments'                         => (object) [
+				'segmentBetween3And5' => (object) [
+					'min_posts' => 2,
+					'max_posts' => 3,
+				],
+				'segmentWithZeros'    => (object) [
+					'min_posts' => 0,
+					'max_posts' => 0,
+				],
+			],
 		];
 	}
 
@@ -541,6 +551,102 @@ class APITest extends WP_UnitTestCase {
 		self::assertFalse(
 			self::$maybe_show_campaign->should_campaign_be_shown( $client_id, $test_popup_with_donate_block['payload'], self::$settings ),
 			'Assert not shown after reader donated.'
+		);
+	}
+
+	/**
+	 * Suppression caused by a reading count segment.
+	 */
+	public function test_segment_read_count_range() {
+		$test_popup_with_segment = self::create_test_popup(
+			[
+				'placement'           => 'inline',
+				'frequency'           => 'always',
+				'selected_segment_id' => 'segmentBetween3And5',
+			]
+		);
+		$client_id               = 'amp-123';
+
+		self::assertFalse(
+			self::$maybe_show_campaign->should_campaign_be_shown( $client_id, $test_popup_with_segment['payload'], self::$settings ),
+			'Assert initially not visible.'
+		);
+
+		$post_read_item = [
+			'post_id'      => '142',
+			'category_ids' => '',
+		];
+
+		// Report 2 articles read.
+		self::$maybe_show_campaign->save_client_data(
+			$client_id,
+			[
+				'posts_read' => [
+					$post_read_item,
+					$post_read_item,
+				],
+			]
+		);
+
+		self::assertTrue(
+			self::$maybe_show_campaign->should_campaign_be_shown( $client_id, $test_popup_with_segment['payload'], self::$settings ),
+			'Assert shown when a second article is read.'
+		);
+
+		// Report more than 3 articles read.
+		self::$maybe_show_campaign->save_client_data(
+			$client_id,
+			[
+				'posts_read' => [
+					$post_read_item,
+					$post_read_item,
+					$post_read_item,
+					$post_read_item,
+				],
+			]
+		);
+
+		self::assertFalse(
+			self::$maybe_show_campaign->should_campaign_be_shown( $client_id, $test_popup_with_segment['payload'], self::$settings ),
+			'Assert not shown when more than three articles were read.'
+		);
+	}
+
+	/**
+	 * Suppression caused by a reading count segment.
+	 */
+	public function test_segment_read_count_zeros() {
+		$test_popup_with_segment = self::create_test_popup(
+			[
+				'placement'           => 'inline',
+				'frequency'           => 'always',
+				'selected_segment_id' => 'segmentWithZeros',
+			]
+		);
+		$client_id               = 'amp-123';
+
+		self::assertTrue(
+			self::$maybe_show_campaign->should_campaign_be_shown( $client_id, $test_popup_with_segment['payload'], self::$settings ),
+			'Assert visible.'
+		);
+	}
+
+	/**
+	 * Non-existing segment.
+	 */
+	public function test_segment_non_existing_segment() {
+		$test_popup = self::create_test_popup(
+			[
+				'placement'           => 'inline',
+				'frequency'           => 'always',
+				'selected_segment_id' => 'no-such-segment',
+			]
+		);
+		$client_id  = 'amp-123';
+
+		self::assertTrue(
+			self::$maybe_show_campaign->should_campaign_be_shown( $client_id, $test_popup['payload'], self::$settings ),
+			'Assert visible, since there is no such segment.'
 		);
 	}
 }

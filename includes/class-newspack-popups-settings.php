@@ -53,6 +53,14 @@ class Newspack_Popups_Settings {
 			'suppress_all_newsletter_campaigns_if_one_dismissed' => get_option( 'suppress_all_newsletter_campaigns_if_one_dismissed', true ),
 			'suppress_donation_campaigns_if_donor'     => get_option( 'suppress_donation_campaigns_if_donor', false ),
 			'newspack_newsletters_non_interative_mode' => self::is_non_interactive(),
+			'all_segments'                             => array_reduce(
+				Newspack_Popups_Segmentation::get_segments(),
+				function( $acc, $item ) {
+					$acc[ $item['id'] ] = $item['configuration'];
+					return $acc;
+				},
+				[]
+			),
 		];
 	}
 
