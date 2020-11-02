@@ -168,6 +168,23 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			$campaign_data['suppress_forever'] = true;
 		}
 
+		// Handle segmentation.
+		$campaign_segment = isset( $settings->all_segments->{$campaign->s} ) ? $settings->all_segments->{$campaign->s} : false;
+		if ( ! empty( $campaign_segment ) ) {
+			$client_data      = $this->get_client_data( $client_id );
+			$posts_read_count = count( $client_data['posts_read'] );
+			if (
+				$campaign_segment->min_posts > 0 && $campaign_segment->min_posts > $posts_read_count
+			) {
+				$should_display = false;
+			}
+			if (
+				$campaign_segment->max_posts > 0 && $campaign_segment->max_posts < $posts_read_count
+			) {
+				$should_display = false;
+			}
+		}
+
 		if ( ! empty( array_diff( $init_campaign_data, $campaign_data ) ) ) {
 			$this->save_campaign_data( $client_id, $campaign->id, $campaign_data );
 		}
