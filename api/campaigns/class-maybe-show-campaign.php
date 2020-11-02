@@ -173,6 +173,8 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		if ( ! empty( $campaign_segment ) ) {
 			$client_data      = $this->get_client_data( $client_id );
 			$posts_read_count = count( $client_data['posts_read'] );
+			$is_subscriber    = ! empty( $client_data['email_subscriptions'] );
+			$is_donor         = ! empty( $client_data['donations'] );
 			if (
 				$campaign_segment->min_posts > 0 && $campaign_segment->min_posts > $posts_read_count
 			) {
@@ -181,6 +183,18 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			if (
 				$campaign_segment->max_posts > 0 && $campaign_segment->max_posts < $posts_read_count
 			) {
+				$should_display = false;
+			}
+			if ( $campaign_segment->is_subscribed && ! $is_subscriber ) {
+				$should_display = false;
+			}
+			if ( $campaign_segment->is_not_subscribed && $is_subscriber ) {
+				$should_display = false;
+			}
+			if ( $campaign_segment->is_donor && ! $is_donor ) {
+				$should_display = false;
+			}
+			if ( $campaign_segment->is_not_donor && $is_donor ) {
 				$should_display = false;
 			}
 		}
