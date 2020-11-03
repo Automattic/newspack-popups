@@ -242,6 +242,8 @@ final class Newspack_Popups_Inserter {
 				$overlay_popups[] = $popup;
 			}
 		}
+
+		// Return early if there are no popups to insert. This can happen if e.g. the only popup is an above header one.
 		if ( empty( $inline_popups ) && empty( $overlay_popups ) ) {
 			return $content;
 		}
