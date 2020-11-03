@@ -41,16 +41,18 @@ const App = () => {
 				headerText={ __( 'Campaigns Settings', 'newspack-popups' ) }
 			/>
 			<Card>
-				{ settings.map( setting => (
-					<CheckboxControl
-						key={ setting.key }
-						label={ setting.label }
-						help={ setting.help }
-						disabled={ inFlight }
-						checked={ setting.value === '1' }
-						onChange={ handleSettingChange( setting.key ) }
-					/>
-				) ) }
+				{ settings.map( setting =>
+					setting.label ? (
+						<CheckboxControl
+							key={ setting.key }
+							label={ setting.label }
+							help={ setting.help }
+							disabled={ inFlight }
+							checked={ setting.value === '1' }
+							onChange={ handleSettingChange( setting.key ) }
+						/>
+					) : null
+				) }
 			</Card>
 		</Grid>
 	);
