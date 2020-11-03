@@ -165,6 +165,8 @@ final class Newspack_Popups_Model {
 					}
 					update_post_meta( $id, $key, $value );
 					break;
+				case 'trigger_type':
+				case 'trigger_scroll_progress':
 				case 'utm_suppression':
 				case 'selected_segment_id':
 					update_post_meta( $id, $key, esc_attr( $value ) );
@@ -439,6 +441,26 @@ final class Newspack_Popups_Model {
 	 */
 	public static function is_inline( $popup ) {
 		return 'inline' === $popup['options']['placement'];
+	}
+
+	/**
+	 * Time-triggered overlay popups should be inserted above page header.
+	 *
+	 * @param object $popup The popup object.
+	 * @return boolean True the popup should be inserted above page header.
+	 */
+	public static function should_be_inserted_above_page_header( $popup ) {
+		return 'inline' !== $popup['options']['placement'] && 'time' === $popup['options']['trigger_type'];
+	}
+
+	/**
+	 * Time-triggered overlay popups should be inserted above page header.
+	 *
+	 * @param object $popup The popup object.
+	 * @return boolean True the popup should be inserted in page content.
+	 */
+	public static function should_be_inserted_in_page_content( $popup ) {
+		return self::should_be_inserted_above_page_header( $popup ) === false;
 	}
 
 	/**

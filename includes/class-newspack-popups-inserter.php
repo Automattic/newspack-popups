@@ -108,16 +108,10 @@ final class Newspack_Popups_Inserter {
 			}
 		);
 
-		$popups_to_display = array_filter(
+		return array_filter(
 			$popups_to_maybe_display_deduped,
 			[ __CLASS__, 'should_display' ]
 		);
-
-		if ( ! empty( $popups_to_display ) ) {
-			return $popups_to_display;
-		}
-
-		return [];
 	}
 
 	/**
@@ -129,6 +123,7 @@ final class Newspack_Popups_Inserter {
 		add_action( 'after_header', [ $this, 'insert_popups_after_header' ] ); // This is a Newspack theme hook. When used with other themes, popups won't be inserted on archive pages.
 		add_action( 'wp_head', [ $this, 'insert_popups_amp_access' ] );
 		add_action( 'wp_head', [ $this, 'register_amp_scripts' ] );
+		add_action( 'before_header', [ $this, 'inject_timed_overlay_popups' ] );
 
 		// Always enqueue scripts, since this plugin's scripts are handling pageview sending via GTAG.
 		add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
@@ -217,7 +212,7 @@ final class Newspack_Popups_Inserter {
 			return $content;
 		}
 
-		$popups = self::popups_for_post();
+		$popups = array_filter( self::popups_for_post(), [ 'Newspack_Popups_Model', 'should_be_inserted_in_page_content' ] );
 
 		if ( empty( $popups ) ) {
 			return $content;
@@ -292,10 +287,24 @@ final class Newspack_Popups_Inserter {
 			return;
 		}
 
-		$popups = self::popups_for_post();
+		$popups = array_filter( self::popups_for_post(), [ 'Newspack_Popups_Model', 'should_be_inserted_in_page_content' ] );
 
 		if ( ! empty( $popups ) ) {
 			foreach ( $popups as $popup ) {
+				echo Newspack_Popups_Model::generate_popup( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			}
+		}
+	}
+
+	/**
+	 * Insert time-triggered overlay popups above the header.
+	 * This way they will be visible before scrolling below the fold.
+	 */
+	public static function inject_timed_overlay_popups() {
+		$timed_overlay_popups = array_filter( self::popups_for_post(), [ 'Newspack_Popups_Model', 'should_be_inserted_above_page_header' ] );
+
+		if ( ! empty( $timed_overlay_popups ) ) {
+			foreach ( $timed_overlay_popups as $popup ) {
 				echo Newspack_Popups_Model::generate_popup( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			}
 		}
