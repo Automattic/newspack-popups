@@ -110,6 +110,17 @@ class Newspack_Popups_Settings {
 					'newspack-popups'
 				),
 			],
+			[
+				'key'   => 'all_segments',
+				'value' => array_reduce(
+					Newspack_Popups_Segmentation::get_segments(),
+					function( $acc, $item ) {
+						$acc[ $item['id'] ] = $item['configuration'];
+						return $acc;
+					},
+					[]
+				),
+			],
 		];
 	}
 

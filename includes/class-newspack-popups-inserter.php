@@ -33,6 +33,17 @@ final class Newspack_Popups_Inserter {
 	 * @return array Popup objects.
 	 */
 	public static function popups_for_post() {
+		// Inject campaigns only in posts, pages, and CPTs that explicitly opt in.
+		if ( ! in_array(
+			get_post_type(),
+			apply_filters(
+				'newspack_campaigns_post_types_for_campaigns',
+				[ 'post', 'page' ]
+			)
+		) ) {
+			return [];
+		}
+
 		if ( ! empty( self::$popups ) ) {
 			return self::$popups;
 		}
@@ -353,6 +364,7 @@ final class Newspack_Popups_Inserter {
 			'id'  => $popup_id_string,
 			'f'   => $frequency,
 			'utm' => $popup['options']['utm_suppression'],
+			's'   => $popup['options']['selected_segment_id'],
 			'n'   => \Newspack_Popups_Model::has_newsletter_prompt( $popup ),
 			'd'   => \Newspack_Popups_Model::has_donation_block( $popup ),
 		];

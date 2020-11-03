@@ -40,6 +40,7 @@ class ModelTest extends WP_UnitTestCase {
 				'trigger_delay'           => '3',
 				'trigger_scroll_progress' => 0,
 				'utm_suppression'         => null,
+				'selected_segment_id'     => '',
 			],
 			'Default options are as expected.'
 		);
