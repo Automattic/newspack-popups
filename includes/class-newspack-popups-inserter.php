@@ -33,6 +33,17 @@ final class Newspack_Popups_Inserter {
 	 * @return array Popup objects.
 	 */
 	public static function popups_for_post() {
+		// Inject campaigns only in posts, pages, and CPTs that explicitly opt in.
+		if ( ! in_array(
+			get_post_type(),
+			apply_filters(
+				'newspack_campaigns_post_types_for_campaigns',
+				[ 'post', 'page' ]
+			)
+		) ) {
+			return [];
+		}
+
 		if ( ! empty( self::$popups ) ) {
 			return self::$popups;
 		}
@@ -162,15 +173,6 @@ final class Newspack_Popups_Inserter {
 	 * @param bool   $enqueue_assets Whether assets should be enqueued.
 	 */
 	public static function insert_popups_in_content( $content = '', $enqueue_assets = true ) {
-		if ( ! in_array(
-			get_post_type(),
-			apply_filters(
-				'newspack_campaigns_post_types_for_campaigns',
-				[ 'post', 'page' ]
-			)
-		) ) {
-			return $content;
-		}
 		// Avoid duplicate execution.
 		if ( true === self::$the_content_has_rendered ) {
 			return $content;
