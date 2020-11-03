@@ -799,7 +799,7 @@ final class Newspack_Popups_Model {
 
 		ob_start();
 		?>
-		<amp-layout <?php echo self::get_access_attrs( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?> class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>" role="button" tabindex="0" id="<?php echo esc_attr( $element_id ); ?>">
+		<amp-layout data-amp-delay="<?php echo esc_html( self::get_delay( $popup ) ); ?>" <?php echo self::get_access_attrs( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?> class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>" role="button" tabindex="0" id="<?php echo esc_attr( $element_id ); ?>">
 			<div class="newspack-popup-wrapper" style="<?php echo esc_attr( self::container_style( $popup ) ); ?>">
 				<div class="newspack-popup">
 					<?php if ( ! empty( $popup['title'] ) && $display_title ) : ?>

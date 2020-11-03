@@ -1,4 +1,9 @@
 /**
+ * External dependencies
+ */
+import { createFocusTrap } from 'focus-trap';
+
+/**
  * WordPress dependencies
  */
 import domReady from '@wordpress/dom-ready';
@@ -89,6 +94,25 @@ const manageForms = container => {
 	} );
 };
 
+const manageOverlays = () => {
+	[ ...document.querySelectorAll( '.newspack-lightbox' ) ].forEach( element => {
+		const wrapper = element.querySelector( '.newspack-popup-wrapper' );
+		if ( wrapper ) {
+			const observer = new MutationObserver( mutationsList => {
+				[ ...mutationsList ].forEach( mutation => {
+					const isHidden = mutation.target.hasAttribute( 'amp-access-hide' );
+					const delayValue = mutation.target.getAttribute( 'data-amp-delay' );
+					if ( ! isHidden && delayValue ) {
+						// Timeout for the animation.
+						setTimeout( () => createFocusTrap( wrapper ).activate(), parseInt( delayValue ) + 500 );
+					}
+				} );
+			} );
+			observer.observe( element, { attributes: true, subtree: false } );
+		}
+	} );
+};
+
 if ( typeof window !== 'undefined' ) {
 	domReady( () => {
 		manageAnalytics();
@@ -99,5 +123,6 @@ if ( typeof window !== 'undefined' ) {
 		campaignArray.forEach( campaign => {
 			manageForms( campaign );
 		} );
+		manageOverlays();
 	} );
 }
