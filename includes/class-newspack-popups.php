@@ -258,6 +258,34 @@ final class Newspack_Popups {
 	}
 
 	/**
+	 * Get preview post permalink.
+	 */
+	public static function preview_post_permalink() {
+		$query        = new WP_Query(
+			[
+				'posts_per_page' => 1,
+				'post_status'    => 'publish',
+				'has_password'   => false,
+				'orderby'        => 'post_date',
+				'order'          => 'DESC',
+				'meta_query'     => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+					'relation' => 'OR',
+					[
+						'key'     => 'newspack_popups_has_disabled_popups',
+						'compare' => 'NOT EXISTS',
+					],
+					[
+						'key'   => 'newspack_popups_has_disabled_popups',
+						'value' => '',
+					],
+				],
+			]
+		);
+		$recent_posts = $query->get_posts();
+		return $recent_posts && count( $recent_posts ) > 0 ? get_the_permalink( $recent_posts[0] ) : '';
+	}
+
+	/**
 	 * Load up common JS/CSS for wizards.
 	 */
 	public static function enqueue_block_editor_assets() {
@@ -286,33 +314,11 @@ final class Newspack_Popups {
 			true
 		);
 
-		$query                  = new WP_Query(
-			[
-				'posts_per_page' => 1,
-				'post_status'    => 'publish',
-				'orderby'        => 'post_date',
-				'order'          => 'DESC',
-				'meta_query'     => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
-					'relation' => 'OR',
-					[
-						'key'     => 'newspack_popups_has_disabled_popups',
-						'compare' => 'NOT EXISTS',
-					],
-					[
-						'key'   => 'newspack_popups_has_disabled_popups',
-						'value' => '',
-					],
-				],
-			]
-		);
-		$recent_posts           = $query->get_posts();
-		$preview_post_permalink = $recent_posts && count( $recent_posts ) > 0 ? get_the_permalink( $recent_posts[0] ) : '';
-
 		\wp_localize_script(
 			'newspack-popups',
 			'newspack_popups_data',
 			[
-				'preview_post' => $preview_post_permalink,
+				'preview_post' => self::preview_post_permalink(),
 				'segments'     => Newspack_Popups_Segmentation::get_segments(),
 			]
 		);
