@@ -30,9 +30,10 @@ final class Newspack_Popups_Inserter {
 	/**
 	 * Retrieve the appropriate popups for the current post.
 	 *
+	 * @param bool $skip_above_header Skip above header placement popups.
 	 * @return array Popup objects.
 	 */
-	public static function popups_for_post() {
+	public static function popups_for_post( $skip_above_header = false ) {
 		if ( ! empty( self::$popups ) ) {
 			return self::$popups;
 		}
@@ -43,10 +44,13 @@ final class Newspack_Popups_Inserter {
 		}
 
 		// 1. Get all inline, above header popups.
-		$popups_to_maybe_display = array_merge(
-			Newspack_Popups_Model::retrieve_inline_popups(),
-			Newspack_Popups_Model::retrieve_above_header_popups()
-		);
+		$popups_to_maybe_display = Newspack_Popups_Model::retrieve_inline_popups();
+		if ( false === $skip_above_header ) {
+			$popups_to_maybe_display = array_merge(
+				$popups_to_maybe_display,
+				Newspack_Popups_Model::retrieve_above_header_popups()
+			);
+		}
 
 		// 2. Get the overlay popup/s. There can be only one displayed, unless in test mode.
 
@@ -285,7 +289,7 @@ final class Newspack_Popups_Inserter {
 			return;
 		}
 
-		$popups = self::popups_for_post();
+		$popups = self::popups_for_post( true );
 
 		if ( ! empty( $popups ) ) {
 			foreach ( $popups as $popup ) {
