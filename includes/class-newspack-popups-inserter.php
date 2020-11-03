@@ -242,6 +242,9 @@ final class Newspack_Popups_Inserter {
 				$overlay_popups[] = $popup;
 			}
 		}
+		if ( empty( $inline_popups ) && empty( $overlay_popups ) ) {
+			return $content;
+		}
 
 		// 2. Iterate overall blocks and insert inline campaigns.
 		$pos    = 0;
