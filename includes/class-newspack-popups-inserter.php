@@ -413,8 +413,17 @@ final class Newspack_Popups_Inserter {
 			);
 		}
 
+		$settings                                 = array_reduce(
+			\Newspack_Popups_Settings::get_settings(),
+			function ( $acc, $item ) {
+				$key       = $item['key'];
+				$acc->$key = $item['value'];
+				return $acc;
+			},
+			(object) []
+		);
 		$popups_access_provider['authorization'] .= '&popups=' . wp_json_encode( $popups_configs );
-		$popups_access_provider['authorization'] .= '&settings=' . wp_json_encode( \Newspack_Popups_Settings::get_settings() );
+		$popups_access_provider['authorization'] .= '&settings=' . wp_json_encode( $settings );
 		$popups_access_provider['authorization'] .= '&visit=' . wp_json_encode(
 			[
 				'post_id'    => esc_attr( get_the_ID() ),
