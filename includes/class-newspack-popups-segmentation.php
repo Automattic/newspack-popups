@@ -78,6 +78,9 @@ final class Newspack_Popups_Segmentation {
 	 * Insert amp-analytics scripts.
 	 */
 	public static function wp_enqueue_scripts() {
+		if ( Newspack_Popups_Inserter::assess_has_disabled_popups() ) {
+			return;
+		}
 		// Register AMP scripts explicitly for non-AMP pages.
 		if ( ! wp_script_is( 'amp-runtime', 'registered' ) ) {
 			// phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion
