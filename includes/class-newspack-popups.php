@@ -63,6 +63,7 @@ final class Newspack_Popups {
 		include_once dirname( __FILE__ ) . '/class-newspack-popups-segmentation.php';
 		include_once dirname( __FILE__ ) . '/class-newspack-popups-parse-logs.php';
 		include_once dirname( __FILE__ ) . '/class-newspack-popups-donations.php';
+		include_once dirname( __FILE__ ) . '/class-newspack-popups-email.php';
 	}
 
 	/**

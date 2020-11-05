@@ -44,6 +44,12 @@ class Segmentation_Client_Data extends Lightweight_API {
 			$client_data_update['donations'][] = $donation;
 		}
 
+		// Add a subscription to client.
+		$email_subscription = $this->get_request_param( 'email_subscription', $request );
+		if ( $email_subscription ) {
+			$client_data_update['email_subscriptions'][] = $email_subscription;
+		}
+
 		if ( ! empty( $client_data_update ) ) {
 			$this->save_client_data( $client_id, $client_data_update );
 		}

@@ -247,5 +247,35 @@ final class Newspack_Popups_Segmentation {
 		update_option( self::SEGMENTS_OPTION_NAME, $segments );
 		return self::get_segments();
 	}
+
+	/**
+	 * Get current client's id.
+	 */
+	public static function get_client_id() {
+		return isset( $_COOKIE[ self::NEWSPACK_SEGMENTATION_CID_NAME ] ) ? esc_attr( $_COOKIE[ self::NEWSPACK_SEGMENTATION_CID_NAME ] ) : false; // phpcs:ignore WordPressVIPMinimum.Variables.RestrictedVariables.cache_constraints___COOKIE, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+	}
+
+	/**
+	 * Update client data.
+	 *
+	 * @param string $client_id Client ID.
+	 * @param string $payload Client data.
+	 */
+	public static function update_client_data( $client_id, $payload ) {
+		if ( isset( $client_id ) ) {
+			$client_data_report_endpoint = plugins_url( '../api/segmentation/index.php', __FILE__ );
+			wp_safe_remote_post(
+				$client_data_report_endpoint,
+				[
+					'body' => array_merge(
+						[
+							'client_id' => $client_id,
+						],
+						$payload
+					),
+				]
+			);
+		}
+	}
 }
 Newspack_Popups_Segmentation::instance();
