@@ -8,50 +8,23 @@ import domReady from '@wordpress/dom-ready';
  */
 import './style.scss';
 import './patterns.scss';
-
-const values = object => Object.keys( object ).map( key => object[ key ] );
-
-const performXHRequest = ( { url, data } ) => {
-	const XHR = new XMLHttpRequest();
-	XHR.open( 'POST', url );
-	XHR.setRequestHeader( 'Content-Type', 'application/x-www-form-urlencoded' );
-
-	const encodedData = Object.keys( data )
-		.map( key => encodeURIComponent( key ) + '=' + encodeURIComponent( data[ key ] ) )
-		.join( '&' )
-		.replace( /%20/g, '+' );
-
-	XHR.send( encodedData );
-};
-
-const getCookies = () =>
-	document.cookie.split( '; ' ).reduce( ( acc, cookieStr ) => {
-		const cookie = cookieStr.split( '=' );
-		acc[ cookie[ 0 ] ] = cookie[ 1 ];
-		return acc;
-	}, {} );
-
-const processFormData = ( data, formElement ) => {
-	Object.keys( data ).forEach( key => {
-		let value = data[ key ];
-		if ( value === '${formFields[email]}' ) {
-			const inputEl = formElement.querySelector( '[name="email"]' );
-			if ( inputEl ) {
-				value = inputEl.value;
-			}
-		}
-		if ( value === 'CLIENT_ID( newspack-cid )' || value === 'CLIENT_ID(newspack-cid)' ) {
-			value = getCookies()[ 'newspack-cid' ];
-		}
-		data[ key ] = value;
-	} );
-	return data;
-};
+import { values, performXHRequest, processFormData, getCookieValueFromLinker } from './utils';
 
 const manageAnalytics = () => {
 	const ampAnalytics = [ ...document.querySelectorAll( 'amp-analytics' ) ];
 	ampAnalytics.forEach( ampAnalyticsElement => {
-		const { requests, triggers } = JSON.parse( ampAnalyticsElement.children[ 0 ].innerText );
+		const { requests, triggers, linkers, cookies } = JSON.parse(
+			ampAnalyticsElement.children[ 0 ].innerText
+		);
+
+		// Linker reader – if incoming from AMP Cache, read linker param and set cookie and a linker-less URL.
+		// https://github.com/ampproject/amphtml/blob/master/extensions/amp-analytics/linker-id-receiving.md
+		const { cookieValue, cleanURL } = getCookieValueFromLinker( { linkers, cookies } );
+		if ( cookieValue && cleanURL ) {
+			document.cookie = cookieValue;
+			window.history.pushState( {}, document.title, cleanURL );
+		}
+
 		if ( triggers && requests ) {
 			const endpoint = requests.event;
 			values( triggers ).forEach( trigger => {
