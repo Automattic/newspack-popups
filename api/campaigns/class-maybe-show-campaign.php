@@ -171,7 +171,6 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		// Handle segmentation.
 		$campaign_segment = isset( $settings->all_segments->{$campaign->s} ) ? $settings->all_segments->{$campaign->s} : false;
 		if ( ! empty( $campaign_segment ) ) {
-			$client_data      = $this->get_client_data( $client_id );
 			$posts_read_count = count( $client_data['posts_read'] );
 			// If coming from email, assume it's a subscriber.
 			$is_subscriber = ! empty( $client_data['email_subscriptions'] ) || $has_utm_medium_in_url;
