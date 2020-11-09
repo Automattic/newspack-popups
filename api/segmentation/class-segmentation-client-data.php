@@ -10,6 +10,10 @@
  */
 require_once dirname( __FILE__ ) . '/../classes/class-lightweight-api.php';
 
+require_once __DIR__ . '/../../vendor/autoload.php';
+
+use \DrewM\MailChimp\MailChimp;
+
 /**
  * POST endpoint to report client data.
  */
@@ -48,6 +52,38 @@ class Segmentation_Client_Data extends Lightweight_API {
 		$email_subscription = $this->get_request_param( 'email_subscription', $request );
 		if ( $email_subscription ) {
 			$client_data_update['email_subscriptions'][] = $email_subscription;
+		}
+
+		// Fetch Mailchimp data.
+		$mailchimp_campaign_id   = $this->get_request_param( 'mc_cid', $request );
+		$mailchimp_subscriber_id = $this->get_request_param( 'mc_eid', $request );
+		if ( $mailchimp_campaign_id && $mailchimp_subscriber_id ) {
+			$mailchimp_api_key_option_name = 'newspack_newsletters_mailchimp_api_key';
+			global $wpdb;
+			$mailchimp_api_key = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+				$wpdb->prepare( "SELECT option_value FROM `$wpdb->options` WHERE option_name=%s", $mailchimp_api_key_option_name )
+			);
+			if ( $mailchimp_api_key ) {
+				$mc            = new Mailchimp( $mailchimp_api_key->option_value );
+				$campaign_data = $mc->get( "campaigns/$mailchimp_campaign_id" );
+				if ( isset( $campaign_data['recipients'], $campaign_data['recipients']['list_id'] ) ) {
+					$list_id = $campaign_data['recipients']['list_id'];
+					$members = $mc->get( "/lists/$list_id/members", [ 'unique_email_id' => $mailchimp_subscriber_id ] )['members'];
+
+					if ( ! empty( $members ) ) {
+						$client                                      = $members[0];
+						$client_data_update['email_subscriptions'][] = [
+							'email' => $client['email_address'],
+						];
+						$revenue                                     = $client['stats']['ecommerce_data']['total_revenue'];
+						if ( $revenue > 0 ) {
+							$client_data_update['donations'][] = [
+								'mailchimp_revenue' => $revenue,
+							];
+						}
+					}
+				}
+			}
 		}
 
 		if ( ! empty( $client_data_update ) ) {

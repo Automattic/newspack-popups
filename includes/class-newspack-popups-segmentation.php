@@ -147,6 +147,23 @@ final class Newspack_Popups_Segmentation {
 			],
 		];
 
+		// Handle Mailchimp URL parameters.
+		if ( isset( $_GET['mc_cid'], $_GET['mc_eid'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$endpoint                         = self::get_client_data_endpoint();
+			$amp_analytics_config['requests'] = [
+				'event' => esc_url( $endpoint ),
+			];
+			$amp_analytics_config['triggers']['trackMailchimpData'] = [
+				'on'             => 'ini-load',
+				'request'        => 'event',
+				'extraUrlParams' => [
+					'mc_cid'    => sanitize_text_field( $_GET['mc_cid'] ), // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+					'mc_eid'    => sanitize_text_field( $_GET['mc_eid'] ), // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+					'client_id' => 'CLIENT_ID(' . esc_attr( self::NEWSPACK_SEGMENTATION_CID_NAME ) . ')',
+				],
+			];
+		}
+
 		?>
 			<amp-analytics>
 				<script type="application/json">
@@ -256,6 +273,13 @@ final class Newspack_Popups_Segmentation {
 	}
 
 	/**
+	 * Get API client data endpoint.
+	 */
+	public static function get_client_data_endpoint() {
+		return plugins_url( '../api/segmentation/index.php', __FILE__ );
+	}
+
+	/**
 	 * Update client data.
 	 *
 	 * @param string $client_id Client ID.
@@ -263,9 +287,8 @@ final class Newspack_Popups_Segmentation {
 	 */
 	public static function update_client_data( $client_id, $payload ) {
 		if ( isset( $client_id ) ) {
-			$client_data_report_endpoint = plugins_url( '../api/segmentation/index.php', __FILE__ );
 			wp_safe_remote_post(
-				$client_data_report_endpoint,
+				self::get_client_data_endpoint(),
 				[
 					'body' => array_merge(
 						[

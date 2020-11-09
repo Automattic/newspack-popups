@@ -254,6 +254,7 @@ class Lightweight_API {
 		);
 		$updated_client_data['posts_read']          = array_unique( $updated_client_data['posts_read'], SORT_REGULAR );
 		$updated_client_data['email_subscriptions'] = array_unique( $updated_client_data['email_subscriptions'], SORT_REGULAR );
+		$updated_client_data['donations']           = array_unique( $updated_client_data['donations'], SORT_REGULAR );
 		return $this->set_transient(
 			$this->get_transient_name( $client_id ),
 			$updated_client_data
