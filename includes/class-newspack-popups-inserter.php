@@ -43,6 +43,11 @@ final class Newspack_Popups_Inserter {
 			return [ Newspack_Popups_Model::retrieve_preview_popup( Newspack_Popups::previewed_popup_id() ) ];
 		}
 
+		// Campaigns disabled for this page.
+		if ( self::assess_has_disabled_popups() ) {
+			return [];
+		}
+
 		// 1. Get all inline, above header popups.
 		$popups_to_maybe_display = Newspack_Popups_Model::retrieve_inline_popups();
 		if ( false === $skip_above_header ) {
@@ -192,11 +197,6 @@ final class Newspack_Popups_Inserter {
 
 		// If not in the loop, ignore.
 		if ( ! in_the_loop() ) {
-			return $content;
-		}
-
-		// Campaigns disabled for this page.
-		if ( self::assess_has_disabled_popups() ) {
 			return $content;
 		}
 
