@@ -25,6 +25,15 @@ const getCookies = () =>
 		return acc;
 	}, {} );
 
+export const getClientIDValue = () => getCookies()[ 'newspack-cid' ];
+
+export const substituteDynamicValue = value => {
+	if ( value && value.replace( /\s/g, '' ) === 'CLIENT_ID(newspack-cid)' ) {
+		value = getClientIDValue() || '';
+	}
+	return value;
+};
+
 export const processFormData = ( data, formElement ) => {
 	Object.keys( data ).forEach( key => {
 		let value = data[ key ];
@@ -34,10 +43,7 @@ export const processFormData = ( data, formElement ) => {
 				value = inputEl.value;
 			}
 		}
-		if ( value === 'CLIENT_ID( newspack-cid )' || value === 'CLIENT_ID(newspack-cid)' ) {
-			value = getCookies()[ 'newspack-cid' ];
-		}
-		data[ key ] = value;
+		data[ key ] = substituteDynamicValue( value );
 	} );
 	return data;
 };
@@ -54,6 +60,7 @@ export const getCookieValueFromLinker = (
 		const cookieName = Object.keys( cookies ).filter( k => k !== 'enabled' )[ 0 ];
 		const linkerParam = getQueryArg( url, linkerName );
 		const hasCIDCookie = documentCookie.indexOf( cookieName ) >= 0;
+		cleanURL = removeQueryArgs( url, linkerName );
 		if ( linkerParam && ! hasCIDCookie ) {
 			// eslint-disable-next-line no-unused-vars
 			const [ version, checksum, cidName, cidValue ] = linkerParam.split( '*' );
@@ -62,7 +69,6 @@ export const getCookieValueFromLinker = (
 				const decodedCID = atob( cidValue.replace( /\./g, '' ) );
 				if ( decodedCID ) {
 					cookieValue = `${ cookieName }=${ decodedCID }`;
-					cleanURL = removeQueryArgs( url, linkerName );
 				}
 			} catch ( e ) {
 				// Nothingness.
@@ -70,4 +76,19 @@ export const getCookieValueFromLinker = (
 		}
 	}
 	return { cookieValue, cleanURL };
+};
+
+export const waitUntil = ( condition, callback, maxTries = 10 ) => {
+	let tries = 0;
+	const interval = setInterval( () => {
+		tries++;
+		if ( tries <= maxTries ) {
+			if ( condition() ) {
+				callback();
+				clearInterval( interval );
+			}
+		} else {
+			clearInterval( interval );
+		}
+	}, 200 );
 };

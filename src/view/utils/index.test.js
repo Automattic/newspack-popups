@@ -1,4 +1,4 @@
-import { getCookieValueFromLinker } from '.';
+import { getCookieValueFromLinker, substituteDynamicValue } from '.';
 
 describe( 'amp-analytics linker handling', () => {
 	const url =
@@ -21,18 +21,30 @@ describe( 'amp-analytics linker handling', () => {
 				'https://example.com/lorem/?ref_newspack_cid=1*ab3otu*cid*,,,',
 				''
 			)
-		).toEqual( { cookieValue: undefined, cleanURL: undefined } );
+		).toEqual( { cookieValue: undefined, cleanURL: 'https://example.com/lorem/?' } );
 	} );
 	it( 'return undefined if there is no linker param in the URL', () => {
-		expect( getCookieValueFromLinker( ampAnalyticsConfig, 'example.com', '' ) ).toEqual( {
+		expect( getCookieValueFromLinker( ampAnalyticsConfig, 'https://example.com', '' ) ).toEqual( {
 			cookieValue: undefined,
-			cleanURL: undefined,
+			cleanURL: 'https://example.com?',
 		} );
 	} );
 	it( 'return undefined if cookie is already set', () => {
 		expect( getCookieValueFromLinker( ampAnalyticsConfig, url, 'newspack-cid=amp-123' ) ).toEqual( {
 			cookieValue: undefined,
-			cleanURL: undefined,
+			cleanURL: 'https://example.com/lorem/?',
 		} );
+	} );
+} );
+
+describe( 'dynamic value substitution', () => {
+	it( 'replaces client id from cookie', () => {
+		const clientId = 'id-42';
+		global.document.cookie = '';
+		expect( substituteDynamicValue( 'CLIENT_ID(newspack-cid)' ) ).toEqual( '' );
+		global.document.cookie = `newspack-cid=${ clientId }`;
+		expect( substituteDynamicValue( 'CLIENT_ID(newspack-cid)' ) ).toEqual( clientId );
+		expect( substituteDynamicValue( 'CLIENT_ID( newspack-cid )' ) ).toEqual( clientId );
+		expect( substituteDynamicValue( 'SOMETHING' ) ).toEqual( 'SOMETHING' );
 	} );
 } );
