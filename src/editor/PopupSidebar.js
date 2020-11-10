@@ -9,9 +9,6 @@ import { __ } from '@wordpress/i18n';
 import { Component, Fragment } from '@wordpress/element';
 import { RangeControl, SelectControl, TextControl, ToggleControl } from '@wordpress/components';
 
-const segmentsList =
-	( window && window.newspack_popups_data && window.newspack_popups_data.segments ) || [];
-
 class PopupSidebar extends Component {
 	/**
 	 * Render

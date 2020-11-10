@@ -62,7 +62,7 @@ class PopupStatusSidebar extends Component {
 						label={ __( 'Sitewide Default', 'newspack-popups' ) }
 						help={
 							isInline
-								? __( 'Available for overlay campaigns only.', 'newspack-popups' )
+								? __( 'Not available for inline campaigns.', 'newspack-popups' )
 								: __( 'Sitewide default campaigns can appear on any page.', 'newspack-popups' )
 						}
 						checked={ ! isInline && newspack_popups_is_sitewide_default }

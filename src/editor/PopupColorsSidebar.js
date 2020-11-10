@@ -10,9 +10,6 @@ import { Component, Fragment } from '@wordpress/element';
 import { RangeControl } from '@wordpress/components';
 import { ColorPaletteControl } from '@wordpress/block-editor';
 
-const segmentsList =
-	( window && window.newspack_popups_data && window.newspack_popups_data.segments ) || [];
-
 /**
  * Internal dependencies
  */
@@ -66,7 +63,7 @@ class PopupColorsSidebar extends Component {
 						disabled={ isInline }
 						label={ __( 'Overlay opacity' ) }
 						help={
-							isInline ? __( 'Available for overlay campaigns only.', 'newspack-popups' ) : null
+							isInline ? __( 'Not available for inline campaigns.', 'newspack-popups' ) : null
 						}
 						value={ overlay_opacity }
 						onChange={ value => {
