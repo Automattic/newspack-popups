@@ -1,3 +1,20 @@
+# [1.17.0](https://github.com/Automattic/newspack-popups/compare/v1.16.0...v1.17.0) (2020-11-11)
+
+
+### Bug Fixes
+
+* do not enqueue scripts if post has Campaigns disabled ([af32c62](https://github.com/Automattic/newspack-popups/commit/af32c623ec32e2cf27f831b615f14d980061b053))
+* handle MC4WP forms when assessing if campaign has newsletter form ([74cfbae](https://github.com/Automattic/newspack-popups/commit/74cfbaee27aa6e67a9ba523dc33123f2d39f1d81))
+* inject campaigns into posts and pages only ([#296](https://github.com/Automattic/newspack-popups/issues/296)) ([c162379](https://github.com/Automattic/newspack-popups/commit/c162379826ebaf799883f2db370d5f18af72405a))
+
+
+### Features
+
+* handle posts read count segmentation ([#289](https://github.com/Automattic/newspack-popups/issues/289)) ([c6024d2](https://github.com/Automattic/newspack-popups/commit/c6024d23ad02f5b874f3fe43982c6b5dcb199daf)), closes [#271](https://github.com/Automattic/newspack-popups/issues/271)
+* handle subscription, donation segmentation ([5fb405d](https://github.com/Automattic/newspack-popups/commit/5fb405dbd0326bef4c4c55902878dafe184ffae0)), closes [#249](https://github.com/Automattic/newspack-popups/issues/249) [#250](https://github.com/Automattic/newspack-popups/issues/250)
+* improve preview post ([#291](https://github.com/Automattic/newspack-popups/issues/291)) ([f7a5ba1](https://github.com/Automattic/newspack-popups/commit/f7a5ba1be80d25d6af8724b2de7e5e553515341f))
+* settings interop ([#206](https://github.com/Automattic/newspack-popups/issues/206)) ([466db2a](https://github.com/Automattic/newspack-popups/commit/466db2a21d758b378c0d510996f99959e0973910))
+
 # [1.16.0](https://github.com/Automattic/newspack-popups/compare/v1.15.1...v1.16.0) (2020-10-29)
 
 
