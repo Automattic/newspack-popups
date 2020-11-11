@@ -33,6 +33,17 @@ final class Newspack_Popups_Inserter {
 	 * @return array Popup objects.
 	 */
 	public static function popups_for_post() {
+		// Inject campaigns only in posts, pages, and CPTs that explicitly opt in.
+		if ( ! in_array(
+			get_post_type(),
+			apply_filters(
+				'newspack_campaigns_post_types_for_campaigns',
+				[ 'post', 'page' ]
+			)
+		) ) {
+			return [];
+		}
+
 		if ( ! empty( self::$popups ) ) {
 			return self::$popups;
 		}
@@ -353,6 +364,7 @@ final class Newspack_Popups_Inserter {
 			'id'  => $popup_id_string,
 			'f'   => $frequency,
 			'utm' => $popup['options']['utm_suppression'],
+			's'   => $popup['options']['selected_segment_id'],
 			'n'   => \Newspack_Popups_Model::has_newsletter_prompt( $popup ),
 			'd'   => \Newspack_Popups_Model::has_donation_block( $popup ),
 		];
@@ -401,8 +413,17 @@ final class Newspack_Popups_Inserter {
 			);
 		}
 
+		$settings                                 = array_reduce(
+			\Newspack_Popups_Settings::get_settings(),
+			function ( $acc, $item ) {
+				$key       = $item['key'];
+				$acc->$key = $item['value'];
+				return $acc;
+			},
+			(object) []
+		);
 		$popups_access_provider['authorization'] .= '&popups=' . wp_json_encode( $popups_configs );
-		$popups_access_provider['authorization'] .= '&settings=' . wp_json_encode( \Newspack_Popups_Settings::get_settings() );
+		$popups_access_provider['authorization'] .= '&settings=' . wp_json_encode( $settings );
 		$popups_access_provider['authorization'] .= '&visit=' . wp_json_encode(
 			[
 				'post_id'    => esc_attr( get_the_ID() ),
@@ -430,6 +451,9 @@ final class Newspack_Popups_Inserter {
 	 * Register and enqueue all required AMP scripts, if needed.
 	 */
 	public static function register_amp_scripts() {
+		if ( self::assess_has_disabled_popups() ) {
+			return;
+		}
 		if ( ! is_admin() && ! wp_script_is( 'amp-runtime', 'registered' ) ) {
 		// phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion
 			wp_register_script(

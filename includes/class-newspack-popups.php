@@ -232,6 +232,18 @@ final class Newspack_Popups {
 			]
 		);
 
+		\register_meta(
+			'post',
+			'selected_segment_id',
+			[
+				'object_subtype' => self::NEWSPACK_PLUGINS_CPT,
+				'show_in_rest'   => true,
+				'type'           => 'string',
+				'single'         => true,
+				'auth_callback'  => '__return_true',
+			]
+		);
+
 		// Meta field for all post types.
 		\register_meta(
 			'post',
@@ -243,6 +255,34 @@ final class Newspack_Popups {
 				'auth_callback' => '__return_true',
 			]
 		);
+	}
+
+	/**
+	 * Get preview post permalink.
+	 */
+	public static function preview_post_permalink() {
+		$query        = new WP_Query(
+			[
+				'posts_per_page' => 1,
+				'post_status'    => 'publish',
+				'has_password'   => false,
+				'orderby'        => 'post_date',
+				'order'          => 'DESC',
+				'meta_query'     => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+					'relation' => 'OR',
+					[
+						'key'     => 'newspack_popups_has_disabled_popups',
+						'compare' => 'NOT EXISTS',
+					],
+					[
+						'key'   => 'newspack_popups_has_disabled_popups',
+						'value' => '',
+					],
+				],
+			]
+		);
+		$recent_posts = $query->get_posts();
+		return $recent_posts && count( $recent_posts ) > 0 ? get_the_permalink( $recent_posts[0] ) : '';
 	}
 
 	/**
@@ -274,33 +314,12 @@ final class Newspack_Popups {
 			true
 		);
 
-		$query                  = new WP_Query(
-			[
-				'posts_per_page' => 1,
-				'post_status'    => 'publish',
-				'orderby'        => 'post_date',
-				'order'          => 'DESC',
-				'meta_query'     => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
-					'relation' => 'OR',
-					[
-						'key'     => 'newspack_popups_has_disabled_popups',
-						'compare' => 'NOT EXISTS',
-					],
-					[
-						'key'   => 'newspack_popups_has_disabled_popups',
-						'value' => '',
-					],
-				],
-			]
-		);
-		$recent_posts           = $query->get_posts();
-		$preview_post_permalink = $recent_posts && count( $recent_posts ) > 0 ? get_the_permalink( $recent_posts[0] ) : '';
-
 		\wp_localize_script(
 			'newspack-popups',
 			'newspack_popups_data',
 			[
-				'preview_post' => $preview_post_permalink,
+				'preview_post' => self::preview_post_permalink(),
+				'segments'     => Newspack_Popups_Segmentation::get_segments(),
 			]
 		);
 		\wp_enqueue_style(
@@ -415,6 +434,7 @@ final class Newspack_Popups {
 		update_post_meta( $post_id, 'trigger_delay', 3 );
 		update_post_meta( $post_id, 'trigger_scroll_progress', 30 );
 		update_post_meta( $post_id, 'utm_suppression', '' );
+		update_post_meta( $post_id, 'selected_segment_id', '' );
 	}
 
 	/**

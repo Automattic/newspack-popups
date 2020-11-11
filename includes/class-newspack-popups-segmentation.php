@@ -31,6 +31,11 @@ final class Newspack_Popups_Segmentation {
 	const NEWSPACK_SEGMENTATION_CID_LINKER_PARAM = 'ref_newspack_cid';
 
 	/**
+	 * Name of the option to store segments under.
+	 */
+	const SEGMENTS_OPTION_NAME = 'newspack_popups_segments';
+
+	/**
 	 * Main Newspack Segmentation Plugin Instance.
 	 * Ensures only one instance of Newspack Segmentation Plugin Instance is loaded or can be loaded.
 	 *
@@ -73,6 +78,9 @@ final class Newspack_Popups_Segmentation {
 	 * Insert amp-analytics scripts.
 	 */
 	public static function wp_enqueue_scripts() {
+		if ( Newspack_Popups_Inserter::assess_has_disabled_popups() ) {
+			return;
+		}
 		// Register AMP scripts explicitly for non-AMP pages.
 		if ( ! wp_script_is( 'amp-runtime', 'registered' ) ) {
 			// phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion
@@ -180,5 +188,64 @@ final class Newspack_Popups_Segmentation {
 		}
 	}
 
+	/**
+	 * Get all configured segments.
+	 */
+	public static function get_segments() {
+		return get_option( self::SEGMENTS_OPTION_NAME, [] );
+	}
+
+	/**
+	 * Create a segment.
+	 *
+	 * @param object $segment A segment.
+	 */
+	public static function create_segment( $segment ) {
+		$segments              = self::get_segments();
+		$segment['id']         = uniqid();
+		$segment['created_at'] = gmdate( 'Y-m-d' );
+		$segment['updated_at'] = gmdate( 'Y-m-d' );
+		$segments[]            = $segment;
+
+		update_option( self::SEGMENTS_OPTION_NAME, $segments );
+		return self::get_segments();
+	}
+
+	/**
+	 * Delete a segment.
+	 *
+	 * @param string $id A segment id.
+	 */
+	public static function delete_segment( $id ) {
+		$segments = array_values(
+			array_filter(
+				self::get_segments(),
+				function( $segment ) use ( $id ) {
+					return $segment['id'] !== $id;
+				}
+			)
+		);
+		update_option( self::SEGMENTS_OPTION_NAME, $segments );
+		return self::get_segments();
+	}
+
+	/**
+	 * Update a segment.
+	 *
+	 * @param object $segment A segment.
+	 */
+	public static function update_segment( $segment ) {
+		$segments              = self::get_segments();
+		$segment['updated_at'] = gmdate( 'Y-m-d' );
+		foreach ( $segments as &$_segment ) {
+			if ( $_segment['id'] === $segment['id'] ) {
+				$_segment['name']          = $segment['name'];
+				$_segment['configuration'] = $segment['configuration'];
+			}
+		}
+
+		update_option( self::SEGMENTS_OPTION_NAME, $segments );
+		return self::get_segments();
+	}
 }
 Newspack_Popups_Segmentation::instance();

@@ -41,43 +41,18 @@ const App = () => {
 				headerText={ __( 'Campaigns Settings', 'newspack-popups' ) }
 			/>
 			<Card>
-				<CheckboxControl
-					label={ __(
-						'Suppress Newsletter campaigns if visitor is coming from email.',
-						'newspack-popups'
-					) }
-					disabled={ inFlight }
-					checked={ settings.suppress_newsletter_campaigns === '1' }
-					onChange={ handleSettingChange( 'suppress_newsletter_campaigns' ) }
-				/>
-				<CheckboxControl
-					label={ __(
-						'Suppress all Newsletter campaigns if at least one Newsletter campaign was permanently dismissed.',
-						'newspack-popups'
-					) }
-					disabled={ inFlight }
-					checked={ settings.suppress_all_newsletter_campaigns_if_one_dismissed === '1' }
-					onChange={ handleSettingChange( 'suppress_all_newsletter_campaigns_if_one_dismissed' ) }
-				/>
-				<CheckboxControl
-					label={ __(
-						'Suppress all donation campaigns if the reader has donated.',
-						'newspack-popups'
-					) }
-					disabled={ inFlight }
-					checked={ settings.suppress_donation_campaigns_if_donor === '1' }
-					onChange={ handleSettingChange( 'suppress_donation_campaigns_if_donor' ) }
-				/>
-				<CheckboxControl
-					label={ __( 'Enable non-interactive mode.', 'newspack-popups' ) }
-					help={ __(
-						'Use this setting in high traffic scenarios. No API requests will be made, reducing server load. Inline campaigns will be shown to all users without dismissal buttons, and overlay campaigns will be suppressed.',
-						'newspack-popups'
-					) }
-					disabled={ inFlight }
-					checked={ settings.newspack_newsletters_non_interative_mode === '1' }
-					onChange={ handleSettingChange( 'newspack_newsletters_non_interative_mode' ) }
-				/>
+				{ settings.map( setting =>
+					setting.label ? (
+						<CheckboxControl
+							key={ setting.key }
+							label={ setting.label }
+							help={ setting.help }
+							disabled={ inFlight }
+							checked={ setting.value === '1' }
+							onChange={ handleSettingChange( setting.key ) }
+						/>
+					) : null
+				) }
 			</Card>
 		</Grid>
 	);
