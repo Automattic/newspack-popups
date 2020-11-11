@@ -166,6 +166,7 @@ final class Newspack_Popups_Model {
 					update_post_meta( $id, $key, $value );
 					break;
 				case 'utm_suppression':
+				case 'selected_segment_id':
 					update_post_meta( $id, $key, esc_attr( $value ) );
 					break;
 				default:
@@ -348,6 +349,7 @@ final class Newspack_Popups_Model {
 			'trigger_delay'           => get_post_meta( $id, 'trigger_delay', true ),
 			'trigger_scroll_progress' => get_post_meta( $id, 'trigger_scroll_progress', true ),
 			'utm_suppression'         => get_post_meta( $id, 'utm_suppression', true ),
+			'selected_segment_id'     => get_post_meta( $id, 'selected_segment_id', true ),
 		];
 
 		$popup = [
@@ -369,6 +371,7 @@ final class Newspack_Popups_Model {
 					'trigger_delay'           => 0,
 					'trigger_scroll_progress' => 0,
 					'utm_suppression'         => null,
+					'selected_segment_id'     => '',
 				]
 			),
 		];
@@ -432,7 +435,10 @@ final class Newspack_Popups_Model {
 	 * @return boolean True if popup has a newsletter prompt.
 	 */
 	public static function has_newsletter_prompt( $popup ) {
-		return false !== strpos( $popup['content'], 'wp:jetpack/mailchimp' );
+		return (
+			false !== strpos( $popup['content'], 'wp:jetpack/mailchimp' ) ||
+			false !== strpos( $popup['content'], 'wp:mailchimp-for-wp/form' )
+		);
 	}
 
 	/**
@@ -639,27 +645,6 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
-	 * Add "newspack-popups-content-block" class name to a block.
-	 * This way a block rendered inside of a popup can be easily told apart.
-	 * This will only work in dynamic blocks.
-	 *
-	 * @param object $block A block.
-	 * @return object Block with className appended.
-	 */
-	public static function append_class_to_block( $block ) {
-		$class_name = 'newspack-popups-content-block';
-		if ( isset( $block['attrs']['className'] ) ) {
-			$block['attrs']['className'] = $block['attrs']['className'] . ' ' . $class_name;
-		} else {
-			$block['attrs']['className'] = $class_name;
-		}
-
-		$block['innerBlocks'] = array_map( [ __CLASS__, 'append_class_to_block' ], $block['innerBlocks'] );
-
-		return $block;
-	}
-
-	/**
 	 * Canonise popups id. The id from WP will be an integer, but AMP does not play well with that and needs a string.
 	 *
 	 * @param int $popup_id Popup id.
@@ -700,7 +685,7 @@ final class Newspack_Popups_Model {
 		$blocks = parse_blocks( $popup['content'] );
 		$body   = '';
 		foreach ( $blocks as $block ) {
-			$body .= render_block( self::append_class_to_block( $block ) );
+			$body .= render_block( $block );
 		}
 		do_action( 'newspack_campaigns_after_campaign_render', $popup );
 
@@ -767,7 +752,7 @@ final class Newspack_Popups_Model {
 		$blocks = parse_blocks( $popup['content'] );
 		$body   = '';
 		foreach ( $blocks as $block ) {
-			$body .= render_block( self::append_class_to_block( $block ) );
+			$body .= render_block( $block );
 		}
 		do_action( 'newspack_campaigns_after_campaign_render', $popup );
 

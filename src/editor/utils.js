@@ -18,6 +18,7 @@ export const optionsFieldsSelector = select => {
 		trigger_delay,
 		trigger_type,
 		utm_suppression,
+		selected_segment_id,
 	} = meta || {};
 	return {
 		background_color,
@@ -34,6 +35,7 @@ export const optionsFieldsSelector = select => {
 		trigger_delay,
 		trigger_type,
 		utm_suppression,
+		selected_segment_id,
 	};
 };
 

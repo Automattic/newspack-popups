@@ -21,6 +21,9 @@ import { registerPlugin } from '@wordpress/plugins';
 import { PluginDocumentSettingPanel, PluginPostStatusInfo } from '@wordpress/edit-post';
 import { ColorPaletteControl } from '@wordpress/block-editor';
 
+const segmentsList =
+	( window && window.newspack_popups_data && window.newspack_popups_data.segments ) || [];
+
 /**
  * Internal dependencies
  */
@@ -56,6 +59,7 @@ class PopupSidebar extends Component {
 			trigger_delay,
 			trigger_type,
 			utm_suppression,
+			selected_segment_id,
 			onSitewideDefaultChange,
 		} = this.props;
 		const isInline = 'inline' === placement;
@@ -79,6 +83,21 @@ class PopupSidebar extends Component {
 						} }
 					/>
 				) }
+				<SelectControl
+					label={ __( 'Segment' ) }
+					value={ selected_segment_id }
+					onChange={ value => onMetaFieldChange( 'selected_segment_id', value ) }
+					options={ [
+						{
+							value: '',
+							label: __( 'All readers', 'newspack-popups' ),
+						},
+						...segmentsList.map( segment => ( {
+							value: segment.id,
+							label: segment.name,
+						} ) ),
+					] }
+				/>
 				<SelectControl
 					label={ __( 'Placement' ) }
 					value={ placement }
