@@ -46,36 +46,22 @@ class PopupColorsSidebar extends Component {
 					onChange={ value => onMetaFieldChange( 'background_color', value || '#FFFFFF' ) }
 					label={ __( 'Background Color' ) }
 				/>
-				<Fragment>
-					<ColorPaletteControl
-						className={ isInline ? 'newspack-popups__disabled' : '' }
-						value={ overlay_color }
-						onChange={ value => {
-							if ( isInline ) {
-								return;
-							}
-							onMetaFieldChange( 'overlay_color', value || '#000000' );
-						} }
-						label={ __( 'Overlay Color' ) }
-					/>
-					<RangeControl
-						className={ isInline ? 'newspack-popups__disabled' : '' }
-						disabled={ isInline }
-						label={ __( 'Overlay opacity' ) }
-						help={
-							isInline ? __( 'Not available for inline campaigns.', 'newspack-popups' ) : null
-						}
-						value={ overlay_opacity }
-						onChange={ value => {
-							if ( isInline ) {
-								return;
-							}
-							onMetaFieldChange( 'overlay_opacity', value );
-						} }
-						min={ 0 }
-						max={ 100 }
-					/>
-				</Fragment>
+				{ ! isInline && (
+					<Fragment>
+						<ColorPaletteControl
+							value={ overlay_color }
+							onChange={ value => onMetaFieldChange( 'overlay_color', value || '#000000' ) }
+							label={ __( 'Overlay Color' ) }
+						/>
+						<RangeControl
+							label={ __( 'Overlay opacity' ) }
+							value={ overlay_opacity }
+							onChange={ value => onMetaFieldChange( 'overlay_opacity', value ) }
+							min={ 0 }
+							max={ 100 }
+						/>
+					</Fragment>
+				) }
 			</Fragment>
 		);
 	}

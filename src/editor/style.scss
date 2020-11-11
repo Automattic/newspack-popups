@@ -10,11 +10,4 @@
 			margin-top: 4px;
 		}
 	}
-
-	&__disabled {
-		.components-base-control__field {
-			opacity: 0.5;
-			pointer-events: none;
-		}
-	}
 }

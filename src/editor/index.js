@@ -18,6 +18,7 @@ import { optionsFieldsSelector } from './utils';
 import PopupSidebar from './PopupSidebar';
 import PopupStatusSidebar from './PopupStatusSidebar';
 import PopupFrequencySidebar from './PopupFrequencySidebar';
+import PopupSegmentationSidebar from './PopupSegmentationSidebar';
 import PopupColorsSidebar from './PopupColorsSidebar';
 import PopupPreview from './PopupPreview';
 import './style.scss';
@@ -53,6 +54,11 @@ const PopupFrequencySidebarWithData = compose( [
 	withDispatch( mapDispatchToProps ),
 ] )( PopupFrequencySidebar );
 
+const PopupSegmentationSidebarWithData = compose( [
+	withSelect( optionsFieldsSelector ),
+	withDispatch( mapDispatchToProps ),
+] )( PopupSegmentationSidebar );
+
 const PopupColorsSidebarWithData = compose( [
 	withSelect( optionsFieldsSelector ),
 	withDispatch( mapDispatchToProps ),
@@ -80,6 +86,18 @@ registerPlugin( 'newspack-popups-frequency', {
 			title={ __( 'Campaign Frequency Settings', 'newspack-popups' ) }
 		>
 			<PopupFrequencySidebarWithData />
+		</PluginDocumentSettingPanel>
+	),
+	icon: null,
+} );
+
+registerPlugin( 'newspack-popups-segmentation', {
+	render: () => (
+		<PluginDocumentSettingPanel
+			name="popup-segmentation-panel"
+			title={ __( 'Campaign Segmentation Settings', 'newspack-popups' ) }
+		>
+			<PopupSegmentationSidebarWithData />
 		</PluginDocumentSettingPanel>
 	),
 	icon: null,
