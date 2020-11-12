@@ -83,7 +83,7 @@ registerPlugin( 'newspack-popups-frequency', {
 	render: () => (
 		<PluginDocumentSettingPanel
 			name="popup-frequency-panel"
-			title={ __( 'Campaign Frequency Settings', 'newspack-popups' ) }
+			title={ __( 'Frequency Settings', 'newspack-popups' ) }
 		>
 			<PopupFrequencySidebarWithData />
 		</PluginDocumentSettingPanel>
@@ -95,7 +95,7 @@ registerPlugin( 'newspack-popups-segmentation', {
 	render: () => (
 		<PluginDocumentSettingPanel
 			name="popup-segmentation-panel"
-			title={ __( 'Campaign Segmentation Settings', 'newspack-popups' ) }
+			title={ __( 'Segmentation Settings', 'newspack-popups' ) }
 		>
 			<PopupSegmentationSidebarWithData />
 		</PluginDocumentSettingPanel>
@@ -107,7 +107,7 @@ registerPlugin( 'newspack-popups-colors', {
 	render: () => (
 		<PluginDocumentSettingPanel
 			name="popup-colors-panel"
-			title={ __( 'Campaign Color Settings', 'newspack-popups' ) }
+			title={ __( 'Color Settings', 'newspack-popups' ) }
 		>
 			<PopupColorsSidebarWithData />
 		</PluginDocumentSettingPanel>
