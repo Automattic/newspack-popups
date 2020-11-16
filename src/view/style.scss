@@ -214,6 +214,14 @@ $color__secondary-variation: darken( $color__secondary, 10% );
 		justify-content: center;
 		margin-top: 1.5em;
 
+		&.align-left {
+			justify-content: flex-start;
+		}
+
+		&.align-right {
+			justify-content: flex-end;
+		}
+
 		button {
 			background: transparent;
 			border: 0;

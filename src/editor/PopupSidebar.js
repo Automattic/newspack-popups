@@ -7,7 +7,15 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Component, Fragment } from '@wordpress/element';
-import { RangeControl, SelectControl, TextControl, ToggleControl } from '@wordpress/components';
+import {
+	BaseControl,
+	IconButton,
+	PanelRow,
+	RangeControl,
+	SelectControl,
+	TextControl,
+	ToggleControl,
+} from '@wordpress/components';
 
 class PopupSidebar extends Component {
 	/**
@@ -16,6 +24,7 @@ class PopupSidebar extends Component {
 	render() {
 		const {
 			dismiss_text,
+			dismiss_text_alignment,
 			display_title,
 			frequency,
 			onMetaFieldChange,
@@ -32,6 +41,24 @@ class PopupSidebar extends Component {
 				onMetaFieldChange( 'frequency', 'once' );
 			}
 		};
+
+		const alignmentOptions = [
+			{
+				icon: 'editor-alignleft',
+				label: __( 'Left', 'newspack-popups' ),
+				value: 'left',
+			},
+			{
+				icon: 'editor-aligncenter',
+				label: __( 'Center', 'newspack-popups' ),
+				value: '',
+			},
+			{
+				icon: 'editor-alignright',
+				label: __( 'Right', 'newspack-popups' ),
+				value: 'right',
+			},
+		];
 
 		return (
 			<Fragment>
@@ -95,7 +122,7 @@ class PopupSidebar extends Component {
 				) }
 				{ isInline && (
 					<RangeControl
-						label={ __( 'Approximate position (in percent)', 'newspack-popups' ) }
+						label={ __( 'Approximate Position (in percent)', 'newspack-popups' ) }
 						value={ trigger_scroll_progress }
 						onChange={ value => onMetaFieldChange( 'trigger_scroll_progress', value ) }
 						min={ 0 }
@@ -103,7 +130,7 @@ class PopupSidebar extends Component {
 					/>
 				) }
 				<TextControl
-					label={ __( 'Text for dismiss button', 'newspack-popups' ) }
+					label={ __( 'Text for Dismiss Button', 'newspack-popups' ) }
 					help={ __(
 						'When clicked, this button will permanently dismiss the campaign for the current reader.',
 						'newspack-popups'
@@ -111,6 +138,21 @@ class PopupSidebar extends Component {
 					value={ dismiss_text }
 					onChange={ value => onMetaFieldChange( 'dismiss_text', value ) }
 				/>
+				<BaseControl
+					label={ __( 'Dismiss Button Alignment', 'newspack-listings' ) }
+					id="newspack-popups-dimiss-button-alignment"
+				>
+					<PanelRow>
+						{ alignmentOptions.map( option => (
+							<IconButton
+								icon={ option.icon }
+								label={ option.label }
+								onClick={ () => onMetaFieldChange( 'dismiss_text_alignment', option.value ) }
+								isPrimary={ dismiss_text_alignment === option.value }
+							/>
+						) ) }
+					</PanelRow>
+				</BaseControl>
 			</Fragment>
 		);
 	}

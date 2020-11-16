@@ -10,6 +10,7 @@ export const optionsFieldsSelector = select => {
 		background_color,
 		frequency,
 		dismiss_text,
+		dismiss_text_alignment,
 		display_title,
 		overlay_color,
 		overlay_opacity,
@@ -23,6 +24,7 @@ export const optionsFieldsSelector = select => {
 	return {
 		background_color,
 		dismiss_text,
+		dismiss_text_alignment,
 		display_title,
 		frequency,
 		overlay_color,
