@@ -143,8 +143,9 @@ class PopupSidebar extends Component {
 					id="newspack-popups-dimiss-button-alignment"
 				>
 					<PanelRow>
-						{ alignmentOptions.map( option => (
+						{ alignmentOptions.map( ( option, index ) => (
 							<IconButton
+								key={ index }
 								icon={ option.icon }
 								label={ option.label }
 								onClick={ () => onMetaFieldChange( 'dismiss_text_alignment', option.value ) }
