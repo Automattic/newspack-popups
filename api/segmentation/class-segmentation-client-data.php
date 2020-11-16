@@ -71,14 +71,35 @@ class Segmentation_Client_Data extends Lightweight_API {
 					$members = $mc->get( "/lists/$list_id/members", [ 'unique_email_id' => $mailchimp_subscriber_id ] )['members'];
 
 					if ( ! empty( $members ) ) {
-						$client                                      = $members[0];
+						$subscriber                                  = $members[0];
 						$client_data_update['email_subscriptions'][] = [
-							'email' => $client['email_address'],
+							'email' => $subscriber['email_address'],
 						];
-						$revenue                                     = $client['stats']['ecommerce_data']['total_revenue'];
-						if ( $revenue > 0 ) {
+
+						if ( ! isset( $subscriber['merge_fields'] ) ) {
+							return;
+						}
+						$has_donated_according_to_mailchimp = array_reduce(
+							// Get all merge fields' names that start with 'DONATED'.
+							array_filter(
+								array_keys( $subscriber['merge_fields'] ),
+								function ( $merge_field ) {
+									return substr( $merge_field, 0, 7 ) === 'DONATED';
+								}
+							),
+							// If any of these fields is "true", the subscriber has donated.
+							function ( $result, $donation_merge_field_name ) use ( $subscriber ) {
+								if ( 'true' === $subscriber['merge_fields'][ $donation_merge_field_name ] ) {
+									$result = true;
+								}
+								return $result;
+							},
+							false
+						);
+
+						if ( $has_donated_according_to_mailchimp ) {
 							$client_data_update['donations'][] = [
-								'mailchimp_revenue' => $revenue,
+								'mailchimp_has_donated' => true,
 							];
 						}
 					}
