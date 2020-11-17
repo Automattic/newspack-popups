@@ -8,8 +8,6 @@
 import { __ } from '@wordpress/i18n';
 import { Fragment } from '@wordpress/element';
 import {
-	BaseControl,
-	IconButton,
 	PanelRow,
 	RangeControl,
 	SelectControl,
@@ -36,24 +34,6 @@ const Sidebar = ( {
 			onMetaFieldChange( 'frequency', 'once' );
 		}
 	};
-
-	const alignmentOptions = [
-		{
-			icon: 'editor-alignleft',
-			label: __( 'Left', 'newspack-popups' ),
-			value: 'left',
-		},
-		{
-			icon: 'editor-aligncenter',
-			label: __( 'Center', 'newspack-popups' ),
-			value: '',
-		},
-		{
-			icon: 'editor-alignright',
-			label: __( 'Right', 'newspack-popups' ),
-			value: 'right',
-		},
-	];
 
 	return (
 		<Fragment>
@@ -133,22 +113,26 @@ const Sidebar = ( {
 				value={ dismiss_text }
 				onChange={ value => onMetaFieldChange( 'dismiss_text', value ) }
 			/>
-			<BaseControl
+			<SelectControl
 				label={ __( 'Dismiss Button Alignment', 'newspack-listings' ) }
 				id="newspack-popups-dimiss-button-alignment"
-			>
-				<PanelRow>
-					{ alignmentOptions.map( ( option, index ) => (
-						<IconButton
-							key={ index }
-							icon={ option.icon }
-							label={ option.label }
-							onClick={ () => onMetaFieldChange( 'dismiss_text_alignment', option.value ) }
-							isPrimary={ dismiss_text_alignment === option.value }
-						/>
-					) ) }
-				</PanelRow>
-			</BaseControl>
+				onChange={ () => onMetaFieldChange( 'dismiss_text_alignment', option.value ) }
+				value={ dismiss_text_alignment }
+				options={ [
+					{
+						label: __( 'Center', 'newspack-popups' ),
+						value: '',
+					},
+					{
+						label: __( 'Left', 'newspack-popups' ),
+						value: 'left',
+					},
+					{
+						label: __( 'Right', 'newspack-popups' ),
+						value: 'right',
+					},
+				] }
+			/>
 		</Fragment>
 	);
 };
