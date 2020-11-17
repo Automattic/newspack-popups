@@ -7,7 +7,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { PluginPostStatusInfo } from '@wordpress/edit-post';
-import { Component, useEffect } from '@wordpress/element';
+import { useEffect } from '@wordpress/element';
 import { ToggleControl } from '@wordpress/components';
 
 const StatusSidebar = ( {
