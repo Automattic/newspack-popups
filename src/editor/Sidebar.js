@@ -7,13 +7,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Fragment } from '@wordpress/element';
-import {
-	PanelRow,
-	RangeControl,
-	SelectControl,
-	TextControl,
-	ToggleControl,
-} from '@wordpress/components';
+import { RangeControl, SelectControl, TextControl, ToggleControl } from '@wordpress/components';
 
 const Sidebar = ( {
 	dismiss_text,
