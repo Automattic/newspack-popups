@@ -15,12 +15,12 @@ import { PluginDocumentSettingPanel, PluginPostStatusInfo } from '@wordpress/edi
  * Internal dependencies
  */
 import { optionsFieldsSelector } from './utils';
-import PopupSidebar from './PopupSidebar';
-import PopupStatusSidebar from './PopupStatusSidebar';
-import PopupFrequencySidebar from './PopupFrequencySidebar';
-import PopupSegmentationSidebar from './PopupSegmentationSidebar';
-import PopupColorsSidebar from './PopupColorsSidebar';
-import PopupPreview from './PopupPreview';
+import Sidebar from './Sidebar';
+import StatusSidebar from './StatusSidebar';
+import FrequencySidebar from './FrequencySidebar';
+import SegmentationSidebar from './SegmentationSidebar';
+import ColorsSidebar from './ColorsSidebar';
+import Preview from './Preview';
 import './style.scss';
 
 // Action dispatchers for the sidebar components.
@@ -39,33 +39,33 @@ const mapDispatchToProps = dispatch => {
 };
 
 // Connect data to components.
-const PopupStatusSidebarWithData = compose( [
+const StatusSidebarWithData = compose( [
 	withSelect( optionsFieldsSelector ),
 	withDispatch( mapDispatchToProps ),
-] )( PopupStatusSidebar );
+] )( StatusSidebar );
 
-const PopupSidebarWithData = compose( [
+const SidebarWithData = compose( [
 	withSelect( optionsFieldsSelector ),
 	withDispatch( mapDispatchToProps ),
-] )( PopupSidebar );
+] )( Sidebar );
 
-const PopupFrequencySidebarWithData = compose( [
+const FrequencySidebarWithData = compose( [
 	withSelect( optionsFieldsSelector ),
 	withDispatch( mapDispatchToProps ),
-] )( PopupFrequencySidebar );
+] )( FrequencySidebar );
 
-const PopupSegmentationSidebarWithData = compose( [
+const SegmentationSidebarWithData = compose( [
 	withSelect( optionsFieldsSelector ),
 	withDispatch( mapDispatchToProps ),
-] )( PopupSegmentationSidebar );
+] )( SegmentationSidebar );
 
-const PopupColorsSidebarWithData = compose( [
+const ColorsSidebarWithData = compose( [
 	withSelect( optionsFieldsSelector ),
 	withDispatch( mapDispatchToProps ),
-] )( PopupColorsSidebar );
+] )( ColorsSidebar );
 
 // Register components.
-registerPlugin( 'newspack-popups-status', { render: PopupStatusSidebarWithData } );
+registerPlugin( 'newspack-popups-status', { render: StatusSidebarWithData } );
 
 registerPlugin( 'newspack-popups', {
 	render: () => (
@@ -73,7 +73,7 @@ registerPlugin( 'newspack-popups', {
 			name="popup-settings-panel"
 			title={ __( 'Campaign Settings', 'newspack-popups' ) }
 		>
-			<PopupSidebarWithData />
+			<SidebarWithData />
 		</PluginDocumentSettingPanel>
 	),
 	icon: null,
@@ -82,10 +82,10 @@ registerPlugin( 'newspack-popups', {
 registerPlugin( 'newspack-popups-frequency', {
 	render: () => (
 		<PluginDocumentSettingPanel
-			name="popup-frequency-panel"
+			name="-frequency-panel"
 			title={ __( 'Frequency Settings', 'newspack-popups' ) }
 		>
-			<PopupFrequencySidebarWithData />
+			<FrequencySidebarWithData />
 		</PluginDocumentSettingPanel>
 	),
 	icon: null,
@@ -97,7 +97,7 @@ registerPlugin( 'newspack-popups-segmentation', {
 			name="popup-segmentation-panel"
 			title={ __( 'Segmentation Settings', 'newspack-popups' ) }
 		>
-			<PopupSegmentationSidebarWithData />
+			<SegmentationSidebarWithData />
 		</PluginDocumentSettingPanel>
 	),
 	icon: null,
@@ -109,7 +109,7 @@ registerPlugin( 'newspack-popups-colors', {
 			name="popup-colors-panel"
 			title={ __( 'Color Settings', 'newspack-popups' ) }
 		>
-			<PopupColorsSidebarWithData />
+			<ColorsSidebarWithData />
 		</PluginDocumentSettingPanel>
 	),
 	icon: null,
@@ -118,7 +118,7 @@ registerPlugin( 'newspack-popups-colors', {
 // Add a button in post status section
 const PluginPostStatusInfoTest = () => (
 	<PluginPostStatusInfo>
-		<PopupPreview />
+		<Preview />
 	</PluginPostStatusInfo>
 );
 registerPlugin( 'newspack-popups-preview', { render: PluginPostStatusInfoTest } );
