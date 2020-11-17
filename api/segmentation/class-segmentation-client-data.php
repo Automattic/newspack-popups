@@ -80,11 +80,11 @@ class Segmentation_Client_Data extends Lightweight_API {
 							return;
 						}
 						$has_donated_according_to_mailchimp = array_reduce(
-							// Get all merge fields' names that start with 'DONATED'.
+							// Get all merge fields' names that start with `DONA` (e.g. `DONATION`, `DONATED`)
 							array_filter(
 								array_keys( $subscriber['merge_fields'] ),
 								function ( $merge_field ) {
-									return substr( $merge_field, 0, 7 ) === 'DONATED';
+									return substr( $merge_field, 0, 4 ) === 'DONA';
 								}
 							),
 							// If any of these fields is "true", the subscriber has donated.
