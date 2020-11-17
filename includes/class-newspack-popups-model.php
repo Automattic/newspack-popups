@@ -801,7 +801,7 @@ final class Newspack_Popups_Model {
 					<?php endif; ?>
 					<?php echo ( $body ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					<?php if ( $dismiss_text ) : ?>
-					<form class="popup-not-interested-form popup-action-form"
+					<form class="popup-not-interested-form popup-action-form align-<?php echo esc_attr( $dismiss_text_alignment ); ?>"
 						method="POST"
 						action-xhr="<?php echo esc_url( $endpoint ); ?>"
 						target="_top">
