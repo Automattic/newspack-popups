@@ -116,7 +116,7 @@ const Sidebar = ( {
 			<SelectControl
 				label={ __( 'Dismiss Button Alignment', 'newspack-listings' ) }
 				id="newspack-popups-dimiss-button-alignment"
-				onChange={ () => onMetaFieldChange( 'dismiss_text_alignment', option.value ) }
+				onChange={ value => onMetaFieldChange( 'dismiss_text_alignment', value ) }
 				value={ dismiss_text_alignment }
 				options={ [
 					{
