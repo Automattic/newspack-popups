@@ -80,7 +80,7 @@ class Segmentation_Client_Data extends Lightweight_API {
 							return;
 						}
 						$has_donated_according_to_mailchimp = array_reduce(
-							// Get all merge fields' names that start with `DONA` (e.g. `DONATION`, `DONATED`)
+							// Get all merge fields' names that start with `DONA` (e.g. `DONATION`, `DONATED`).
 							array_filter(
 								array_keys( $subscriber['merge_fields'] ),
 								function ( $merge_field ) {
