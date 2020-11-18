@@ -40,6 +40,8 @@ const StatusSidebar = ( {
 	useEffect(() => {
 		if ( isTest ) {
 			createTestNotice();
+		} else {
+			removeNotice( 'newspack-popups__test-mode' );
 		}
 	}, [ isTest ]);
 
@@ -55,10 +57,8 @@ const StatusSidebar = ( {
 					) }
 					onChange={ value => {
 						if ( value ) {
-							createTestNotice();
 							return onMetaFieldChange( 'frequency', 'test' );
 						}
-						removeNotice( 'newspack-popups__test-mode' );
 						onMetaFieldChange( 'frequency', 'once' );
 					} }
 				/>
