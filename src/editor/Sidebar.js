@@ -7,7 +7,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Fragment } from '@wordpress/element';
-import { RangeControl, SelectControl, TextControl, ToggleControl } from '@wordpress/components';
+import { RangeControl, SelectControl, ToggleControl } from '@wordpress/components';
 
 const Sidebar = ( {
 	display_title,
