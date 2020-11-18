@@ -19,6 +19,7 @@ import Sidebar from './Sidebar';
 import StatusSidebar from './StatusSidebar';
 import FrequencySidebar from './FrequencySidebar';
 import SegmentationSidebar from './SegmentationSidebar';
+import DismissSidebar from './DismissSidebar';
 import ColorsSidebar from './ColorsSidebar';
 import Preview from './Preview';
 import './style.scss';
@@ -59,6 +60,11 @@ const SegmentationSidebarWithData = compose( [
 	withDispatch( mapDispatchToProps ),
 ] )( SegmentationSidebar );
 
+const DismissSidebarWithData = compose( [
+	withSelect( optionsFieldsSelector ),
+	withDispatch( mapDispatchToProps ),
+] )( DismissSidebar );
+
 const ColorsSidebarWithData = compose( [
 	withSelect( optionsFieldsSelector ),
 	withDispatch( mapDispatchToProps ),
@@ -98,6 +104,18 @@ registerPlugin( 'newspack-popups-segmentation', {
 			title={ __( 'Segmentation Settings', 'newspack-popups' ) }
 		>
 			<SegmentationSidebarWithData />
+		</PluginDocumentSettingPanel>
+	),
+	icon: null,
+} );
+
+registerPlugin( 'newspack-popups-dismiss', {
+	render: () => (
+		<PluginDocumentSettingPanel
+			name="popup-dismiss-panel"
+			title={ __( 'Dismiss Button Settings', 'newspack-popups' ) }
+		>
+			<DismissSidebarWithData />
 		</PluginDocumentSettingPanel>
 	),
 	icon: null,

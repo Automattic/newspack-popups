@@ -7,10 +7,9 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Fragment } from '@wordpress/element';
-import { RangeControl, SelectControl, TextControl, ToggleControl } from '@wordpress/components';
+import { RangeControl, SelectControl, ToggleControl } from '@wordpress/components';
 
 const Sidebar = ( {
-	dismiss_text,
 	display_title,
 	frequency,
 	onMetaFieldChange,
@@ -90,22 +89,13 @@ const Sidebar = ( {
 			) }
 			{ isInline && (
 				<RangeControl
-					label={ __( 'Approximate position (in percent)', 'newspack-popups' ) }
+					label={ __( 'Approximate Position (in percent)', 'newspack-popups' ) }
 					value={ trigger_scroll_progress }
 					onChange={ value => onMetaFieldChange( 'trigger_scroll_progress', value ) }
 					min={ 0 }
 					max={ 100 }
 				/>
 			) }
-			<TextControl
-				label={ __( 'Text for dismiss button', 'newspack-popups' ) }
-				help={ __(
-					'When clicked, this button will permanently dismiss the campaign for the current reader.',
-					'newspack-popups'
-				) }
-				value={ dismiss_text }
-				onChange={ value => onMetaFieldChange( 'dismiss_text', value ) }
-			/>
 		</Fragment>
 	);
 };

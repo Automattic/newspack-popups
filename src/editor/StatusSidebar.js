@@ -39,9 +39,10 @@ const StatusSidebar = ( {
 
 	useEffect(() => {
 		if ( isTest ) {
-			return createTestNotice();
+			createTestNotice();
+		} else {
+			removeNotice( 'newspack-popups__test-mode' );
 		}
-		removeNotice( 'newspack-popups__test-mode' );
 	}, [ isTest ]);
 
 	return (
