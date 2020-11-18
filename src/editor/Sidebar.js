@@ -10,8 +10,6 @@ import { Fragment } from '@wordpress/element';
 import { RangeControl, SelectControl, TextControl, ToggleControl } from '@wordpress/components';
 
 const Sidebar = ( {
-	dismiss_text,
-	dismiss_text_alignment,
 	display_title,
 	frequency,
 	onMetaFieldChange,
@@ -98,35 +96,6 @@ const Sidebar = ( {
 					max={ 100 }
 				/>
 			) }
-			<TextControl
-				label={ __( 'Text for Dismiss Button', 'newspack-popups' ) }
-				help={ __(
-					'When clicked, this button will permanently dismiss the campaign for the current reader.',
-					'newspack-popups'
-				) }
-				value={ dismiss_text }
-				onChange={ value => onMetaFieldChange( 'dismiss_text', value ) }
-			/>
-			<SelectControl
-				label={ __( 'Dismiss Button Alignment', 'newspack-listings' ) }
-				id="newspack-popups-dimiss-button-alignment"
-				onChange={ value => onMetaFieldChange( 'dismiss_text_alignment', value ) }
-				value={ dismiss_text_alignment }
-				options={ [
-					{
-						label: __( 'Center', 'newspack-popups' ),
-						value: '',
-					},
-					{
-						label: __( 'Left', 'newspack-popups' ),
-						value: 'left',
-					},
-					{
-						label: __( 'Right', 'newspack-popups' ),
-						value: 'right',
-					},
-				] }
-			/>
 		</Fragment>
 	);
 };
