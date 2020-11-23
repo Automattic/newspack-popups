@@ -17,7 +17,7 @@ final class Newspack_Popups {
 
 	const NEWSPACK_POPUP_PREVIEW_QUERY_PARAM = 'newspack_popups_preview_id';
 
-	const LIGHTWEIGHT_API_CONFIG_FILE_PATH = WP_CONTENT_DIR . '/../newspack-popups-config.php';
+	const LIGHTWEIGHT_API_CONFIG_FILE_PATH = WP_CONTENT_DIR . '/newspack-popups-config.php';
 
 	/**
 	 * The single instance of the class.
