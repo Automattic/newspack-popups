@@ -22,7 +22,15 @@ if ( ! defined( 'WP_DEBUG' ) ) {
 	define( 'WP_DEBUG', false );
 }
 
-require_once $wp_root_path . 'newspack-popups-config.php';
+$legacy_config_path = $wp_root_path . 'newspack-popups-config.php';
+$config_path        = $wp_root_path . 'wp-content/newspack-popups-config.php';
+if ( file_exists( $legacy_config_path ) ) {
+	require_once $legacy_config_path;
+} elseif ( file_exists( $config_path ) ) {
+	require_once $config_path;
+} else {
+	die( 'missing config file' );
+}
 
 // phpcs:disable
 

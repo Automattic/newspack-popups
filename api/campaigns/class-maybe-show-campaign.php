@@ -120,6 +120,8 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		}
 
 		$has_newsletter_prompt = $campaign->n;
+		// Suppressing based on UTM Medium parameter in the URL.
+		$has_utm_medium_in_url = stripos( $referer_url, 'utm_medium=email' );
 
 		// Handle referer-based conditions.
 		if ( ! empty( $referer_url ) ) {
@@ -130,8 +132,6 @@ class Maybe_Show_Campaign extends Lightweight_API {
 				$campaign_data['suppress_forever'] = true;
 			}
 
-			// Suppressing based on UTM Medium parameter in the URL.
-			$has_utm_medium_in_url = stripos( $referer_url, 'utm_medium=email' );
 			if (
 				$has_utm_medium_in_url &&
 				$settings->suppress_newsletter_campaigns &&
@@ -171,10 +171,10 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		// Handle segmentation.
 		$campaign_segment = isset( $settings->all_segments->{$campaign->s} ) ? $settings->all_segments->{$campaign->s} : false;
 		if ( ! empty( $campaign_segment ) ) {
-			$client_data      = $this->get_client_data( $client_id );
 			$posts_read_count = count( $client_data['posts_read'] );
-			$is_subscriber    = ! empty( $client_data['email_subscriptions'] );
-			$is_donor         = ! empty( $client_data['donations'] );
+			// If coming from email, assume it's a subscriber.
+			$is_subscriber = ! empty( $client_data['email_subscriptions'] ) || $has_utm_medium_in_url;
+			$is_donor      = ! empty( $client_data['donations'] );
 			if (
 				$campaign_segment->min_posts > 0 && $campaign_segment->min_posts > $posts_read_count
 			) {
@@ -190,6 +190,9 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			}
 			if ( $campaign_segment->is_not_subscribed && $is_subscriber ) {
 				$should_display = false;
+				if ( $has_utm_medium_in_url ) { // Save suppression for this campaign.
+					$campaign_data['suppress_forever'] = true;
+				}
 			}
 			if ( $campaign_segment->is_donor && ! $is_donor ) {
 				$should_display = false;
