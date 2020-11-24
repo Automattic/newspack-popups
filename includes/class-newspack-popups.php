@@ -481,7 +481,10 @@ final class Newspack_Popups {
 	 * Add an admin notice if config is missing.
 	 */
 	public static function api_config_missing_notice() {
-		if ( file_exists( self::LIGHTWEIGHT_API_CONFIG_FILE_PATH ) ) {
+		if (
+			file_exists( self::LIGHTWEIGHT_API_CONFIG_FILE_PATH_LEGACY ) ||
+			file_exists( self::LIGHTWEIGHT_API_CONFIG_FILE_PATH )
+		) {
 			return;
 		}
 		?>
