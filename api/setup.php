@@ -22,7 +22,7 @@ if ( ! defined( 'WP_DEBUG' ) ) {
 	define( 'WP_DEBUG', false );
 }
 
-require_once $wp_root_path . 'newspack-popups-config.php';
+require_once $wp_root_path . 'wp-content/newspack-popups-config.php';
 
 // phpcs:disable
 
