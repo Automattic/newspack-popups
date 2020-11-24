@@ -17,7 +17,8 @@ final class Newspack_Popups {
 
 	const NEWSPACK_POPUP_PREVIEW_QUERY_PARAM = 'newspack_popups_preview_id';
 
-	const LIGHTWEIGHT_API_CONFIG_FILE_PATH = WP_CONTENT_DIR . '/newspack-popups-config.php';
+	const LIGHTWEIGHT_API_CONFIG_FILE_PATH_LEGACY = WP_CONTENT_DIR . '/../newspack-popups-config.php';
+	const LIGHTWEIGHT_API_CONFIG_FILE_PATH        = WP_CONTENT_DIR . '/newspack-popups-config.php';
 
 	/**
 	 * The single instance of the class.
@@ -454,7 +455,10 @@ final class Newspack_Popups {
 	 */
 	public static function create_lightweight_api_config() {
 		// Don't create a config file on Newspack's Atomic platform, or if there is a file already.
-		if ( defined( 'ATOMIC_SITE_ID' ) || file_exists( self::LIGHTWEIGHT_API_CONFIG_FILE_PATH ) ) {
+		if (
+			defined( 'ATOMIC_SITE_ID' ) ||
+			( file_exists( self::LIGHTWEIGHT_API_CONFIG_FILE_PATH_LEGACY ) || file_exists( self::LIGHTWEIGHT_API_CONFIG_FILE_PATH ) )
+		) {
 			return;
 		}
 		global $wpdb;
