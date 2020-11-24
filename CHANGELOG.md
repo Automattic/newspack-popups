@@ -1,3 +1,18 @@
+# [1.18.0](https://github.com/Automattic/newspack-popups/compare/v1.17.0...v1.18.0) (2020-11-24)
+
+
+### Bug Fixes
+
+* handle legacy config file path ([#317](https://github.com/Automattic/newspack-popups/issues/317)) ([7770f6a](https://github.com/Automattic/newspack-popups/commit/7770f6aec53e1a97bb43665e51e534a1b96d0626))
+
+
+### Features
+
+* Improve configuration file handling ([#315](https://github.com/Automattic/newspack-popups/issues/315)) ([be40334](https://github.com/Automattic/newspack-popups/commit/be403343f00963b9b754554f48fd19a06e068e96))
+* polyfill amp-analytics script ([#306](https://github.com/Automattic/newspack-popups/issues/306)) ([6066651](https://github.com/Automattic/newspack-popups/commit/6066651d75642967be52c0f6261c64fc49f68408)), closes [#193](https://github.com/Automattic/newspack-popups/issues/193)
+* reorganize editor sidebar and add notice when test mode is enabled ([#307](https://github.com/Automattic/newspack-popups/issues/307)) ([59e522c](https://github.com/Automattic/newspack-popups/commit/59e522c9a241da4d2b2e3a202af5fa52b81ba8a2)), closes [#310](https://github.com/Automattic/newspack-popups/issues/310)
+* retrieve client email and donor status from Mailchimp ([#305](https://github.com/Automattic/newspack-popups/issues/305)) ([4ffc44d](https://github.com/Automattic/newspack-popups/commit/4ffc44d112e4daf7b2a911a68fc0ccc2228bdd17)), closes [#304](https://github.com/Automattic/newspack-popups/issues/304)
+
 # [1.17.0](https://github.com/Automattic/newspack-popups/compare/v1.16.0...v1.17.0) (2020-11-11)
 
 
