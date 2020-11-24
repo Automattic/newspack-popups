@@ -1,3 +1,13 @@
 .block-editor-post-preview__button-toggle {
 	display: none;
 }
+
+.newspack-popups {
+	&__status-options {
+		margin: 1rem 0;
+
+		.components-base-control .components-base-control__help {
+			margin-top: 4px;
+		}
+	}
+}

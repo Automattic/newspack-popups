@@ -247,13 +247,17 @@ class Lightweight_API {
 	 * @param string $client_data_update Client data.
 	 */
 	public function save_client_data( $client_id, $client_data_update ) {
-		$existing_client_data = $this->get_client_data( $client_id, true );
+		$existing_client_data                       = $this->get_client_data( $client_id, true );
+		$updated_client_data                        = array_merge_recursive(
+			$existing_client_data,
+			$client_data_update
+		);
+		$updated_client_data['posts_read']          = array_unique( $updated_client_data['posts_read'], SORT_REGULAR );
+		$updated_client_data['email_subscriptions'] = array_unique( $updated_client_data['email_subscriptions'], SORT_REGULAR );
+		$updated_client_data['donations']           = array_unique( $updated_client_data['donations'], SORT_REGULAR );
 		return $this->set_transient(
 			$this->get_transient_name( $client_id ),
-			array_merge(
-				$existing_client_data,
-				$client_data_update
-			)
+			$updated_client_data
 		);
 	}
 

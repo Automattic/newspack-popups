@@ -28,5 +28,8 @@
         "cat $1 | ./node_modules/.bin/commitlint"
       ]
     }
+  },
+  "require": {
+    "drewm/mailchimp-api": "^2.5"
   }
 }

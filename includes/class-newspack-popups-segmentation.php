@@ -54,7 +54,6 @@ final class Newspack_Popups_Segmentation {
 	public function __construct() {
 		add_action( 'init', [ __CLASS__, 'create_database_table' ] );
 		add_action( 'wp_footer', [ __CLASS__, 'insert_amp_analytics' ], 20 );
-		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'wp_enqueue_scripts' ] );
 	}
 
 	/**
@@ -72,41 +71,6 @@ final class Newspack_Popups_Segmentation {
 			return false;
 		}
 		return true;
-	}
-
-	/**
-	 * Insert amp-analytics scripts.
-	 */
-	public static function wp_enqueue_scripts() {
-		if ( Newspack_Popups_Inserter::assess_has_disabled_popups() ) {
-			return;
-		}
-		// Register AMP scripts explicitly for non-AMP pages.
-		if ( ! wp_script_is( 'amp-runtime', 'registered' ) ) {
-			// phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion
-			wp_register_script(
-				'amp-runtime',
-				'https://cdn.ampproject.org/v0.js',
-				null,
-				null,
-				true
-			);
-		}
-		$scripts = [ 'amp-analytics' ];
-		foreach ( $scripts as $script ) {
-			if ( ! wp_script_is( $script, 'registered' ) ) {
-				$path = "https://cdn.ampproject.org/v0/{$script}-latest.js";
-				// phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion
-				wp_register_script(
-					$script,
-					$path,
-					array( 'amp-runtime' ),
-					null,
-					true
-				);
-			}
-			wp_enqueue_script( $script );
-		}
 	}
 
 	/**
@@ -146,6 +110,23 @@ final class Newspack_Popups_Segmentation {
 				],
 			],
 		];
+
+		// Handle Mailchimp URL parameters.
+		if ( isset( $_GET['mc_cid'], $_GET['mc_eid'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$endpoint                         = self::get_client_data_endpoint();
+			$amp_analytics_config['requests'] = [
+				'event' => esc_url( $endpoint ),
+			];
+			$amp_analytics_config['triggers']['trackMailchimpData'] = [
+				'on'             => 'ini-load',
+				'request'        => 'event',
+				'extraUrlParams' => [
+					'mc_cid'    => sanitize_text_field( $_GET['mc_cid'] ), // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+					'mc_eid'    => sanitize_text_field( $_GET['mc_eid'] ), // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+					'client_id' => 'CLIENT_ID(' . esc_attr( self::NEWSPACK_SEGMENTATION_CID_NAME ) . ')',
+				],
+			];
+		}
 
 		?>
 			<amp-analytics>
@@ -246,6 +227,42 @@ final class Newspack_Popups_Segmentation {
 
 		update_option( self::SEGMENTS_OPTION_NAME, $segments );
 		return self::get_segments();
+	}
+
+	/**
+	 * Get current client's id.
+	 */
+	public static function get_client_id() {
+		return isset( $_COOKIE[ self::NEWSPACK_SEGMENTATION_CID_NAME ] ) ? esc_attr( $_COOKIE[ self::NEWSPACK_SEGMENTATION_CID_NAME ] ) : false; // phpcs:ignore WordPressVIPMinimum.Variables.RestrictedVariables.cache_constraints___COOKIE, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+	}
+
+	/**
+	 * Get API client data endpoint.
+	 */
+	public static function get_client_data_endpoint() {
+		return plugins_url( '../api/segmentation/index.php', __FILE__ );
+	}
+
+	/**
+	 * Update client data.
+	 *
+	 * @param string $client_id Client ID.
+	 * @param string $payload Client data.
+	 */
+	public static function update_client_data( $client_id, $payload ) {
+		if ( isset( $client_id ) ) {
+			wp_safe_remote_post(
+				self::get_client_data_endpoint(),
+				[
+					'body' => array_merge(
+						[
+							'client_id' => $client_id,
+						],
+						$payload
+					),
+				]
+			);
+		}
 	}
 }
 Newspack_Popups_Segmentation::instance();
