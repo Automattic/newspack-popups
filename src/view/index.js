@@ -88,15 +88,17 @@ const manageAnalyticsEvents = () => {
 			triggerSpecs.forEach( ( { on, extraUrlParams = {}, request, ...trigger }, i ) => {
 				const url = requests[ request ];
 				let element;
+
+				// Data for the XHR request.
+				const data = {};
+				if ( extraUrlParams ) {
+					Object.keys( extraUrlParams ).forEach( key => {
+						data[ key ] = substituteDynamicValue( extraUrlParams[ key ] );
+					} );
+				}
+
 				switch ( on ) {
 					case 'visible':
-						const data = {};
-						if ( extraUrlParams ) {
-							// eslint-disable-next-line array-callback-return
-							Object.keys( extraUrlParams ).map( key => {
-								data[ key ] = substituteDynamicValue( extraUrlParams[ key ] );
-							} );
-						}
 						element = document.querySelector( trigger.visibilitySpec?.selector );
 						if ( element && observer ) {
 							observer.observe( element );
@@ -117,6 +119,9 @@ const manageAnalyticsEvents = () => {
 								} );
 							} );
 						}
+						break;
+					case 'ini-load':
+						performXHRequest( { url, data } );
 						break;
 					default:
 						throw new Error( `Trigger "${ on }" not handled` );
