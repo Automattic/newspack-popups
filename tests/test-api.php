@@ -24,7 +24,7 @@ class APITest extends WP_UnitTestCase {
 			'suppress_all_newsletter_campaigns_if_one_dismissed' => true,
 			'suppress_donation_campaigns_if_donor' => true,
 			'all_segments'                         => (object) [
-				'segmentBetween3And5' => (object) [
+				'segmentBetween3And5'   => (object) [
 					'min_posts'         => 2,
 					'max_posts'         => 3,
 					'is_subscribed'     => false,
@@ -32,12 +32,28 @@ class APITest extends WP_UnitTestCase {
 					'is_not_subscribed' => false,
 					'is_not_donor'      => false,
 				],
-				'segmentWithZeros'    => (object) [
+				'segmentWithZeros'      => (object) [
 					'min_posts'         => 0,
 					'max_posts'         => 0,
 					'is_subscribed'     => false,
 					'is_donor'          => false,
 					'is_not_subscribed' => false,
+					'is_not_donor'      => false,
+				],
+				'segmentSubscribers'    => (object) [
+					'min_posts'         => 0,
+					'max_posts'         => 0,
+					'is_subscribed'     => true,
+					'is_donor'          => false,
+					'is_not_subscribed' => false,
+					'is_not_donor'      => false,
+				],
+				'segmentNonSubscribers' => (object) [
+					'min_posts'         => 0,
+					'max_posts'         => 0,
+					'is_subscribed'     => false,
+					'is_donor'          => false,
+					'is_not_subscribed' => true,
 					'is_not_donor'      => false,
 				],
 			],
@@ -59,6 +75,13 @@ class APITest extends WP_UnitTestCase {
 		return [
 			'id'      => $popup_id,
 			'payload' => $payload,
+		];
+	}
+
+	public static function create_read_post( $id ) { // phpcs:ignore Squiz.Commenting.FunctionComment.Missing
+		return [
+			'post_id'      => $id,
+			'category_ids' => '',
 		];
 	}
 
@@ -528,7 +551,7 @@ class APITest extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Suppression caused by reader having donated.
+	 * Suppression of a donation campaigns caused by reader having donated.
 	 */
 	public function test_donor_suppression() {
 		$test_popup_with_donate_block = self::create_test_popup(
@@ -559,7 +582,89 @@ class APITest extends WP_UnitTestCase {
 
 		self::assertFalse(
 			self::$maybe_show_campaign->should_campaign_be_shown( $client_id, $test_popup_with_donate_block['payload'], self::$settings ),
-			'Assert not shown after reader donated.'
+			'Assert not shown after reader has donated.'
+		);
+	}
+
+	/**
+	 * Suppression of a subscriber-segmented campaign.
+	 */
+	public function test_only_subscriber_suppression() {
+		$test_popup = self::create_test_popup(
+			[
+				'placement'           => 'inline',
+				'frequency'           => 'always',
+				'selected_segment_id' => 'segmentSubscribers',
+			]
+		);
+		$client_id  = 'amp-123';
+
+		self::assertFalse(
+			self::$maybe_show_campaign->should_campaign_be_shown( $client_id, $test_popup['payload'], self::$settings ),
+			'Assert initially not visible.'
+		);
+
+		// Report a subscription.
+		self::$report_client_data->report_client_data(
+			[
+				'client_id'          => $client_id,
+				'email_subscription' => [
+					'email' => 'reader@example.com',
+				],
+			]
+		);
+
+		self::assertTrue(
+			self::$maybe_show_campaign->should_campaign_be_shown( $client_id, $test_popup['payload'], self::$settings ),
+			'Assert shown after reader has subscribed.'
+		);
+
+		$referer_url = 'https://example.com/news?utm_medium=email';
+		$client_id   = 'new-client-id';
+		self::assertTrue(
+			self::$maybe_show_campaign->should_campaign_be_shown( $client_id, $test_popup['payload'], self::$settings, $referer_url ),
+			'Assert shown if coming from email.'
+		);
+	}
+
+	/**
+	 * Suppression of a non-subscriber-segmented campaign.
+	 */
+	public function test_non_subscriber_suppression() {
+		$test_popup = self::create_test_popup(
+			[
+				'placement'           => 'inline',
+				'frequency'           => 'always',
+				'selected_segment_id' => 'segmentNonSubscribers',
+			]
+		);
+		$client_id  = 'amp-123';
+
+		self::assertTrue(
+			self::$maybe_show_campaign->should_campaign_be_shown( $client_id, $test_popup['payload'], self::$settings ),
+			'Assert initially visible.'
+		);
+
+		// Report a subscription.
+		self::$report_client_data->report_client_data(
+			[
+				'client_id'          => $client_id,
+				'email_subscription' => [
+					'email' => 'reader@example.com',
+				],
+			]
+		);
+
+		self::assertFalse(
+			self::$maybe_show_campaign->should_campaign_be_shown( $client_id, $test_popup['payload'], self::$settings ),
+			'Assert not shown after reader has subscribed.'
+		);
+
+		$referer_url = 'https://example.com/news?utm_medium=email';
+		$client_id   = 'new-client-id';
+		self::assertFalse(
+			self::$maybe_show_campaign->should_campaign_be_shown( $client_id, $test_popup['payload'], self::$settings, $referer_url ),
+			'Assert not shown if coming from email.'
 		);
 	}
 
@@ -581,18 +686,13 @@ class APITest extends WP_UnitTestCase {
 			'Assert initially not visible.'
 		);
 
-		$post_read_item = [
-			'post_id'      => '142',
-			'category_ids' => '',
-		];
-
 		// Report 2 articles read.
 		self::$maybe_show_campaign->save_client_data(
 			$client_id,
 			[
 				'posts_read' => [
-					$post_read_item,
-					$post_read_item,
+					self::create_read_post( 1 ),
+					self::create_read_post( 2 ),
 				],
 			]
 		);
@@ -607,10 +707,10 @@ class APITest extends WP_UnitTestCase {
 			$client_id,
 			[
 				'posts_read' => [
-					$post_read_item,
-					$post_read_item,
-					$post_read_item,
-					$post_read_item,
+					self::create_read_post( 3 ),
+					self::create_read_post( 4 ),
+					self::create_read_post( 5 ),
+					self::create_read_post( 6 ),
 				],
 			]
 		);

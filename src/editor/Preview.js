@@ -12,7 +12,7 @@ import { __ } from '@wordpress/i18n';
 import { stringify } from 'qs';
 import { WebPreview } from 'newspack-components';
 
-const PopupPreviewSetting = ( { autosavePost, isSavingPost, postId, metaFields } ) => {
+const PreviewSetting = ( { autosavePost, isSavingPost, postId, metaFields } ) => {
 	const query = stringify( {
 		newspack_popups_preview_id: postId,
 		// Autosave does not handle meta fields, so these will be passed in the URL
@@ -39,7 +39,7 @@ const PopupPreviewSetting = ( { autosavePost, isSavingPost, postId, metaFields }
 	);
 };
 
-const connectPopupPreviewSetting = compose( [
+const connectPreviewSetting = compose( [
 	withSelect( select => {
 		const { isSavingPost, getCurrentPostId, getEditedPostAttribute } = select( 'core/editor' );
 		return {
@@ -55,4 +55,4 @@ const connectPopupPreviewSetting = compose( [
 	} ),
 ] );
 
-export default connectPopupPreviewSetting( PopupPreviewSetting );
+export default connectPreviewSetting( PreviewSetting );
