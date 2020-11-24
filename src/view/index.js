@@ -41,6 +41,7 @@ const manageAnalyticsLinkers = () => {
 		}
 	} );
 };
+
 const manageAnalyticsEvents = () => {
 	getAnalyticsConfigs().forEach( ( { requests, triggers } ) => {
 		if ( triggers && requests ) {

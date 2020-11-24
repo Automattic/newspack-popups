@@ -27,6 +27,12 @@ const getCookies = () =>
 
 export const getClientIDValue = () => getCookies()[ 'newspack-cid' ];
 
+/**
+ * Replace a dynamic value, like a client ID, in a string.
+ *
+ * @param  {string} value A string to replace value in.
+ * @return {string} String with the value replaced.
+ */
 export const substituteDynamicValue = value => {
 	if ( value && value.replace( /\s/g, '' ) === 'CLIENT_ID(newspack-cid)' ) {
 		value = getClientIDValue() || '';
@@ -34,6 +40,14 @@ export const substituteDynamicValue = value => {
 	return value;
 };
 
+/**
+ * Given a data object and a form HTML element,
+ * update the data with values from the form.
+ *
+ * @param  {Object} data An object.
+ * @param  {HTMLFormElement} formElement A form element.
+ * @return {Object} Updated data.
+ */
 export const processFormData = ( data, formElement ) => {
 	Object.keys( data ).forEach( key => {
 		let value = data[ key ];
@@ -48,6 +62,15 @@ export const processFormData = ( data, formElement ) => {
 	return data;
 };
 
+/**
+ * Given an amp-analytics configuration, a current url, and cookies,
+ * retrieve client ID related linker param to be inserted into site cookies.
+ *
+ * @param  {Object} config amp-analytics configuration.
+ * @param  {string} [url=window.location.href] A URL, presumably with the linker param.
+ * @param  {string} [documentCookie=document.cookie] The cookie.
+ * @return {Object} Cookie value and a clean URL – without the linker param.
+ */
 export const getCookieValueFromLinker = (
 	{ linkers, cookies },
 	url = window.location.href,
