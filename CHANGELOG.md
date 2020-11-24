@@ -1,3 +1,10 @@
+# [1.18.0-alpha.2](https://github.com/Automattic/newspack-popups/compare/v1.18.0-alpha.1...v1.18.0-alpha.2) (2020-11-24)
+
+
+### Bug Fixes
+
+* handle legacy config file path ([#317](https://github.com/Automattic/newspack-popups/issues/317)) ([7770f6a](https://github.com/Automattic/newspack-popups/commit/7770f6aec53e1a97bb43665e51e534a1b96d0626))
+
 # [1.18.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.17.0...v1.18.0-alpha.1) (2020-11-24)
 
 
