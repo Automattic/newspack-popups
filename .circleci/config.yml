@@ -70,6 +70,15 @@ jobs:
             composer install
             ./vendor/bin/phpcs
 
+  test-js:
+    docker:
+      - image: circleci/node:12
+    steps:
+      - checkout_code
+      - run:
+          name: Run JS Tests
+          command: npm run test
+
   release:
     docker:
       - image: circleci/node:12
@@ -104,6 +113,9 @@ workflows:
       - build
       - lint-php
       - lint-js-scss:
+          requires:
+            - build
+      - test-js:
           requires:
             - build
       - release:

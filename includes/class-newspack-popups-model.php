@@ -495,67 +495,45 @@ final class Newspack_Popups_Model {
 			$email_form_field_name   = 'EMAIL';
 		}
 
-		?>
-		<?php if ( $mailchimp_form_selector ) : ?>
-			<amp-analytics>
-				<script type="application/json">
-					{
-						"requests": {
-							"event": "<?php echo esc_url( $endpoint ); ?>"
-						},
-						"triggers": {
-							"formSubmitSuccess": {
-								"on": "amp-form-submit-success",
-								"request": "event",
-								"selector": "#<?php echo esc_attr( $element_id ); ?> <?php echo esc_attr( $mailchimp_form_selector ); ?>",
-								"extraUrlParams": {
-									"popup_id": "<?php echo esc_attr( self::canonize_popup_id( $popup['id'] ) ); ?>",
-									"cid": "CLIENT_ID( <?php echo esc_attr( Newspack_Popups_Segmentation::NEWSPACK_SEGMENTATION_CID_NAME ); ?> )",
-									"mailing_list_status": "subscribed",
-									"email": "${formFields[<?php echo esc_attr( $email_form_field_name ); ?>]}"
-								}
-							}
-						},
-						"transport": {
-							"beacon": true,
-							"xhrpost": true,
-							"useBody": true,
-							"image": false
-						}
-					}
-				</script>
-			</amp-analytics>
-		<?php endif; ?>
+		$amp_analytics_config = [
+			'requests' => [
+				'event' => esc_url( $endpoint ),
+			],
+			'triggers' => [
+				'trackPageview' => [
+					'on'             => 'visible',
+					'request'        => 'event',
+					'visibilitySpec' => [
+						'selector'             => '#' . esc_attr( $element_id ),
+						'visiblePercentageMin' => 90,
+						'totalTimeMin'         => 500,
+						'continuousTimeMin'    => 200,
+					],
+					'extraUrlParams' => [
+						'popup_id' => esc_attr( self::canonize_popup_id( $popup['id'] ) ),
+						'cid'      => 'CLIENT_ID(' . esc_attr( Newspack_Popups_Segmentation::NEWSPACK_SEGMENTATION_CID_NAME ) . ')',
+					],
+				],
+			],
+		];
+		if ( $mailchimp_form_selector ) {
+			$amp_analytics_config['triggers']['formSubmitSuccess'] = [
+				'on'             => 'amp-form-submit-success',
+				'request'        => 'event',
+				'selector'       => '#' . esc_attr( $element_id ) . ' ' . esc_attr( $mailchimp_form_selector ),
+				'extraUrlParams' => [
+					'popup_id'            => esc_attr( self::canonize_popup_id( $popup['id'] ) ),
+					'cid'                 => 'CLIENT_ID(' . esc_attr( Newspack_Popups_Segmentation::NEWSPACK_SEGMENTATION_CID_NAME ) . ')',
+					'mailing_list_status' => 'subscribed',
+					'email'               => '$[formFields[' . esc_attr( $email_form_field_name ) . ']}',
+				],
+			];
+		}
 
+		?>
 		<amp-analytics>
 			<script type="application/json">
-				{
-					"requests": {
-						"event": "<?php echo esc_url( $endpoint ); ?>"
-					},
-					"triggers": {
-						"trackPageview": {
-							"on": "visible",
-							"request": "event",
-							"visibilitySpec": {
-								"selector": "#<?php echo esc_attr( $element_id ); ?>",
-								"visiblePercentageMin": 90,
-								"totalTimeMin": 500,
-								"continuousTimeMin": 200
-							},
-							"extraUrlParams": {
-								"popup_id": "<?php echo esc_attr( self::canonize_popup_id( $popup['id'] ) ); ?>",
-								"cid": "CLIENT_ID( <?php echo esc_attr( Newspack_Popups_Segmentation::NEWSPACK_SEGMENTATION_CID_NAME ); ?> )"
-							}
-						}
-					},
-					"transport": {
-						"beacon": true,
-						"xhrpost": true,
-						"useBody": true,
-						"image": false
-					}
-				}
+				<?php echo wp_json_encode( $amp_analytics_config ); ?>
 			</script>
 		</amp-analytics>
 		<?php
