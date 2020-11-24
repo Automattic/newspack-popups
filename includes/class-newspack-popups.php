@@ -17,7 +17,7 @@ final class Newspack_Popups {
 
 	const NEWSPACK_POPUP_PREVIEW_QUERY_PARAM = 'newspack_popups_preview_id';
 
-	const LIGHTWEIGHT_API_CONFIG_FILE_PATH = WP_CONTENT_DIR . '/../newspack-popups-config.php';
+	const LIGHTWEIGHT_API_CONFIG_FILE_PATH = WP_CONTENT_DIR . '/newspack-popups-config.php';
 
 	/**
 	 * The single instance of the class.
@@ -43,7 +43,7 @@ final class Newspack_Popups {
 	 * Constructor.
 	 */
 	public function __construct() {
-		add_action( 'init', [ __CLASS__, 'create_lightweight_api_config' ] );
+		add_action( 'admin_init', [ __CLASS__, 'create_lightweight_api_config' ] );
 		add_action( 'admin_notices', [ __CLASS__, 'api_config_missing_notice' ] );
 		add_action( 'init', [ __CLASS__, 'register_cpt' ] );
 		add_action( 'init', [ __CLASS__, 'register_meta' ] );
@@ -453,11 +453,12 @@ final class Newspack_Popups {
 	 * Create the config file for the API, unless it exists.
 	 */
 	public static function create_lightweight_api_config() {
-		if ( ! ( defined( 'ATOMIC_SITE_ID' ) && ATOMIC_SITE_ID ) || file_exists( self::LIGHTWEIGHT_API_CONFIG_FILE_PATH ) ) {
+		// Don't create a config file on Newspack's Atomic platform, or if there is a file already.
+		if ( defined( 'ATOMIC_SITE_ID' ) || file_exists( self::LIGHTWEIGHT_API_CONFIG_FILE_PATH ) ) {
 			return;
 		}
 		global $wpdb;
-		file_put_contents( // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_file_put_contents -- VIP will have to create a config manually
+		$new_config_file = file_put_contents( // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_file_put_contents -- VIP will have to create a config manually
 			self::LIGHTWEIGHT_API_CONFIG_FILE_PATH,
 			'<?php' .
 			// Insert these only if they are defined, but not in the as environment variables.
@@ -467,7 +468,9 @@ final class Newspack_Popups {
 			"\ndefine( 'DB_PREFIX', '" . $wpdb->prefix . "' );" .
 			"\n"
 		);
-		error_log( 'Created the config file: ' . self::LIGHTWEIGHT_API_CONFIG_FILE_PATH ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+		if ( $new_config_file ) {
+			error_log( 'Created the config file: ' . self::LIGHTWEIGHT_API_CONFIG_FILE_PATH ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+		}
 	}
 
 	/**
