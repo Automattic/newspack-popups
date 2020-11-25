@@ -127,7 +127,7 @@ final class Newspack_Popups_Inserter {
 		add_filter( 'the_content', [ $this, 'insert_popups_in_content' ], 1 );
 		add_shortcode( 'newspack-popup', [ $this, 'popup_shortcode' ] );
 		add_action( 'after_header', [ $this, 'insert_popups_after_header' ] ); // This is a Newspack theme hook. When used with other themes, popups won't be inserted on archive pages.
-		add_action( 'wp_head', [ $this, 'insert_popups_amp_access' ] );
+		add_action( 'wp_footer', [ $this, 'insert_popups_amp_access' ] );
 		add_action( 'wp_head', [ $this, 'register_amp_scripts' ] );
 
 		add_filter(
@@ -333,6 +333,8 @@ final class Newspack_Popups_Inserter {
 
 	/**
 	 * The popup shortcode function.
+	 * Primairly, the shortcode is inserted by the plugin, but it
+	 * may also be inserter manually, to display a specific campaign anywhere on the site.
 	 *
 	 * @param array $atts Shortcode attributes.
 	 * @return HTML
@@ -344,6 +346,21 @@ final class Newspack_Popups_Inserter {
 		} elseif ( isset( $atts['id'] ) ) {
 			$found_popup = Newspack_Popups_Model::retrieve_popup_by_id( $atts['id'] );
 		}
+		if (
+			! $found_popup ||
+			// Bail if it's a non-preview popups which should not be displayed.
+			( ! self::should_display( $found_popup, true ) && ! Newspack_Popups::previewed_popup_id() )
+		) {
+			return;
+		}
+		add_filter(
+			'newspack_popups_list_for_amp_access',
+			function ( $popups ) use ( $found_popup ) {
+				$popups[] = $found_popup;
+				return $popups;
+			}
+		);
+		self::enqueue_popup_assets();
 		// Wrapping the inline popup in an aside element prevents the markup from being mangled
 		// if the shortcode is the first block.
 		return '<aside>' . Newspack_Popups_Model::generate_popup( $found_popup ) . '</aside>';
@@ -382,7 +399,7 @@ final class Newspack_Popups_Inserter {
 			return;
 		}
 
-		$popups = self::popups_for_post();
+		$popups = apply_filters( 'newspack_popups_list_for_amp_access', self::popups_for_post() );
 		// "Escape hatch" if there's a need to block adding amp-access for pages that have no campaigns.
 		if ( apply_filters( 'newspack_popups_suppress_insert_amp_access', false, $popups ) ) {
 			return;
@@ -550,9 +567,10 @@ final class Newspack_Popups_Inserter {
 	 * Should Popup be rendered, based on universal conditions.
 	 *
 	 * @param object $popup The popup to assess.
+	 * @param bool   $skip_context_checks Skip checking context, like if the popup is rendered in a post, and if category/tags are matching.
 	 * @return bool Should popup be shown.
 	 */
-	public static function should_display( $popup ) {
+	public static function should_display( $popup, $skip_context_checks = false ) {
 		// Hide non-test mode campaigns for logged-in users.
 		if ( is_user_logged_in() && 'test' !== $popup['options']['frequency'] ) {
 			return false;
@@ -561,8 +579,13 @@ final class Newspack_Popups_Inserter {
 		if ( ! is_user_logged_in() && Newspack_Popups_Settings::is_non_interactive() && ! Newspack_Popups_Model::is_inline( $popup ) ) {
 			return false;
 		}
+		if ( ! self::assess_test_mode( $popup ) ) {
+			return false;
+		}
+		if ( $skip_context_checks ) {
+			return true;
+		}
 		return self::assess_is_post( $popup ) &&
-			self::assess_test_mode( $popup ) &&
 			self::assess_categories_filter( $popup ) &&
 			self::assess_tags_filter( $popup );
 	}
