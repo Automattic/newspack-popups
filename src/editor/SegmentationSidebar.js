@@ -1,5 +1,5 @@
 /**
- * Popup frequency options.
+ * Popup segmentation options.
  */
 
 /**

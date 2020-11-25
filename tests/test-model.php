@@ -34,6 +34,7 @@ class ModelTest extends WP_UnitTestCase {
 				'dismiss_text'            => Newspack_Popups::get_default_dismiss_text(),
 				'dismiss_text_alignment'  => 'center',
 				'frequency'               => 'test',
+				'manual_only'             => false,
 				'overlay_color'           => '#000000',
 				'overlay_opacity'         => '30',
 				'placement'               => 'center',

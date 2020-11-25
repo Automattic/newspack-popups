@@ -55,12 +55,7 @@ const StatusSidebar = ( {
 						'In "Test Mode" logged-in admins will see the campaign every time, and non-admins will never see them.',
 						'newspack-popups'
 					) }
-					onChange={ value => {
-						if ( value ) {
-							return onMetaFieldChange( 'frequency', 'test' );
-						}
-						onMetaFieldChange( 'frequency', 'once' );
-					} }
+					onChange={ value => onMetaFieldChange( 'frequency', value ? 'test' : 'once' ) }
 				/>
 				{ ! isInline && (
 					<ToggleControl

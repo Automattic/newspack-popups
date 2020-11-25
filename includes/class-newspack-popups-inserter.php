@@ -254,7 +254,7 @@ final class Newspack_Popups_Inserter {
 			$pos          += strlen( $block_content );
 			foreach ( $inline_popups as &$inline_popup ) {
 				if ( ! $inline_popup['is_inserted'] && $pos > $inline_popup['precise_position'] ) {
-					$output .= '<!-- wp:shortcode -->[newspack-popup id="' . $inline_popup['id'] . '"]<!-- /wp:shortcode -->';
+					$output .= '<!-- wp:shortcode -->[newspack-popup _is_placed_automatically="1" id="' . $inline_popup['id'] . '"]<!-- /wp:shortcode -->';
 
 					$inline_popup['is_inserted'] = true;
 				}
@@ -265,7 +265,7 @@ final class Newspack_Popups_Inserter {
 		// 3. Insert any remaining inline campaigns at the end.
 		foreach ( $inline_popups as $inline_popup ) {
 			if ( ! $inline_popup['is_inserted'] ) {
-				$output .= '<!-- wp:shortcode -->[newspack-popup id="' . $inline_popup['id'] . '"]<!-- /wp:shortcode -->';
+				$output .= '<!-- wp:shortcode -->[newspack-popup _is_placed_automatically="1" id="' . $inline_popup['id'] . '"]<!-- /wp:shortcode -->';
 
 				$inline_popup['is_inserted'] = true;
 			}
@@ -353,6 +353,23 @@ final class Newspack_Popups_Inserter {
 		) {
 			return;
 		}
+
+		// If the shortcode is placed by the insert_popups_in_content function,
+		// it will have the `_is_placed_automatically` attribute.
+		// In this case, if it's a manual-only campaign, it should not be displayed.
+		if (
+			isset( $atts['_is_placed_automatically'] ) &&
+			$atts['_is_placed_automatically'] &&
+			$found_popup['options']['manual_only']
+		) {
+			return;
+		}
+
+		// Only inline popups can be inserted via the  shortcode.
+		if ( ! Newspack_Popups_Model::is_inline( $found_popup ) ) {
+			return;
+		}
+
 		add_filter(
 			'newspack_popups_list_for_amp_access',
 			function ( $popups ) use ( $found_popup ) {

@@ -12,6 +12,7 @@ import { RangeControl, SelectControl, ToggleControl } from '@wordpress/component
 const Sidebar = ( {
 	display_title,
 	frequency,
+	manual_only,
 	onMetaFieldChange,
 	placement,
 	trigger_scroll_progress,
@@ -32,12 +33,7 @@ const Sidebar = ( {
 			<ToggleControl
 				label={ __( 'Inline Campaign', 'newspack-popups' ) }
 				checked={ isInline }
-				onChange={ value => {
-					if ( value ) {
-						return updatePlacement( 'inline' );
-					}
-					updatePlacement( 'center' );
-				} }
+				onChange={ value => updatePlacement( value ? 'inline' : 'center' ) }
 			/>
 			<ToggleControl
 				label={ __( 'Display Campaign Title', 'newspack-popups' ) }
@@ -88,13 +84,24 @@ const Sidebar = ( {
 				</Fragment>
 			) }
 			{ isInline && (
-				<RangeControl
-					label={ __( 'Approximate Position (in percent)', 'newspack-popups' ) }
-					value={ trigger_scroll_progress }
-					onChange={ value => onMetaFieldChange( 'trigger_scroll_progress', value ) }
-					min={ 0 }
-					max={ 100 }
-				/>
+				<>
+					<RangeControl
+						label={ __( 'Approximate Position (in percent)', 'newspack-popups' ) }
+						value={ trigger_scroll_progress }
+						onChange={ value => onMetaFieldChange( 'trigger_scroll_progress', value ) }
+						min={ 0 }
+						max={ 100 }
+					/>
+					<ToggleControl
+						label={ __( 'Manual only', 'newspack-popups' ) }
+						checked={ manual_only }
+						help={ __(
+							'If set to manual only, campaign will only be shown if inserted using a shortcode. Category and tag filtering will be disregarded.',
+							'newspack-popups'
+						) }
+						onChange={ value => onMetaFieldChange( 'manual_only', value ) }
+					/>
+				</>
 			) }
 		</Fragment>
 	);
