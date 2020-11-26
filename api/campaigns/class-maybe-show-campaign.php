@@ -200,6 +200,16 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			if ( $campaign_segment->is_not_donor && $is_donor ) {
 				$should_display = false;
 			}
+			if ( isset( $campaign_segment->referrers ) && $campaign_segment->referrers && ! empty( $campaign_segment->referrers ) && isset( $_REQUEST['ref'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				$referer_domain   = parse_url( $_REQUEST['ref'], PHP_URL_HOST ); // phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url, WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+				$referrer_matches = in_array(
+					$referer_domain,
+					explode( ',', $campaign_segment->referrers )
+				);
+				if ( ! $referrer_matches ) {
+					$should_display = false;
+				}
+			}
 		}
 
 		if ( ! empty( array_diff( $init_campaign_data, $campaign_data ) ) ) {

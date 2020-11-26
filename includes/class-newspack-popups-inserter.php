@@ -422,6 +422,7 @@ final class Newspack_Popups_Inserter {
 			},
 			(object) []
 		);
+		$popups_access_provider['authorization'] .= '&ref=DOCUMENT_REFERRER';
 		$popups_access_provider['authorization'] .= '&popups=' . wp_json_encode( $popups_configs );
 		$popups_access_provider['authorization'] .= '&settings=' . wp_json_encode( $settings );
 		$popups_access_provider['authorization'] .= '&visit=' . wp_json_encode(
