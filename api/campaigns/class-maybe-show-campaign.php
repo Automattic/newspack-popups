@@ -220,6 +220,26 @@ class Maybe_Show_Campaign extends Lightweight_API {
 				// Save suppression for this campaign.
 				$campaign_data['suppress_forever'] = true;
 			}
+			if ( isset( $campaign_segment->favorite_categories ) && count( $campaign_segment->favorite_categories ) > 0 ) {
+				$categories_read_counts = array_reduce(
+					$client_data['posts_read'],
+					function ( $read_counts, $read_post ) {
+						foreach ( explode( ',', $read_post['category_ids'] ) as $cat_id ) {
+							if ( isset( $read_counts[ $cat_id ] ) ) {
+								$read_counts[ $cat_id ]++;
+							} else {
+								$read_counts[ $cat_id ] = 1;
+							}
+						}
+						return $read_counts;
+					}
+				);
+				arsort( $categories_read_counts );
+				$favorite_category_matches_segment = in_array( key( $categories_read_counts ), $campaign_segment->favorite_categories );
+				if ( ! $favorite_category_matches_segment ) {
+					$should_display = false;
+				}
+			}
 		}
 
 		if ( ! $view_as_spec && ! empty( array_diff( $init_campaign_data, $campaign_data ) ) ) {
