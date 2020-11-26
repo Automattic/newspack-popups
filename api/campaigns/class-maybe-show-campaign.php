@@ -11,6 +11,7 @@
 require_once dirname( __FILE__ ) . '/../classes/class-lightweight-api.php';
 
 require_once dirname( __FILE__ ) . '/../segmentation/class-segmentation-report.php';
+require_once dirname( __FILE__ ) . '/segmentation-utils.php';
 
 /**
  * GET endpoint to determine if campaign is shown or not.
@@ -171,34 +172,19 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		// Handle segmentation.
 		$campaign_segment = isset( $settings->all_segments->{$campaign->s} ) ? $settings->all_segments->{$campaign->s} : false;
 		if ( ! empty( $campaign_segment ) ) {
-			$posts_read_count = count( $client_data['posts_read'] );
-			// If coming from email, assume it's a subscriber.
-			$is_subscriber = ! empty( $client_data['email_subscriptions'] ) || $has_utm_medium_in_url;
-			$is_donor      = ! empty( $client_data['donations'] );
+			$should_display = newspack_segmentation_should_display_campaign(
+				$campaign_segment,
+				$client_data,
+				$has_utm_medium_in_url
+			);
+
 			if (
-				$campaign_segment->min_posts > 0 && $campaign_segment->min_posts > $posts_read_count
+				$campaign_segment->is_not_subscribed &&
+				$has_utm_medium_in_url &&
+				! empty( $client_data['email_subscriptions'] )
 			) {
-				$should_display = false;
-			}
-			if (
-				$campaign_segment->max_posts > 0 && $campaign_segment->max_posts < $posts_read_count
-			) {
-				$should_display = false;
-			}
-			if ( $campaign_segment->is_subscribed && ! $is_subscriber ) {
-				$should_display = false;
-			}
-			if ( $campaign_segment->is_not_subscribed && $is_subscriber ) {
-				$should_display = false;
-				if ( $has_utm_medium_in_url ) { // Save suppression for this campaign.
-					$campaign_data['suppress_forever'] = true;
-				}
-			}
-			if ( $campaign_segment->is_donor && ! $is_donor ) {
-				$should_display = false;
-			}
-			if ( $campaign_segment->is_not_donor && $is_donor ) {
-				$should_display = false;
+				// Save suppression for this campaign.
+				$campaign_data['suppress_forever'] = true;
 			}
 		}
 
