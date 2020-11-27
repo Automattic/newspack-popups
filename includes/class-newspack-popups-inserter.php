@@ -130,6 +130,9 @@ final class Newspack_Popups_Inserter {
 		add_action( 'wp_head', [ $this, 'insert_popups_amp_access' ] );
 		add_action( 'wp_head', [ $this, 'register_amp_scripts' ] );
 
+		// Always enqueue scripts, since this plugin's scripts are handling pageview sending via GTAG.
+		add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
+
 		add_filter(
 			'newspack_newsletters_assess_has_disabled_popups',
 			function () {
@@ -276,9 +279,6 @@ final class Newspack_Popups_Inserter {
 			$output = '<!-- wp:html -->' . Newspack_Popups_Model::generate_popup( $overlay_popup ) . '<!-- /wp:html -->' . $output;
 		}
 
-		if ( $enqueue_assets ) {
-			self::enqueue_popup_assets();
-		}
 		self::$the_content_has_rendered = true;
 		return $output;
 	}
@@ -298,14 +298,13 @@ final class Newspack_Popups_Inserter {
 			foreach ( $popups as $popup ) {
 				echo Newspack_Popups_Model::generate_popup( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			}
-			self::enqueue_popup_assets();
 		}
 	}
 
 	/**
 	 * Enqueue the assets needed to display the popups.
 	 */
-	public static function enqueue_popup_assets() {
+	public static function enqueue_scripts() {
 		if ( defined( 'IS_TEST_ENV' ) && IS_TEST_ENV ) {
 			return;
 		}

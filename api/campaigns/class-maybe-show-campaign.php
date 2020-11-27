@@ -11,6 +11,7 @@
 require_once dirname( __FILE__ ) . '/../classes/class-lightweight-api.php';
 
 require_once dirname( __FILE__ ) . '/../segmentation/class-segmentation-report.php';
+require_once dirname( __FILE__ ) . '/class-campaign-data-utils.php';
 
 /**
  * GET endpoint to determine if campaign is shown or not.
@@ -121,7 +122,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 
 		$has_newsletter_prompt = $campaign->n;
 		// Suppressing based on UTM Medium parameter in the URL.
-		$has_utm_medium_in_url = stripos( $referer_url, 'utm_medium=email' );
+		$has_utm_medium_in_url = Campaign_Data_Utils::is_url_from_email( $referer_url );
 
 		// Handle referer-based conditions.
 		if ( ! empty( $referer_url ) ) {
@@ -172,9 +173,8 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		$campaign_segment = isset( $settings->all_segments->{$campaign->s} ) ? $settings->all_segments->{$campaign->s} : false;
 		if ( ! empty( $campaign_segment ) ) {
 			$posts_read_count = count( $client_data['posts_read'] );
-			// If coming from email, assume it's a subscriber.
-			$is_subscriber = ! empty( $client_data['email_subscriptions'] ) || $has_utm_medium_in_url;
-			$is_donor      = ! empty( $client_data['donations'] );
+			$is_subscriber    = Campaign_Data_Utils::is_subscriber( $client_data, $referer_url );
+			$is_donor         = Campaign_Data_Utils::is_donor( $client_data );
 			if (
 				$campaign_segment->min_posts > 0 && $campaign_segment->min_posts > $posts_read_count
 			) {

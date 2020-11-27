@@ -36,6 +36,13 @@ final class Newspack_Popups_Segmentation {
 	const SEGMENTS_OPTION_NAME = 'newspack_popups_segments';
 
 	/**
+	 * Names of custom dimensions options.
+	 */
+	const CUSTOM_DIMENSIONS_OPTION_NAME_READER_FREQUENCY = 'newspack_popups_cd_reader_frequency';
+	const CUSTOM_DIMENSIONS_OPTION_NAME_IS_SUBSCRIBER    = 'newspack_popups_cd_is_subscriber';
+	const CUSTOM_DIMENSIONS_OPTION_NAME_IS_DONOR         = 'newspack_popups_cd_is_donor';
+
+	/**
 	 * Main Newspack Segmentation Plugin Instance.
 	 * Ensures only one instance of Newspack Segmentation Plugin Instance is loaded or can be loaded.
 	 *
@@ -54,6 +61,102 @@ final class Newspack_Popups_Segmentation {
 	public function __construct() {
 		add_action( 'init', [ __CLASS__, 'create_database_table' ] );
 		add_action( 'wp_footer', [ __CLASS__, 'insert_amp_analytics' ], 20 );
+
+		add_filter( 'newspack_custom_dimensions', [ __CLASS__, 'register_custom_dimensions' ] );
+
+		// Sending pageviews with segmentation-related custom dimensions.
+		// 1. Disable pageview sending from Site Kit's GTAG implementation. The custom events sent using Site Kit's
+		// GTAG will not contain the segmentation-related custom dimensions.
+		add_filter( 'googlesitekit_gtag_opt', [ __CLASS__, 'remove_pageview_reporting' ] );
+		add_filter( 'googlesitekit_amp_gtag_opt', [ __CLASS__, 'remove_pageview_reporting_amp' ] );
+		// 2. Add an amp-analytics tag which will send the PV with custom dimensions attached.
+		add_action( 'wp_footer', [ __CLASS__, 'insert_gtag_amp_analytics' ] );
+	}
+
+	/**
+	 * Remove pageview reporting from non-AMP Analytics GTAG config.
+	 *
+	 * @param array $gtag_amp GTAG Analytics config.
+	 */
+	public static function remove_pageview_reporting( $gtag_amp ) {
+		$gtag_opt['send_page_view'] = false;
+		return $gtag_opt;
+	}
+
+	/**
+	 * Remove pageview reporting from AMP Analytics GTAG config.
+	 *
+	 * @param array $gtag_opt AMP Analytics GTAG config.
+	 */
+	public static function remove_pageview_reporting_amp( $gtag_opt ) {
+		$tracking_id = $gtag_opt['vars']['gtag_id'];
+		$gtag_opt['vars']['config'][ $tracking_id ]['send_page_view'] = false;
+		return $gtag_opt;
+	}
+
+	/**
+	 * Add custom custom dimensions to Newspack Plugin's Analytics Wizard.
+	 *
+	 * @param array $default_dimensions Default custom dimensions.
+	 */
+	public static function register_custom_dimensions( $default_dimensions ) {
+		$default_dimensions = array_merge(
+			$default_dimensions,
+			[
+				[
+					'role'   => self::CUSTOM_DIMENSIONS_OPTION_NAME_READER_FREQUENCY,
+					'option' => [
+						'value' => self::CUSTOM_DIMENSIONS_OPTION_NAME_READER_FREQUENCY,
+						'label' => __( 'Reader frequency', 'newspack' ),
+					],
+				],
+				[
+					'role'   => self::CUSTOM_DIMENSIONS_OPTION_NAME_IS_SUBSCRIBER,
+					'option' => [
+						'value' => self::CUSTOM_DIMENSIONS_OPTION_NAME_IS_SUBSCRIBER,
+						'label' => __( 'Is a subcriber', 'newspack' ),
+					],
+				],
+				[
+					'role'   => self::CUSTOM_DIMENSIONS_OPTION_NAME_IS_DONOR,
+					'option' => [
+						'value' => self::CUSTOM_DIMENSIONS_OPTION_NAME_IS_DONOR,
+						'label' => __( 'Is a donor', 'newspack' ),
+					],
+				],
+			]
+		);
+		return $default_dimensions;
+	}
+
+	/**
+	 * Get GA property ID from Site Kit's options.
+	 */
+	public static function get_ga_property_id() {
+		$ga_settings = get_option( 'googlesitekit_analytics_settings' );
+		if ( $ga_settings && isset( $ga_settings['propertyID'] ) ) {
+			return $ga_settings['propertyID'];
+		}
+	}
+
+	/**
+	 * Inset GTAG amp-analytics with a remote config, which will insert segmentation-related custom dimensions.
+	 */
+	public static function insert_gtag_amp_analytics() {
+		$remote_config_url = add_query_arg(
+			[
+				'client_id' => 'CLIENT_ID(' . esc_attr( self::NEWSPACK_SEGMENTATION_CID_NAME ) . ')',
+				'post_id'   => esc_attr( get_the_ID() ),
+			],
+			get_rest_url( null, 'newspack-popups/v1/analytics-config' )
+		);
+
+		?>
+			<amp-analytics
+				type="gtag"
+				config="<?php echo esc_attr( $remote_config_url ); ?>"
+			></amp-analytics>
+		<?php
 	}
 
 	/**
