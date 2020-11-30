@@ -333,8 +333,8 @@ final class Newspack_Popups_Inserter {
 
 	/**
 	 * The popup shortcode function.
-	 * Primairly, the shortcode is inserted by the plugin, but it
-	 * may also be inserter manually, to display a specific campaign anywhere on the site.
+	 * Primarily, the shortcode is inserted by the plugin, but it
+	 * may also be inserted manually, to display a specific campaign anywhere on the site.
 	 *
 	 * @param array $atts Shortcode attributes.
 	 * @return HTML
@@ -348,7 +348,7 @@ final class Newspack_Popups_Inserter {
 		}
 		if (
 			! $found_popup ||
-			// Bail if it's a non-preview popups which should not be displayed.
+			// Bail if it's a non-preview campaign which should not be displayed.
 			( ! self::should_display( $found_popup, true ) && ! Newspack_Popups::previewed_popup_id() )
 		) {
 			return;
