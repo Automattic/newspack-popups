@@ -271,6 +271,39 @@ final class Newspack_Popups_Segmentation {
 	}
 
 	/**
+	 * Get segment reach, based on recorded client data.
+	 *
+	 * @param object $segment_config Segment configuration.
+	 * @return object Total clients amount and the amount covered by the segment.
+	 */
+	public static function get_segment_reach( $segment_config ) {
+		require_once dirname( __FILE__ ) . '/../api/campaigns/segmentation-utils.php';
+		require_once dirname( __FILE__ ) . '/../api/classes/class-lightweight-api.php';
+
+		$all_client_data = wp_cache_get( 'newspack_popups_all_clients_data', 'newspack-popups' );
+		if ( false === $all_client_data ) {
+			$api             = new Lightweight_API();
+			$all_client_data = $api->get_all_clients_data();
+			wp_cache_set( 'newspack_popups_all_clients_data', $all_client_data, 'newspack-popups' );
+		}
+
+		$client_in_segment = array_filter(
+			$all_client_data,
+			function ( $client_data ) use ( $segment_config ) {
+				return newspack_segmentation_should_display_campaign(
+					$segment_config,
+					$client_data
+				);
+			}
+		);
+
+		return [
+			'total'      => count( $all_client_data ),
+			'in_segment' => count( $client_in_segment ),
+		];
+	}
+
+	/**
 	 * Only last month's worth of posts-read data is needed for segmentation features.
 	 */
 	public static function prune_data() {
