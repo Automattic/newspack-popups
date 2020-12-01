@@ -110,10 +110,12 @@ final class Newspack_Popups_API {
 		$client_data = $api->get_client_data( $client_id );
 
 		foreach ( $custom_dimensions as $custom_dimension ) {
+			// Strip the `ga:` prefix from gaID.
 			$dimension_id = substr( $custom_dimension['gaID'], 3 );
 			switch ( $custom_dimension['role'] ) {
 				case Newspack_Popups_Segmentation::CUSTOM_DIMENSIONS_OPTION_NAME_READER_FREQUENCY:
-					$read_count      = count( $client_data['posts_read'] );
+					$read_count = count( $client_data['posts_read'] );
+					// Tiers mimick NCI's – https://news-consumer-insights.appspot.com.
 					$read_count_tier = 'casual';
 					if ( $read_count > 1 && $read_count <= 14 ) {
 						$read_count_tier = 'loyal';
