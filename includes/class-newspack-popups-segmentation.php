@@ -71,6 +71,11 @@ final class Newspack_Popups_Segmentation {
 		add_filter( 'googlesitekit_amp_gtag_opt', [ __CLASS__, 'remove_pageview_reporting_amp' ] );
 		// 2. Add an amp-analytics tag which will send the PV with custom dimensions attached.
 		add_action( 'wp_footer', [ __CLASS__, 'insert_gtag_amp_analytics' ] );
+
+		add_action( 'newspack_popups_segmentation_data_prune', [ __CLASS__, 'prune_data' ] );
+		if ( ! wp_next_scheduled( 'newspack_popups_segmentation_data_prune' ) ) {
+			wp_schedule_event( time(), 'daily', 'newspack_popups_segmentation_data_prune' );
+		}
 	}
 
 	/**
@@ -366,6 +371,49 @@ final class Newspack_Popups_Segmentation {
 				]
 			);
 		}
+	}
+
+	/**
+	 * Get segment reach, based on recorded client data.
+	 *
+	 * @param object $segment_config Segment configuration.
+	 * @return object Total clients amount and the amount covered by the segment.
+	 */
+	public static function get_segment_reach( $segment_config ) {
+		require_once dirname( __FILE__ ) . '/../api/campaigns/segmentation-utils.php';
+		require_once dirname( __FILE__ ) . '/../api/classes/class-lightweight-api.php';
+
+		$all_client_data = wp_cache_get( 'newspack_popups_all_clients_data', 'newspack-popups' );
+		if ( false === $all_client_data ) {
+			$api             = new Lightweight_API();
+			$all_client_data = $api->get_all_clients_data();
+			wp_cache_set( 'newspack_popups_all_clients_data', $all_client_data, 'newspack-popups' );
+		}
+
+		$client_in_segment = array_filter(
+			$all_client_data,
+			function ( $client_data ) use ( $segment_config ) {
+				return newspack_segmentation_should_display_campaign(
+					$segment_config,
+					$client_data
+				);
+			}
+		);
+
+		return [
+			'total'      => count( $all_client_data ),
+			'in_segment' => count( $client_in_segment ),
+		];
+	}
+
+	/**
+	 * Only last month's worth of posts-read data is needed for segmentation features.
+	 */
+	public static function prune_data() {
+		global $wpdb;
+		$events_table_name         = Segmentation::get_events_table_name();
+		$removed_rows_count_events = $wpdb->query( $wpdb->prepare( "DELETE FROM $events_table_name WHERE type = %s AND created_at < now() - interval 30 DAY", 'post_read' ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
+		error_log( 'Newspack Campaigns: Data pruning – removed ' . $removed_rows_count_events . ' rows from ' . $events_table_name . ' table.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 	}
 }
 Newspack_Popups_Segmentation::instance();
