@@ -1,7 +1,12 @@
 /**
  * WordPress dependencies
  */
-import { getQueryArg, removeQueryArgs } from '@wordpress/url';
+import { getQueryArg, removeQueryArgs, getQueryString } from '@wordpress/url';
+
+/**
+ * External dependencies
+ */
+import { parse, stringify } from 'qs';
 
 export const values = object => Object.keys( object ).map( key => object[ key ] );
 
@@ -38,6 +43,21 @@ export const substituteDynamicValue = value => {
 		value = getClientIDValue() || '';
 	}
 	return value;
+};
+
+/**
+ * Replace dynamic values in a URL.
+ *
+ * @param  {string} url A URL with dynamic values.
+ * @return {string} URL with the values replaced.
+ */
+export const parseDynamicURL = url => {
+	const parsed = parse( getQueryString( url ) );
+	Object.keys( parsed ).forEach( key => {
+		parsed[ key ] = substituteDynamicValue( parsed[ key ] );
+	} );
+	const withoutQuery = url.substring( 0, url.indexOf( '?' ) );
+	return `${ withoutQuery }?${ stringify( parsed ) }`;
 };
 
 /**
