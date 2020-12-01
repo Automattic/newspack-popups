@@ -380,7 +380,7 @@ final class Newspack_Popups_Segmentation {
 	 * @return object Total clients amount and the amount covered by the segment.
 	 */
 	public static function get_segment_reach( $segment_config ) {
-		require_once dirname( __FILE__ ) . '/../api/campaigns/segmentation-utils.php';
+		require_once dirname( __FILE__ ) . '/../api/campaigns/class-campaign-data-utils.php';
 		require_once dirname( __FILE__ ) . '/../api/classes/class-lightweight-api.php';
 
 		$all_client_data = wp_cache_get( 'newspack_popups_all_clients_data', 'newspack-popups' );
@@ -393,7 +393,7 @@ final class Newspack_Popups_Segmentation {
 		$client_in_segment = array_filter(
 			$all_client_data,
 			function ( $client_data ) use ( $segment_config ) {
-				return newspack_segmentation_should_display_campaign(
+				return Campaign_Data_Utils::should_display_campaign(
 					$segment_config,
 					$client_data
 				);

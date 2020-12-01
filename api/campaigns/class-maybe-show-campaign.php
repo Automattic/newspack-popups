@@ -175,7 +175,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			$should_display = Campaign_Data_Utils::should_display_campaign(
 				$campaign_segment,
 				$client_data,
-				$has_utm_medium_in_url
+				$referer_url
 			);
 
 			if (

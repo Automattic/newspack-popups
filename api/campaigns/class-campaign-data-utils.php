@@ -43,10 +43,10 @@ class Campaign_Data_Utils {
 	 *
 	 * @param object $campaign_segment Segment data.
 	 * @param object $client_data Client data.
-	 * @param bool   $has_utm_medium_in_url If there is UTM medium param in the URL.
+	 * @param bool   $referer_url Referrer URL.
 	 * @return bool Whether the campaign should be shown.
 	 */
-	public static function should_display_campaign( $campaign_segment, $client_data, $has_utm_medium_in_url = false ) {
+	public static function should_display_campaign( $campaign_segment, $client_data, $referer_url = '' ) {
 		$should_display   = true;
 		$posts_read_count = count( $client_data['posts_read'] );
 		$is_subscriber    = self::is_subscriber( $client_data, $referer_url );
