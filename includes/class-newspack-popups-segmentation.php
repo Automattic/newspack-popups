@@ -54,6 +54,11 @@ final class Newspack_Popups_Segmentation {
 	public function __construct() {
 		add_action( 'init', [ __CLASS__, 'create_database_table' ] );
 		add_action( 'wp_footer', [ __CLASS__, 'insert_amp_analytics' ], 20 );
+
+		add_action( 'newspack_popups_segmentation_data_prune', [ __CLASS__, 'prune_data' ] );
+		if ( ! wp_next_scheduled( 'newspack_popups_segmentation_data_prune' ) ) {
+			wp_schedule_event( time(), 'daily', 'newspack_popups_segmentation_data_prune' );
+		}
 	}
 
 	/**
@@ -296,6 +301,16 @@ final class Newspack_Popups_Segmentation {
 			'total'      => count( $all_client_data ),
 			'in_segment' => count( $client_in_segment ),
 		];
+	}
+
+	/**
+	 * Only last month's worth of posts-read data is needed for segmentation features.
+	 */
+	public static function prune_data() {
+		global $wpdb;
+		$events_table_name         = Segmentation::get_events_table_name();
+		$removed_rows_count_events = $wpdb->query( $wpdb->prepare( "DELETE FROM $events_table_name WHERE type = %s AND created_at < now() - interval 30 DAY", 'post_read' ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
+		error_log( 'Newspack Campaigns: Data pruning – removed ' . $removed_rows_count_events . ' rows from ' . $events_table_name . ' table.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 	}
 }
 Newspack_Popups_Segmentation::instance();

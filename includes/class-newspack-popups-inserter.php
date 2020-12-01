@@ -564,7 +564,8 @@ final class Newspack_Popups_Inserter {
 		return self::assess_is_post( $popup ) &&
 			self::assess_test_mode( $popup ) &&
 			self::assess_categories_filter( $popup ) &&
-			self::assess_tags_filter( $popup );
+			self::assess_tags_filter( $popup ) &&
+			'never' !== $popup['options']['frequency'];
 	}
 }
 $newspack_popups_inserter = new Newspack_Popups_Inserter();
