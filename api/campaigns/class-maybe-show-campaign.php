@@ -11,7 +11,7 @@
 require_once dirname( __FILE__ ) . '/../classes/class-lightweight-api.php';
 
 require_once dirname( __FILE__ ) . '/../segmentation/class-segmentation-report.php';
-require_once dirname( __FILE__ ) . '/segmentation-utils.php';
+require_once dirname( __FILE__ ) . '/class-campaign-data-utils.php';
 
 /**
  * GET endpoint to determine if campaign is shown or not.
@@ -122,7 +122,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 
 		$has_newsletter_prompt = $campaign->n;
 		// Suppressing based on UTM Medium parameter in the URL.
-		$has_utm_medium_in_url = stripos( $referer_url, 'utm_medium=email' );
+		$has_utm_medium_in_url = Campaign_Data_Utils::is_url_from_email( $referer_url );
 
 		// Handle referer-based conditions.
 		if ( ! empty( $referer_url ) ) {
@@ -172,10 +172,10 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		// Handle segmentation.
 		$campaign_segment = isset( $settings->all_segments->{$campaign->s} ) ? $settings->all_segments->{$campaign->s} : false;
 		if ( ! empty( $campaign_segment ) ) {
-			$should_display = newspack_segmentation_should_display_campaign(
+			$should_display = Campaign_Data_Utils::should_display_campaign(
 				$campaign_segment,
 				$client_data,
-				$has_utm_medium_in_url
+				$referer_url
 			);
 
 			if (
