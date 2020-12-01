@@ -127,7 +127,7 @@ final class Newspack_Popups_Inserter {
 		add_filter( 'the_content', [ $this, 'insert_popups_in_content' ], 1 );
 		add_shortcode( 'newspack-popup', [ $this, 'popup_shortcode' ] );
 		add_action( 'after_header', [ $this, 'insert_popups_after_header' ] ); // This is a Newspack theme hook. When used with other themes, popups won't be inserted on archive pages.
-		add_action( 'wp_head', [ $this, 'insert_popups_amp_access' ] );
+		add_action( 'wp_footer', [ $this, 'insert_popups_amp_access' ] );
 		add_action( 'wp_head', [ $this, 'register_amp_scripts' ] );
 
 		add_filter(
