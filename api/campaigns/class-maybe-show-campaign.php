@@ -204,7 +204,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 				$referer_domain   = parse_url( $_REQUEST['ref'], PHP_URL_HOST ); // phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url, WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 				$referrer_matches = in_array(
 					$referer_domain,
-					explode( ',', $campaign_segment->referrers )
+					array_map( 'trim', explode( ',', $campaign_segment->referrers ) )
 				);
 				if ( ! $referrer_matches ) {
 					$should_display = false;
