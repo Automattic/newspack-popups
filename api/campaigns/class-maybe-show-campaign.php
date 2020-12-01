@@ -186,6 +186,18 @@ class Maybe_Show_Campaign extends Lightweight_API {
 				// Save suppression for this campaign.
 				$campaign_data['suppress_forever'] = true;
 			}
+			if ( isset( $campaign_segment->referrers ) && $campaign_segment->referrers && ! empty( $campaign_segment->referrers ) && isset( $_REQUEST['ref'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				$referer_domain = parse_url( $_REQUEST['ref'], PHP_URL_HOST ); // phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url, WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+				// Handle the 'www' prefix – assume `www.example.com` and `example.com` referrers are the same.
+				$referer_domain_alternative = strpos( $referer_domain, 'www.' ) === 0 ? substr( $referer_domain, 4 ) : "www.$referer_domain";
+				$referrer_matches           = array_intersect(
+					[ $referer_domain, $referer_domain_alternative ],
+					array_map( 'trim', explode( ',', $campaign_segment->referrers ) )
+				);
+				if ( empty( $referrer_matches ) ) {
+					$should_display = false;
+				}
+			}
 		}
 
 		if ( ! empty( array_diff( $init_campaign_data, $campaign_data ) ) ) {
