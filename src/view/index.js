@@ -1,10 +1,7 @@
-/* global gtag */
-
 /**
  * External dependencies
  */
 import 'intersection-observer';
-import 'whatwg-fetch';
 
 /**
  * WordPress dependencies
@@ -24,19 +21,12 @@ import {
 	getCookieValueFromLinker,
 	getClientIDValue,
 	waitUntil,
-	parseDynamicURL,
 } from './utils';
 
 const getAnalyticsConfigs = () =>
-	[ ...document.querySelectorAll( 'amp-analytics' ) ].map( ampAnalyticsElement => ( {
-		type: ( ampAnalyticsElement.getAttribute( 'type' ) || '' ).trim(),
-		config: ( ampAnalyticsElement.getAttribute( 'config' ) || '' ).trim(),
-		...( ampAnalyticsElement.children.length
-			? {
-					...JSON.parse( ampAnalyticsElement.children[ 0 ].innerText ),
-			  }
-			: {} ),
-	} ) );
+	[ ...document.querySelectorAll( 'amp-analytics' ) ].map( ampAnalyticsElement =>
+		JSON.parse( ampAnalyticsElement.children[ 0 ].innerText )
+	);
 
 const manageAnalyticsLinkers = () => {
 	getAnalyticsConfigs().forEach( config => {
@@ -53,19 +43,7 @@ const manageAnalyticsLinkers = () => {
 };
 
 const manageAnalyticsEvents = () => {
-	getAnalyticsConfigs().forEach( ( { type, config, requests, triggers } ) => {
-		/**
-		 * Fetch remote GTAG config and trigger GTAG reporting using it.
-		 */
-		if ( type === 'gtag' && config ) {
-			fetch( parseDynamicURL( config ) )
-				.then( response => response.json() )
-				.then( remoteConfig => {
-					const gaId = remoteConfig.vars.gtag_id;
-					gtag( 'config', gaId, remoteConfig.vars.config[ gaId ] );
-				} );
-		}
-
+	getAnalyticsConfigs().forEach( ( { requests, triggers } ) => {
 		if ( triggers && requests ) {
 			const triggerSpecs = values( triggers );
 			const visibilityHandlers = [];

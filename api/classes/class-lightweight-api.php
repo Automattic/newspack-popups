@@ -241,24 +241,6 @@ class Lightweight_API {
 	}
 
 	/**
-	 * Retrieve all clients' data.
-	 *
-	 * @return array All clients' data.
-	 */
-	public function get_all_clients_data() {
-		global $wpdb;
-		$events_table_name   = Segmentation::get_events_table_name();
-		$all_client_ids_rows = $wpdb->get_results( "SELECT DISTINCT client_id FROM $events_table_name" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		$api                 = new Lightweight_API();
-		return array_map(
-			function ( $row ) use ( $api ) {
-				return $api->get_client_data( $row->client_id, true );
-			},
-			$all_client_ids_rows
-		);
-	}
-
-	/**
 	 * Save client data.
 	 *
 	 * @param string $client_id Client ID.
