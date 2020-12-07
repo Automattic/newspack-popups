@@ -258,7 +258,7 @@ final class Newspack_Popups_Segmentation {
 
 			$sql = "CREATE TABLE $events_table_name (
 				id bigint(20) NOT NULL AUTO_INCREMENT,
-				created_at date NOT NULL,
+				created_at datetime NOT NULL,
 				-- type of event
 				type varchar(20) NOT NULL,
 				-- Unique id of a device/browser pair
@@ -274,6 +274,8 @@ final class Newspack_Popups_Segmentation {
 
 			require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 			dbDelta( $sql ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.dbDelta_dbdelta
+		} elseif ( 'date' === $wpdb->get_var( $wpdb->prepare( "SHOW COLUMNS FROM {$events_table_name} LIKE %s", 'created_at' ), 1 ) ) { // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			$wpdb->query( "ALTER TABLE {$events_table_name} CHANGE `created_at` `created_at` DATETIME NOT NULL" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		}
 	}
 
