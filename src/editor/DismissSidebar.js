@@ -6,9 +6,6 @@
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { createHigherOrderComponent } from '@wordpress/compose';
-import { useSelect } from '@wordpress/data';
-import { addFilter } from '@wordpress/hooks';
 import { Fragment } from '@wordpress/element';
 import { SelectControl, TextControl } from '@wordpress/components';
 
