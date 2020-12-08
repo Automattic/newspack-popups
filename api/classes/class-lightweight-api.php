@@ -137,7 +137,7 @@ class Lightweight_API {
 			return null;
 		} elseif ( false === $value ) {
 			$this->debug['read_query_count'] += 1;
-			$value = $wpdb->get_var( $wpdb->prepare( "SELECT option_value FROM $wpdb->options WHERE option_name = %s LIMIT 1", $name ) ); // phpcs:ignore
+			$value                            = $this->get_option( $name );
 			if ( $value ) {
 				wp_cache_set( $name, $value, 'newspack-popups' );
 			} else {
@@ -153,7 +153,7 @@ class Lightweight_API {
 	/**
 	 * Upsert transient.
 	 *
-	 * @param string $name THe transient's name.
+	 * @param string $name The transient's name.
 	 * @param string $value THe transient's value.
 	 */
 	public function set_transient( $name, $value ) {
@@ -308,5 +308,15 @@ class Lightweight_API {
 			return $_GET; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended
 		}
 		return $payload;
+	}
+
+	/**
+	 * Get option.
+	 *
+	 * @param string $name Option name.
+	 */
+	public function get_option( $name ) {
+		global $wpdb;
+		return $wpdb->get_var( $wpdb->prepare( "SELECT option_value FROM $wpdb->options WHERE option_name = %s LIMIT 1", $name ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 }

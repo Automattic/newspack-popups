@@ -58,7 +58,7 @@ class SegmentationTest extends WP_UnitTestCase {
 			[
 				'post_read',
 				self::$post_read_payload['clientId'],
-				gmdate( 'Y-m-d', time() ),
+				gmdate( 'Y-m-d H:i:s', time() ),
 				self::$post_read_payload['post_id'],
 				self::$post_read_payload['categories'],
 			]
