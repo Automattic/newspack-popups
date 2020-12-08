@@ -1,3 +1,15 @@
+# [1.20.0](https://github.com/Automattic/newspack-popups/compare/v1.19.0...v1.20.0) (2020-12-08)
+
+
+### Bug Fixes
+
+* do create config file on the atomic platform ([14120a8](https://github.com/Automattic/newspack-popups/commit/14120a8d677dea5912cc0a6224d0de5f623aae89))
+
+
+### Features
+
+* move custom GA config endpoint to lightweight API ([326fb10](https://github.com/Automattic/newspack-popups/commit/326fb103d0eb9f05321c5598eac47ced378dcc34))
+
 # [1.19.0](https://github.com/Automattic/newspack-popups/compare/v1.18.0...v1.19.0) (2020-12-02)
 
 
