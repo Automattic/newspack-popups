@@ -36,13 +36,6 @@ final class Newspack_Popups_Segmentation {
 	const SEGMENTS_OPTION_NAME = 'newspack_popups_segments';
 
 	/**
-	 * Names of custom dimensions options.
-	 */
-	const CUSTOM_DIMENSIONS_OPTION_NAME_READER_FREQUENCY = 'newspack_popups_cd_reader_frequency';
-	const CUSTOM_DIMENSIONS_OPTION_NAME_IS_SUBSCRIBER    = 'newspack_popups_cd_is_subscriber';
-	const CUSTOM_DIMENSIONS_OPTION_NAME_IS_DONOR         = 'newspack_popups_cd_is_donor';
-
-	/**
 	 * Main Newspack Segmentation Plugin Instance.
 	 * Ensures only one instance of Newspack Segmentation Plugin Instance is loaded or can be loaded.
 	 *
@@ -109,23 +102,23 @@ final class Newspack_Popups_Segmentation {
 			$default_dimensions,
 			[
 				[
-					'role'   => self::CUSTOM_DIMENSIONS_OPTION_NAME_READER_FREQUENCY,
+					'role'   => Segmentation::CUSTOM_DIMENSIONS_OPTION_NAME_READER_FREQUENCY,
 					'option' => [
-						'value' => self::CUSTOM_DIMENSIONS_OPTION_NAME_READER_FREQUENCY,
+						'value' => Segmentation::CUSTOM_DIMENSIONS_OPTION_NAME_READER_FREQUENCY,
 						'label' => __( 'Reader frequency', 'newspack' ),
 					],
 				],
 				[
-					'role'   => self::CUSTOM_DIMENSIONS_OPTION_NAME_IS_SUBSCRIBER,
+					'role'   => Segmentation::CUSTOM_DIMENSIONS_OPTION_NAME_IS_SUBSCRIBER,
 					'option' => [
-						'value' => self::CUSTOM_DIMENSIONS_OPTION_NAME_IS_SUBSCRIBER,
+						'value' => Segmentation::CUSTOM_DIMENSIONS_OPTION_NAME_IS_SUBSCRIBER,
 						'label' => __( 'Is a subcriber', 'newspack' ),
 					],
 				],
 				[
-					'role'   => self::CUSTOM_DIMENSIONS_OPTION_NAME_IS_DONOR,
+					'role'   => Segmentation::CUSTOM_DIMENSIONS_OPTION_NAME_IS_DONOR,
 					'option' => [
-						'value' => self::CUSTOM_DIMENSIONS_OPTION_NAME_IS_DONOR,
+						'value' => Segmentation::CUSTOM_DIMENSIONS_OPTION_NAME_IS_DONOR,
 						'label' => __( 'Is a donor', 'newspack' ),
 					],
 				],
@@ -133,6 +126,7 @@ final class Newspack_Popups_Segmentation {
 		);
 		return $default_dimensions;
 	}
+
 
 	/**
 	 * Get GA property ID from Site Kit's options.
@@ -148,12 +142,24 @@ final class Newspack_Popups_Segmentation {
 	 * Inset GTAG amp-analytics with a remote config, which will insert segmentation-related custom dimensions.
 	 */
 	public static function insert_gtag_amp_analytics() {
+
+		$custom_dimensions = [];
+		if ( class_exists( 'Newspack\Analytics_Wizard' ) ) {
+			$custom_dimensions = Newspack\Analytics_Wizard::list_configured_custom_dimensions();
+		}
+		$custom_dimensions_existing_values = [];
+		if ( class_exists( 'Newspack\Analytics' ) ) {
+			$custom_dimensions_existing_values = Newspack\Analytics::get_custom_dimensions_values( get_the_ID() );
+		}
+
 		$remote_config_url = add_query_arg(
 			[
-				'client_id' => 'CLIENT_ID(' . esc_attr( self::NEWSPACK_SEGMENTATION_CID_NAME ) . ')',
-				'post_id'   => esc_attr( get_the_ID() ),
+				'client_id'                         => 'CLIENT_ID(' . esc_attr( self::NEWSPACK_SEGMENTATION_CID_NAME ) . ')',
+				'post_id'                           => esc_attr( get_the_ID() ),
+				'custom_dimensions'                 => wp_json_encode( $custom_dimensions ),
+				'custom_dimensions_existing_values' => wp_json_encode( $custom_dimensions_existing_values ),
 			],
-			get_rest_url( null, 'newspack-popups/v1/analytics-config' )
+			plugins_url( '../api/segmentation/index.php', __FILE__ )
 		);
 
 		?>
@@ -258,7 +264,7 @@ final class Newspack_Popups_Segmentation {
 
 			$sql = "CREATE TABLE $events_table_name (
 				id bigint(20) NOT NULL AUTO_INCREMENT,
-				created_at date NOT NULL,
+				created_at datetime NOT NULL,
 				-- type of event
 				type varchar(20) NOT NULL,
 				-- Unique id of a device/browser pair
@@ -274,6 +280,8 @@ final class Newspack_Popups_Segmentation {
 
 			require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 			dbDelta( $sql ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.dbDelta_dbdelta
+		} elseif ( 'date' === $wpdb->get_var( $wpdb->prepare( "SHOW COLUMNS FROM {$events_table_name} LIKE %s", 'created_at' ), 1 ) ) { // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			$wpdb->query( "ALTER TABLE {$events_table_name} CHANGE `created_at` `created_at` DATETIME NOT NULL" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		}
 	}
 
