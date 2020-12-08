@@ -10,4 +10,10 @@
 			margin-top: 4px;
 		}
 	}
+
+	&__not-interested-button-preview {
+		cursor: not-allowed;
+		font-size: 0.7em;
+		text-decoration: underline;
+	}
 }
