@@ -8,7 +8,6 @@
 import { __ } from '@wordpress/i18n';
 import { compose } from '@wordpress/compose';
 import { withSelect, withDispatch } from '@wordpress/data';
-import { addFilter } from '@wordpress/hooks';
 import { registerPlugin } from '@wordpress/plugins';
 import { PluginDocumentSettingPanel, PluginPostStatusInfo } from '@wordpress/edit-post';
 
@@ -23,7 +22,6 @@ import SegmentationSidebar from './SegmentationSidebar';
 import DismissSidebar from './DismissSidebar';
 import ColorsSidebar from './ColorsSidebar';
 import Preview from './Preview';
-import withDismissButtonPreview from './withDismissButtonPreview';
 import './style.scss';
 
 // Action dispatchers for the sidebar components.
@@ -142,10 +140,3 @@ const PluginPostStatusInfoTest = () => (
 	</PluginPostStatusInfo>
 );
 registerPlugin( 'newspack-popups-preview', { render: PluginPostStatusInfoTest } );
-
-// Show a preview of the dismiss button at the end of the block editor.
-addFilter(
-	'editor.BlockListBlock',
-	'newspack-popups/dismiss-button-sidebar',
-	withDismissButtonPreview
-);
