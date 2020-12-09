@@ -22,10 +22,10 @@ export const optionsFieldsSelector = select => {
 		selected_segment_id,
 	} = meta || {};
 
-	const canInsertOnEveryPage = placementValue =>
+	const isInline = placementValue =>
 		[ 'inline', 'above_header' ].indexOf( placementValue ) >= 0;
 
-	const isOverlay = ! canInsertOnEveryPage( placement );
+	const isOverlay = ! isInline( placement );
 
 	return {
 		background_color,
@@ -44,7 +44,7 @@ export const optionsFieldsSelector = select => {
 		trigger_type,
 		utm_suppression,
 		selected_segment_id,
-		canInsertOnEveryPage,
+		isInline,
 		isOverlay,
 	};
 };

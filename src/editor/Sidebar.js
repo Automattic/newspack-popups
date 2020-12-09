@@ -18,11 +18,11 @@ const Sidebar = ( {
 	trigger_delay,
 	trigger_type,
 	isOverlay,
-	canInsertOnEveryPage,
+	isInline,
 } ) => {
 	const updatePlacement = value => {
 		onMetaFieldChange( 'placement', value );
-		if ( ! canInsertOnEveryPage( value ) && frequency === 'always' ) {
+		if ( ! isInline( value ) && frequency === 'always' ) {
 			onMetaFieldChange( 'frequency', 'once' );
 		}
 	};
@@ -32,31 +32,32 @@ const Sidebar = ( {
 			<ToggleControl
 				label={ __( 'Inline Campaign', 'newspack-popups' ) }
 				checked={ ! isOverlay }
-				onChange={ value => {
-					if ( value ) {
-						return updatePlacement( 'inline' );
-					}
-					updatePlacement( 'center' );
-				} }
+				onChange={ value => updatePlacement( value ? 'inline' : 'center' ) }
 			/>
-			<ToggleControl
-				label={ __( 'Display Campaign Title', 'newspack-popups' ) }
-				checked={ display_title }
-				onChange={ value => onMetaFieldChange( 'display_title', value ) }
+			<SelectControl
+				label={ __( 'Placement' ) }
+				help={
+					isOverlay
+						? __( 'The location to display the overlay campaign.', 'newspack-popups' )
+						: __( 'The location to insert the campaign.', 'newspack-popups' )
+				}
+				value={ placement }
+				onChange={ updatePlacement }
+				options={
+					isOverlay
+						? [
+								{ value: 'center', label: __( 'Center' ) },
+								{ value: 'top', label: __( 'Top' ) },
+								{ value: 'bottom', label: __( 'Bottom' ) },
+						  ]
+						: [
+								{ value: 'inline', label: __( 'In article content' ) },
+								{ value: 'above_header', label: __( 'Above site header' ) },
+						  ]
+				}
 			/>
 			{ isOverlay && (
 				<Fragment>
-					<SelectControl
-						label={ __( 'Placement' ) }
-						help={ __( 'The location to display the campaign.', 'newspack-popups' ) }
-						value={ placement }
-						onChange={ updatePlacement }
-						options={ [
-							{ value: 'center', label: __( 'Center' ) },
-							{ value: 'top', label: __( 'Top' ) },
-							{ value: 'bottom', label: __( 'Bottom' ) },
-						] }
-					/>
 					<SelectControl
 						label={ __( 'Trigger' ) }
 						help={ __( 'The event to trigger the campaign.', 'newspack-popups' ) }
@@ -96,6 +97,11 @@ const Sidebar = ( {
 					max={ 100 }
 				/>
 			) }
+			<ToggleControl
+				label={ __( 'Display Campaign Title', 'newspack-popups' ) }
+				checked={ display_title }
+				onChange={ value => onMetaFieldChange( 'display_title', value ) }
+			/>
 		</Fragment>
 	);
 };
