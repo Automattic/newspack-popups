@@ -18,11 +18,11 @@ const Sidebar = ( {
 	trigger_delay,
 	trigger_type,
 	isOverlay,
-	isInline,
+	isInlinePlacement,
 } ) => {
 	const updatePlacement = value => {
 		onMetaFieldChange( 'placement', value );
-		if ( ! isInline( value ) && frequency === 'always' ) {
+		if ( ! isInlinePlacement( value ) && frequency === 'always' ) {
 			onMetaFieldChange( 'frequency', 'once' );
 		}
 	};

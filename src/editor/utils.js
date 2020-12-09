@@ -22,10 +22,9 @@ export const optionsFieldsSelector = select => {
 		selected_segment_id,
 	} = meta || {};
 
-	const isInline = placementValue =>
+	const isInlinePlacement = placementValue =>
 		[ 'inline', 'above_header' ].indexOf( placementValue ) >= 0;
-
-	const isOverlay = ! isInline( placement );
+	const isOverlay = ! isInlinePlacement( placement );
 
 	return {
 		background_color,
@@ -44,7 +43,7 @@ export const optionsFieldsSelector = select => {
 		trigger_type,
 		utm_suppression,
 		selected_segment_id,
-		isInline,
+		isInlinePlacement,
 		isOverlay,
 	};
 };
