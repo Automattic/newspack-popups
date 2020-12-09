@@ -34,6 +34,17 @@ final class Newspack_Popups_Inserter {
 	 * @return array Popup objects.
 	 */
 	public static function popups_for_post( $skip_above_header = false ) {
+		// Inject campaigns only in posts, pages, and CPTs that explicitly opt in.
+		if ( ! in_array(
+			get_post_type(),
+			apply_filters(
+				'newspack_campaigns_post_types_for_campaigns',
+				[ 'post', 'page' ]
+			)
+		) ) {
+			return [];
+		}
+
 		if ( ! empty( self::$popups ) ) {
 			return self::$popups;
 		}
@@ -132,6 +143,9 @@ final class Newspack_Popups_Inserter {
 		add_action( 'wp_head', [ $this, 'register_amp_scripts' ] );
 		add_action( 'before_header', [ $this, 'inject_above_header_popup' ] );
 
+		// Always enqueue scripts, since this plugin's scripts are handling pageview sending via GTAG.
+		add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
+
 		add_filter(
 			'newspack_newsletters_assess_has_disabled_popups',
 			function () {
@@ -172,9 +186,8 @@ final class Newspack_Popups_Inserter {
 	 * Process popups and insert into post and page content if needed.
 	 *
 	 * @param string $content The content of the post.
-	 * @param bool   $enqueue_assets Whether assets should be enqueued.
 	 */
-	public static function insert_popups_in_content( $content = '', $enqueue_assets = true ) {
+	public static function insert_popups_in_content( $content = '' ) {
 		// Avoid duplicate execution.
 		if ( true === self::$the_content_has_rendered ) {
 			return $content;
@@ -278,9 +291,6 @@ final class Newspack_Popups_Inserter {
 			$output = '<!-- wp:html -->' . Newspack_Popups_Model::generate_popup( $overlay_popup ) . '<!-- /wp:html -->' . $output;
 		}
 
-		if ( $enqueue_assets ) {
-			self::enqueue_popup_assets();
-		}
 		self::$the_content_has_rendered = true;
 		return $output;
 	}
@@ -300,14 +310,13 @@ final class Newspack_Popups_Inserter {
 			foreach ( $popups as $popup ) {
 				echo Newspack_Popups_Model::generate_popup( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			}
-			self::enqueue_popup_assets();
 		}
 	}
 
 	/**
 	 * Enqueue the assets needed to display the popups.
 	 */
-	public static function enqueue_popup_assets() {
+	public static function enqueue_scripts() {
 		if ( defined( 'IS_TEST_ENV' ) && IS_TEST_ENV ) {
 			return;
 		}
@@ -316,7 +325,7 @@ final class Newspack_Popups_Inserter {
 			wp_register_script(
 				'newspack-popups-view',
 				plugins_url( '../dist/view.js', __FILE__ ),
-				[ 'wp-dom-ready' ],
+				[ 'wp-dom-ready', 'wp-url' ],
 				filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/view.js' ),
 				true
 			);
@@ -350,7 +359,6 @@ final class Newspack_Popups_Inserter {
 					echo Newspack_Popups_Model::generate_popup( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 				}
 			}
-			self::enqueue_popup_assets();
 		}
 	}
 
@@ -387,6 +395,7 @@ final class Newspack_Popups_Inserter {
 			'id'  => $popup_id_string,
 			'f'   => $frequency,
 			'utm' => $popup['options']['utm_suppression'],
+			's'   => $popup['options']['selected_segment_id'],
 			'n'   => \Newspack_Popups_Model::has_newsletter_prompt( $popup ),
 			'd'   => \Newspack_Popups_Model::has_donation_block( $popup ),
 		];
@@ -435,8 +444,18 @@ final class Newspack_Popups_Inserter {
 			);
 		}
 
+		$settings                                 = array_reduce(
+			\Newspack_Popups_Settings::get_settings(),
+			function ( $acc, $item ) {
+				$key       = $item['key'];
+				$acc->$key = $item['value'];
+				return $acc;
+			},
+			(object) []
+		);
+		$popups_access_provider['authorization'] .= '&ref=DOCUMENT_REFERRER';
 		$popups_access_provider['authorization'] .= '&popups=' . wp_json_encode( $popups_configs );
-		$popups_access_provider['authorization'] .= '&settings=' . wp_json_encode( \Newspack_Popups_Settings::get_settings() );
+		$popups_access_provider['authorization'] .= '&settings=' . wp_json_encode( $settings );
 		$popups_access_provider['authorization'] .= '&visit=' . wp_json_encode(
 			[
 				'post_id'    => esc_attr( get_the_ID() ),
@@ -464,6 +483,9 @@ final class Newspack_Popups_Inserter {
 	 * Register and enqueue all required AMP scripts, if needed.
 	 */
 	public static function register_amp_scripts() {
+		if ( self::assess_has_disabled_popups() ) {
+			return;
+		}
 		if ( ! is_admin() && ! wp_script_is( 'amp-runtime', 'registered' ) ) {
 		// phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion
 			wp_register_script(
@@ -474,7 +496,7 @@ final class Newspack_Popups_Inserter {
 				true
 			);
 		}
-		$scripts = [ 'amp-access', 'amp-analytics', 'amp-animation', 'amp-bind', 'amp-position-observer' ];
+		$scripts = [ 'amp-access', 'amp-animation', 'amp-bind', 'amp-position-observer' ];
 		foreach ( $scripts as $script ) {
 			if ( ! wp_script_is( $script, 'registered' ) ) {
 				$path = "https://cdn.ampproject.org/v0/{$script}-latest.js";
@@ -574,7 +596,8 @@ final class Newspack_Popups_Inserter {
 		return self::assess_is_post( $popup ) &&
 			self::assess_test_mode( $popup ) &&
 			self::assess_categories_filter( $popup ) &&
-			self::assess_tags_filter( $popup );
+			self::assess_tags_filter( $popup ) &&
+			'never' !== $popup['options']['frequency'];
 	}
 }
 $newspack_popups_inserter = new Newspack_Popups_Inserter();

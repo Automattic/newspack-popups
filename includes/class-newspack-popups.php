@@ -17,7 +17,8 @@ final class Newspack_Popups {
 
 	const NEWSPACK_POPUP_PREVIEW_QUERY_PARAM = 'newspack_popups_preview_id';
 
-	const LIGHTWEIGHT_API_CONFIG_FILE_PATH = WP_CONTENT_DIR . '/../newspack-popups-config.php';
+	const LIGHTWEIGHT_API_CONFIG_FILE_PATH_LEGACY = WP_CONTENT_DIR . '/../newspack-popups-config.php';
+	const LIGHTWEIGHT_API_CONFIG_FILE_PATH        = WP_CONTENT_DIR . '/newspack-popups-config.php';
 
 	/**
 	 * The single instance of the class.
@@ -43,7 +44,7 @@ final class Newspack_Popups {
 	 * Constructor.
 	 */
 	public function __construct() {
-		add_action( 'init', [ __CLASS__, 'create_lightweight_api_config' ] );
+		add_action( 'admin_init', [ __CLASS__, 'create_lightweight_api_config' ] );
 		add_action( 'admin_notices', [ __CLASS__, 'api_config_missing_notice' ] );
 		add_action( 'init', [ __CLASS__, 'register_cpt' ] );
 		add_action( 'init', [ __CLASS__, 'register_meta' ] );
@@ -222,11 +223,35 @@ final class Newspack_Popups {
 
 		\register_meta(
 			'post',
+			'dismiss_text_alignment',
+			[
+				'object_subtype' => self::NEWSPACK_PLUGINS_CPT,
+				'show_in_rest'   => true,
+				'type'           => 'string',
+				'single'         => true,
+				'auth_callback'  => '__return_true',
+			]
+		);
+
+		\register_meta(
+			'post',
 			'display_title',
 			[
 				'object_subtype' => self::NEWSPACK_PLUGINS_CPT,
 				'show_in_rest'   => true,
 				'type'           => 'boolean',
+				'single'         => true,
+				'auth_callback'  => '__return_true',
+			]
+		);
+
+		\register_meta(
+			'post',
+			'selected_segment_id',
+			[
+				'object_subtype' => self::NEWSPACK_PLUGINS_CPT,
+				'show_in_rest'   => true,
+				'type'           => 'string',
 				'single'         => true,
 				'auth_callback'  => '__return_true',
 			]
@@ -243,6 +268,34 @@ final class Newspack_Popups {
 				'auth_callback' => '__return_true',
 			]
 		);
+	}
+
+	/**
+	 * Get preview post permalink.
+	 */
+	public static function preview_post_permalink() {
+		$query        = new WP_Query(
+			[
+				'posts_per_page' => 1,
+				'post_status'    => 'publish',
+				'has_password'   => false,
+				'orderby'        => 'post_date',
+				'order'          => 'DESC',
+				'meta_query'     => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+					'relation' => 'OR',
+					[
+						'key'     => 'newspack_popups_has_disabled_popups',
+						'compare' => 'NOT EXISTS',
+					],
+					[
+						'key'   => 'newspack_popups_has_disabled_popups',
+						'value' => '',
+					],
+				],
+			]
+		);
+		$recent_posts = $query->get_posts();
+		return $recent_posts && count( $recent_posts ) > 0 ? get_the_permalink( $recent_posts[0] ) : '';
 	}
 
 	/**
@@ -274,33 +327,12 @@ final class Newspack_Popups {
 			true
 		);
 
-		$query                  = new WP_Query(
-			[
-				'posts_per_page' => 1,
-				'post_status'    => 'publish',
-				'orderby'        => 'post_date',
-				'order'          => 'DESC',
-				'meta_query'     => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
-					'relation' => 'OR',
-					[
-						'key'     => 'newspack_popups_has_disabled_popups',
-						'compare' => 'NOT EXISTS',
-					],
-					[
-						'key'   => 'newspack_popups_has_disabled_popups',
-						'value' => '',
-					],
-				],
-			]
-		);
-		$recent_posts           = $query->get_posts();
-		$preview_post_permalink = $recent_posts && count( $recent_posts ) > 0 ? get_the_permalink( $recent_posts[0] ) : '';
-
 		\wp_localize_script(
 			'newspack-popups',
 			'newspack_popups_data',
 			[
-				'preview_post' => $preview_post_permalink,
+				'preview_post' => self::preview_post_permalink(),
+				'segments'     => Newspack_Popups_Segmentation::get_segments(),
 			]
 		);
 		\wp_enqueue_style(
@@ -415,17 +447,22 @@ final class Newspack_Popups {
 		update_post_meta( $post_id, 'trigger_delay', 3 );
 		update_post_meta( $post_id, 'trigger_scroll_progress', 30 );
 		update_post_meta( $post_id, 'utm_suppression', '' );
+		update_post_meta( $post_id, 'selected_segment_id', '' );
 	}
 
 	/**
 	 * Create the config file for the API, unless it exists.
 	 */
 	public static function create_lightweight_api_config() {
-		if ( ! ( defined( 'ATOMIC_SITE_ID' ) && ATOMIC_SITE_ID ) || file_exists( self::LIGHTWEIGHT_API_CONFIG_FILE_PATH ) ) {
+		// Don't create a config file if not on Newspack's Atomic platform, or if there is a file already.
+		if (
+			! ( defined( 'ATOMIC_SITE_ID' ) && ATOMIC_SITE_ID ) ||
+			( file_exists( self::LIGHTWEIGHT_API_CONFIG_FILE_PATH_LEGACY ) || file_exists( self::LIGHTWEIGHT_API_CONFIG_FILE_PATH ) )
+		) {
 			return;
 		}
 		global $wpdb;
-		file_put_contents( // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_file_put_contents -- VIP will have to create a config manually
+		$new_config_file = file_put_contents( // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_file_put_contents -- VIP will have to create a config manually
 			self::LIGHTWEIGHT_API_CONFIG_FILE_PATH,
 			'<?php' .
 			// Insert these only if they are defined, but not in the as environment variables.
@@ -435,14 +472,19 @@ final class Newspack_Popups {
 			"\ndefine( 'DB_PREFIX', '" . $wpdb->prefix . "' );" .
 			"\n"
 		);
-		error_log( 'Created the config file: ' . self::LIGHTWEIGHT_API_CONFIG_FILE_PATH ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+		if ( $new_config_file ) {
+			error_log( 'Created the config file: ' . self::LIGHTWEIGHT_API_CONFIG_FILE_PATH ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+		}
 	}
 
 	/**
 	 * Add an admin notice if config is missing.
 	 */
 	public static function api_config_missing_notice() {
-		if ( file_exists( self::LIGHTWEIGHT_API_CONFIG_FILE_PATH ) ) {
+		if (
+			file_exists( self::LIGHTWEIGHT_API_CONFIG_FILE_PATH_LEGACY ) ||
+			file_exists( self::LIGHTWEIGHT_API_CONFIG_FILE_PATH )
+		) {
 			return;
 		}
 		?>

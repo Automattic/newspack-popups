@@ -172,6 +172,7 @@ final class Newspack_Popups_Model {
 					update_post_meta( $id, $key, $value );
 					break;
 				case 'utm_suppression':
+				case 'selected_segment_id':
 					update_post_meta( $id, $key, esc_attr( $value ) );
 					break;
 				default:
@@ -294,6 +295,7 @@ final class Newspack_Popups_Model {
 				'background_color'        => filter_input( INPUT_GET, 'background_color', FILTER_SANITIZE_STRING ),
 				'display_title'           => filter_input( INPUT_GET, 'display_title', FILTER_VALIDATE_BOOLEAN ),
 				'dismiss_text'            => filter_input( INPUT_GET, 'dismiss_text', FILTER_SANITIZE_STRING ),
+				'dismiss_text_alignment'  => filter_input( INPUT_GET, 'dismiss_text_alignment', FILTER_SANITIZE_STRING ),
 				'frequency'               => filter_input( INPUT_GET, 'frequency', FILTER_SANITIZE_STRING ),
 				'overlay_color'           => filter_input( INPUT_GET, 'overlay_color', FILTER_SANITIZE_STRING ),
 				'overlay_opacity'         => filter_input( INPUT_GET, 'overlay_opacity', FILTER_SANITIZE_STRING ),
@@ -363,6 +365,7 @@ final class Newspack_Popups_Model {
 		$post_options = isset( $options ) ? $options : [
 			'background_color'        => get_post_meta( $id, 'background_color', true ),
 			'dismiss_text'            => get_post_meta( $id, 'dismiss_text', true ),
+			'dismiss_text_alignment'  => get_post_meta( $id, 'dismiss_text_alignment', true ),
 			'display_title'           => get_post_meta( $id, 'display_title', true ),
 			'frequency'               => get_post_meta( $id, 'frequency', true ),
 			'overlay_color'           => get_post_meta( $id, 'overlay_color', true ),
@@ -372,6 +375,7 @@ final class Newspack_Popups_Model {
 			'trigger_delay'           => get_post_meta( $id, 'trigger_delay', true ),
 			'trigger_scroll_progress' => get_post_meta( $id, 'trigger_scroll_progress', true ),
 			'utm_suppression'         => get_post_meta( $id, 'utm_suppression', true ),
+			'selected_segment_id'     => get_post_meta( $id, 'selected_segment_id', true ),
 		];
 
 		$popup = [
@@ -385,6 +389,7 @@ final class Newspack_Popups_Model {
 					'background_color'        => '#FFFFFF',
 					'display_title'           => false,
 					'dismiss_text'            => '',
+					'dismiss_text_alignment'  => 'center',
 					'frequency'               => 'test',
 					'overlay_color'           => '#000000',
 					'overlay_opacity'         => 30,
@@ -393,6 +398,7 @@ final class Newspack_Popups_Model {
 					'trigger_delay'           => 0,
 					'trigger_scroll_progress' => 0,
 					'utm_suppression'         => null,
+					'selected_segment_id'     => '',
 				]
 			),
 		];
@@ -430,6 +436,16 @@ final class Newspack_Popups_Model {
 	 */
 	protected static function get_dismiss_text( $popup ) {
 		return ! empty( $popup['options']['dismiss_text'] ) && strlen( trim( $popup['options']['dismiss_text'] ) ) > 0 ? $popup['options']['dismiss_text'] : null;
+	}
+
+	/**
+	 * Get the popup dismiss button alignment. Default/empty === center alignment.
+	 *
+	 * @param object $popup The popup object.
+	 * @return string|null Dismiss button alignment.
+	 */
+	protected static function get_dismiss_text_alignment( $popup ) {
+		return ! empty( $popup['options']['dismiss_text_alignment'] ) ? $popup['options']['dismiss_text_alignment'] : 'center';
 	}
 
 	/**
@@ -522,67 +538,45 @@ final class Newspack_Popups_Model {
 			$email_form_field_name   = 'EMAIL';
 		}
 
-		?>
-		<?php if ( $mailchimp_form_selector ) : ?>
-			<amp-analytics>
-				<script type="application/json">
-					{
-						"requests": {
-							"event": "<?php echo esc_url( $endpoint ); ?>"
-						},
-						"triggers": {
-							"formSubmitSuccess": {
-								"on": "amp-form-submit-success",
-								"request": "event",
-								"selector": "#<?php echo esc_attr( $element_id ); ?> <?php echo esc_attr( $mailchimp_form_selector ); ?>",
-								"extraUrlParams": {
-									"popup_id": "<?php echo esc_attr( self::canonize_popup_id( $popup['id'] ) ); ?>",
-									"cid": "CLIENT_ID( <?php echo esc_attr( Newspack_Popups_Segmentation::NEWSPACK_SEGMENTATION_CID_NAME ); ?> )",
-									"mailing_list_status": "subscribed",
-									"email": "${formFields[<?php echo esc_attr( $email_form_field_name ); ?>]}"
-								}
-							}
-						},
-						"transport": {
-							"beacon": true,
-							"xhrpost": true,
-							"useBody": true,
-							"image": false
-						}
-					}
-				</script>
-			</amp-analytics>
-		<?php endif; ?>
+		$amp_analytics_config = [
+			'requests' => [
+				'event' => esc_url( $endpoint ),
+			],
+			'triggers' => [
+				'trackPageview' => [
+					'on'             => 'visible',
+					'request'        => 'event',
+					'visibilitySpec' => [
+						'selector'             => '#' . esc_attr( $element_id ),
+						'visiblePercentageMin' => 90,
+						'totalTimeMin'         => 500,
+						'continuousTimeMin'    => 200,
+					],
+					'extraUrlParams' => [
+						'popup_id' => esc_attr( self::canonize_popup_id( $popup['id'] ) ),
+						'cid'      => 'CLIENT_ID(' . esc_attr( Newspack_Popups_Segmentation::NEWSPACK_SEGMENTATION_CID_NAME ) . ')',
+					],
+				],
+			],
+		];
+		if ( $mailchimp_form_selector ) {
+			$amp_analytics_config['triggers']['formSubmitSuccess'] = [
+				'on'             => 'amp-form-submit-success',
+				'request'        => 'event',
+				'selector'       => '#' . esc_attr( $element_id ) . ' ' . esc_attr( $mailchimp_form_selector ),
+				'extraUrlParams' => [
+					'popup_id'            => esc_attr( self::canonize_popup_id( $popup['id'] ) ),
+					'cid'                 => 'CLIENT_ID(' . esc_attr( Newspack_Popups_Segmentation::NEWSPACK_SEGMENTATION_CID_NAME ) . ')',
+					'mailing_list_status' => 'subscribed',
+					'email'               => '$[formFields[' . esc_attr( $email_form_field_name ) . ']}',
+				],
+			];
+		}
 
+		?>
 		<amp-analytics>
 			<script type="application/json">
-				{
-					"requests": {
-						"event": "<?php echo esc_url( $endpoint ); ?>"
-					},
-					"triggers": {
-						"trackPageview": {
-							"on": "visible",
-							"request": "event",
-							"visibilitySpec": {
-								"selector": "#<?php echo esc_attr( $element_id ); ?>",
-								"visiblePercentageMin": 90,
-								"totalTimeMin": 500,
-								"continuousTimeMin": 200
-							},
-							"extraUrlParams": {
-								"popup_id": "<?php echo esc_attr( self::canonize_popup_id( $popup['id'] ) ); ?>",
-								"cid": "CLIENT_ID( <?php echo esc_attr( Newspack_Popups_Segmentation::NEWSPACK_SEGMENTATION_CID_NAME ); ?> )"
-							}
-						}
-					},
-					"transport": {
-						"beacon": true,
-						"xhrpost": true,
-						"useBody": true,
-						"image": false
-					}
-				}
+				<?php echo wp_json_encode( $amp_analytics_config ); ?>
 			</script>
 		</amp-analytics>
 		<?php
@@ -685,27 +679,6 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
-	 * Add "newspack-popups-content-block" class name to a block.
-	 * This way a block rendered inside of a popup can be easily told apart.
-	 * This will only work in dynamic blocks.
-	 *
-	 * @param object $block A block.
-	 * @return object Block with className appended.
-	 */
-	public static function append_class_to_block( $block ) {
-		$class_name = 'newspack-popups-content-block';
-		if ( isset( $block['attrs']['className'] ) ) {
-			$block['attrs']['className'] = $block['attrs']['className'] . ' ' . $class_name;
-		} else {
-			$block['attrs']['className'] = $class_name;
-		}
-
-		$block['innerBlocks'] = array_map( [ __CLASS__, 'append_class_to_block' ], $block['innerBlocks'] );
-
-		return $block;
-	}
-
-	/**
 	 * Canonise popups id. The id from WP will be an integer, but AMP does not play well with that and needs a string.
 	 *
 	 * @param int $popup_id Popup id.
@@ -746,19 +719,20 @@ final class Newspack_Popups_Model {
 		$blocks = parse_blocks( $popup['content'] );
 		$body   = '';
 		foreach ( $blocks as $block ) {
-			$body .= render_block( self::append_class_to_block( $block ) );
+			$body .= render_block( $block );
 		}
 		do_action( 'newspack_campaigns_after_campaign_render', $popup );
 
-		$element_id           = 'lightbox' . rand(); // phpcs:ignore WordPress.WP.AlternativeFunctions.rand_rand
-		$endpoint             = self::get_reader_endpoint();
-		$display_title        = $popup['options']['display_title'];
-		$hidden_fields        = self::get_hidden_fields( $popup );
-		$dismiss_text         = self::get_dismiss_text( $popup );
-		$is_newsletter_prompt = self::has_newsletter_prompt( $popup );
-		$classes              = array( 'newspack-inline-popup' );
-		$classes[]            = ( ! empty( $popup['title'] ) && $display_title ) ? 'newspack-lightbox-has-title' : null;
-		$classes[]            = $is_newsletter_prompt ? 'newspack-newsletter-prompt-inline' : null;
+		$element_id             = 'lightbox' . rand(); // phpcs:ignore WordPress.WP.AlternativeFunctions.rand_rand
+		$endpoint               = self::get_reader_endpoint();
+		$display_title          = $popup['options']['display_title'];
+		$hidden_fields          = self::get_hidden_fields( $popup );
+		$dismiss_text           = self::get_dismiss_text( $popup );
+		$dismiss_text_alignment = self::get_dismiss_text_alignment( $popup );
+		$is_newsletter_prompt   = self::has_newsletter_prompt( $popup );
+		$classes                = array( 'newspack-inline-popup' );
+		$classes[]              = ( ! empty( $popup['title'] ) && $display_title ) ? 'newspack-lightbox-has-title' : null;
+		$classes[]              = $is_newsletter_prompt ? 'newspack-newsletter-prompt-inline' : null;
 
 		$analytics_events = self::get_analytics_events( $popup, $body, $element_id );
 		if ( ! empty( $analytics_events ) ) {
@@ -779,7 +753,7 @@ final class Newspack_Popups_Model {
 				<?php endif; ?>
 						<?php echo ( $body ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 						<?php if ( $dismiss_text && ! Newspack_Popups_Settings::is_non_interactive() ) : ?>
-					<form class="popup-not-interested-form popup-action-form"
+					<form class="popup-not-interested-form popup-action-form align-<?php echo esc_attr( $dismiss_text_alignment ); ?>"
 						method="POST"
 						action-xhr="<?php echo esc_url( $endpoint ); ?>"
 						target="_top">
@@ -812,22 +786,23 @@ final class Newspack_Popups_Model {
 		$blocks = parse_blocks( $popup['content'] );
 		$body   = '';
 		foreach ( $blocks as $block ) {
-			$body .= render_block( self::append_class_to_block( $block ) );
+			$body .= render_block( $block );
 		}
 		do_action( 'newspack_campaigns_after_campaign_render', $popup );
 
-		$element_id           = 'lightbox' . rand(); // phpcs:ignore WordPress.WP.AlternativeFunctions.rand_rand
-		$endpoint             = self::get_reader_endpoint();
-		$dismiss_text         = self::get_dismiss_text( $popup );
-		$display_title        = $popup['options']['display_title'];
-		$overlay_opacity      = absint( $popup['options']['overlay_opacity'] ) / 100;
-		$overlay_color        = $popup['options']['overlay_color'];
-		$hidden_fields        = self::get_hidden_fields( $popup );
-		$is_newsletter_prompt = self::has_newsletter_prompt( $popup );
-		$classes              = array( 'newspack-lightbox', 'newspack-lightbox-placement-' . $popup['options']['placement'] );
-		$classes[]            = ( ! empty( $popup['title'] ) && $display_title ) ? 'newspack-lightbox-has-title' : null;
-		$classes[]            = $is_newsletter_prompt ? 'newspack-newsletter-prompt-overlay' : null;
-		$is_scroll_triggered  = 'scroll' === $popup['options']['trigger_type'];
+		$element_id             = 'lightbox' . rand(); // phpcs:ignore WordPress.WP.AlternativeFunctions.rand_rand
+		$endpoint               = self::get_reader_endpoint();
+		$dismiss_text           = self::get_dismiss_text( $popup );
+		$dismiss_text_alignment = self::get_dismiss_text_alignment( $popup );
+		$display_title          = $popup['options']['display_title'];
+		$overlay_opacity        = absint( $popup['options']['overlay_opacity'] ) / 100;
+		$overlay_color          = $popup['options']['overlay_color'];
+		$hidden_fields          = self::get_hidden_fields( $popup );
+		$is_newsletter_prompt   = self::has_newsletter_prompt( $popup );
+		$classes                = array( 'newspack-lightbox', 'newspack-lightbox-placement-' . $popup['options']['placement'] );
+		$classes[]              = ( ! empty( $popup['title'] ) && $display_title ) ? 'newspack-lightbox-has-title' : null;
+		$classes[]              = $is_newsletter_prompt ? 'newspack-newsletter-prompt-overlay' : null;
+		$is_scroll_triggered    = 'scroll' === $popup['options']['trigger_type'];
 
 		add_filter(
 			'newspack_analytics_events',
@@ -846,7 +821,7 @@ final class Newspack_Popups_Model {
 					<?php endif; ?>
 					<?php echo ( $body ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					<?php if ( $dismiss_text ) : ?>
-					<form class="popup-not-interested-form popup-action-form"
+					<form class="popup-not-interested-form popup-action-form align-<?php echo esc_attr( $dismiss_text_alignment ); ?>"
 						method="POST"
 						action-xhr="<?php echo esc_url( $endpoint ); ?>"
 						target="_top">
@@ -859,7 +834,7 @@ final class Newspack_Popups_Model {
 						<button on="tap:<?php echo esc_attr( $element_id ); ?>.hide" aria-label="<?php esc_attr( $dismiss_text ); ?>" style="<?php echo esc_attr( self::container_style( $popup ) ); ?>"><?php echo esc_attr( $dismiss_text ); ?></button>
 					</form>
 					<?php endif; ?>
-					<form class="popup-dismiss-form popup-action-form"
+					<form class="popup-dismiss-form popup-action-form align-<?php echo esc_attr( $dismiss_text_alignment ); ?>"
 						method="POST"
 						action-xhr="<?php echo esc_url( $endpoint ); ?>"
 						target="_top">

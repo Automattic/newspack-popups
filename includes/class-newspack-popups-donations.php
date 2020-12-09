@@ -96,25 +96,17 @@ final class Newspack_Popups_Donations {
 			return;
 		}
 
-		$client_id = get_post_meta( $wc_order_data['id'], Newspack_Popups_Segmentation::NEWSPACK_SEGMENTATION_CID_NAME, true );
-
 		// If there was a donation, update the client data.
-		if ( isset( $client_id ) ) {
-			$client_data_report_endpoint = plugins_url( '../api/segmentation/index.php', __FILE__ );
-			wp_safe_remote_post(
-				$client_data_report_endpoint,
-				[
-					'body' => [
-						'client_id' => $client_id,
-						'donation'  => [
-							'order_id' => $wc_order_data['id'],
-							'date'     => date_format( date_create( $wc_order_data['date_created'] ), 'Y-m-d' ),
-							'amount'   => $wc_order_data['total'],
-						],
-					],
-				]
-			);
-		}
+		Newspack_Popups_Segmentation::update_client_data(
+			get_post_meta( $wc_order_data['id'], Newspack_Popups_Segmentation::NEWSPACK_SEGMENTATION_CID_NAME, true ),
+			[
+				'donation' => [
+					'order_id' => $wc_order_data['id'],
+					'date'     => date_format( date_create( $wc_order_data['date_created'] ), 'Y-m-d' ),
+					'amount'   => $wc_order_data['total'],
+				],
+			]
+		);
 	}
 
 	/**
@@ -134,7 +126,7 @@ final class Newspack_Popups_Donations {
 	 * @param Array $form_fields WC form fields.
 	 */
 	public static function woocommerce_billing_fields( $form_fields ) {
-		$client_id = isset( $_COOKIE[ Newspack_Popups_Segmentation::NEWSPACK_SEGMENTATION_CID_NAME ] ) ? esc_attr( $_COOKIE[ Newspack_Popups_Segmentation::NEWSPACK_SEGMENTATION_CID_NAME ] ) : false; // phpcs:ignore WordPressVIPMinimum.Variables.RestrictedVariables.cache_constraints___COOKIE, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$client_id = Newspack_Popups_Segmentation::get_client_id();
 
 		if ( $client_id ) {
 			$form_fields[ Newspack_Popups_Segmentation::NEWSPACK_SEGMENTATION_CID_NAME ] = [

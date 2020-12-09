@@ -10,6 +10,7 @@ export const optionsFieldsSelector = select => {
 		background_color,
 		frequency,
 		dismiss_text,
+		dismiss_text_alignment,
 		display_title,
 		overlay_color,
 		overlay_opacity,
@@ -18,10 +19,18 @@ export const optionsFieldsSelector = select => {
 		trigger_delay,
 		trigger_type,
 		utm_suppression,
+		selected_segment_id,
 	} = meta || {};
+
+	const canInsertOnEveryPage = placementValue =>
+		[ 'inline', 'above_header' ].indexOf( placementValue ) >= 0;
+
+	const isOverlay = ! canInsertOnEveryPage( placement );
+
 	return {
 		background_color,
 		dismiss_text,
+		dismiss_text_alignment,
 		display_title,
 		frequency,
 		overlay_color,
@@ -34,6 +43,9 @@ export const optionsFieldsSelector = select => {
 		trigger_delay,
 		trigger_type,
 		utm_suppression,
+		selected_segment_id,
+		canInsertOnEveryPage,
+		isOverlay,
 	};
 };
 

@@ -32,6 +32,7 @@ class ModelTest extends WP_UnitTestCase {
 				'background_color'        => '#FFFFFF',
 				'display_title'           => false,
 				'dismiss_text'            => Newspack_Popups::get_default_dismiss_text(),
+				'dismiss_text_alignment'  => 'center',
 				'frequency'               => 'test',
 				'overlay_color'           => '#000000',
 				'overlay_opacity'         => '30',
@@ -40,6 +41,7 @@ class ModelTest extends WP_UnitTestCase {
 				'trigger_delay'           => '3',
 				'trigger_scroll_progress' => 0,
 				'utm_suppression'         => null,
+				'selected_segment_id'     => '',
 			],
 			'Default options are as expected.'
 		);

@@ -1,3 +1,11 @@
+/* global gtag */
+
+/**
+ * External dependencies
+ */
+import 'intersection-observer';
+import 'whatwg-fetch';
+
 /**
  * WordPress dependencies
  */
@@ -8,63 +16,137 @@ import domReady from '@wordpress/dom-ready';
  */
 import './style.scss';
 import './patterns.scss';
+import {
+	values,
+	performXHRequest,
+	substituteDynamicValue,
+	processFormData,
+	getCookieValueFromLinker,
+	getClientIDValue,
+	waitUntil,
+	parseDynamicURL,
+} from './utils';
 
-const values = object => Object.keys( object ).map( key => object[ key ] );
+const getAnalyticsConfigs = () =>
+	[ ...document.querySelectorAll( 'amp-analytics' ) ].map( ampAnalyticsElement => ( {
+		type: ( ampAnalyticsElement.getAttribute( 'type' ) || '' ).trim(),
+		config: ( ampAnalyticsElement.getAttribute( 'config' ) || '' ).trim(),
+		...( ampAnalyticsElement.children.length
+			? {
+					...JSON.parse( ampAnalyticsElement.children[ 0 ].innerText ),
+			  }
+			: {} ),
+	} ) );
 
-const performXHRequest = ( { url, data } ) => {
-	const XHR = new XMLHttpRequest();
-	XHR.open( 'POST', url );
-	XHR.setRequestHeader( 'Content-Type', 'application/x-www-form-urlencoded' );
-
-	const encodedData = Object.keys( data )
-		.map( key => encodeURIComponent( key ) + '=' + encodeURIComponent( data[ key ] ) )
-		.join( '&' )
-		.replace( /%20/g, '+' );
-
-	XHR.send( encodedData );
-};
-
-const getCookies = () =>
-	document.cookie.split( '; ' ).reduce( ( acc, cookieStr ) => {
-		const cookie = cookieStr.split( '=' );
-		acc[ cookie[ 0 ] ] = cookie[ 1 ];
-		return acc;
-	}, {} );
-
-const processFormData = ( data, formElement ) => {
-	Object.keys( data ).forEach( key => {
-		let value = data[ key ];
-		if ( value === '${formFields[email]}' ) {
-			const inputEl = formElement.querySelector( '[name="email"]' );
-			if ( inputEl ) {
-				value = inputEl.value;
-			}
+const manageAnalyticsLinkers = () => {
+	getAnalyticsConfigs().forEach( config => {
+		// Linker reader – if incoming from AMP Cache, read linker param and set cookie and a linker-less URL.
+		// https://github.com/ampproject/amphtml/blob/master/extensions/amp-analytics/linker-id-receiving.md
+		const { cookieValue, cleanURL } = getCookieValueFromLinker( config );
+		if ( cookieValue ) {
+			document.cookie = cookieValue;
 		}
-		if ( value === 'CLIENT_ID( newspack-cid )' || value === 'CLIENT_ID(newspack-cid)' ) {
-			value = getCookies()[ 'newspack-cid' ];
+		if ( cleanURL ) {
+			window.history.pushState( {}, document.title, cleanURL );
 		}
-		data[ key ] = value;
 	} );
-	return data;
 };
 
-const manageAnalytics = () => {
-	const ampAnalytics = [ ...document.querySelectorAll( 'amp-analytics' ) ];
-	ampAnalytics.forEach( ampAnalyticsElement => {
-		const { requests, triggers } = JSON.parse( ampAnalyticsElement.children[ 0 ].innerText );
+const manageAnalyticsEvents = () => {
+	getAnalyticsConfigs().forEach( ( { type, config, requests, triggers } ) => {
+		/**
+		 * Fetch remote GTAG config and trigger GTAG reporting using it.
+		 */
+		if ( type === 'gtag' && config ) {
+			fetch( parseDynamicURL( config ) )
+				.then( response => response.json() )
+				.then( remoteConfig => {
+					const gaId = remoteConfig.vars.gtag_id;
+					gtag( 'config', gaId, remoteConfig.vars.config[ gaId ] );
+				} );
+		}
+
 		if ( triggers && requests ) {
-			const endpoint = requests.event;
-			values( triggers ).forEach( trigger => {
-				if ( trigger.on === 'amp-form-submit-success' ) {
-					const element = document.querySelector( trigger.selector );
-					if ( element ) {
-						element.addEventListener( 'submit', () => {
-							performXHRequest( {
-								url: endpoint,
-								data: processFormData( trigger.extraUrlParams, element ),
+			const triggerSpecs = values( triggers );
+			const visibilityHandlers = [];
+
+			let observer;
+			const hasVisibilityTriggers =
+				triggerSpecs.filter( ( { on } ) => on === 'visible' ).length > 0;
+			if ( hasVisibilityTriggers ) {
+				const timers = {};
+				observer = new IntersectionObserver(
+					entries => {
+						entries.forEach( observerEntry => {
+							const visibilitySpecsForEntry = visibilityHandlers.filter( handler =>
+								observerEntry.target.matches( handler.selector )
+							);
+							visibilitySpecsForEntry.forEach( visibilitySpec => {
+								if ( observerEntry.isIntersecting ) {
+									if ( ! timers[ visibilitySpec.id ] ) {
+										timers[ visibilitySpec.id ] = setTimeout( () => {
+											performXHRequest( visibilitySpec.request );
+											if ( ! visibilitySpec.repeat ) {
+												observer.unobserve( observerEntry.target );
+											}
+										}, visibilitySpec.totalTimeMin || 0 );
+									}
+								} else if ( timers[ visibilitySpec.id ] ) {
+									clearTimeout( timers[ visibilitySpec.id ] );
+									timers[ visibilitySpec.id ] = false;
+								}
 							} );
 						} );
+					},
+					{
+						// The threshold should be the value of the visibilitySpec's visiblePercentageMin,
+						// but that would require a separate IntersectionObserver for each trigger.
+						// Since it's value the same for every popup, it can be hardcoded.
+						threshold: 0.9,
 					}
+				);
+			}
+
+			triggerSpecs.forEach( ( { on, extraUrlParams = {}, request, ...trigger }, i ) => {
+				const url = requests[ request ];
+				let element;
+
+				// Data for the XHR request.
+				const data = {};
+				if ( extraUrlParams ) {
+					Object.keys( extraUrlParams ).forEach( key => {
+						data[ key ] = substituteDynamicValue( extraUrlParams[ key ] );
+					} );
+				}
+
+				switch ( on ) {
+					case 'visible':
+						element = document.querySelector( trigger.visibilitySpec?.selector );
+						if ( element && observer ) {
+							observer.observe( element );
+							visibilityHandlers.push( {
+								...trigger.visibilitySpec,
+								request: { data, url },
+								id: i,
+							} );
+						}
+						break;
+					case 'amp-form-submit-success':
+						element = document.querySelector( trigger.selector );
+						if ( element ) {
+							element.addEventListener( 'submit', () => {
+								performXHRequest( {
+									url,
+									data: processFormData( extraUrlParams, element ),
+								} );
+							} );
+						}
+						break;
+					case 'ini-load':
+						performXHRequest( { url, data } );
+						break;
+					default:
+						throw new Error( `Trigger "${ on }" not handled` );
 				}
 			} );
 		}
@@ -91,7 +173,12 @@ const manageForms = container => {
 
 if ( typeof window !== 'undefined' ) {
 	domReady( () => {
-		manageAnalytics();
+		// Handle linkers right away, before amp-access sets a cookie value.
+		manageAnalyticsLinkers();
+
+		// But don't manage analytics events until the client ID is available.
+		waitUntil( getClientIDValue, manageAnalyticsEvents );
+
 		const campaignArray = [
 			...document.querySelectorAll( '.newspack-lightbox' ),
 			...document.querySelectorAll( '.newspack-inline-popup' ),
