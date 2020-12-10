@@ -290,7 +290,6 @@ final class Newspack_Popups_Inserter {
 		if ( is_singular() ) {
 			return;
 		}
-
 		$popups = array_filter( self::popups_for_post(), [ 'Newspack_Popups_Model', 'should_be_inserted_in_page_content' ] );
 		foreach ( $popups as $popup ) {
 			echo Newspack_Popups_Model::generate_popup( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
@@ -298,8 +297,7 @@ final class Newspack_Popups_Inserter {
 	}
 
 	/**
-	 * Insert time-triggered overlay popups above the header.
-	 * This way they will be visible before scrolling below the fold.
+	 * Insert popups markup before header.
 	 */
 	public static function insert_before_header() {
 		$before_header_popups = array_filter( self::popups_for_post(), [ 'Newspack_Popups_Model', 'should_be_inserted_above_page_header' ] );

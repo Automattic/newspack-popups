@@ -473,6 +473,8 @@ final class Newspack_Popups_Model {
 		if ( self::is_inline( $popup ) ) {
 			return 'above_header' === $popup['options']['placement'];
 		} else {
+			// Insert time-triggered overlay popups above the header, this way they will be
+			// visible before scrolling below the fold.
 			return 'time' === $popup['options']['trigger_type'];
 		}
 	}
