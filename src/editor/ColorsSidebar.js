@@ -20,10 +20,8 @@ const ColorsSidebar = ( {
 	onMetaFieldChange,
 	overlay_opacity,
 	overlay_color,
-	placement,
+	isOverlay,
 } ) => {
-	const isInline = 'inline' === placement;
-
 	// On component mount.
 	useEffect(() => {
 		updateEditorColors( background_color );
@@ -36,7 +34,7 @@ const ColorsSidebar = ( {
 				onChange={ value => onMetaFieldChange( 'background_color', value || '#FFFFFF' ) }
 				label={ __( 'Background Color' ) }
 			/>
-			{ ! isInline && (
+			{ isOverlay && (
 				<Fragment>
 					<ColorPaletteControl
 						value={ overlay_color }
