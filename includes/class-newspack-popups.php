@@ -282,7 +282,7 @@ final class Newspack_Popups {
 				'singular_name' => __( 'Campaign Group', 'newspack-popups' ),
 				'add_new_item'  => __( 'Add Campaign Group', 'newspack-popups' ),
 			],
-			'hierarchical'  => false,
+			'hierarchical'  => true,
 			'public'        => false,
 			'rewrite'       => false, // phpcs:ignore Squiz.PHP.CommentedOutCode.Found [ 'hierarchical' => true, 'slug' => $prefix . '/category' ]
 			'show_in_menu'  => false,
