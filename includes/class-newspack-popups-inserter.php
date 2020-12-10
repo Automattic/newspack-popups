@@ -207,7 +207,7 @@ final class Newspack_Popups_Inserter {
 		}
 
 		// If the current post is a Campaign, ignore.
-		if ( Newspack_Popups::NEWSPACK_PLUGINS_CPT == get_post_type() ) {
+		if ( Newspack_Popups::NEWSPACK_POPUPS_CPT == get_post_type() ) {
 			return $content;
 		}
 

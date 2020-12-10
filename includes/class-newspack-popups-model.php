@@ -20,7 +20,7 @@ final class Newspack_Popups_Model {
 	 */
 	public static function retrieve_popups( $include_unpublished = false ) {
 		$args = [
-			'post_type'      => Newspack_Popups::NEWSPACK_PLUGINS_CPT,
+			'post_type'      => Newspack_Popups::NEWSPACK_POPUPS_CPT,
 			'post_status'    => $include_unpublished ? [ 'publish', 'draft' ] : 'publish',
 			'posts_per_page' => 100,
 		];
@@ -189,7 +189,7 @@ final class Newspack_Popups_Model {
 	 */
 	public static function retrieve_inline_popups() {
 		$args = [
-			'post_type'   => Newspack_Popups::NEWSPACK_PLUGINS_CPT,
+			'post_type'   => Newspack_Popups::NEWSPACK_POPUPS_CPT,
 			'post_status' => 'publish',
 			'meta_key'    => 'placement',
 			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
@@ -206,7 +206,7 @@ final class Newspack_Popups_Model {
 	 */
 	public static function retrieve_overlay_test_popups() {
 		$args = [
-			'post_type'   => Newspack_Popups::NEWSPACK_PLUGINS_CPT,
+			'post_type'   => Newspack_Popups::NEWSPACK_POPUPS_CPT,
 			'post_status' => 'publish',
 			'meta_query'  => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 				[
@@ -237,7 +237,7 @@ final class Newspack_Popups_Model {
 		}
 
 		$args = [
-			'post_type'      => Newspack_Popups::NEWSPACK_PLUGINS_CPT,
+			'post_type'      => Newspack_Popups::NEWSPACK_POPUPS_CPT,
 			'posts_per_page' => 1,
 			'post_status'    => 'publish',
 			'category__in'   => array_column( $post_categories, 'term_id' ),
@@ -293,7 +293,7 @@ final class Newspack_Popups_Model {
 	 */
 	public static function retrieve_popup_by_id( $post_id, $include_drafts = false ) {
 		$args = [
-			'post_type'      => Newspack_Popups::NEWSPACK_PLUGINS_CPT,
+			'post_type'      => Newspack_Popups::NEWSPACK_POPUPS_CPT,
 			'posts_per_page' => 1,
 			'p'              => $post_id,
 		];
