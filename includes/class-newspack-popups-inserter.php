@@ -139,6 +139,7 @@ final class Newspack_Popups_Inserter {
 			1,
 			4
 		);
+		add_action( 'delete_widget', [ $this, 'remove_widgets_shortcoded_popup_ids' ] );
 
 		add_filter(
 			'newspack_newsletters_assess_has_disabled_popups',
@@ -412,11 +413,10 @@ final class Newspack_Popups_Inserter {
 		if ( ! Newspack_Popups_Segmentation::is_tracking() ) {
 			return;
 		}
-
 		$shortcoded_popup_ids = array_unique(
 			array_merge(
 				self::get_shortcoded_popups_ids( get_the_content() ),
-				get_option( 'newspack_popups_widget_shortcode_popups_ids', [] )
+				self::get_all_widget_shortcoded_popups_ids()
 			)
 		);
 		$shortcoded_popups    = array_reduce(
@@ -668,10 +668,37 @@ final class Newspack_Popups_Inserter {
 	 */
 	public static function save_widgets_shortcoded_popup_ids( $instance, $new_instance, $old_instance, $widget ) {
 		if ( 'widget_text' === $widget->option_name ) {
-			$shortcoded_popup_ids = self::get_shortcoded_popups_ids( $new_instance['text'] );
-			update_option( 'newspack_popups_widget_shortcode_popups_ids', $shortcoded_popup_ids );
+			$value                = get_option( 'newspack_popups_widget_shortcode_popups_ids', [] );
+			$value[ $widget->id ] = self::get_shortcoded_popups_ids( $new_instance['text'] );
+			update_option( 'newspack_popups_widget_shortcode_popups_ids', $value );
 		}
 		return $instance;
+	}
+
+	/**
+	 * Get all widget shortcoded popups IDs.
+	 *
+	 * @return array IDs of popups shortcoded in widgets.
+	 */
+	public static function get_all_widget_shortcoded_popups_ids() {
+		return array_reduce(
+			array_values( get_option( 'newspack_popups_widget_shortcode_popups_ids', [] ) ),
+			function ( $acc, $item ) {
+				return array_merge( $acc, $item );
+			},
+			[]
+		);
+	}
+
+	/**
+	 * Remove widgets shortcoded popup IDs.
+	 *
+	 * @param string $widget_id IDs of a widget.
+	 */
+	public static function remove_widgets_shortcoded_popup_ids( $widget_id ) {
+		$value = get_option( 'newspack_popups_widget_shortcode_popups_ids', [] );
+		unset( $value[ $widget_id ] );
+		update_option( 'newspack_popups_widget_shortcode_popups_ids', $value );
 	}
 }
 $newspack_popups_inserter = new Newspack_Popups_Inserter();
