@@ -21,7 +21,7 @@ class InsertionTest extends WP_UnitTestCase {
 		);
 		self::$popup_id = self::factory()->post->create(
 			[
-				'post_type'    => Newspack_Popups::NEWSPACK_PLUGINS_CPT,
+				'post_type'    => Newspack_Popups::NEWSPACK_POPUPS_CPT,
 				'post_title'   => 'Platea fames',
 				'post_content' => self::$popup_content,
 			]
@@ -29,7 +29,14 @@ class InsertionTest extends WP_UnitTestCase {
 		// Set the popup as sitewide default.
 		Newspack_Popups_Model::set_sitewide_popup( self::$popup_id );
 		// Set popup frequency from default 'test'.
-		Newspack_Popups_Model::set_popup_options( self::$popup_id, [ 'frequency' => 'once' ] );
+		Newspack_Popups_Model::set_popup_options(
+			self::$popup_id,
+			[
+				'frequency'               => 'once',
+				'trigger_type'            => 'scroll', 
+				'trigger_scroll_progress' => 0,
+			] 
+		);
 		// Reset internal duplicate-prevention.
 		Newspack_Popups_Inserter::$the_content_has_rendered = false;
 	}

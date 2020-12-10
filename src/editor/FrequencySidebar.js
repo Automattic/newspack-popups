@@ -9,7 +9,7 @@ import { __ } from '@wordpress/i18n';
 import { Fragment } from '@wordpress/element';
 import { SelectControl, TextControl } from '@wordpress/components';
 
-const FrequencySidebar = ( { frequency, onMetaFieldChange, placement, utm_suppression } ) => {
+const FrequencySidebar = ( { frequency, onMetaFieldChange, isOverlay, utm_suppression } ) => {
 	return (
 		<Fragment>
 			<SelectControl
@@ -23,7 +23,7 @@ const FrequencySidebar = ( { frequency, onMetaFieldChange, placement, utm_suppre
 					{
 						value: 'always',
 						label: __( 'Every page', 'newspack-popups' ),
-						disabled: 'inline' !== placement,
+						disabled: isOverlay,
 					},
 				] }
 			/>
