@@ -464,10 +464,10 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
-	 * Time-triggered overlay and above-header inline popups should be inserted above page header.
+	 * Get popups which should be inserted above page header.
 	 *
 	 * @param object $popup The popup object.
-	 * @return boolean True the popup should be inserted above page header.
+	 * @return boolean True if the popup should be inserted above page header.
 	 */
 	public static function should_be_inserted_above_page_header( $popup ) {
 		if ( self::is_inline( $popup ) ) {
@@ -480,10 +480,10 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
-	 * Time-triggered overlay popups should be inserted above page header.
+	 * Get popups which should be inserted in page content.
 	 *
 	 * @param object $popup The popup object.
-	 * @return boolean True the popup should be inserted in page content.
+	 * @return boolean True if the popup should be inserted in page content.
 	 */
 	public static function should_be_inserted_in_page_content( $popup ) {
 		return self::should_be_inserted_above_page_header( $popup ) === false;
