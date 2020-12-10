@@ -30,10 +30,9 @@ final class Newspack_Popups_Inserter {
 	/**
 	 * Retrieve the appropriate popups for the current post.
 	 *
-	 * @param bool $skip_above_header Skip above header placement popups.
 	 * @return array Popup objects.
 	 */
-	public static function popups_for_post( $skip_above_header = false ) {
+	public static function popups_for_post() {
 		// Inject campaigns only in posts, pages, and CPTs that explicitly opt in.
 		if ( ! in_array(
 			get_post_type(),
@@ -59,14 +58,8 @@ final class Newspack_Popups_Inserter {
 			return [];
 		}
 
-		// 1. Get all inline, above header popups.
+		// 1. Get all inline popups.
 		$popups_to_maybe_display = Newspack_Popups_Model::retrieve_inline_popups();
-		if ( false === $skip_above_header ) {
-			$popups_to_maybe_display = array_merge(
-				$popups_to_maybe_display,
-				Newspack_Popups_Model::retrieve_above_header_popups()
-			);
-		}
 
 		// 2. Get the overlay popup/s. There can be only one displayed, unless in test mode.
 
@@ -120,16 +113,10 @@ final class Newspack_Popups_Inserter {
 			}
 		);
 
-		$popups_to_display = array_filter(
+		return array_filter(
 			$popups_to_maybe_display_deduped,
 			[ __CLASS__, 'should_display' ]
 		);
-
-		if ( ! empty( $popups_to_display ) ) {
-			return $popups_to_display;
-		}
-
-		return [];
 	}
 
 	/**
@@ -141,7 +128,7 @@ final class Newspack_Popups_Inserter {
 		add_action( 'after_header', [ $this, 'insert_popups_after_header' ] ); // This is a Newspack theme hook. When used with other themes, popups won't be inserted on archive pages.
 		add_action( 'wp_head', [ $this, 'insert_popups_amp_access' ] );
 		add_action( 'wp_head', [ $this, 'register_amp_scripts' ] );
-		add_action( 'before_header', [ $this, 'inject_above_header_popup' ] );
+		add_action( 'before_header', [ $this, 'insert_before_header' ] );
 
 		// Always enqueue scripts, since this plugin's scripts are handling pageview sending via GTAG.
 		add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
@@ -224,7 +211,7 @@ final class Newspack_Popups_Inserter {
 			return $content;
 		}
 
-		$popups = self::popups_for_post();
+		$popups = array_filter( self::popups_for_post(), [ 'Newspack_Popups_Model', 'should_be_inserted_in_page_content' ] );
 
 		if ( empty( $popups ) ) {
 			return $content;
@@ -303,13 +290,19 @@ final class Newspack_Popups_Inserter {
 		if ( is_singular() ) {
 			return;
 		}
+		$popups = array_filter( self::popups_for_post(), [ 'Newspack_Popups_Model', 'should_be_inserted_in_page_content' ] );
+		foreach ( $popups as $popup ) {
+			echo Newspack_Popups_Model::generate_popup( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		}
+	}
 
-		$popups = self::popups_for_post( true );
-
-		if ( ! empty( $popups ) ) {
-			foreach ( $popups as $popup ) {
-				echo Newspack_Popups_Model::generate_popup( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-			}
+	/**
+	 * Insert popups markup before header.
+	 */
+	public static function insert_before_header() {
+		$before_header_popups = array_filter( self::popups_for_post(), [ 'Newspack_Popups_Model', 'should_be_inserted_above_page_header' ] );
+		foreach ( $before_header_popups as $popup ) {
+			echo Newspack_Popups_Model::generate_popup( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		}
 	}
 
@@ -340,26 +333,6 @@ final class Newspack_Popups_Inserter {
 		);
 		\wp_style_add_data( 'newspack-popups-view', 'rtl', 'replace' );
 		\wp_enqueue_style( 'newspack-popups-view' );
-	}
-
-	/**
-	 * The popup shortcode function.
-	 */
-	public static function inject_above_header_popup() {
-		$previewed_popup_id = Newspack_Popups::previewed_popup_id();
-		$popups             = [];
-		if ( $previewed_popup_id ) {
-			$popups = [ Newspack_Popups_Model::retrieve_preview_popup( $previewed_popup_id ) ];
-		} else {
-			$popups = Newspack_Popups_Model::retrieve_above_header_popups();
-		}
-		if ( ! empty( $popups ) ) {
-			foreach ( $popups as $popup ) {
-				if ( $previewed_popup_id || self::should_display( $popup ) ) {
-					echo Newspack_Popups_Model::generate_popup( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-				}
-			}
-		}
 	}
 
 	/**

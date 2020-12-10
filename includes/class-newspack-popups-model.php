@@ -19,6 +19,13 @@ final class Newspack_Popups_Model {
 	protected static $overlay_placements = [ 'top', 'bottom', 'center' ];
 
 	/**
+	 * Possible placements of inline popups.
+	 *
+	 * @var array
+	 */
+	protected static $inline_placements = [ 'inline', 'above_header' ];
+
+	/**
 	 * Retrieve all Popups (first 100).
 	 *
 	 * @param  boolean $include_unpublished Whether to include unpublished posts.
@@ -159,7 +166,7 @@ final class Newspack_Popups_Model {
 					update_post_meta( $id, $key, $value );
 					break;
 				case 'placement':
-					if ( ! in_array( $value, array_merge( self::$overlay_placements, [ 'inline', 'above_header' ] ) ) ) {
+					if ( ! in_array( $value, array_merge( self::$overlay_placements, self::$inline_placements ) ) ) {
 						return new \WP_Error(
 							'newspack_popups_invalid_option_value',
 							esc_html__( 'Invalid placement value.', 'newspack-popups' ),
@@ -171,6 +178,8 @@ final class Newspack_Popups_Model {
 					}
 					update_post_meta( $id, $key, $value );
 					break;
+				case 'trigger_type':
+				case 'trigger_scroll_progress':
 				case 'utm_suppression':
 				case 'selected_segment_id':
 					update_post_meta( $id, $key, esc_attr( $value ) );
@@ -195,11 +204,12 @@ final class Newspack_Popups_Model {
 	 */
 	public static function retrieve_inline_popups() {
 		$args = [
-			'post_type'   => Newspack_Popups::NEWSPACK_PLUGINS_CPT,
-			'post_status' => 'publish',
-			'meta_key'    => 'placement',
+			'post_type'    => Newspack_Popups::NEWSPACK_PLUGINS_CPT,
+			'post_status'  => 'publish',
+			'meta_key'     => 'placement',
 			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-			'meta_value'  => 'inline',
+			'meta_value'   => self::$inline_placements,
+			'meta_compare' => 'IN',
 		];
 
 		return self::retrieve_popups_with_query( new WP_Query( $args ) );
@@ -255,24 +265,6 @@ final class Newspack_Popups_Model {
 
 		$popups = self::retrieve_popups_with_query( new WP_Query( $args ) );
 		return count( $popups ) > 0 ? $popups[0] : null;
-	}
-
-	/**
-	 * Retrieve above header popups.
-	 *
-	 * @return array Popup objects.
-	 */
-	public static function retrieve_above_header_popups() {
-		$args = [
-			'post_type'    => Newspack_Popups::NEWSPACK_PLUGINS_CPT,
-			'post_status'  => 'publish',
-			'meta_key'     => 'placement',
-			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-			'meta_value'   => 'above_header',
-			'meta_compare' => '=',
-		];
-
-		return self::retrieve_popups_with_query( new WP_Query( $args ) );
 	}
 
 	/**
@@ -469,6 +461,32 @@ final class Newspack_Popups_Model {
 			return false;
 		}
 		return 'inline' === $popup['options']['placement'];
+	}
+
+	/**
+	 * Get popups which should be inserted above page header.
+	 *
+	 * @param object $popup The popup object.
+	 * @return boolean True if the popup should be inserted above page header.
+	 */
+	public static function should_be_inserted_above_page_header( $popup ) {
+		if ( self::is_inline( $popup ) ) {
+			return 'above_header' === $popup['options']['placement'];
+		} else {
+			// Insert time-triggered overlay popups above the header, this way they will be
+			// visible before scrolling below the fold.
+			return 'time' === $popup['options']['trigger_type'];
+		}
+	}
+
+	/**
+	 * Get popups which should be inserted in page content.
+	 *
+	 * @param object $popup The popup object.
+	 * @return boolean True if the popup should be inserted in page content.
+	 */
+	public static function should_be_inserted_in_page_content( $popup ) {
+		return self::should_be_inserted_above_page_header( $popup ) === false;
 	}
 
 	/**
