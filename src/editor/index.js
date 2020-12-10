@@ -7,8 +7,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { compose } from '@wordpress/compose';
-import { useSelect, withSelect, withDispatch } from '@wordpress/data';
-import { useEffect } from '@wordpress/element';
+import { withSelect, withDispatch } from '@wordpress/data';
 import { registerPlugin } from '@wordpress/plugins';
 import { PluginDocumentSettingPanel, PluginPostStatusInfo } from '@wordpress/edit-post';
 
@@ -23,6 +22,7 @@ import SegmentationSidebar from './SegmentationSidebar';
 import DismissSidebar from './DismissSidebar';
 import ColorsSidebar from './ColorsSidebar';
 import Preview from './Preview';
+import withDismissButtonPreview from './withDismissButtonPreview';
 import './style.scss';
 
 // Action dispatchers for the sidebar components.
@@ -111,49 +111,14 @@ registerPlugin( 'newspack-popups-segmentation', {
 } );
 
 registerPlugin( 'newspack-popups-dismiss', {
-	render: () => {
-		const meta = useSelect( select => select( 'core/editor' ).getEditedPostAttribute( 'meta' ) );
-		const { dismiss_text, dismiss_text_alignment } = meta;
-
-		// Render a preview of the dismiss button at the end of the block content area.
-		useEffect(() => {
-			if ( ! dismiss_text ) {
-				return;
-			}
-
-			const alignClass = 'has-text-align-' + ( dismiss_text_alignment || 'center' );
-
-			let dismissButtonPreview = document.querySelector(
-				'.newspack-popups__not-interested-button-preview'
-			);
-
-			if ( ! dismissButtonPreview ) {
-				const rootContainer = document.querySelector(
-					'.block-editor-block-list__layout.is-root-container'
-				);
-
-				if ( rootContainer ) {
-					dismissButtonPreview = document.createElement( 'div' );
-					rootContainer.appendChild( dismissButtonPreview );
-				}
-			}
-
-			if ( dismissButtonPreview ) {
-				dismissButtonPreview.className =
-					'newspack-popups__not-interested-button-preview wp-block ' + alignClass;
-				dismissButtonPreview.textContent = dismiss_text;
-			}
-		}, [ dismiss_text, dismiss_text_alignment ]);
-
-		return (
-			<PluginDocumentSettingPanel
-				name="popup-dismiss-panel"
-				title={ __( 'Dismiss Button Settings', 'newspack-popups' ) }
-			>
-				<DismissSidebarWithData />
-			</PluginDocumentSettingPanel>
-		);
-	},
+	render: withDismissButtonPreview( () => (
+		<PluginDocumentSettingPanel
+			name="popup-dismiss-panel"
+			title={ __( 'Dismiss Button Settings', 'newspack-popups' ) }
+		>
+			<DismissSidebarWithData />
+		</PluginDocumentSettingPanel>
+	) ),
 	icon: null,
 } );
 
