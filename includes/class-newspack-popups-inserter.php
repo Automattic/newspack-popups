@@ -221,7 +221,14 @@ final class Newspack_Popups_Inserter {
 			return $content;
 		}
 
-		$popups = self::popups_for_post();
+		// If any popups are inserted using a shortcode, skip them.
+		$shortcoded_popups_ids = self::get_shortcoded_popups_ids( get_the_content() );
+		$popups                = array_filter(
+			self::popups_for_post(),
+			function ( $popup ) use ( $shortcoded_popups_ids ) {
+				return ! in_array( $popup['id'], $shortcoded_popups_ids );
+			}
+		);
 
 		if ( empty( $popups ) ) {
 			return $content;
