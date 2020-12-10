@@ -268,7 +268,7 @@ final class Newspack_Popups_Inserter {
 			$pos          += strlen( $block_content );
 			foreach ( $inline_popups as &$inline_popup ) {
 				if ( ! $inline_popup['is_inserted'] && $pos > $inline_popup['precise_position'] ) {
-					$output .= '<!-- wp:shortcode -->[newspack-popup _is_placed_automatically="1" id="' . $inline_popup['id'] . '"]<!-- /wp:shortcode -->';
+					$output .= '<!-- wp:shortcode -->[newspack-popup id="' . $inline_popup['id'] . '"]<!-- /wp:shortcode -->';
 
 					$inline_popup['is_inserted'] = true;
 				}
@@ -279,7 +279,7 @@ final class Newspack_Popups_Inserter {
 		// 3. Insert any remaining inline campaigns at the end.
 		foreach ( $inline_popups as $inline_popup ) {
 			if ( ! $inline_popup['is_inserted'] ) {
-				$output .= '<!-- wp:shortcode -->[newspack-popup _is_placed_automatically="1" id="' . $inline_popup['id'] . '"]<!-- /wp:shortcode -->';
+				$output .= '<!-- wp:shortcode -->[newspack-popup id="' . $inline_popup['id'] . '"]<!-- /wp:shortcode -->';
 
 				$inline_popup['is_inserted'] = true;
 			}
@@ -363,13 +363,10 @@ final class Newspack_Popups_Inserter {
 		if (
 			! $found_popup ||
 			// Bail if it's a non-preview campaign which should not be displayed.
-			( ! self::should_display( $found_popup, true ) && ! Newspack_Popups::previewed_popup_id() )
+			( ! self::should_display( $found_popup, true ) && ! Newspack_Popups::previewed_popup_id() ) ||
+			// Only inline popups can be inserted via the  shortcode.
+			! Newspack_Popups_Model::is_inline( $found_popup )
 		) {
-			return;
-		}
-
-		// Only inline popups can be inserted via the  shortcode.
-		if ( ! Newspack_Popups_Model::is_inline( $found_popup ) ) {
 			return;
 		}
 
