@@ -127,8 +127,15 @@ final class Newspack_Popups_Inserter {
 		add_filter( 'the_content', [ $this, 'insert_popups_in_content' ], 1 );
 		add_shortcode( 'newspack-popup', [ $this, 'popup_shortcode' ] );
 		add_action( 'after_header', [ $this, 'insert_popups_after_header' ] ); // This is a Newspack theme hook. When used with other themes, popups won't be inserted on archive pages.
-		add_action( 'wp_footer', [ $this, 'insert_popups_amp_access' ] );
+		add_action( 'wp_head', [ $this, 'insert_popups_amp_access' ] );
 		add_action( 'wp_head', [ $this, 'register_amp_scripts' ] );
+
+		add_filter(
+			'widget_update_callback',
+			[ $this, 'save_widgets_shortcoded_popup_ids' ],
+			1,
+			4
+		);
 
 		add_filter(
 			'newspack_newsletters_assess_has_disabled_popups',
@@ -333,8 +340,8 @@ final class Newspack_Popups_Inserter {
 
 	/**
 	 * The popup shortcode function.
-	 * Primarily, the shortcode is inserted by the plugin, but it
-	 * may also be inserted manually, to display a specific campaign anywhere on the site.
+	 * Primarily, the shortcode is inserted by the plugin, but it may also be inserted manually to
+	 * display a specific campaign anywhere on the site.
 	 *
 	 * @param array $atts Shortcode attributes.
 	 * @return HTML
@@ -370,13 +377,6 @@ final class Newspack_Popups_Inserter {
 			return;
 		}
 
-		add_filter(
-			'newspack_popups_list_for_amp_access',
-			function ( $popups ) use ( $found_popup ) {
-				$popups[] = $found_popup;
-				return $popups;
-			}
-		);
 		self::enqueue_popup_assets();
 		// Wrapping the inline popup in an aside element prevents the markup from being mangled
 		// if the shortcode is the first block.
@@ -416,7 +416,31 @@ final class Newspack_Popups_Inserter {
 			return;
 		}
 
-		$popups = apply_filters( 'newspack_popups_list_for_amp_access', self::popups_for_post() );
+		$shortcoded_popup_ids = array_unique(
+			array_merge(
+				self::get_shortcoded_popups_ids( get_the_content() ),
+				get_option( 'newspack_popups_widget_shortcode_popups_ids', [] )
+			)
+		);
+		$shortcoded_popups    = array_reduce(
+			$shortcoded_popup_ids,
+			function ( $acc, $id ) {
+				$popup_post = get_post( $id );
+				if ( $popup_post ) {
+					$popup_object = Newspack_Popups_Model::create_popup_object( $popup_post );
+					if ( $popup_object ) {
+						$acc[] = $popup_object;
+					}
+				}
+				return $acc;
+			},
+			[]
+		);
+
+		$popups = array_merge(
+			self::popups_for_post(),
+			$shortcoded_popups
+		);
 		// "Escape hatch" if there's a need to block adding amp-access for pages that have no campaigns.
 		if ( apply_filters( 'newspack_popups_suppress_insert_amp_access', false, $popups ) ) {
 			return;
@@ -516,6 +540,33 @@ final class Newspack_Popups_Inserter {
 	}
 
 	/**
+	 * Look for popup shortcodes in a string and return their IDs.
+	 *
+	 * @param string $string String to assess.
+	 * @return array Found shortcoded popups IDs.
+	 */
+	public static function get_shortcoded_popups_ids( $string ) {
+		preg_match_all( '/\[newspack-popup .*\]/', $string, $popup_shortcodes_in_content );
+		if ( empty( $popup_shortcodes_in_content ) ) {
+			return [];
+		} else {
+			return array_unique(
+				array_map(
+					function ( $item ) {
+						preg_match( '/id=["|\'](\d*)/', $item, $matches );
+						if ( empty( $matches ) ) {
+							return null;
+						} else {
+							return $matches[1];
+						}
+					},
+					$popup_shortcodes_in_content[0]
+				)
+			);
+		}
+	}
+
+	/**
 	 * Some popups can only appear on Posts.
 	 *
 	 * @param object $popup The popup to assess.
@@ -605,6 +656,23 @@ final class Newspack_Popups_Inserter {
 		return self::assess_is_post( $popup ) &&
 			self::assess_categories_filter( $popup ) &&
 			self::assess_tags_filter( $popup );
+	}
+
+	/**
+	 * When a Text widget is saved and it contains popups shortcode(s), save their IDs as an option.
+	 *
+	 * @param object $instance Widget instance.
+	 * @param object $new_instance New widget instance.
+	 * @param object $old_instance Old widget instance.
+	 * @param object $widget Widget object.
+	 * @return object Widget instance.
+	 */
+	public static function save_widgets_shortcoded_popup_ids( $instance, $new_instance, $old_instance, $widget ) {
+		if ( 'widget_text' === $widget->option_name ) {
+			$shortcoded_popup_ids = self::get_shortcoded_popups_ids( $new_instance['text'] );
+			update_option( 'newspack_popups_widget_shortcode_popups_ids', $shortcoded_popup_ids );
+		}
+		return $instance;
 	}
 }
 $newspack_popups_inserter = new Newspack_Popups_Inserter();
