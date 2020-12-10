@@ -53,6 +53,11 @@ final class Newspack_Popups_Inserter {
 			return [ Newspack_Popups_Model::retrieve_preview_popup( Newspack_Popups::previewed_popup_id() ) ];
 		}
 
+		// Campaigns disabled for this page.
+		if ( self::assess_has_disabled_popups() ) {
+			return [];
+		}
+
 		// 1. Get all inline popups.
 		$popups_to_maybe_display = Newspack_Popups_Model::retrieve_inline_popups();
 
@@ -80,8 +85,8 @@ final class Newspack_Popups_Inserter {
 				$found_popup = Newspack_Popups_Model::retrieve_popup_by_id( $sitewide_default );
 				if (
 					$found_popup &&
-					// Prevent inline sitewide default from being added - all inline popups are there.
-					'inline' !== $found_popup['options']['placement']
+					// Prevent non-overlay sitewide default from being added.
+					Newspack_Popups_Model::is_overlay( $found_popup )
 				) {
 					array_push(
 						$popups_to_maybe_display,
@@ -96,7 +101,7 @@ final class Newspack_Popups_Inserter {
 		$popups_to_maybe_display_deduped = array_filter(
 			$popups_to_maybe_display,
 			function ( $campaign ) use ( &$has_overlay ) {
-				if ( 'inline' !== $campaign['options']['placement'] ) {
+				if ( Newspack_Popups_Model::is_overlay( $campaign ) ) {
 					if ( $has_overlay ) {
 						return false;
 					} else {
@@ -108,16 +113,10 @@ final class Newspack_Popups_Inserter {
 			}
 		);
 
-		$popups_to_display = array_filter(
+		return array_filter(
 			$popups_to_maybe_display_deduped,
 			[ __CLASS__, 'should_display' ]
 		);
-
-		if ( ! empty( $popups_to_display ) ) {
-			return $popups_to_display;
-		}
-
-		return [];
 	}
 
 	/**
@@ -129,6 +128,10 @@ final class Newspack_Popups_Inserter {
 		add_action( 'after_header', [ $this, 'insert_popups_after_header' ] ); // This is a Newspack theme hook. When used with other themes, popups won't be inserted on archive pages.
 		add_action( 'wp_head', [ $this, 'insert_popups_amp_access' ] );
 		add_action( 'wp_head', [ $this, 'register_amp_scripts' ] );
+		add_action( 'before_header', [ $this, 'insert_before_header' ] );
+
+		// Always enqueue scripts, since this plugin's scripts are handling pageview sending via GTAG.
+		add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
 
 		add_filter(
 			'widget_update_callback',
@@ -177,9 +180,8 @@ final class Newspack_Popups_Inserter {
 	 * Process popups and insert into post and page content if needed.
 	 *
 	 * @param string $content The content of the post.
-	 * @param bool   $enqueue_assets Whether assets should be enqueued.
 	 */
-	public static function insert_popups_in_content( $content = '', $enqueue_assets = true ) {
+	public static function insert_popups_in_content( $content = '' ) {
 		// Avoid duplicate execution.
 		if ( true === self::$the_content_has_rendered ) {
 			return $content;
@@ -205,11 +207,6 @@ final class Newspack_Popups_Inserter {
 			return $content;
 		}
 
-		// Campaigns disabled for this page.
-		if ( self::assess_has_disabled_popups() ) {
-			return $content;
-		}
-
 		// If the current post is a Campaign, ignore.
 		if ( Newspack_Popups::NEWSPACK_PLUGINS_CPT == get_post_type() ) {
 			return $content;
@@ -221,12 +218,13 @@ final class Newspack_Popups_Inserter {
 			return $content;
 		}
 
+
 		// If any popups are inserted using a shortcode, skip them.
 		$shortcoded_popups_ids = self::get_shortcoded_popups_ids( get_the_content() );
 		$popups                = array_filter(
 			self::popups_for_post(),
 			function ( $popup ) use ( $shortcoded_popups_ids ) {
-				return ! in_array( $popup['id'], $shortcoded_popups_ids );
+				return ! in_array( $popup['id'], $shortcoded_popups_ids ) && Newspack_Popups_Model::should_be_inserted_in_page_content( $popup );
 			}
 		);
 
@@ -250,14 +248,19 @@ final class Newspack_Popups_Inserter {
 		$inline_popups  = [];
 		$overlay_popups = [];
 		foreach ( $popups as $popup ) {
-			if ( 'inline' === $popup['options']['placement'] ) {
+			if ( Newspack_Popups_Model::is_inline( $popup ) ) {
 				$percentage                = intval( $popup['options']['trigger_scroll_progress'] ) / 100;
 				$popup['precise_position'] = $total_length * $percentage;
 				$popup['is_inserted']      = false;
 				$inline_popups[]           = $popup;
-			} else {
+			} elseif ( Newspack_Popups_Model::is_overlay( $popup ) ) {
 				$overlay_popups[] = $popup;
 			}
+		}
+
+		// Return early if there are no popups to insert. This can happen if e.g. the only popup is an above header one.
+		if ( empty( $inline_popups ) && empty( $overlay_popups ) ) {
+			return $content;
 		}
 
 		// 2. Iterate overall blocks and insert inline campaigns.
@@ -290,9 +293,6 @@ final class Newspack_Popups_Inserter {
 			$output = '<!-- wp:html -->' . Newspack_Popups_Model::generate_popup( $overlay_popup ) . '<!-- /wp:html -->' . $output;
 		}
 
-		if ( $enqueue_assets ) {
-			self::enqueue_popup_assets();
-		}
 		self::$the_content_has_rendered = true;
 		return $output;
 	}
@@ -305,21 +305,26 @@ final class Newspack_Popups_Inserter {
 		if ( is_singular() ) {
 			return;
 		}
+		$popups = array_filter( self::popups_for_post(), [ 'Newspack_Popups_Model', 'should_be_inserted_in_page_content' ] );
+		foreach ( $popups as $popup ) {
+			echo Newspack_Popups_Model::generate_popup( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		}
+	}
 
-		$popups = self::popups_for_post();
-
-		if ( ! empty( $popups ) ) {
-			foreach ( $popups as $popup ) {
-				echo Newspack_Popups_Model::generate_popup( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-			}
-			self::enqueue_popup_assets();
+	/**
+	 * Insert popups markup before header.
+	 */
+	public static function insert_before_header() {
+		$before_header_popups = array_filter( self::popups_for_post(), [ 'Newspack_Popups_Model', 'should_be_inserted_above_page_header' ] );
+		foreach ( $before_header_popups as $popup ) {
+			echo Newspack_Popups_Model::generate_popup( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		}
 	}
 
 	/**
 	 * Enqueue the assets needed to display the popups.
 	 */
-	public static function enqueue_popup_assets() {
+	public static function enqueue_scripts() {
 		if ( defined( 'IS_TEST_ENV' ) && IS_TEST_ENV ) {
 			return;
 		}
@@ -370,7 +375,6 @@ final class Newspack_Popups_Inserter {
 			return;
 		}
 
-		self::enqueue_popup_assets();
 		// Wrapping the inline popup in an aside element prevents the markup from being mangled
 		// if the shortcode is the first block.
 		return '<aside>' . Newspack_Popups_Model::generate_popup( $found_popup ) . '</aside>';
@@ -384,7 +388,7 @@ final class Newspack_Popups_Inserter {
 	public static function create_single_popup_access_payload( $popup ) {
 		$popup_id_string = Newspack_Popups_Model::canonize_popup_id( esc_attr( $popup['id'] ) );
 		$frequency       = $popup['options']['frequency'];
-		if ( 'inline' !== $popup['options']['placement'] && 'always' === $frequency ) {
+		if ( Newspack_Popups_Model::is_overlay( $popup ) && 'always' === $frequency ) {
 			$frequency = 'once';
 		}
 		return [
@@ -473,6 +477,7 @@ final class Newspack_Popups_Inserter {
 			},
 			(object) []
 		);
+		$popups_access_provider['authorization'] .= '&ref=DOCUMENT_REFERRER';
 		$popups_access_provider['authorization'] .= '&popups=' . wp_json_encode( $popups_configs );
 		$popups_access_provider['authorization'] .= '&settings=' . wp_json_encode( $settings );
 		$popups_access_provider['authorization'] .= '&visit=' . wp_json_encode(
@@ -648,7 +653,8 @@ final class Newspack_Popups_Inserter {
 		}
 		return self::assess_is_post( $popup ) &&
 			self::assess_categories_filter( $popup ) &&
-			self::assess_tags_filter( $popup );
+			self::assess_tags_filter( $popup ) &&
+			'never' !== $popup['options']['frequency'];
 	}
 
 	/**
