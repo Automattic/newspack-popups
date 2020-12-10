@@ -12,7 +12,6 @@ import { RangeControl, SelectControl, ToggleControl } from '@wordpress/component
 const Sidebar = ( {
 	display_title,
 	frequency,
-	manual_only,
 	onMetaFieldChange,
 	placement,
 	trigger_scroll_progress,
@@ -84,24 +83,13 @@ const Sidebar = ( {
 				</Fragment>
 			) }
 			{ isInline && (
-				<>
-					<RangeControl
-						label={ __( 'Approximate Position (in percent)', 'newspack-popups' ) }
-						value={ trigger_scroll_progress }
-						onChange={ value => onMetaFieldChange( 'trigger_scroll_progress', value ) }
-						min={ 0 }
-						max={ 100 }
-					/>
-					<ToggleControl
-						label={ __( 'Manual only', 'newspack-popups' ) }
-						checked={ manual_only }
-						help={ __(
-							'If set to manual only, campaign will only be shown if inserted using a shortcode. Category and tag filtering will be disregarded.',
-							'newspack-popups'
-						) }
-						onChange={ value => onMetaFieldChange( 'manual_only', value ) }
-					/>
-				</>
+				<RangeControl
+					label={ __( 'Approximate Position (in percent)', 'newspack-popups' ) }
+					value={ trigger_scroll_progress }
+					onChange={ value => onMetaFieldChange( 'trigger_scroll_progress', value ) }
+					min={ 0 }
+					max={ 100 }
+				/>
 			) }
 		</Fragment>
 	);

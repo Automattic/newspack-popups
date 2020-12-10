@@ -368,17 +368,6 @@ final class Newspack_Popups_Inserter {
 			return;
 		}
 
-		// If the shortcode is placed by the insert_popups_in_content function,
-		// it will have the `_is_placed_automatically` attribute.
-		// In this case, if it's a manual-only campaign, it should not be displayed.
-		if (
-			isset( $atts['_is_placed_automatically'] ) &&
-			$atts['_is_placed_automatically'] &&
-			$found_popup['options']['manual_only']
-		) {
-			return;
-		}
-
 		// Only inline popups can be inserted via the  shortcode.
 		if ( ! Newspack_Popups_Model::is_inline( $found_popup ) ) {
 			return;

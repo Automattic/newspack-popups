@@ -9,7 +9,6 @@ export const optionsFieldsSelector = select => {
 	const {
 		background_color,
 		frequency,
-		manual_only,
 		dismiss_text,
 		dismiss_text_alignment,
 		display_title,
@@ -28,7 +27,6 @@ export const optionsFieldsSelector = select => {
 		dismiss_text_alignment,
 		display_title,
 		frequency,
-		manual_only,
 		overlay_color,
 		overlay_opacity,
 		newspack_popups_is_sitewide_default: getEditedPostAttribute(

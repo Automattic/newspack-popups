@@ -151,18 +151,6 @@ final class Newspack_Popups {
 
 		\register_meta(
 			'post',
-			'manual_only',
-			[
-				'object_subtype' => self::NEWSPACK_PLUGINS_CPT,
-				'show_in_rest'   => true,
-				'type'           => 'boolean',
-				'single'         => true,
-				'auth_callback'  => '__return_true',
-			]
-		);
-
-		\register_meta(
-			'post',
 			'placement',
 			[
 				'object_subtype' => self::NEWSPACK_PLUGINS_CPT,
@@ -452,7 +440,6 @@ final class Newspack_Popups {
 		update_post_meta( $post_id, 'display_title', false );
 		update_post_meta( $post_id, 'dismiss_text', self::get_default_dismiss_text() );
 		update_post_meta( $post_id, 'frequency', 'test' );
-		update_post_meta( $post_id, 'manual_only', false );
 		update_post_meta( $post_id, 'overlay_color', '#000000' );
 		update_post_meta( $post_id, 'overlay_opacity', 30 );
 		update_post_meta( $post_id, 'placement', $placement );
