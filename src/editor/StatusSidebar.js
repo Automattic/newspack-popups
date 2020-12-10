@@ -15,12 +15,11 @@ const StatusSidebar = ( {
 	frequency,
 	newspack_popups_is_sitewide_default,
 	onMetaFieldChange,
-	placement,
+	isOverlay,
 	removeNotice,
 	onSitewideDefaultChange,
 } ) => {
 	const isTest = 'test' === frequency;
-	const isInline = 'inline' === placement;
 
 	const createTestNotice = () => {
 		createNotice(
@@ -62,11 +61,11 @@ const StatusSidebar = ( {
 						onMetaFieldChange( 'frequency', 'once' );
 					} }
 				/>
-				{ ! isInline && (
+				{ isOverlay && (
 					<ToggleControl
 						label={ __( 'Sitewide Default', 'newspack-popups' ) }
 						help={ __( 'Sitewide default campaigns can appear on any page.', 'newspack-popups' ) }
-						checked={ ! isInline && newspack_popups_is_sitewide_default }
+						checked={ newspack_popups_is_sitewide_default }
 						onChange={ value => onSitewideDefaultChange( value ) }
 					/>
 				) }
