@@ -67,14 +67,30 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			);
 		}
 
-		$page_referer_url = isset( $_REQUEST['ref'] ) ? $_REQUEST['ref'] : '';
+
+		$view_as_spec = [];
+		if ( ! empty( $_REQUEST['view_as'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$view_as_spec_raw = explode( ',', json_decode( $_REQUEST['view_as'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			$view_as_spec     = array_reduce(
+				$view_as_spec_raw,
+				function( $acc, $item ) {
+					$parts            = explode( ':', $item );
+					$acc[ $parts[0] ] = $parts[1];
+					return $acc;
+				},
+				[]
+			);
+		}
+
+		$page_referer_url = isset( $_REQUEST['ref'] ) ? $_REQUEST['ref'] : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		foreach ( $campaigns as $campaign ) {
 			$response[ $campaign->id ] = $this->should_campaign_be_shown(
 				$client_id,
 				$campaign,
 				$settings,
 				filter_input( INPUT_SERVER, 'HTTP_REFERER', FILTER_SANITIZE_STRING ),
-				$page_referer_url
+				$page_referer_url,
+				$view_as_spec
 			);
 		}
 		$this->response = $response;
@@ -89,10 +105,11 @@ class Maybe_Show_Campaign extends Lightweight_API {
 	 * @param object $settings Settings.
 	 * @param string $referer_url URL of the page performing the API request.
 	 * @param string $page_referer_url URL of the referrer of the frontend page that is making the API request.
+	 * @param object $view_as_spec "View As" specification.
 	 * @param string $now Current timestamp.
 	 * @return bool Whether campaign should be shown.
 	 */
-	public function should_campaign_be_shown( $client_id, $campaign, $settings, $referer_url = '', $page_referer_url = '', $now = false ) {
+	public function should_campaign_be_shown( $client_id, $campaign, $settings, $referer_url = '', $page_referer_url = '', $view_as_spec = false, $now = false ) {
 		if ( false === $now ) {
 			$now = time();
 		}
@@ -172,6 +189,16 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			$campaign_data['suppress_forever'] = true;
 		}
 
+		// Using "view as" feature.
+		$view_as_segment = false;
+		if ( $view_as_spec && $view_as_spec['segment'] ) {
+			$segment_config = [];
+			if ( isset( $settings->all_segments->{$view_as_spec['segment']} ) ) {
+				$segment_config = $settings->all_segments->{$view_as_spec['segment']};
+			}
+			$view_as_segment = empty( $segment_config ) ? false : $segment_config;
+		}
+
 		// Handle segmentation.
 		$campaign_segment = isset( $settings->all_segments->{$campaign->s} ) ? $settings->all_segments->{$campaign->s} : false;
 		if ( ! empty( $campaign_segment ) ) {
@@ -180,7 +207,8 @@ class Maybe_Show_Campaign extends Lightweight_API {
 				$campaign_segment,
 				$client_data,
 				$referer_url,
-				$page_referer_url
+				$page_referer_url,
+				$view_as_segment
 			);
 
 			if (
@@ -193,7 +221,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			}
 		}
 
-		if ( ! empty( array_diff( $init_campaign_data, $campaign_data ) ) ) {
+		if ( ! $view_as_spec && ! empty( array_diff( $init_campaign_data, $campaign_data ) ) ) {
 			$this->save_campaign_data( $client_id, $campaign->id, $campaign_data );
 		}
 
