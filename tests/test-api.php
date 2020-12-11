@@ -24,37 +24,19 @@ class APITest extends WP_UnitTestCase {
 			'suppress_all_newsletter_campaigns_if_one_dismissed' => true,
 			'suppress_donation_campaigns_if_donor' => true,
 			'all_segments'                         => (object) [
+				'defaultSegment'        => (object) [],
 				'segmentBetween3And5'   => (object) [
-					'min_posts'         => 2,
-					'max_posts'         => 3,
-					'is_subscribed'     => false,
-					'is_donor'          => false,
-					'is_not_subscribed' => false,
-					'is_not_donor'      => false,
-				],
-				'segmentWithZeros'      => (object) [
-					'min_posts'         => 0,
-					'max_posts'         => 0,
-					'is_subscribed'     => false,
-					'is_donor'          => false,
-					'is_not_subscribed' => false,
-					'is_not_donor'      => false,
+					'min_posts' => 2,
+					'max_posts' => 3,
 				],
 				'segmentSubscribers'    => (object) [
-					'min_posts'         => 0,
-					'max_posts'         => 0,
-					'is_subscribed'     => true,
-					'is_donor'          => false,
-					'is_not_subscribed' => false,
-					'is_not_donor'      => false,
+					'is_subscribed' => true,
 				],
 				'segmentNonSubscribers' => (object) [
-					'min_posts'         => 0,
-					'max_posts'         => 0,
-					'is_subscribed'     => false,
-					'is_donor'          => false,
 					'is_not_subscribed' => true,
-					'is_not_donor'      => false,
+				],
+				'segmentWithReferrers'  => (object) [
+					'referrers' => 'foobar.com, newspack.pub',
 				],
 			],
 		];
@@ -143,6 +125,7 @@ class APITest extends WP_UnitTestCase {
 				$client_id,
 				$test_popup['payload'],
 				self::$settings,
+				'',
 				'',
 				strtotime( '+1 day 1 hour' )
 			),
@@ -729,7 +712,7 @@ class APITest extends WP_UnitTestCase {
 			[
 				'placement'           => 'inline',
 				'frequency'           => 'always',
-				'selected_segment_id' => 'segmentWithZeros',
+				'selected_segment_id' => 'defaultSegment',
 			]
 		);
 		$client_id               = 'amp-123';
@@ -737,6 +720,37 @@ class APITest extends WP_UnitTestCase {
 		self::assertTrue(
 			self::$maybe_show_campaign->should_campaign_be_shown( $client_id, $test_popup_with_segment['payload'], self::$settings ),
 			'Assert visible.'
+		);
+	}
+
+	/**
+	 * Handling referrer-based segmentation.
+	 */
+	public function test_segment_page_referrer() {
+		$test_popup_with_segment = self::create_test_popup(
+			[
+				'placement'           => 'inline',
+				'frequency'           => 'always',
+				'selected_segment_id' => 'segmentWithReferrers',
+			]
+		);
+		$client_id               = 'amp-123';
+
+		self::assertTrue(
+			self::$maybe_show_campaign->should_campaign_be_shown( $client_id, $test_popup_with_segment['payload'], self::$settings, '', 'http://foobar.com' ),
+			'Assert visible if first referrer matches.'
+		);
+		self::assertTrue(
+			self::$maybe_show_campaign->should_campaign_be_shown( $client_id, $test_popup_with_segment['payload'], self::$settings, '', 'https://newspack.pub' ),
+			'Assert visible if second referrer matches.'
+		);
+		self::assertTrue(
+			self::$maybe_show_campaign->should_campaign_be_shown( $client_id, $test_popup_with_segment['payload'], self::$settings, '', 'https://www.foobar.com' ),
+			'Assert visible if referrer matches, with a www subdomain.'
+		);
+		self::assertFalse(
+			self::$maybe_show_campaign->should_campaign_be_shown( $client_id, $test_popup_with_segment['payload'], self::$settings, '', 'https://google.com' ),
+			'Assert not visible if referrer does not match.'
 		);
 	}
 

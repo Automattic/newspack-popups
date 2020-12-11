@@ -67,12 +67,14 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			);
 		}
 
+		$page_referer_url = isset( $_REQUEST['ref'] ) ? $_REQUEST['ref'] : '';
 		foreach ( $campaigns as $campaign ) {
 			$response[ $campaign->id ] = $this->should_campaign_be_shown(
 				$client_id,
 				$campaign,
 				$settings,
-				filter_input( INPUT_SERVER, 'HTTP_REFERER', FILTER_SANITIZE_STRING )
+				filter_input( INPUT_SERVER, 'HTTP_REFERER', FILTER_SANITIZE_STRING ),
+				$page_referer_url
 			);
 		}
 		$this->response = $response;
@@ -85,11 +87,12 @@ class Maybe_Show_Campaign extends Lightweight_API {
 	 * @param string $client_id Client ID.
 	 * @param object $campaign Campaign.
 	 * @param object $settings Settings.
-	 * @param string $referer_url Referer URL.
+	 * @param string $referer_url URL of the page performing the API request.
+	 * @param string $page_referer_url URL of the referrer of the frontend page that is making the API request.
 	 * @param string $now Current timestamp.
 	 * @return bool Whether campaign should be shown.
 	 */
-	public function should_campaign_be_shown( $client_id, $campaign, $settings, $referer_url = '', $now = false ) {
+	public function should_campaign_be_shown( $client_id, $campaign, $settings, $referer_url = '', $page_referer_url = '', $now = false ) {
 		if ( false === $now ) {
 			$now = time();
 		}
@@ -172,10 +175,12 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		// Handle segmentation.
 		$campaign_segment = isset( $settings->all_segments->{$campaign->s} ) ? $settings->all_segments->{$campaign->s} : false;
 		if ( ! empty( $campaign_segment ) ) {
-			$should_display = Campaign_Data_Utils::should_display_campaign(
+			$campaign_segment = Campaign_Data_Utils::canonize_segment( $campaign_segment );
+			$should_display   = Campaign_Data_Utils::should_display_campaign(
 				$campaign_segment,
 				$client_data,
-				$referer_url
+				$referer_url,
+				$page_referer_url
 			);
 
 			if (
@@ -185,18 +190,6 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			) {
 				// Save suppression for this campaign.
 				$campaign_data['suppress_forever'] = true;
-			}
-			if ( isset( $campaign_segment->referrers ) && $campaign_segment->referrers && ! empty( $campaign_segment->referrers ) && isset( $_REQUEST['ref'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-				$referer_domain = parse_url( $_REQUEST['ref'], PHP_URL_HOST ); // phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url, WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-				// Handle the 'www' prefix – assume `www.example.com` and `example.com` referrers are the same.
-				$referer_domain_alternative = strpos( $referer_domain, 'www.' ) === 0 ? substr( $referer_domain, 4 ) : "www.$referer_domain";
-				$referrer_matches           = array_intersect(
-					[ $referer_domain, $referer_domain_alternative ],
-					array_map( 'trim', explode( ',', $campaign_segment->referrers ) )
-				);
-				if ( empty( $referrer_matches ) ) {
-					$should_display = false;
-				}
 			}
 		}
 
