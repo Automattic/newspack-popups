@@ -2,6 +2,10 @@
 	display: none;
 }
 
+.editor-post-title__input::placeholder {
+	color: var( --newspack-popups-editor-placeholder-color, #7d7d7d ) !important;
+}
+
 .newspack-popups {
 	&__status-options {
 		margin: 1rem 0;
