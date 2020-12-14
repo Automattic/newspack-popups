@@ -6,8 +6,8 @@
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { withSelect, withDispatch } from '@wordpress/data';
 import { compose } from '@wordpress/compose';
+import { withSelect, withDispatch } from '@wordpress/data';
 import { registerPlugin } from '@wordpress/plugins';
 import { PluginDocumentSettingPanel, PluginPostStatusInfo } from '@wordpress/edit-post';
 
@@ -22,6 +22,7 @@ import SegmentationSidebar from './SegmentationSidebar';
 import DismissSidebar from './DismissSidebar';
 import ColorsSidebar from './ColorsSidebar';
 import Preview from './Preview';
+import withDismissButtonPreview from './withDismissButtonPreview';
 import './style.scss';
 
 // Action dispatchers for the sidebar components.
@@ -110,14 +111,14 @@ registerPlugin( 'newspack-popups-segmentation', {
 } );
 
 registerPlugin( 'newspack-popups-dismiss', {
-	render: () => (
+	render: withDismissButtonPreview( () => (
 		<PluginDocumentSettingPanel
 			name="popup-dismiss-panel"
 			title={ __( 'Dismiss Button Settings', 'newspack-popups' ) }
 		>
 			<DismissSidebarWithData />
 		</PluginDocumentSettingPanel>
-	),
+	) ),
 	icon: null,
 } );
 
