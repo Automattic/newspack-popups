@@ -177,4 +177,24 @@ class SegmentationTest extends WP_UnitTestCase {
 			'The read posts array is not updated after a non-post visit was made.'
 		);
 	}
+
+	/**
+	 * Parse a "view as" spec.
+	 */
+	public function test_parse_view_as() {
+		self::assertEquals(
+			Segmentation::parse_view_as( 'groups:one,two;segment:123' ),
+			[
+				'groups'  => 'one,two',
+				'segment' => '123',
+			],
+			'Spec is parsed.'
+		);
+
+		self::assertEquals(
+			Segmentation::parse_view_as( '' ),
+			[],
+			'Empty array is returned if there is no spec.'
+		);
+	}
 }
