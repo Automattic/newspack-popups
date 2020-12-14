@@ -191,7 +191,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 
 		// Using "view as" feature.
 		$view_as_segment = false;
-		if ( $view_as_spec && $view_as_spec['segment'] ) {
+		if ( $view_as_spec && isset( $view_as_spec['segment'] ) && $view_as_spec['segment'] ) {
 			$segment_config = [];
 			if ( isset( $settings->all_segments->{$view_as_spec['segment']} ) ) {
 				$segment_config = $settings->all_segments->{$view_as_spec['segment']};
