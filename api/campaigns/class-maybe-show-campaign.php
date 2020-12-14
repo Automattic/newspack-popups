@@ -70,16 +70,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 
 		$view_as_spec = [];
 		if ( ! empty( $_REQUEST['view_as'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			$view_as_spec_raw = explode( ',', json_decode( $_REQUEST['view_as'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-			$view_as_spec     = array_reduce(
-				$view_as_spec_raw,
-				function( $acc, $item ) {
-					$parts            = explode( ':', $item );
-					$acc[ $parts[0] ] = $parts[1];
-					return $acc;
-				},
-				[]
-			);
+			$view_as_spec = Segmentation::parse_view_as( json_decode( $_REQUEST['view_as'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		}
 
 		$page_referer_url = isset( $_REQUEST['ref'] ) ? $_REQUEST['ref'] : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
