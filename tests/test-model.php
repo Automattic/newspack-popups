@@ -14,7 +14,7 @@ class ModelTest extends WP_UnitTestCase {
 	public static function wpSetUpBeforeClass() { // phpcs:ignore Squiz.Commenting.FunctionComment.Missing
 		self::$popup_id = self::factory()->post->create(
 			[
-				'post_type'    => Newspack_Popups::NEWSPACK_PLUGINS_CPT,
+				'post_type'    => Newspack_Popups::NEWSPACK_POPUPS_CPT,
 				'post_title'   => 'Platea fames',
 				'post_content' => 'Faucibus placerat senectus.',
 			]

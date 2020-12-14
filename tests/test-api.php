@@ -45,7 +45,7 @@ class APITest extends WP_UnitTestCase {
 	public static function create_test_popup( $options, $post_content = 'Faucibus placerat senectus metus molestie varius tincidunt.' ) { // phpcs:ignore Squiz.Commenting.FunctionComment.Missing
 		$popup_id = self::factory()->post->create(
 			[
-				'post_type'    => Newspack_Popups::NEWSPACK_PLUGINS_CPT,
+				'post_type'    => Newspack_Popups::NEWSPACK_POPUPS_CPT,
 				'post_title'   => 'Platea fames',
 				'post_content' => $post_content,
 			]

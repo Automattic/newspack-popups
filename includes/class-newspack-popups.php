@@ -12,8 +12,9 @@ defined( 'ABSPATH' ) || exit;
  */
 final class Newspack_Popups {
 
-	const NEWSPACK_PLUGINS_CPT             = 'newspack_popups_cpt';
+	const NEWSPACK_POPUPS_CPT              = 'newspack_popups_cpt';
 	const NEWSPACK_POPUPS_SITEWIDE_DEFAULT = 'newspack_popups_sitewide_default';
+	const NEWSPACK_POPUPS_TAXONOMY         = 'newspack_popups_taxonomy';
 
 	const NEWSPACK_POPUP_PREVIEW_QUERY_PARAM = 'newspack_popups_preview_id';
 
@@ -48,10 +49,11 @@ final class Newspack_Popups {
 		add_action( 'admin_notices', [ __CLASS__, 'api_config_missing_notice' ] );
 		add_action( 'init', [ __CLASS__, 'register_cpt' ] );
 		add_action( 'init', [ __CLASS__, 'register_meta' ] );
+		add_action( 'init', [ __CLASS__, 'register_taxonomy' ] );
 		add_action( 'enqueue_block_editor_assets', [ __CLASS__, 'enqueue_block_editor_assets' ] );
 		add_filter( 'display_post_states', [ __CLASS__, 'display_post_states' ], 10, 2 );
 		add_action( 'rest_api_init', [ __CLASS__, 'rest_api_init' ] );
-		add_action( 'save_post_' . self::NEWSPACK_PLUGINS_CPT, [ __CLASS__, 'popup_default_fields' ], 10, 3 );
+		add_action( 'save_post_' . self::NEWSPACK_POPUPS_CPT, [ __CLASS__, 'popup_default_fields' ], 10, 3 );
 
 		if ( filter_input( INPUT_GET, 'newspack_popups_preview_id', FILTER_SANITIZE_STRING ) ) {
 			add_filter( 'show_admin_bar', [ __CLASS__, 'hide_admin_bar_for_preview' ], 10, 2 ); // phpcs:ignore WordPressVIPMinimum.UserExperience.AdminBarRemoval.RemovalDetected
@@ -97,7 +99,7 @@ final class Newspack_Popups {
 			'taxonomies'   => [ 'category', 'post_tag' ],
 			'menu_icon'    => 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBmaWxsPSIjYTBhNWFhIiBkPSJNMTEuOTkgMTguNTRsLTcuMzctNS43M0wzIDE0LjA3bDkgNyA5LTctMS42My0xLjI3LTcuMzggNS43NHpNMTIgMTZsNy4zNi01LjczTDIxIDlsLTktNy05IDcgMS42MyAxLjI3TDEyIDE2eiIvPjwvc3ZnPgo=',
 		];
-		\register_post_type( self::NEWSPACK_PLUGINS_CPT, $cpt_args );
+		\register_post_type( self::NEWSPACK_POPUPS_CPT, $cpt_args );
 	}
 
 	/**
@@ -108,7 +110,7 @@ final class Newspack_Popups {
 			'post',
 			'trigger_type',
 			[
-				'object_subtype' => self::NEWSPACK_PLUGINS_CPT,
+				'object_subtype' => self::NEWSPACK_POPUPS_CPT,
 				'show_in_rest'   => true,
 				'type'           => 'string',
 				'single'         => true,
@@ -119,7 +121,7 @@ final class Newspack_Popups {
 			'post',
 			'trigger_scroll_progress',
 			[
-				'object_subtype' => self::NEWSPACK_PLUGINS_CPT,
+				'object_subtype' => self::NEWSPACK_POPUPS_CPT,
 				'show_in_rest'   => true,
 				'type'           => 'integer',
 				'single'         => true,
@@ -130,7 +132,7 @@ final class Newspack_Popups {
 			'post',
 			'trigger_delay',
 			[
-				'object_subtype' => self::NEWSPACK_PLUGINS_CPT,
+				'object_subtype' => self::NEWSPACK_POPUPS_CPT,
 				'show_in_rest'   => true,
 				'type'           => 'integer',
 				'single'         => true,
@@ -142,7 +144,7 @@ final class Newspack_Popups {
 			'post',
 			'frequency',
 			[
-				'object_subtype' => self::NEWSPACK_PLUGINS_CPT,
+				'object_subtype' => self::NEWSPACK_POPUPS_CPT,
 				'show_in_rest'   => true,
 				'type'           => 'string',
 				'single'         => true,
@@ -154,7 +156,7 @@ final class Newspack_Popups {
 			'post',
 			'placement',
 			[
-				'object_subtype' => self::NEWSPACK_PLUGINS_CPT,
+				'object_subtype' => self::NEWSPACK_POPUPS_CPT,
 				'show_in_rest'   => true,
 				'type'           => 'string',
 				'single'         => true,
@@ -166,7 +168,7 @@ final class Newspack_Popups {
 			'post',
 			'utm_suppression',
 			[
-				'object_subtype' => self::NEWSPACK_PLUGINS_CPT,
+				'object_subtype' => self::NEWSPACK_POPUPS_CPT,
 				'show_in_rest'   => true,
 				'type'           => 'string',
 				'single'         => true,
@@ -178,7 +180,7 @@ final class Newspack_Popups {
 			'post',
 			'background_color',
 			[
-				'object_subtype' => self::NEWSPACK_PLUGINS_CPT,
+				'object_subtype' => self::NEWSPACK_POPUPS_CPT,
 				'show_in_rest'   => true,
 				'type'           => 'string',
 				'single'         => true,
@@ -190,7 +192,7 @@ final class Newspack_Popups {
 			'post',
 			'overlay_color',
 			[
-				'object_subtype' => self::NEWSPACK_PLUGINS_CPT,
+				'object_subtype' => self::NEWSPACK_POPUPS_CPT,
 				'show_in_rest'   => true,
 				'type'           => 'string',
 				'single'         => true,
@@ -202,7 +204,7 @@ final class Newspack_Popups {
 			'post',
 			'overlay_opacity',
 			[
-				'object_subtype' => self::NEWSPACK_PLUGINS_CPT,
+				'object_subtype' => self::NEWSPACK_POPUPS_CPT,
 				'show_in_rest'   => true,
 				'type'           => 'integer',
 				'single'         => true,
@@ -214,7 +216,7 @@ final class Newspack_Popups {
 			'post',
 			'dismiss_text',
 			[
-				'object_subtype' => self::NEWSPACK_PLUGINS_CPT,
+				'object_subtype' => self::NEWSPACK_POPUPS_CPT,
 				'show_in_rest'   => true,
 				'type'           => 'string',
 				'single'         => true,
@@ -226,7 +228,7 @@ final class Newspack_Popups {
 			'post',
 			'dismiss_text_alignment',
 			[
-				'object_subtype' => self::NEWSPACK_PLUGINS_CPT,
+				'object_subtype' => self::NEWSPACK_POPUPS_CPT,
 				'show_in_rest'   => true,
 				'type'           => 'string',
 				'single'         => true,
@@ -238,7 +240,7 @@ final class Newspack_Popups {
 			'post',
 			'display_title',
 			[
-				'object_subtype' => self::NEWSPACK_PLUGINS_CPT,
+				'object_subtype' => self::NEWSPACK_POPUPS_CPT,
 				'show_in_rest'   => true,
 				'type'           => 'boolean',
 				'single'         => true,
@@ -250,7 +252,7 @@ final class Newspack_Popups {
 			'post',
 			'selected_segment_id',
 			[
-				'object_subtype' => self::NEWSPACK_PLUGINS_CPT,
+				'object_subtype' => self::NEWSPACK_POPUPS_CPT,
 				'show_in_rest'   => true,
 				'type'           => 'string',
 				'single'         => true,
@@ -269,6 +271,31 @@ final class Newspack_Popups {
 				'auth_callback' => '__return_true',
 			]
 		);
+	}
+
+	/**
+	 * Register Campaigns taxonomy.
+	 */
+	public static function register_taxonomy() {
+		$taxonomy_args = [
+			'labels'        => [
+				'name'          => __( 'Campaign Groups', 'newspack-popups' ),
+				'singular_name' => __( 'Campaign Group', 'newspack-popups' ),
+				'add_new_item'  => __( 'Add Campaign Group', 'newspack-popups' ),
+			],
+			'hierarchical'  => true,
+			'public'        => false,
+			'rewrite'       => false, // phpcs:ignore Squiz.PHP.CommentedOutCode.Found [ 'hierarchical' => true, 'slug' => $prefix . '/category' ]
+			'show_in_menu'  => false,
+			'show_in_rest'  => true,
+			'show_tagcloud' => false,
+			'show_ui'       => true,
+		];
+
+		register_taxonomy( self::NEWSPACK_POPUPS_TAXONOMY, [ self::NEWSPACK_POPUPS_CPT ], $taxonomy_args );
+
+		// Better safe than sorry: https://developer.wordpress.org/reference/functions/register_taxonomy/#more-information.
+		register_taxonomy_for_object_type( self::NEWSPACK_POPUPS_TAXONOMY, [ self::NEWSPACK_POPUPS_CPT ] );
 	}
 
 	/**
@@ -305,7 +332,7 @@ final class Newspack_Popups {
 	public static function enqueue_block_editor_assets() {
 		$screen = get_current_screen();
 
-		if ( self::NEWSPACK_PLUGINS_CPT !== $screen->post_type ) {
+		if ( self::NEWSPACK_POPUPS_CPT !== $screen->post_type ) {
 			if ( 'page' !== $screen->post_type || 'post' !== $screen->post_type ) {
 				// Script for global settings.
 				\wp_enqueue_script(
@@ -351,7 +378,7 @@ final class Newspack_Popups {
 	 * @param WP_Post $post        The current post object.
 	 */
 	public static function display_post_states( $post_states, $post ) {
-		if ( self::NEWSPACK_PLUGINS_CPT !== $post->post_type ) {
+		if ( self::NEWSPACK_POPUPS_CPT !== $post->post_type ) {
 			return $post_states;
 		}
 		$post_status_object = get_post_status_object( $post->post_status );
@@ -399,7 +426,7 @@ final class Newspack_Popups {
 	 */
 	public static function rest_api_init() {
 		register_rest_field(
-			[ self::NEWSPACK_PLUGINS_CPT ],
+			[ self::NEWSPACK_POPUPS_CPT ],
 			'newspack_popups_is_sitewide_default',
 			[
 				'get_callback'    => function( $post ) {
