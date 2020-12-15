@@ -11,6 +11,19 @@ defined( 'ABSPATH' ) || exit;
  * API endpoints
  */
 final class Newspack_Popups_Model {
+	/**
+	 * Possible placements of overlay popups.
+	 *
+	 * @var array
+	 */
+	protected static $overlay_placements = [ 'top', 'bottom', 'center' ];
+
+	/**
+	 * Possible placements of inline popups.
+	 *
+	 * @var array
+	 */
+	protected static $inline_placements = [ 'inline', 'above_header' ];
 
 	/**
 	 * Retrieve all Popups (first 100).
@@ -20,7 +33,7 @@ final class Newspack_Popups_Model {
 	 */
 	public static function retrieve_popups( $include_unpublished = false ) {
 		$args = [
-			'post_type'      => Newspack_Popups::NEWSPACK_PLUGINS_CPT,
+			'post_type'      => Newspack_Popups::NEWSPACK_POPUPS_CPT,
 			'post_status'    => $include_unpublished ? [ 'publish', 'draft' ] : 'publish',
 			'posts_per_page' => 100,
 		];
@@ -31,7 +44,7 @@ final class Newspack_Popups_Model {
 		foreach ( $popups as &$popup ) {
 			// UI will not allow for setting inline as sitewide default, but there may be
 			// legacy popups from before this update.
-			if ( 'inline' !== $popup['options']['placement'] ) {
+			if ( self::is_overlay( $popup ) ) {
 				$popup['sitewide_default'] = absint( $sitewide_default_id ) === absint( $popup['id'] );
 			}
 		}
@@ -57,7 +70,7 @@ final class Newspack_Popups_Model {
 		}
 
 		// Such update will not be permitted by the UI, but it's handled just to be explicit about it.
-		if ( 'inline' === $popup['options']['placement'] ) {
+		if ( self::is_inline( $popup ) ) {
 			return new \WP_Error(
 				'newspack_popups_inline_sitewide',
 				esc_html__( 'An inline Campaign cannot be a sitewide default.', 'newspack-popups' ),
@@ -153,7 +166,7 @@ final class Newspack_Popups_Model {
 					update_post_meta( $id, $key, $value );
 					break;
 				case 'placement':
-					if ( ! in_array( $value, [ 'center', 'top', 'bottom', 'inline' ] ) ) {
+					if ( ! in_array( $value, array_merge( self::$overlay_placements, self::$inline_placements ) ) ) {
 						return new \WP_Error(
 							'newspack_popups_invalid_option_value',
 							esc_html__( 'Invalid placement value.', 'newspack-popups' ),
@@ -165,6 +178,8 @@ final class Newspack_Popups_Model {
 					}
 					update_post_meta( $id, $key, $value );
 					break;
+				case 'trigger_type':
+				case 'trigger_scroll_progress':
 				case 'utm_suppression':
 				case 'selected_segment_id':
 					update_post_meta( $id, $key, esc_attr( $value ) );
@@ -189,11 +204,12 @@ final class Newspack_Popups_Model {
 	 */
 	public static function retrieve_inline_popups() {
 		$args = [
-			'post_type'   => Newspack_Popups::NEWSPACK_PLUGINS_CPT,
-			'post_status' => 'publish',
-			'meta_key'    => 'placement',
+			'post_type'    => Newspack_Popups::NEWSPACK_POPUPS_CPT,
+			'post_status'  => 'publish',
+			'meta_key'     => 'placement',
 			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-			'meta_value'  => 'inline',
+			'meta_value'   => self::$inline_placements,
+			'meta_compare' => 'IN',
 		];
 
 		return self::retrieve_popups_with_query( new WP_Query( $args ) );
@@ -206,13 +222,13 @@ final class Newspack_Popups_Model {
 	 */
 	public static function retrieve_overlay_test_popups() {
 		$args = [
-			'post_type'   => Newspack_Popups::NEWSPACK_PLUGINS_CPT,
+			'post_type'   => Newspack_Popups::NEWSPACK_POPUPS_CPT,
 			'post_status' => 'publish',
 			'meta_query'  => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 				[
 					'key'     => 'placement',
-					'value'   => 'inline',
-					'compare' => '!=',
+					'value'   => self::$overlay_placements,
+					'compare' => 'IN',
 				],
 				[
 					'key'   => 'frequency',
@@ -237,14 +253,14 @@ final class Newspack_Popups_Model {
 		}
 
 		$args = [
-			'post_type'      => Newspack_Popups::NEWSPACK_PLUGINS_CPT,
+			'post_type'      => Newspack_Popups::NEWSPACK_POPUPS_CPT,
 			'posts_per_page' => 1,
 			'post_status'    => 'publish',
 			'category__in'   => array_column( $post_categories, 'term_id' ),
 			'meta_key'       => 'placement',
 			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-			'meta_value'     => 'inline',
-			'meta_compare'   => '!=',
+			'meta_value'     => self::$overlay_placements,
+			'meta_compare'   => 'IN',
 		];
 
 		$popups = self::retrieve_popups_with_query( new WP_Query( $args ) );
@@ -293,7 +309,7 @@ final class Newspack_Popups_Model {
 	 */
 	public static function retrieve_popup_by_id( $post_id, $include_drafts = false ) {
 		$args = [
-			'post_type'      => Newspack_Popups::NEWSPACK_PLUGINS_CPT,
+			'post_type'      => Newspack_Popups::NEWSPACK_POPUPS_CPT,
 			'posts_per_page' => 1,
 			'p'              => $post_id,
 		];
@@ -386,18 +402,21 @@ final class Newspack_Popups_Model {
 			return $popup;
 		}
 
-		switch ( $popup['options']['trigger_type'] ) {
-			case 'scroll':
-				$popup['options']['trigger_delay'] = 0;
-				break;
-			case 'time':
-			default:
-				$popup['options']['trigger_scroll_progress'] = 0;
-				break;
-		};
-		if ( ! in_array( $popup['options']['placement'], [ 'top', 'bottom' ], true ) ) {
-			$popup['options']['placement'] = 'center';
+		if ( self::is_overlay( $popup ) ) {
+			switch ( $popup['options']['trigger_type'] ) {
+				case 'scroll':
+					$popup['options']['trigger_delay'] = 0;
+					break;
+				case 'time':
+				default:
+					$popup['options']['trigger_scroll_progress'] = 0;
+					break;
+			};
+			if ( ! in_array( $popup['options']['placement'], [ 'top', 'bottom' ], true ) ) {
+				$popup['options']['placement'] = 'center';
+			}
 		}
+
 		return $popup;
 	}
 
@@ -438,7 +457,49 @@ final class Newspack_Popups_Model {
 	 * @return boolean True if it is an inline popup.
 	 */
 	public static function is_inline( $popup ) {
+		if ( ! isset( $popup['options'], $popup['options']['placement'] ) ) {
+			return false;
+		}
 		return 'inline' === $popup['options']['placement'];
+	}
+
+	/**
+	 * Get popups which should be inserted above page header.
+	 *
+	 * @param object $popup The popup object.
+	 * @return boolean True if the popup should be inserted above page header.
+	 */
+	public static function should_be_inserted_above_page_header( $popup ) {
+		if ( self::is_inline( $popup ) ) {
+			return 'above_header' === $popup['options']['placement'];
+		} else {
+			// Insert time-triggered overlay popups above the header, this way they will be
+			// visible before scrolling below the fold.
+			return 'time' === $popup['options']['trigger_type'];
+		}
+	}
+
+	/**
+	 * Get popups which should be inserted in page content.
+	 *
+	 * @param object $popup The popup object.
+	 * @return boolean True if the popup should be inserted in page content.
+	 */
+	public static function should_be_inserted_in_page_content( $popup ) {
+		return self::should_be_inserted_above_page_header( $popup ) === false;
+	}
+
+	/**
+	 * Is it an overlay popup or not.
+	 *
+	 * @param object $popup The popup object.
+	 * @return boolean True if it is an overlay popup.
+	 */
+	public static function is_overlay( $popup ) {
+		if ( ! isset( $popup['options'], $popup['options']['placement'] ) ) {
+			return false;
+		}
+		return in_array( $popup['options']['placement'], self::$overlay_placements, true );
 	}
 
 	/**
@@ -557,7 +618,7 @@ final class Newspack_Popups_Model {
 
 		$has_link                = preg_match( '/<a\s/', $body ) !== 0;
 		$has_form                = preg_match( '/<form\s/', $body ) !== 0;
-		$has_dismiss_form        = 'inline' !== $popup['options']['placement'];
+		$has_dismiss_form        = self::is_overlay( $popup );
 		$has_not_interested_form = self::get_dismiss_text( $popup );
 
 		$analytics_events = [
@@ -735,8 +796,7 @@ final class Newspack_Popups_Model {
 	 * @return string The generated markup.
 	 */
 	public static function generate_popup( $popup ) {
-
-		if ( isset( $popup['options'], $popup['options']['placement'] ) && 'inline' === $popup['options']['placement'] ) {
+		if ( ! self::is_overlay( $popup ) ) {
 			return self::generate_inline_popup( $popup );
 		}
 
