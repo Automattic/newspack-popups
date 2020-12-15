@@ -1,3 +1,19 @@
+# [1.21.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.20.0...v1.21.0-alpha.1) (2020-12-15)
+
+
+### Bug Fixes
+
+* editor colors ([69472f3](https://github.com/Automattic/newspack-popups/commit/69472f342c5a58e7e6064cd87361cdb7d73c3997))
+* insert time-triggered overlay campaigns above header ([#297](https://github.com/Automattic/newspack-popups/issues/297)) ([d2c473b](https://github.com/Automattic/newspack-popups/commit/d2c473bc3f610953183e8abd319edbea1133dbad)), closes [#4](https://github.com/Automattic/newspack-popups/issues/4)
+
+
+### Features
+
+* **editor:** hide post visibility selector ([ce7aa98](https://github.com/Automattic/newspack-popups/commit/ce7aa98a409d7b45a9100d5d3faa75e7c7a7b51b))
+* add above header placement option ([#292](https://github.com/Automattic/newspack-popups/issues/292)) ([06a863e](https://github.com/Automattic/newspack-popups/commit/06a863efcab8c60e46015d0354c34deca77f48c8)), closes [#260](https://github.com/Automattic/newspack-popups/issues/260)
+* make campaign groups a hierarchical taxonomy ([#344](https://github.com/Automattic/newspack-popups/issues/344)) ([da4b26a](https://github.com/Automattic/newspack-popups/commit/da4b26ae3e4b62e03ed7c22cd067e1e6f00383b6))
+* render a preview of the dismiss button in the editor ([#336](https://github.com/Automattic/newspack-popups/issues/336)) ([fa7dc05](https://github.com/Automattic/newspack-popups/commit/fa7dc05649f9fcbf66cc95b51cafc34acb1ad8df))
+
 # [1.20.0](https://github.com/Automattic/newspack-popups/compare/v1.19.0...v1.20.0) (2020-12-08)
 
 
