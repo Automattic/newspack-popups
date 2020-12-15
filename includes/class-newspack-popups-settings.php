@@ -26,7 +26,7 @@ class Newspack_Popups_Settings {
 	 */
 	public static function add_plugin_page() {
 		add_submenu_page(
-			'edit.php?post_type=' . Newspack_Popups::NEWSPACK_PLUGINS_CPT,
+			'edit.php?post_type=' . Newspack_Popups::NEWSPACK_POPUPS_CPT,
 			__( 'Campaigns Settings', 'newspack-popups' ),
 			__( 'Settings', 'newspack-popups' ),
 			'manage_options',
@@ -137,7 +137,7 @@ class Newspack_Popups_Settings {
 	public static function admin_enqueue_scripts() {
 		$screen = get_current_screen();
 
-		if ( Newspack_Popups::NEWSPACK_PLUGINS_CPT . '_page_' . self::NEWSPACK_POPUPS_SETTINGS_PAGE !== $screen->base ) {
+		if ( Newspack_Popups::NEWSPACK_POPUPS_CPT . '_page_' . self::NEWSPACK_POPUPS_SETTINGS_PAGE !== $screen->base ) {
 			return;
 		}
 

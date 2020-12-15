@@ -6,8 +6,8 @@
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { withSelect, withDispatch } from '@wordpress/data';
 import { compose } from '@wordpress/compose';
+import { withSelect, withDispatch } from '@wordpress/data';
 import { registerPlugin } from '@wordpress/plugins';
 import { PluginDocumentSettingPanel, PluginPostStatusInfo } from '@wordpress/edit-post';
 
@@ -22,6 +22,7 @@ import SegmentationSidebar from './SegmentationSidebar';
 import DismissSidebar from './DismissSidebar';
 import ColorsSidebar from './ColorsSidebar';
 import Preview from './Preview';
+import EditorAdditions from './EditorAdditions';
 import './style.scss';
 
 // Action dispatchers for the sidebar components.
@@ -39,36 +40,18 @@ const mapDispatchToProps = dispatch => {
 	};
 };
 
+const connectData = compose( [
+	withSelect( optionsFieldsSelector ),
+	withDispatch( mapDispatchToProps ),
+] );
+
 // Connect data to components.
-const StatusSidebarWithData = compose( [
-	withSelect( optionsFieldsSelector ),
-	withDispatch( mapDispatchToProps ),
-] )( StatusSidebar );
-
-const SidebarWithData = compose( [
-	withSelect( optionsFieldsSelector ),
-	withDispatch( mapDispatchToProps ),
-] )( Sidebar );
-
-const FrequencySidebarWithData = compose( [
-	withSelect( optionsFieldsSelector ),
-	withDispatch( mapDispatchToProps ),
-] )( FrequencySidebar );
-
-const SegmentationSidebarWithData = compose( [
-	withSelect( optionsFieldsSelector ),
-	withDispatch( mapDispatchToProps ),
-] )( SegmentationSidebar );
-
-const DismissSidebarWithData = compose( [
-	withSelect( optionsFieldsSelector ),
-	withDispatch( mapDispatchToProps ),
-] )( DismissSidebar );
-
-const ColorsSidebarWithData = compose( [
-	withSelect( optionsFieldsSelector ),
-	withDispatch( mapDispatchToProps ),
-] )( ColorsSidebar );
+const StatusSidebarWithData = connectData( StatusSidebar );
+const SidebarWithData = connectData( Sidebar );
+const FrequencySidebarWithData = connectData( FrequencySidebar );
+const SegmentationSidebarWithData = connectData( SegmentationSidebar );
+const DismissSidebarWithData = connectData( DismissSidebar );
+const ColorsSidebarWithData = connectData( ColorsSidebar );
 
 // Register components.
 registerPlugin( 'newspack-popups-status', { render: StatusSidebarWithData } );
@@ -130,6 +113,11 @@ registerPlugin( 'newspack-popups-colors', {
 			<ColorsSidebarWithData />
 		</PluginDocumentSettingPanel>
 	),
+	icon: null,
+} );
+
+registerPlugin( 'newspack-popups-editor', {
+	render: EditorAdditions,
 	icon: null,
 } );
 

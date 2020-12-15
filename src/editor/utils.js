@@ -21,6 +21,11 @@ export const optionsFieldsSelector = select => {
 		utm_suppression,
 		selected_segment_id,
 	} = meta || {};
+
+	const isInlinePlacement = placementValue =>
+		[ 'inline', 'above_header' ].indexOf( placementValue ) >= 0;
+	const isOverlay = ! isInlinePlacement( placement );
+
 	return {
 		background_color,
 		dismiss_text,
@@ -38,6 +43,8 @@ export const optionsFieldsSelector = select => {
 		trigger_type,
 		utm_suppression,
 		selected_segment_id,
+		isInlinePlacement,
+		isOverlay,
 	};
 };
 
@@ -64,8 +71,8 @@ export const updateEditorColors = backgroundColor => {
 	if ( ! backgroundColor ) {
 		return;
 	}
-	const blackColor = '#000';
-	const whiteColor = '#fff';
+	const blackColor = '#000000';
+	const whiteColor = '#ffffff';
 
 	const backgroundColorRGB = hexToRGB( backgroundColor );
 	const blackRGB = hexToRGB( blackColor );
@@ -84,22 +91,19 @@ export const updateEditorColors = backgroundColor => {
 
 	const foregroundColor = contrastRatio > 5 ? blackColor : whiteColor;
 
-	const editorStylesEl = document.querySelector( '.edit-post-visual-editor.editor-styles-wrapper' );
+	const editorStylesEl = document.querySelector( '.editor-styles-wrapper' );
 	const editorPostTitleEl = document.querySelector(
 		'.wp-block.editor-post-title__block .editor-post-title__input'
 	);
-	const editorPostTitlePlaceholderEl = document.querySelector(
-		'.wp-block.editor-post-title__block .editor-post-title__input::placeholder'
-	);
-
 	if ( editorStylesEl ) {
 		editorStylesEl.style.backgroundColor = backgroundColor;
 		editorStylesEl.style.color = foregroundColor;
 	}
 	if ( editorPostTitleEl ) {
 		editorPostTitleEl.style.color = foregroundColor;
-	}
-	if ( editorPostTitlePlaceholderEl ) {
-		editorPostTitlePlaceholderEl.style.color = foregroundColor;
+		editorPostTitleEl.style.setProperty(
+			'--newspack-popups-editor-placeholder-color',
+			`${ foregroundColor }80`
+		);
 	}
 };
