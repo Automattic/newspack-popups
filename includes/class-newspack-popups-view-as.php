@@ -40,8 +40,6 @@ final class Newspack_Popups_View_As {
 	 * Constructor.
 	 */
 	public function __construct() {
-		add_action( 'wp_head', [ $this, 'handle_view_as' ] );
-
 		// Register the query param.
 		add_filter(
 			'query_vars',
@@ -50,20 +48,6 @@ final class Newspack_Popups_View_As {
 				return $vars;
 			}
 		);
-	}
-
-	/**
-	 * Set cookie if query param is set.
-	 */
-	public static function handle_view_as() {
-		if ( is_user_logged_in() && current_user_can( 'edit_others_pages' ) ) {
-			$view_as_param_value = get_query_var( 'view_as' );
-			if ( ! empty( $view_as_param_value ) ) {
-				$one_day = 60 * 60 * 24;
-				// This will be used for admin users only, so setting cookies is ok.
-				setcookie( self::COOKIE_NAME, $view_as_param_value, time() + $one_day, '/' ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.cookies_setcookie
-			}
-		}
 	}
 
 	/**
@@ -78,7 +62,6 @@ final class Newspack_Popups_View_As {
 		if ( get_query_var( 'view_as' ) ) {
 			return get_query_var( 'view_as' );
 		}
-		return isset( $_COOKIE[ self::COOKIE_NAME ] ) ? esc_attr( $_COOKIE[ self::COOKIE_NAME ] ) : false; // phpcs:ignore WordPressVIPMinimum.Variables.RestrictedVariables.cache_constraints___COOKIE, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 	}
 }
 
