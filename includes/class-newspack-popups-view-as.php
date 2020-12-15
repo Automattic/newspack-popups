@@ -19,11 +19,6 @@ final class Newspack_Popups_View_As {
 	protected static $instance = null;
 
 	/**
-	 * Cookie name for the "view as" feature.
-	 */
-	const COOKIE_NAME = 'newspack_popups_view_as';
-
-	/**
 	 * Main Newspack Popups View As Instance.
 	 * Ensures only one instance of Newspack Popups View As Instance is loaded or can be loaded.
 	 *
