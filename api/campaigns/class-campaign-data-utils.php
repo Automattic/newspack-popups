@@ -49,6 +49,8 @@ class Campaign_Data_Utils {
 			[
 				'min_posts'         => 0,
 				'max_posts'         => 0,
+				'min_session_posts' => 0,
+				'max_session_posts' => 0,
 				'is_subscribed'     => false,
 				'is_not_subscribed' => false,
 				'is_donor'          => false,
@@ -70,11 +72,25 @@ class Campaign_Data_Utils {
 	 * @return bool Whether the campaign should be shown.
 	 */
 	public static function should_display_campaign( $campaign_segment, $client_data, $referer_url = '', $page_referrer_url = '', $view_as_segment = false ) {
-		$should_display   = true;
+		$should_display = true;
+		// Posts read.
 		$posts_read_count = count( $client_data['posts_read'] );
-		$is_subscriber    = self::is_subscriber( $client_data, $referer_url );
-		$is_donor         = self::is_donor( $client_data );
-		$campaign_segment = self::canonize_segment( $campaign_segment );
+		// Posts read in the current session.
+		$session_start            = strtotime( '-45 minutes', time() );
+		$posts_read_count_session = count(
+			array_filter(
+				$client_data['posts_read'],
+				function ( $post_data ) use ( $session_start ) {
+					if ( ! isset( $post_data['created_at'] ) ) {
+						return false;
+					}
+					return strtotime( $post_data['created_at'] ) > $session_start;
+				}
+			)
+		);
+		$is_subscriber            = self::is_subscriber( $client_data, $referer_url );
+		$is_donor                 = self::is_donor( $client_data );
+		$campaign_segment         = self::canonize_segment( $campaign_segment );
 
 		if ( $view_as_segment ) {
 			$view_as_segment = self::canonize_segment( $view_as_segment );
@@ -99,6 +115,12 @@ class Campaign_Data_Utils {
 			$should_display = false;
 		}
 		if ( $campaign_segment->max_posts > 0 && $campaign_segment->max_posts < $posts_read_count ) {
+			$should_display = false;
+		}
+		if ( $campaign_segment->min_session_posts > 0 && $campaign_segment->min_session_posts > $posts_read_count_session ) {
+			$should_display = false;
+		}
+		if ( $campaign_segment->max_session_posts > 0 && $campaign_segment->max_session_posts < $posts_read_count_session ) {
 			$should_display = false;
 		}
 		if ( $campaign_segment->is_subscribed && ! $is_subscriber ) {

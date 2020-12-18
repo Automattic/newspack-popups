@@ -48,6 +48,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 				$posts_read[] = [
 					'post_id'      => $visit['post_id'],
 					'category_ids' => $visit['categories'],
+					'created_at'   => gmdate( 'Y-m-d H:i:s' ),
 				];
 				$this->save_client_data(
 					$client_id,
