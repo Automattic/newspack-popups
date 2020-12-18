@@ -34,7 +34,7 @@ final class Newspack_Popups_Model {
 	public static function retrieve_popups( $include_unpublished = false ) {
 		$args = [
 			'post_type'      => Newspack_Popups::NEWSPACK_POPUPS_CPT,
-			'post_status'    => $include_unpublished ? [ 'publish', 'draft' ] : 'publish',
+			'post_status'    => $include_unpublished ? [ 'publish', 'future', 'pending', 'draft' ] : [ 'publish', 'future' ],
 			'posts_per_page' => 100,
 		];
 
