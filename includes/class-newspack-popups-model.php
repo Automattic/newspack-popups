@@ -216,6 +216,28 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
+	 * Retrieve all popups from a given group.
+	 *
+	 * @param string $group_slugs Group slugs.
+	 * @return array Inline popup objects.
+	 */
+	public static function retrieve_group_popups( $group_slugs ) {
+		$args = [
+			'post_type'   => Newspack_Popups::NEWSPACK_POPUPS_CPT,
+			'post_status' => 'publish',
+			'tax_query'   => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+				[
+					'taxonomy' => Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY,
+					'field'    => 'term_id',
+					'terms'    => explode( ',', $group_slugs ),
+				],
+			],
+		];
+
+		return self::retrieve_popups_with_query( new WP_Query( $args ) );
+	}
+
+	/**
 	 * Get overlay test popups.
 	 *
 	 * @return array Overlay test popup objects.

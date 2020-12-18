@@ -7,6 +7,8 @@
 
 defined( 'ABSPATH' ) || exit;
 
+require_once dirname( __FILE__ ) . '/../api/segmentation/class-segmentation.php';
+
 /**
  * API endpoints
  */
@@ -58,40 +60,46 @@ final class Newspack_Popups_Inserter {
 			return [];
 		}
 
-		// 1. Get all inline popups.
-		$popups_to_maybe_display = Newspack_Popups_Model::retrieve_inline_popups();
-
-		// 2. Get the overlay popup/s. There can be only one displayed, unless in test mode.
-
-		// Any overlay test popups, if the user is logged in.
-		if ( is_user_logged_in() ) {
-			$popups_to_maybe_display = array_merge(
-				$popups_to_maybe_display,
-				Newspack_Popups_Model::retrieve_overlay_test_popups()
-			);
-		}
-
-		// Check if there's an overlay popup with matching category.
-		$category_overlay_popup = Newspack_Popups_Model::retrieve_category_overlay_popup();
-		if ( $category_overlay_popup && self::should_display( $category_overlay_popup ) ) {
-			array_push(
-				$popups_to_maybe_display,
-				$category_overlay_popup
-			);
+		$view_as_spec        = Segmentation::parse_view_as( Newspack_Popups_View_As::viewing_as_spec() );
+		$view_as_spec_groups = isset( $view_as_spec['groups'] ) ? $view_as_spec['groups'] : false;
+		if ( $view_as_spec_groups ) {
+			$popups_to_maybe_display = Newspack_Popups_Model::retrieve_group_popups( $view_as_spec['groups'] );
 		} else {
-			// If there's no category-matching popup, get the sitewide pop-up.
-			$sitewide_default = get_option( Newspack_Popups::NEWSPACK_POPUPS_SITEWIDE_DEFAULT, null );
-			if ( $sitewide_default ) {
-				$found_popup = Newspack_Popups_Model::retrieve_popup_by_id( $sitewide_default );
-				if (
-					$found_popup &&
-					// Prevent non-overlay sitewide default from being added.
-					Newspack_Popups_Model::is_overlay( $found_popup )
-				) {
-					array_push(
-						$popups_to_maybe_display,
-						$found_popup
-					);
+			// 1. Get all inline popups.
+			$popups_to_maybe_display = Newspack_Popups_Model::retrieve_inline_popups();
+
+			// 2. Get the overlay popup/s. There can be only one displayed, unless in test mode.
+
+			// Any overlay test popups, if the user is logged in.
+			if ( is_user_logged_in() ) {
+				$popups_to_maybe_display = array_merge(
+					$popups_to_maybe_display,
+					Newspack_Popups_Model::retrieve_overlay_test_popups()
+				);
+			}
+
+			// Check if there's an overlay popup with matching category.
+			$category_overlay_popup = Newspack_Popups_Model::retrieve_category_overlay_popup();
+			if ( $category_overlay_popup && self::should_display( $category_overlay_popup ) ) {
+				array_push(
+					$popups_to_maybe_display,
+					$category_overlay_popup
+				);
+			} else {
+				// If there's no category-matching popup, get the sitewide pop-up.
+				$sitewide_default = get_option( Newspack_Popups::NEWSPACK_POPUPS_SITEWIDE_DEFAULT, null );
+				if ( $sitewide_default ) {
+					$found_popup = Newspack_Popups_Model::retrieve_popup_by_id( $sitewide_default );
+					if (
+						$found_popup &&
+						// Prevent non-overlay sitewide default from being added.
+						Newspack_Popups_Model::is_overlay( $found_popup )
+					) {
+						array_push(
+							$popups_to_maybe_display,
+							$found_popup
+						);
+					}
 				}
 			}
 		}

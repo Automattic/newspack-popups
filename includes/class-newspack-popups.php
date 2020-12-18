@@ -55,9 +55,7 @@ final class Newspack_Popups {
 		add_action( 'rest_api_init', [ __CLASS__, 'rest_api_init' ] );
 		add_action( 'save_post_' . self::NEWSPACK_POPUPS_CPT, [ __CLASS__, 'popup_default_fields' ], 10, 3 );
 
-		if ( filter_input( INPUT_GET, 'newspack_popups_preview_id', FILTER_SANITIZE_STRING ) ) {
-			add_filter( 'show_admin_bar', [ __CLASS__, 'hide_admin_bar_for_preview' ], 10, 2 ); // phpcs:ignore WordPressVIPMinimum.UserExperience.AdminBarRemoval.RemovalDetected
-		}
+		add_filter( 'show_admin_bar', [ __CLASS__, 'show_admin_bar' ], 10, 2 ); // phpcs:ignore WordPressVIPMinimum.UserExperience.AdminBarRemoval.RemovalDetected
 
 		include_once dirname( __FILE__ ) . '/class-newspack-popups-model.php';
 		include_once dirname( __FILE__ ) . '/class-newspack-popups-inserter.php';
@@ -394,10 +392,11 @@ final class Newspack_Popups {
 	/**
 	 * Hide admin bar if previewing the popup.
 	 *
-	 * @return boolean Whether admin bar should be hidden
+	 * @return boolean Whether admin bar should be shown.
 	 */
-	public static function hide_admin_bar_for_preview() {
-		return ! self::previewed_popup_id();
+	public static function show_admin_bar() {
+		$view_as_spec = Newspack_Popups_View_As::viewing_as_spec();
+		return ! self::previewed_popup_id() && false === $view_as_spec;
 	}
 
 	/**

@@ -71,16 +71,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 
 		$view_as_spec = [];
 		if ( ! empty( $_REQUEST['view_as'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			$view_as_spec_raw = explode( ',', json_decode( $_REQUEST['view_as'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-			$view_as_spec     = array_reduce(
-				$view_as_spec_raw,
-				function( $acc, $item ) {
-					$parts            = explode( ':', $item );
-					$acc[ $parts[0] ] = $parts[1];
-					return $acc;
-				},
-				[]
-			);
+			$view_as_spec = Segmentation::parse_view_as( json_decode( $_REQUEST['view_as'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		}
 
 		$page_referer_url = isset( $_REQUEST['ref'] ) ? $_REQUEST['ref'] : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
@@ -117,7 +108,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		$campaign_data      = $this->get_campaign_data( $client_id, $campaign->id );
 		$init_campaign_data = $campaign_data;
 
-		if ( $campaign_data['suppress_forever'] ) {
+		if ( ! $view_as_spec && $campaign_data['suppress_forever'] ) {
 			return false;
 		}
 
@@ -192,12 +183,15 @@ class Maybe_Show_Campaign extends Lightweight_API {
 
 		// Using "view as" feature.
 		$view_as_segment = false;
-		if ( $view_as_spec && isset( $view_as_spec['segment'] ) && $view_as_spec['segment'] ) {
-			$segment_config = [];
-			if ( isset( $settings->all_segments->{$view_as_spec['segment']} ) ) {
-				$segment_config = $settings->all_segments->{$view_as_spec['segment']};
+		if ( $view_as_spec ) {
+			$should_display = true;
+			if ( isset( $view_as_spec['segment'] ) && $view_as_spec['segment'] ) {
+				$segment_config = [];
+				if ( isset( $settings->all_segments->{$view_as_spec['segment']} ) ) {
+					$segment_config = $settings->all_segments->{$view_as_spec['segment']};
+				}
+				$view_as_segment = empty( $segment_config ) ? false : $segment_config;
 			}
-			$view_as_segment = empty( $segment_config ) ? false : $segment_config;
 		}
 
 		// Handle segmentation.
