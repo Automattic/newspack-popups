@@ -32,20 +32,6 @@ final class Newspack_Popups_View_As {
 	}
 
 	/**
-	 * Constructor.
-	 */
-	public function __construct() {
-		// Register the query param.
-		add_filter(
-			'query_vars',
-			function ( $vars ) {
-				$vars[] = 'view_as';
-				return $vars;
-			}
-		);
-	}
-
-	/**
 	 * Get the "view as" feature specification.
 	 *
 	 * @return string "View as" specification.
@@ -54,8 +40,8 @@ final class Newspack_Popups_View_As {
 		if ( ! is_user_logged_in() || ! current_user_can( 'edit_others_pages' ) ) {
 			return false;
 		}
-		if ( get_query_var( 'view_as' ) ) {
-			return get_query_var( 'view_as' );
+		if ( isset( $_GET['view_as'] ) && $_GET['view_as'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			return sanitize_text_field( $_GET['view_as'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		}
 	}
 }
