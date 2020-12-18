@@ -487,6 +487,10 @@ final class Newspack_Popups_Inserter {
 				'is_post'    => is_single(),
 			]
 		);
+		$view_as_spec                             = Newspack_Popups_View_As::viewing_as_spec();
+		if ( $view_as_spec ) {
+			$popups_access_provider['authorization'] .= '&view_as=' . wp_json_encode( $view_as_spec );
+		}
 		?>
 		<script id="amp-access" type="application/json">
 			<?php echo wp_json_encode( $popups_access_provider ); ?>
@@ -637,8 +641,18 @@ final class Newspack_Popups_Inserter {
 	 * @return bool Should popup be shown.
 	 */
 	public static function should_display( $popup, $skip_context_checks = false ) {
+		$general_conditions = self::assess_is_post( $popup ) &&
+			self::assess_categories_filter( $popup ) &&
+			self::assess_tags_filter( $popup ) &&
+			'never' !== $popup['options']['frequency'];
+		$is_not_test_mode   = 'test' !== $popup['options']['frequency'];
+
+		// When using "view as" feature, discard test mode campaigns.
+		if ( $general_conditions && Newspack_Popups_View_As::viewing_as_spec() ) {
+			return $is_not_test_mode;
+		}
 		// Hide non-test mode campaigns for logged-in users.
-		if ( is_user_logged_in() && 'test' !== $popup['options']['frequency'] ) {
+		if ( is_user_logged_in() && $is_not_test_mode ) {
 			return false;
 		}
 		// Hide overlay campaigns in non-interactive mode, for non-logged-in users.
@@ -651,10 +665,7 @@ final class Newspack_Popups_Inserter {
 		if ( $skip_context_checks ) {
 			return true;
 		}
-		return self::assess_is_post( $popup ) &&
-			self::assess_categories_filter( $popup ) &&
-			self::assess_tags_filter( $popup ) &&
-			'never' !== $popup['options']['frequency'];
+		return $general_conditions;
 	}
 
 	/**
