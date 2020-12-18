@@ -60,8 +60,9 @@ final class Newspack_Popups_Inserter {
 			return [];
 		}
 
-		$view_as_spec = Segmentation::parse_view_as( Newspack_Popups_View_As::viewing_as_spec() );
-		if ( isset( $view_as_spec['groups'] ) ) {
+		$view_as_spec        = Segmentation::parse_view_as( Newspack_Popups_View_As::viewing_as_spec() );
+		$view_as_spec_groups = isset( $view_as_spec['groups'] ) ? $view_as_spec['groups'] : false;
+		if ( $view_as_spec_groups ) {
 			$popups_to_maybe_display = Newspack_Popups_Model::retrieve_group_popups( $view_as_spec['groups'] );
 		} else {
 			// 1. Get all inline popups.
