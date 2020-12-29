@@ -296,6 +296,41 @@ final class Newspack_Popups_Segmentation {
 	}
 
 	/**
+	 * Get all campaign groups.
+	 */
+	public static function get_groups() {
+		return get_terms(
+			Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY,
+			[
+				'hide_empty' => false,
+			]
+		);
+	}
+
+	/**
+	 * Get current campaign group.
+	 */
+	public static function get_current_group() {
+		return get_option( Newspack_Popups::NEWSPACK_POPUPS_CURRENT_GROUP );
+	}
+
+	/**
+	 * Set current campaign group.
+	 *
+	 * @param int $current_group Term ID of current group.
+	 */
+	public static function set_current_group( $current_group ) {
+		return update_option( Newspack_Popups::NEWSPACK_POPUPS_CURRENT_GROUP, $current_group );
+	}
+
+	/**
+	 * Unset current campaign group.
+	 */
+	public static function unset_current_group() {
+		return delete_option( Newspack_Popups::NEWSPACK_POPUPS_CURRENT_GROUP );
+	}
+
+	/**
 	 * Create a segment.
 	 *
 	 * @param object $segment A segment.

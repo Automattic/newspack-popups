@@ -418,6 +418,13 @@ final class Newspack_Popups_Model {
 		];
 		if ( $include_categories ) {
 			$popup['categories'] = get_the_category( $id );
+			$terms               = get_the_terms( $id, Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY );
+			$popup['groups']     = array_map(
+				function( $term ) {
+					return $term->term_id;
+				},
+				$terms ? $terms : []
+			);
 		}
 
 		if ( self::is_inline( $popup ) ) {
