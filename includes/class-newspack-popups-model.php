@@ -106,12 +106,13 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
-	 * Set categories for a Popup.
+	 * Set taxonomy terms for a Popup.
 	 *
 	 * @param integer $id ID of Popup.
-	 * @param array   $categories Array of categories to be set.
+	 * @param array   $terms Array of terms to be set.
+	 * @param string  $taxonomy Taxonomy.
 	 */
-	public static function set_popup_categories( $id, $categories ) {
+	public static function set_popup_terms( $id, $terms, $taxonomy ) {
 		$popup = self::retrieve_popup_by_id( $id, true );
 		if ( ! $popup ) {
 			return new \WP_Error(
@@ -123,13 +124,23 @@ final class Newspack_Popups_Model {
 				]
 			);
 		}
-		$category_ids = array_map(
-			function( $category ) {
-				return $category['id'];
+		if ( ! in_array( $taxonomy, [ 'category', Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY ] ) ) {
+			return new \WP_Error(
+				'newspack_popups_invalid_taxonomy',
+				esc_html__( 'Invalid taxonomy.', 'newspack-popups' ),
+				[
+					'status' => 400,
+					'level'  => 'fatal',
+				]
+			);
+		}
+		$term_ids = array_map(
+			function( $term ) {
+				return $term['id'];
 			},
-			$categories
+			$terms
 		);
-		return wp_set_post_categories( $id, $category_ids );
+		return wp_set_post_terms( $id, $term_ids, $taxonomy );
 	}
 
 	/**
@@ -418,13 +429,7 @@ final class Newspack_Popups_Model {
 		];
 		if ( $include_categories ) {
 			$popup['categories'] = get_the_category( $id );
-			$terms               = get_the_terms( $id, Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY );
-			$popup['groups']     = array_map(
-				function( $term ) {
-					return $term->term_id;
-				},
-				$terms ? $terms : []
-			);
+			$popup['groups']     = get_the_terms( $id, Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY );
 		}
 
 		if ( self::is_inline( $popup ) ) {
