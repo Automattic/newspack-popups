@@ -214,6 +214,10 @@ final class Newspack_Popups_Model {
 	 * @return array Inline popup objects.
 	 */
 	public static function retrieve_inline_popups() {
+		$current_group = get_option( Newspack_Popups::NEWSPACK_POPUPS_CURRENT_GROUP );
+		if ( ! $current_group ) {
+			return [];
+		}
 		$args = [
 			'post_type'    => Newspack_Popups::NEWSPACK_POPUPS_CPT,
 			'post_status'  => 'publish',
@@ -221,6 +225,13 @@ final class Newspack_Popups_Model {
 			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 			'meta_value'   => self::$inline_placements,
 			'meta_compare' => 'IN',
+			'tax_query'    => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+				[
+					'taxonomy' => Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY,
+					'field'    => 'term_id',
+					'terms'    => [ $current_group ],
+				],
+			],
 		];
 
 		return self::retrieve_popups_with_query( new WP_Query( $args ) );
@@ -285,6 +296,11 @@ final class Newspack_Popups_Model {
 			return null;
 		}
 
+		$current_group = get_option( Newspack_Popups::NEWSPACK_POPUPS_CURRENT_GROUP );
+		if ( ! $current_group ) {
+			return null;
+		}
+
 		$args = [
 			'post_type'      => Newspack_Popups::NEWSPACK_POPUPS_CPT,
 			'posts_per_page' => 1,
@@ -294,6 +310,13 @@ final class Newspack_Popups_Model {
 			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 			'meta_value'     => self::$overlay_placements,
 			'meta_compare'   => 'IN',
+			'tax_query'      => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+				[
+					'taxonomy' => Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY,
+					'field'    => 'term_id',
+					'terms'    => [ $current_group ],
+				],
+			],
 		];
 
 		$popups = self::retrieve_popups_with_query( new WP_Query( $args ) );
