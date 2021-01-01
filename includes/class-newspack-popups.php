@@ -12,9 +12,10 @@ defined( 'ABSPATH' ) || exit;
  */
 final class Newspack_Popups {
 
-	const NEWSPACK_POPUPS_CPT              = 'newspack_popups_cpt';
-	const NEWSPACK_POPUPS_SITEWIDE_DEFAULT = 'newspack_popups_sitewide_default';
-	const NEWSPACK_POPUPS_TAXONOMY         = 'newspack_popups_taxonomy';
+	const NEWSPACK_POPUPS_CPT                   = 'newspack_popups_cpt';
+	const NEWSPACK_POPUPS_SITEWIDE_DEFAULT      = 'newspack_popups_sitewide_default';
+	const NEWSPACK_POPUPS_TAXONOMY              = 'newspack_popups_taxonomy';
+	const NEWSPACK_POPUPS_ACTIVE_CAMPAIGN_GROUP = 'newspack_popups_active_campaign_group';
 
 	const NEWSPACK_POPUP_PREVIEW_QUERY_PARAM = 'newspack_popups_preview_id';
 
