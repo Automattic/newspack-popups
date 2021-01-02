@@ -461,12 +461,15 @@ final class Newspack_Popups {
 		if ( $update ) {
 			return;
 		}
-		$placement = isset( $_GET['placement'] ) && 'inline' === sanitize_text_field( $_GET['placement'] ) ? 'inline' : 'center'; //phpcs:ignore
+		$placement    = isset( $_GET['placement'] ) && 'overlay' === sanitize_text_field( $_GET['placement'] ) ? 'center' : 'inline'; //phpcs:ignore
+		$trigger_type = 'inline' === $placement ? 'scroll' : 'time';
+		$frequency    = 'inline' === $placement ? 'always' : 'once';
+		$dismiss_text = 'inline' === $placement ? null : self::get_default_dismiss_text();
 
 		update_post_meta( $post_id, 'background_color', '#FFFFFF' );
 		update_post_meta( $post_id, 'display_title', false );
-		update_post_meta( $post_id, 'dismiss_text', self::get_default_dismiss_text() );
-		update_post_meta( $post_id, 'frequency', 'test' );
+		update_post_meta( $post_id, 'dismiss_text', $dismiss_text );
+		update_post_meta( $post_id, 'frequency', $frequency );
 		update_post_meta( $post_id, 'overlay_color', '#000000' );
 		update_post_meta( $post_id, 'overlay_opacity', 30 );
 		update_post_meta( $post_id, 'placement', $placement );
