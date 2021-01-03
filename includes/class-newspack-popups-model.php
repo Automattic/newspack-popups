@@ -106,12 +106,13 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
-	 * Set categories for a Popup.
+	 * Set terms for a Popup.
 	 *
 	 * @param integer $id ID of Popup.
-	 * @param array   $categories Array of categories to be set.
+	 * @param array   $terms Array of terms to be set.
+	 * @param string  $taxonomy Taxonomy slug.
 	 */
-	public static function set_popup_categories( $id, $categories ) {
+	public static function set_popup_terms( $id, $terms, $taxonomy ) {
 		$popup = self::retrieve_popup_by_id( $id, true );
 		if ( ! $popup ) {
 			return new \WP_Error(
@@ -123,13 +124,23 @@ final class Newspack_Popups_Model {
 				]
 			);
 		}
-		$category_ids = array_map(
-			function( $category ) {
-				return $category['id'];
+		if ( ! in_array( $taxonomy, [ 'category', Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY ] ) ) {
+			return new \WP_Error(
+				'newspack_popups_invalid_taxonomy',
+				esc_html__( 'Invalid taxonomy.', 'newspack-popups' ),
+				[
+					'status' => 400,
+					'level'  => 'fatal',
+				]
+			);
+		}
+		$term_ids = array_map(
+			function( $term ) {
+				return $term['id'];
 			},
-			$categories
+			$terms
 		);
-		return wp_set_post_categories( $id, $category_ids );
+		return wp_set_post_terms( $id, $term_ids, $taxonomy );
 	}
 
 	/**
@@ -203,6 +214,10 @@ final class Newspack_Popups_Model {
 	 * @return array Inline popup objects.
 	 */
 	public static function retrieve_inline_popups() {
+		$current_group = get_option( Newspack_Popups::NEWSPACK_POPUPS_ACTIVE_CAMPAIGN_GROUP );
+		if ( ! $current_group ) {
+			return [];
+		}
 		$args = [
 			'post_type'    => Newspack_Popups::NEWSPACK_POPUPS_CPT,
 			'post_status'  => 'publish',
@@ -210,6 +225,13 @@ final class Newspack_Popups_Model {
 			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 			'meta_value'   => self::$inline_placements,
 			'meta_compare' => 'IN',
+			'tax_query'    => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+				[
+					'taxonomy' => Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY,
+					'field'    => 'term_id',
+					'terms'    => [ $current_group ],
+				],
+			],
 		];
 
 		return self::retrieve_popups_with_query( new WP_Query( $args ) );
@@ -268,6 +290,10 @@ final class Newspack_Popups_Model {
 	 * @return object|null Popup object.
 	 */
 	public static function retrieve_category_overlay_popup() {
+		$current_group = get_option( Newspack_Popups::NEWSPACK_POPUPS_ACTIVE_CAMPAIGN_GROUP );
+		if ( ! $current_group ) {
+			return [];
+		}
 		$post_categories = get_the_category();
 
 		if ( empty( $post_categories ) ) {
@@ -283,6 +309,13 @@ final class Newspack_Popups_Model {
 			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 			'meta_value'     => self::$overlay_placements,
 			'meta_compare'   => 'IN',
+			'tax_query'      => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+				[
+					'taxonomy' => Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY,
+					'field'    => 'term_id',
+					'terms'    => [ $current_group ],
+				],
+			],
 		];
 
 		$popups = self::retrieve_popups_with_query( new WP_Query( $args ) );
@@ -417,7 +450,8 @@ final class Newspack_Popups_Model {
 			),
 		];
 		if ( $include_categories ) {
-			$popup['categories'] = get_the_category( $id );
+			$popup['categories']      = get_the_category( $id );
+			$popup['campaign_groups'] = get_the_terms( $id, Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY );
 		}
 
 		if ( self::is_inline( $popup ) ) {
