@@ -121,6 +121,10 @@ class Newspack_Popups_Settings {
 					[]
 				),
 			],
+			[
+				'key'   => Newspack_Popups::NEWSPACK_POPUPS_ACTIVE_CAMPAIGN_GROUP,
+				'value' => get_option( Newspack_Popups::NEWSPACK_POPUPS_ACTIVE_CAMPAIGN_GROUP ),
+			],
 		];
 	}
 
@@ -162,6 +166,38 @@ class Newspack_Popups_Settings {
 		);
 		\wp_style_add_data( 'newspack-popups-settings', 'rtl', 'replace' );
 		\wp_enqueue_style( 'newspack-popups-settings' );
+	}
+
+	/**
+	 * Activate campaign group.
+	 *
+	 * @param int $id Term ID of the campaign group to activate.
+	 * @return bool Whether operation was successful.
+	 */
+	public static function activate_campaign_group( $id ) {
+		if ( ! term_exists( $id, Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY ) ) { //phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.term_exists_term_exists
+			return new \WP_Error(
+				'newspack_popups_settings_error',
+				esc_html__( 'Invalid Campaign Group ID.', 'newspack' )
+			);
+		}
+		return update_option( Newspack_Popups::NEWSPACK_POPUPS_ACTIVE_CAMPAIGN_GROUP, $id );
+	}
+
+	/**
+	 * Deactivate campaign group.
+	 *
+	 * @param int $id Term ID of the campaign group to deactivate.
+	 * @return bool Whether operation was successful.
+	 */
+	public static function deactivate_campaign_group( $id ) {
+		if ( ! term_exists( $id, Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY ) ) { //phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.term_exists_term_exists
+			return new \WP_Error(
+				'newspack_popups_settings_error',
+				esc_html__( 'Invalid Campaign Group ID.', 'newspack' )
+			);
+		}
+		return delete_option( Newspack_Popups::NEWSPACK_POPUPS_ACTIVE_CAMPAIGN_GROUP );
 	}
 }
 
