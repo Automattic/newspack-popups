@@ -31,15 +31,15 @@ class ModelTest extends WP_UnitTestCase {
 			[
 				'background_color'        => '#FFFFFF',
 				'display_title'           => false,
-				'dismiss_text'            => Newspack_Popups::get_default_dismiss_text(),
+				'dismiss_text'            => '',
 				'dismiss_text_alignment'  => 'center',
-				'frequency'               => 'test',
+				'frequency'               => 'always',
 				'overlay_color'           => '#000000',
 				'overlay_opacity'         => '30',
-				'placement'               => 'center',
+				'placement'               => 'inline',
 				'trigger_type'            => 'time',
 				'trigger_delay'           => '3',
-				'trigger_scroll_progress' => 0,
+				'trigger_scroll_progress' => '30',
 				'utm_suppression'         => null,
 				'selected_segment_id'     => '',
 			],
@@ -65,7 +65,13 @@ class ModelTest extends WP_UnitTestCase {
 	 * Test popup markup generation.
 	 */
 	public function test_markup_generation() {
-		$popup_object_default = Newspack_Popups_Model::create_popup_object( get_post( self::$popup_id ) );
+		$popup_object_default = Newspack_Popups_Model::create_popup_object(
+			get_post( self::$popup_id ),
+			false,
+			[
+				'placement' => 'center',
+			]
+		);
 
 		$dom = new DomDocument();
 		@$dom->loadHTML( Newspack_Popups_Model::generate_popup( $popup_object_default ) ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
@@ -87,6 +93,7 @@ class ModelTest extends WP_UnitTestCase {
 			get_post( self::$popup_id ),
 			false,
 			[
+				'placement'    => 'center',
 				'trigger_type' => 'scroll',
 			]
 		);
@@ -105,6 +112,7 @@ class ModelTest extends WP_UnitTestCase {
 			get_post( self::$popup_id ),
 			false,
 			[
+				'placement'               => 'center',
 				'trigger_type'            => 'scroll',
 				'trigger_scroll_progress' => 42,
 			]

@@ -28,16 +28,18 @@ class InsertionTest extends WP_UnitTestCase {
 				'post_content' => self::$popup_content,
 			]
 		);
+		update_post_meta( self::$popup_id, 'dismiss_text', Newspack_Popups::get_default_dismiss_text() );
+		update_post_meta( self::$popup_id, 'placement', 'center' );
 
 		self::$active_campaign_group_id = self::factory()->term->create(
 			[
-				'taxonomy' => 'newspack_popups_taxonomy',
+				'taxonomy' => Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY,
 			]
 		);
 
 		self::$inactive_campaign_group_id = self::factory()->term->create(
 			[
-				'taxonomy' => 'newspack_popups_taxonomy',
+				'taxonomy' => Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY,
 			]
 		);
 
@@ -60,6 +62,7 @@ class InsertionTest extends WP_UnitTestCase {
 		);
 		// Reset internal duplicate-prevention.
 		Newspack_Popups_Inserter::$the_content_has_rendered = false;
+		Newspack_Popups_Settings::activate_campaign_group( self::$active_campaign_group_id );
 	}
 
 	/**
