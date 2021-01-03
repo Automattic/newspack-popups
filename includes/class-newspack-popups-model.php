@@ -164,7 +164,7 @@ final class Newspack_Popups_Model {
 		foreach ( $options as $key => $value ) {
 			switch ( $key ) {
 				case 'frequency':
-					if ( ! in_array( $value, [ 'test', 'never', 'once', 'daily', 'always' ] ) ) {
+					if ( ! in_array( $value, [ 'once', 'daily', 'always' ] ) ) {
 						return new \WP_Error(
 							'newspack_popups_invalid_option_value',
 							esc_html__( 'Invalid frequency value.', 'newspack-popups' ),
@@ -252,31 +252,6 @@ final class Newspack_Popups_Model {
 					'taxonomy' => Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY,
 					'field'    => 'term_id',
 					'terms'    => explode( ',', $group_slugs ),
-				],
-			],
-		];
-
-		return self::retrieve_popups_with_query( new WP_Query( $args ) );
-	}
-
-	/**
-	 * Get overlay test popups.
-	 *
-	 * @return array Overlay test popup objects.
-	 */
-	public static function retrieve_overlay_test_popups() {
-		$args = [
-			'post_type'   => Newspack_Popups::NEWSPACK_POPUPS_CPT,
-			'post_status' => 'publish',
-			'meta_query'  => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
-				[
-					'key'     => 'placement',
-					'value'   => self::$overlay_placements,
-					'compare' => 'IN',
-				],
-				[
-					'key'   => 'frequency',
-					'value' => 'test',
 				],
 			],
 		];
@@ -437,10 +412,10 @@ final class Newspack_Popups_Model {
 					'display_title'           => false,
 					'dismiss_text'            => '',
 					'dismiss_text_alignment'  => 'center',
-					'frequency'               => 'test',
+					'frequency'               => 'always',
 					'overlay_color'           => '#000000',
 					'overlay_opacity'         => 30,
-					'placement'               => 'center',
+					'placement'               => 'inline',
 					'trigger_type'            => 'time',
 					'trigger_delay'           => 0,
 					'trigger_scroll_progress' => 0,
@@ -592,7 +567,6 @@ final class Newspack_Popups_Model {
 	protected static function insert_event_tracking( $popup, $body, $element_id ) {
 		if (
 			Newspack_Popups::previewed_popup_id() ||
-			'test' === $popup['options']['frequency'] ||
 			Newspack_Popups_Settings::is_non_interactive()
 		) {
 			return '';
@@ -770,8 +744,7 @@ final class Newspack_Popups_Model {
 		if ( Newspack_Popups_Settings::is_non_interactive() ) {
 			return '';
 		}
-		if (
-			( 'test' === $popup['options']['frequency'] || Newspack_Popups::previewed_popup_id() ) &&
+		if ( Newspack_Popups::previewed_popup_id() &&
 			is_user_logged_in() &&
 			current_user_can( 'edit_others_pages' )
 		) {
