@@ -20,7 +20,15 @@ final class Newspack_Popups_Utils {
 	 * 4. Campaigns with frequency "never" are unpublished and frequencies are set to "always" or "daily".
 	 * 5. "Active" campaign group become default, if none is already set.
 	 */
-	public function update_campaigns() {
+	public function update_campaigns( $reset = false ) {
+		$active_campaign_group = get_option( Newspack_Popups::NEWSPACK_POPUPS_ACTIVE_CAMPAIGN_GROUP );
+		if ( ! $reset && $active_campaign_group && get_term( $active_campaign_group, Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY ) ) {
+			return new \WP_Error(
+				'newspack_popups_update_error',
+				esc_html__( 'There is already an active campaign group.', 'newspack-popups' )
+			);
+		}
+
 		$active   = wp_create_term( 'Active', Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY );
 		$inactive = wp_create_term( 'Inactive', Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY );
 		$popups   = Newspack_Popups_Model::retrieve_popups( true );
@@ -42,15 +50,15 @@ final class Newspack_Popups_Utils {
 					]
 				);
 			}
-			if ( in_array( [ 'test', 'never' ], $frequency ) ) {
+			if ( in_array( $frequency, [ 'test', 'never' ] ) ) {
 				$options = [];
-				if ( in_array( [ 'inline', 'above_header' ], $placement ) ) {
-					$options['frequency'] = 'always';
+				if ( in_array( $placement, [ 'inline', 'above_header' ] ) ) {
+					update_post_meta( $id, 'frequency', 'always' );
 				} else {
-					$options['frequency'] = 'daily';
+					update_post_meta( $id, 'frequency', 'daily' );
 				}
-				Newspack_Popups_Model::set_popup_options( $id, $options );
 			}
 		}
+		return true;
 	}
 }
