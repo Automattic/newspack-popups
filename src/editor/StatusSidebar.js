@@ -7,55 +7,16 @@
  */
 import { __ } from '@wordpress/i18n';
 import { PluginPostStatusInfo } from '@wordpress/edit-post';
-import { useEffect } from '@wordpress/element';
 import { ToggleControl } from '@wordpress/components';
 
 const StatusSidebar = ( {
-	createNotice,
-	frequency,
 	newspack_popups_is_sitewide_default,
-	onMetaFieldChange,
 	isOverlay,
-	removeNotice,
 	onSitewideDefaultChange,
 } ) => {
-	const isTest = 'test' === frequency;
-
-	const createTestNotice = () => {
-		createNotice(
-			'warning',
-			__(
-				'Test Mode Enabled: In "Test Mode" logged-in admins will see the campaign every time, and non-admins will never see them.',
-				'newspack-popups'
-			),
-			{
-				id: 'newspack-popups__test-mode',
-				isDismissible: true,
-				type: 'default',
-			}
-		);
-	};
-
-	useEffect(() => {
-		if ( isTest ) {
-			createTestNotice();
-		} else {
-			removeNotice( 'newspack-popups__test-mode' );
-		}
-	}, [ isTest ]);
-
 	return (
 		<PluginPostStatusInfo>
 			<div className="newspack-popups__status-options">
-				<ToggleControl
-					checked={ isTest }
-					label={ __( 'Test Mode', 'newspack-popups' ) }
-					help={ __(
-						'In "Test Mode" logged-in admins will see the campaign every time, and non-admins will never see them.',
-						'newspack-popups'
-					) }
-					onChange={ value => onMetaFieldChange( 'frequency', value ? 'test' : 'once' ) }
-				/>
 				{ isOverlay && (
 					<ToggleControl
 						label={ __( 'Sitewide Default', 'newspack-popups' ) }
