@@ -65,6 +65,10 @@ final class Newspack_Popups {
 		include_once dirname( __FILE__ ) . '/class-newspack-popups-parse-logs.php';
 		include_once dirname( __FILE__ ) . '/class-newspack-popups-donations.php';
 		include_once dirname( __FILE__ ) . '/class-newspack-popups-view-as.php';
+		include_once dirname( __FILE__ ) . '/class-newspack-popups-utils.php';
+		if ( defined( 'WP_CLI' ) && WP_CLI ) {
+			include_once dirname( __FILE__ ) . '/class-newspack-popups-cli.php';
+		}
 	}
 
 	/**
