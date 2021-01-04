@@ -526,5 +526,64 @@ final class Newspack_Popups {
 			</div>
 		<?php
 	}
+
+	/**
+	 * Get status of campaigns configuration.
+	 */
+	public static function get_status() {
+		$current_group = get_option( self::NEWSPACK_POPUPS_ACTIVE_CAMPAIGN_GROUP );
+		$groups        = get_terms( self::NEWSPACK_POPUPS_TAXONOMY );
+		$status        = [];
+		if ( ! $current_group && ! count( $groups ) ) {
+			$status[] = 'needs_upgrade_1';
+		}
+		return $status;
+	}
+
+	/**
+	 * Upgrade campaigns.
+	 */
+	public static function upgrade_campaigns() {
+		$active_campaign_group = get_option( self::NEWSPACK_POPUPS_ACTIVE_CAMPAIGN_GROUP );
+		if ( $active_campaign_group && get_term( $active_campaign_group, self::NEWSPACK_POPUPS_TAXONOMY ) ) {
+			return new \WP_Error(
+				'newspack_popups_update_error',
+				esc_html__( 'There is already an active campaign group.', 'newspack-popups' )
+			);
+		}
+
+		$active   = wp_insert_term( 'Active', self::NEWSPACK_POPUPS_TAXONOMY );
+		$inactive = wp_insert_term( 'Inactive', self::NEWSPACK_POPUPS_TAXONOMY );
+		$popups   = Newspack_Popups_Model::retrieve_popups( true );
+		foreach ( $popups as $popup ) {
+			$frequency = $popup['options']['frequency'];
+			$placement = $popup['options']['placement'];
+			$id        = $popup['id'];
+			wp_set_post_terms(
+				$id,
+				'test' === $frequency ? $inactive : $active,
+				self::NEWSPACK_POPUPS_TAXONOMY,
+				true
+			);
+			if ( 'never' === $frequency ) {
+				wp_update_post(
+					[
+						'ID'          => $id,
+						'post_status' => 'draft',
+					]
+				);
+			}
+			if ( in_array( $frequency, [ 'test', 'never' ] ) ) {
+				$options = [];
+				if ( in_array( $placement, [ 'inline', 'above_header' ] ) ) {
+					update_post_meta( $id, 'frequency', 'always' );
+				} else {
+					update_post_meta( $id, 'frequency', 'daily' );
+				}
+			}
+		}
+		update_option( self::NEWSPACK_POPUPS_ACTIVE_CAMPAIGN_GROUP, $active['term_id'] );
+		return true;
+	}
 }
 Newspack_Popups::instance();
