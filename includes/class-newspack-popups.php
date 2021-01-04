@@ -359,6 +359,7 @@ final class Newspack_Popups {
 			[
 				'preview_post' => self::preview_post_permalink(),
 				'segments'     => Newspack_Popups_Segmentation::get_segments(),
+				'taxonomy'     => self::NEWSPACK_POPUPS_TAXONOMY,
 			]
 		);
 		\wp_enqueue_style(
