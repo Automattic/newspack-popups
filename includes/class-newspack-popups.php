@@ -534,7 +534,13 @@ final class Newspack_Popups {
 		$current_group = get_option( self::NEWSPACK_POPUPS_ACTIVE_CAMPAIGN_GROUP );
 		$groups        = get_terms( self::NEWSPACK_POPUPS_TAXONOMY );
 		$status        = [];
-		if ( ! $current_group && ! count( $groups ) ) {
+		$group_exists  = array_reduce(
+			function( $acc, $item ) use ( $current_group ) {
+				return $item['term_id'] === $current_group ? true : $acc;
+			},
+			false
+		);
+		if ( ! $group_exists && ! count( $groups ) ) {
 			$status[] = 'needs_upgrade_1';
 		}
 		return $status;
