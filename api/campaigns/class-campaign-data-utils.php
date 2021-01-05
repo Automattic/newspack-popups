@@ -100,6 +100,12 @@ class Campaign_Data_Utils {
 			if ( $view_as_segment->max_posts > 0 ) {
 				$posts_read_count = $view_as_segment->max_posts;
 			}
+			if ( $view_as_segment->min_session_posts > 0 ) {
+				$posts_read_count_session = $view_as_segment->min_session_posts;
+			}
+			if ( $view_as_segment->max_session_posts > 0 ) {
+				$posts_read_count_session = $view_as_segment->max_session_posts;
+			}
 			$is_subscriber = $view_as_segment->is_subscribed;
 			$is_donor      = $view_as_segment->is_donor;
 			if ( ! empty( $view_as_segment->referrers ) ) {
