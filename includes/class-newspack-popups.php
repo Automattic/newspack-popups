@@ -535,8 +535,9 @@ final class Newspack_Popups {
 		$groups        = get_terms( self::NEWSPACK_POPUPS_TAXONOMY );
 		$status        = [];
 		$group_exists  = array_reduce(
+			$groups,
 			function( $acc, $item ) use ( $current_group ) {
-				return $item['term_id'] === $current_group ? true : $acc;
+				return $item->term_id === $current_group ? true : $acc;
 			},
 			false
 		);
@@ -560,7 +561,13 @@ final class Newspack_Popups {
 
 		$active   = wp_insert_term( 'Active', self::NEWSPACK_POPUPS_TAXONOMY );
 		$inactive = wp_insert_term( 'Inactive', self::NEWSPACK_POPUPS_TAXONOMY );
-		$popups   = Newspack_Popups_Model::retrieve_popups( true );
+		if ( is_wp_error( $active ) && 'term_exists' === $active->get_error_code() ) {
+			$active = get_term_by( 'slug', 'Active', self::NEWSPACK_POPUPS_TAXONOMY );
+		}
+		if ( is_wp_error( $inactive ) && 'term_exists' === $inactive->get_error_code() ) {
+			$inactive = get_term_by( 'slug', 'Inactive', self::NEWSPACK_POPUPS_TAXONOMY );
+		}
+		$popups = Newspack_Popups_Model::retrieve_popups( true );
 		foreach ( $popups as $popup ) {
 			$frequency = $popup['options']['frequency'];
 			$placement = $popup['options']['placement'];
@@ -588,7 +595,7 @@ final class Newspack_Popups {
 				}
 			}
 		}
-		update_option( self::NEWSPACK_POPUPS_ACTIVE_CAMPAIGN_GROUP, $active['term_id'] );
+		update_option( self::NEWSPACK_POPUPS_ACTIVE_CAMPAIGN_GROUP, $active->term_id );
 		return true;
 	}
 }
