@@ -540,7 +540,7 @@ final class Newspack_Popups {
 			},
 			false
 		);
-		if ( ! $group_exists && ! count( $groups ) ) {
+		if ( ! $group_exists || ! count( $groups ) ) {
 			$status[] = 'needs_upgrade_1';
 		}
 		return $status;
