@@ -47,7 +47,7 @@ const manageAnalyticsLinkers = () => {
 			document.cookie = cookieValue;
 		}
 		if ( cleanURL ) {
-			window.history.pushState( {}, document.title, cleanURL );
+			window.history.replaceState( {}, document.title, cleanURL );
 		}
 	} );
 };
