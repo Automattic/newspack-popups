@@ -664,14 +664,23 @@ final class Newspack_Popups_Inserter {
 	public static function should_display( $popup, $skip_context_checks = false ) {
 		$general_conditions = self::assess_is_post( $popup ) &&
 			self::assess_categories_filter( $popup ) &&
-			self::assess_tags_filter( $popup );
+			self::assess_tags_filter( $popup ) &&
+			'never' !== $popup['options']['frequency'];
+		$is_not_test_mode   = 'test' !== $popup['options']['frequency'];
 
 		// When using "view as" feature, discard test mode campaigns.
 		if ( $general_conditions && Newspack_Popups_View_As::viewing_as_spec() ) {
-			return true;
+			return $is_not_test_mode;
+		}
+		// Hide non-test mode campaigns for logged-in users.
+		if ( is_user_logged_in() && $is_not_test_mode ) {
+			return false;
 		}
 		// Hide overlay campaigns in non-interactive mode, for non-logged-in users.
 		if ( ! is_user_logged_in() && Newspack_Popups_Settings::is_non_interactive() && ! Newspack_Popups_Model::is_inline( $popup ) ) {
+			return false;
+		}
+		if ( ! self::assess_test_mode( $popup ) ) {
 			return false;
 		}
 		if ( $skip_context_checks ) {
