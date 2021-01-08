@@ -11,7 +11,7 @@ describe( 'amp-analytics linker handling', () => {
 	it( 'read linker param from URL and parse CID cookie value', () => {
 		expect( getCookieValueFromLinker( ampAnalyticsConfig, url, '' ) ).toEqual( {
 			cookieValue: 'newspack-cid=Ojmd7I5ODbwD-etNS57ApHep4q7Kn4VEUSJ7bSlhW6aUOEraIaaiYl98-AslsmDz',
-			cleanURL: 'https://example.com/lorem/?',
+			cleanURL: 'https://example.com/lorem/',
 		} );
 	} );
 	it( 'does not throw if malformed linker param is received', () => {
@@ -21,18 +21,18 @@ describe( 'amp-analytics linker handling', () => {
 				'https://example.com/lorem/?ref_newspack_cid=1*ab3otu*cid*,,,',
 				''
 			)
-		).toEqual( { cookieValue: undefined, cleanURL: 'https://example.com/lorem/?' } );
+		).toEqual( { cookieValue: undefined, cleanURL: 'https://example.com/lorem/' } );
 	} );
 	it( 'return undefined if there is no linker param in the URL', () => {
 		expect( getCookieValueFromLinker( ampAnalyticsConfig, 'https://example.com', '' ) ).toEqual( {
 			cookieValue: undefined,
-			cleanURL: 'https://example.com?',
+			cleanURL: 'https://example.com',
 		} );
 	} );
 	it( 'return undefined if cookie is already set', () => {
 		expect( getCookieValueFromLinker( ampAnalyticsConfig, url, 'newspack-cid=amp-123' ) ).toEqual( {
 			cookieValue: undefined,
-			cleanURL: 'https://example.com/lorem/?',
+			cleanURL: 'https://example.com/lorem/',
 		} );
 	} );
 } );
