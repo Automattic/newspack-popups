@@ -169,9 +169,9 @@ class Newspack_Popups_Settings {
 	}
 
 	/**
-	 * Activate campaign group.
+	 * Activate campaigns by group.
 	 *
-	 * @param int $id Term ID of the campaign group to activate.
+	 * @param int $ids Campaign IDs to publish.
 	 * @return bool Whether operation was successful.
 	 */
 	public static function activate_campaign_group( $ids ) {
@@ -209,9 +209,9 @@ class Newspack_Popups_Settings {
 	}
 
 	/**
-	 * Deactivate campaign group.
+	 * Unpublish campaigns by group.
 	 *
-	 * @param int $id Term ID of the campaign group to deactivate.
+	 * @param int $ids Term ID of the campaign group to deactivate.
 	 * @return bool Whether operation was successful.
 	 */
 	public static function deactivate_campaign_group( $ids ) {
