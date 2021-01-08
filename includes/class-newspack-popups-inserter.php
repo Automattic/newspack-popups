@@ -60,10 +60,15 @@ final class Newspack_Popups_Inserter {
 			return [];
 		}
 
-		$view_as_spec        = Segmentation::parse_view_as( Newspack_Popups_View_As::viewing_as_spec() );
-		$view_as_spec_campaigns = isset( $view_as_spec['campaigns'] ) ? $view_as_spec['campaigns'] : false;
-		if ( $view_as_spec_campaigns ) {
-			$popups_to_maybe_display = Newspack_Popups_Model::retrieve_popups_by_ids( explode( ',', $view_as_spec['campaigns'] ), true );
+		$view_as_spec             = Segmentation::parse_view_as( Newspack_Popups_View_As::viewing_as_spec() );
+		$view_as_spec_groups      = isset( $view_as_spec['groups'] ) ? $view_as_spec['groups'] : false;
+		$view_as_spec_campaigns   = isset( $view_as_spec['campaigns'] ) ? $view_as_spec['campaigns'] : false;
+		$view_as_spec_unpublished = isset( $view_as_spec['show_unpublished'] ) && 'true' === $view_as_spec['show_unpublished'] ? true : false;
+
+		if ( $view_as_spec_groups ) {
+			$popups_to_maybe_display = Newspack_Popups_Model::retrieve_group_popups( explode( ',', $view_as_spec['groups'] ), $view_as_spec_unpublished );
+		} elseif ( $view_as_spec_campaigns ) {
+			$popups_to_maybe_display = Newspack_Popups_Model::retrieve_popups_by_ids( explode( ',', $view_as_spec['campaigns'] ), $view_as_spec_unpublished );
 		} else {
 			// 1. Get all inline popups.
 			$popups_to_maybe_display = Newspack_Popups_Model::retrieve_inline_popups();
