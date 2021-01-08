@@ -174,14 +174,38 @@ class Newspack_Popups_Settings {
 	 * @param int $id Term ID of the campaign group to activate.
 	 * @return bool Whether operation was successful.
 	 */
-	public static function activate_campaign_group( $id ) {
-		if ( ! term_exists( $id, Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY ) ) { //phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.term_exists_term_exists
+	public static function activate_campaign_group( $ids ) {
+		if ( empty( $ids ) ) {
 			return new \WP_Error(
 				'newspack_popups_settings_error',
-				esc_html__( 'Invalid Campaign Group ID.', 'newspack' )
+				esc_html__( 'Invalid campaign IDs.', 'newspack' )
 			);
 		}
-		return update_option( Newspack_Popups::NEWSPACK_POPUPS_ACTIVE_CAMPAIGN_GROUP, $id );
+
+		$all_campaigns = new \WP_Query(
+			[
+				'post_type'      => Newspack_Popups::NEWSPACK_POPUPS_CPT,
+				'post_status'    => [ 'draft', 'pending', 'future', 'publish' ],
+				'posts_per_page' => 100,
+			]
+		);
+
+		if ( $all_campaigns->have_posts() ) {
+			foreach ( $all_campaigns->posts as $campaign ) {
+				if ( in_array( $campaign->ID, $ids ) ) {
+					if ( 'publish' !== $campaign->post_status ) {
+						wp_publish_post( $campaign );
+					}
+				} else {
+					if ( 'publish' === $campaign->post_status ) {
+						$campaign->post_status = 'draft';
+						wp_update_post( $campaign );
+					}
+				}
+			}
+		}
+
+		return true;
 	}
 
 	/**
@@ -190,14 +214,31 @@ class Newspack_Popups_Settings {
 	 * @param int $id Term ID of the campaign group to deactivate.
 	 * @return bool Whether operation was successful.
 	 */
-	public static function deactivate_campaign_group( $id ) {
-		if ( ! term_exists( $id, Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY ) ) { //phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.term_exists_term_exists
+	public static function deactivate_campaign_group( $ids ) {
+		if ( empty( $ids ) ) {
 			return new \WP_Error(
 				'newspack_popups_settings_error',
-				esc_html__( 'Invalid Campaign Group ID.', 'newspack' )
+				esc_html__( 'Invalid campaign IDs.', 'newspack' )
 			);
 		}
-		return delete_option( Newspack_Popups::NEWSPACK_POPUPS_ACTIVE_CAMPAIGN_GROUP );
+
+		$campaigns_to_unpublish = new \WP_Query(
+			[
+				'post_type'      => Newspack_Popups::NEWSPACK_POPUPS_CPT,
+				'post_status'    => [ 'publish' ],
+				'post__in'       => $ids,
+				'posts_per_page' => 100,
+			]
+		);
+
+		if ( $campaigns_to_unpublish->have_posts() ) {
+			foreach ( $campaigns_to_unpublish->posts as $campaign ) {
+				$campaign->post_status = 'draft';
+				wp_update_post( $campaign );
+			}
+		}
+
+		return true;
 	}
 }
 
