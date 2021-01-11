@@ -9,13 +9,16 @@
  * Insertion test case.
  */
 class InsertionTest extends WP_UnitTestCase {
-	private static $post_id                    = false; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
-	private static $popup_content              = 'Faucibus placerat senectus metus molestie varius tincidunt.'; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
-	private static $popup_id                   = false; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
-	private static $active_campaign_group_id   = false; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
-	private static $inactive_campaign_group_id = false; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
+	private static $post_id       = false; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
+	private static $popup_content = 'Faucibus placerat senectus metus molestie varius tincidunt.'; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
+	private static $popup_id      = false; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
 
 	public function setUp() { // phpcs:ignore Squiz.Commenting.FunctionComment.Missing
+		// Remove any popups (from previous tests).
+		foreach ( Newspack_Popups_Model::retrieve_popups() as $popup ) {
+			wp_delete_post( $popup['id'] );
+		}
+
 		self::$post_id  = self::factory()->post->create(
 			[
 				'post_content' => 'Elit platea a convallis dolor id mollis ultricies sociosqu dapibus.',
@@ -28,36 +31,20 @@ class InsertionTest extends WP_UnitTestCase {
 				'post_content' => self::$popup_content,
 			]
 		);
-
-		self::$active_campaign_group_id = self::factory()->term->create(
-			[
-				'taxonomy' => 'newspack_popups_taxonomy',
-			]
-		);
-
-		self::$inactive_campaign_group_id = self::factory()->term->create(
-			[
-				'taxonomy' => 'newspack_popups_taxonomy',
-			]
-		);
-
-		wp_set_post_terms(
-			self::$popup_id,
-			[ self::$active_campaign_group_id ],
-			Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY
-		);
-
-		// Set the popup as sitewide default.
-		Newspack_Popups_Model::set_sitewide_popup( self::$popup_id );
 		// Set popup frequency from default 'test'.
 		Newspack_Popups_Model::set_popup_options(
 			self::$popup_id,
 			[
-				'frequency'               => 'once',
-				'trigger_type'            => 'scroll',
-				'trigger_scroll_progress' => 0,
+				'frequency' => 'always',
 			]
 		);
+
+		// Navigate to post.
+		self::go_to( get_permalink( self::$post_id ) );
+		global $wp_query, $post;
+		$wp_query->in_the_loop = true;
+		setup_postdata( $post );
+
 		// Reset internal duplicate-prevention.
 		Newspack_Popups_Inserter::$the_content_has_rendered = false;
 	}
@@ -66,11 +53,6 @@ class InsertionTest extends WP_UnitTestCase {
 	 * Test popup insertion into a post.
 	 */
 	public function test_insertion() {
-		self::go_to( get_permalink( self::$post_id ) );
-		global $wp_query, $post;
-		$wp_query->in_the_loop = true;
-		setup_postdata( $post );
-
 		$post_content = apply_filters( 'the_content', get_post( self::$post_id )->post_content );
 
 		$dom = new DomDocument();
@@ -100,12 +82,16 @@ class InsertionTest extends WP_UnitTestCase {
 	 * Test non-interactive setting for overlay campaigns.
 	 */
 	public function test_non_interactive_overlay() {
-		update_option( 'newspack_newsletters_non_interative_mode', true );
+		Newspack_Popups_Model::set_sitewide_popup( self::$popup_id );
+		Newspack_Popups_Model::set_popup_options(
+			self::$popup_id,
+			[
+				'placement' => 'center',
+				'frequency' => 'once',
+			]
+		);
 
-		self::go_to( get_permalink( self::$post_id ) );
-		global $wp_query, $post;
-		$wp_query->in_the_loop = true;
-		setup_postdata( $post );
+		update_option( 'newspack_newsletters_non_interative_mode', true );
 
 		$post_content = apply_filters( 'the_content', get_post( self::$post_id )->post_content );
 
@@ -122,15 +108,6 @@ class InsertionTest extends WP_UnitTestCase {
 	public function test_non_interactive_inline() {
 		update_option( 'newspack_newsletters_non_interative_mode', true );
 
-		update_option( Newspack_Popups::NEWSPACK_POPUPS_ACTIVE_CAMPAIGN_GROUP, self::$active_campaign_group_id );
-
-		Newspack_Popups_Model::set_popup_options( self::$popup_id, [ 'placement' => 'inline' ] );
-
-		self::go_to( get_permalink( self::$post_id ) );
-		global $wp_query, $post;
-		$wp_query->in_the_loop = true;
-		setup_postdata( $post );
-
 		$post_content = apply_filters( 'the_content', get_post( self::$post_id )->post_content );
 
 		self::assertContains(
@@ -144,70 +121,4 @@ class InsertionTest extends WP_UnitTestCase {
 			'Does not include the dismissal text.'
 		);
 	}
-
-	/**
-	 * Test active campaign group.
-	 */
-	public function test_active_campaign_group_inline() {
-		Newspack_Popups_Settings::activate_campaign_group( self::$active_campaign_group_id );
-		Newspack_Popups_Model::set_popup_options( self::$popup_id, [ 'placement' => 'inline' ] );
-
-		self::go_to( get_permalink( self::$post_id ) );
-		global $wp_query, $post;
-		$wp_query->in_the_loop = true;
-		setup_postdata( $post );
-
-		$post_content = apply_filters( 'the_content', get_post( self::$post_id )->post_content );
-
-		self::assertContains(
-			self::$popup_content,
-			$post_content,
-			'Does include the popup content.'
-		);
-	}
-
-	/**
-	 * Test no active campaign group.
-	 */
-	public function test_no_active_campaign_group_inline() {
-		Newspack_Popups_Settings::deactivate_campaign_group( self::$active_campaign_group_id );
-
-		Newspack_Popups_Model::set_popup_options( self::$popup_id, [ 'placement' => 'inline' ] );
-
-		self::go_to( get_permalink( self::$post_id ) );
-		global $wp_query, $post;
-		$wp_query->in_the_loop = true;
-		setup_postdata( $post );
-
-		$post_content = apply_filters( 'the_content', get_post( self::$post_id )->post_content );
-
-		self::assertNotContains(
-			self::$popup_content,
-			$post_content,
-			'Does include the popup content.'
-		);
-	}
-
-	/**
-	 * Test inactive campaign group.
-	 */
-	public function test_inactive_campaign_group_inline() {
-		Newspack_Popups_Settings::activate_campaign_group( self::$inactive_campaign_group_id );
-
-		Newspack_Popups_Model::set_popup_options( self::$popup_id, [ 'placement' => 'inline' ] );
-
-		self::go_to( get_permalink( self::$post_id ) );
-		global $wp_query, $post;
-		$wp_query->in_the_loop = true;
-		setup_postdata( $post );
-
-		$post_content = apply_filters( 'the_content', get_post( self::$post_id )->post_content );
-
-		self::assertNotContains(
-			self::$popup_content,
-			$post_content,
-			'Does include the popup content.'
-		);
-	}
-
 }
