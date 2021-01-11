@@ -462,7 +462,24 @@ final class Newspack_Popups {
 		if ( $update ) {
 			return;
 		}
-		$placement = isset( $_GET['placement'] ) && 'inline' === sanitize_text_field( $_GET['placement'] ) ? 'inline' : 'center'; //phpcs:ignore
+		$type = isset( $_GET['placement'] ) ? sanitize_text_field( $_GET['placement'] ) : null; //phpcs:ignore
+		switch ( $type ) {
+			case 'overlay-center':
+				$placement = 'center';
+				break;
+			case 'overlay-top':
+				$placement = 'top';
+				break;
+			case 'overlay-bottom':
+				$placement = 'bottom';
+				break;
+			case 'above-header':
+				$placement = 'above_header';
+				break;
+			default:
+				$placement = 'inline';
+				break;
+		}
 
 		update_post_meta( $post_id, 'background_color', '#FFFFFF' );
 		update_post_meta( $post_id, 'display_title', false );
