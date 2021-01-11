@@ -174,7 +174,7 @@ class Newspack_Popups_Settings {
 	 * @param int $ids Campaign IDs to publish.
 	 * @return bool Whether operation was successful.
 	 */
-	public static function activate_campaign_group( $ids ) {
+	public static function batch_publish( $ids ) {
 		if ( empty( $ids ) ) {
 			return new \WP_Error(
 				'newspack_popups_settings_error',
@@ -211,10 +211,10 @@ class Newspack_Popups_Settings {
 	/**
 	 * Unpublish campaigns by group.
 	 *
-	 * @param int $ids Term ID of the campaign group to deactivate.
+	 * @param int $ids Campaign IDs to unpublish.
 	 * @return bool Whether operation was successful.
 	 */
-	public static function deactivate_campaign_group( $ids ) {
+	public static function batch_unpublish( $ids ) {
 		if ( empty( $ids ) ) {
 			return new \WP_Error(
 				'newspack_popups_settings_error',
