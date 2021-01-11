@@ -718,6 +718,100 @@ class APITest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Suppression caused by a read count segment, with a 'once' frequency cap.
+	 */
+	public function test_segment_read_count_range_with_once_frequency() {
+		$test_popup_with_segment = self::create_test_popup(
+			[
+				'placement'           => 'inline',
+				'frequency'           => 'once',
+				'selected_segment_id' => 'segmentBetween3And5',
+			]
+		);
+
+		self::assertFalse(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings ),
+			'Assert initially not visible.'
+		);
+
+		// Report 2 articles read.
+		self::$maybe_show_campaign->save_client_data(
+			self::$client_id,
+			[
+				'posts_read' => [
+					self::create_read_post( 1 ),
+					self::create_read_post( 2 ),
+				],
+			]
+		);
+
+		self::assertTrue(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings ),
+			'Assert shown when a third article is read.'
+		);
+
+		// Report a view.
+		self::$report_campaign_data->report_campaign(
+			[
+				'cid'      => self::$client_id,
+				'popup_id' => Newspack_Popups_Model::canonize_popup_id( $test_popup_with_segment['id'] ),
+			]
+		);
+
+		self::assertFalse(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings ),
+			'Assert not shown after it has been shown once.'
+		);
+	}
+
+	/**
+	 * Suppression caused by a read count segment, with a 'daily' frequency cap.
+	 */
+	public function test_segment_read_count_range_with_daily_frequency() {
+		$test_popup_with_segment = self::create_test_popup(
+			[
+				'placement'           => 'inline',
+				'frequency'           => 'daily',
+				'selected_segment_id' => 'segmentBetween3And5',
+			]
+		);
+
+		self::assertFalse(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings ),
+			'Assert initially not visible.'
+		);
+
+		// Report 2 articles read.
+		self::$maybe_show_campaign->save_client_data(
+			self::$client_id,
+			[
+				'posts_read' => [
+					self::create_read_post( 1 ),
+					self::create_read_post( 2 ),
+				],
+			]
+		);
+
+		self::assertTrue(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings ),
+			'Assert shown when a third article is read.'
+		);
+
+		// Report a view.
+		self::$report_campaign_data->report_campaign(
+			[
+				'cid'      => self::$client_id,
+				'popup_id' => Newspack_Popups_Model::canonize_popup_id( $test_popup_with_segment['id'] ),
+			]
+		);
+
+		self::assertFalse(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings ),
+			'Assert not shown after it has been shown once.'
+		);
+	}
+
+	/**
 	 * Suppression caused by a session read count segment.
 	 */
 	public function test_segment_session_read_count() {

@@ -116,21 +116,6 @@ class Maybe_Show_Campaign extends Lightweight_API {
 
 		// Handle frequency.
 		$frequency = $campaign->f;
-		switch ( $frequency ) {
-			case 'daily':
-				$should_display = $campaign_data['last_viewed'] < strtotime( '-1 day', $now );
-				break;
-			case 'once':
-				$should_display = $campaign_data['count'] < 1;
-				break;
-			case 'always':
-				$should_display = true;
-				break;
-			case 'never':
-			default:
-				$should_display = false;
-				break;
-		}
 
 		$has_newsletter_prompt = $campaign->n;
 		// Suppressing based on UTM Medium parameter in the URL.
@@ -238,6 +223,13 @@ class Maybe_Show_Campaign extends Lightweight_API {
 
 		if ( ! $view_as_spec && ! empty( array_diff( $init_campaign_data, $campaign_data ) ) ) {
 			$this->save_campaign_data( $client_id, $campaign->id, $campaign_data );
+		}
+
+		if ( 'once' === $frequency && $campaign_data['count'] >= 1 ) {
+			$should_display = false;
+		}
+		if ( 'daily' === $frequency && $campaign_data['last_viewed'] >= strtotime( '-1 day', $now ) ) {
+			$should_display = false;
 		}
 
 		return $should_display;
