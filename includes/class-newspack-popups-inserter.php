@@ -121,6 +121,14 @@ final class Newspack_Popups_Inserter {
 			}
 		);
 
+		// Remove manual placement campaigns.
+		$popups_to_maybe_display_deduped = array_filter(
+			$popups_to_maybe_display_deduped,
+			function( $campaign ) {
+				return 'manual' !== $campaign['options']['frequency'];
+			}
+		);
+
 		return array_filter(
 			$popups_to_maybe_display_deduped,
 			[ __CLASS__, 'should_display' ]
@@ -649,6 +657,10 @@ final class Newspack_Popups_Inserter {
 	 * @return bool Should popup be shown.
 	 */
 	public static function should_display( $popup, $skip_context_checks = false ) {
+		if ( 'manual' === $popup['options']['frequency'] ) {
+			return true;
+		}
+
 		$general_conditions = self::assess_is_post( $popup ) &&
 			self::assess_categories_filter( $popup ) &&
 			self::assess_tags_filter( $popup ) &&

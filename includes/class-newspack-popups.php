@@ -463,6 +463,7 @@ final class Newspack_Popups {
 			return;
 		}
 		$type = isset( $_GET['placement'] ) ? sanitize_text_field( $_GET['placement'] ) : null; //phpcs:ignore
+		$frequency = 'test';
 		switch ( $type ) {
 			case 'overlay-center':
 				$placement = 'center';
@@ -476,6 +477,10 @@ final class Newspack_Popups {
 			case 'above-header':
 				$placement = 'above_header';
 				break;
+			case 'manual':
+				$placement = 'inline';
+				$frequency = 'manual';
+				break;
 			default:
 				$placement = 'inline';
 				break;
@@ -484,7 +489,7 @@ final class Newspack_Popups {
 		update_post_meta( $post_id, 'background_color', '#FFFFFF' );
 		update_post_meta( $post_id, 'display_title', false );
 		update_post_meta( $post_id, 'dismiss_text', self::get_default_dismiss_text() );
-		update_post_meta( $post_id, 'frequency', 'test' );
+		update_post_meta( $post_id, 'frequency', $frequency );
 		update_post_meta( $post_id, 'overlay_color', '#000000' );
 		update_post_meta( $post_id, 'overlay_opacity', 30 );
 		update_post_meta( $post_id, 'placement', $placement );

@@ -123,6 +123,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			case 'once':
 				$should_display = $campaign_data['count'] < 1;
 				break;
+			case 'manual':
 			case 'always':
 				$should_display = true;
 				break;
