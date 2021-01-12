@@ -1,3 +1,11 @@
+# [1.22.0-alpha.2](https://github.com/Automattic/newspack-popups/compare/v1.22.0-alpha.1...v1.22.0-alpha.2) (2021-01-12)
+
+
+### Bug Fixes
+
+* handle missing GA id ([f27f84a](https://github.com/Automattic/newspack-popups/commit/f27f84a39785030481a7c07b5190555fb3e01f73))
+* segmentation and frequency conflict ([#383](https://github.com/Automattic/newspack-popups/issues/383)) ([47a5af0](https://github.com/Automattic/newspack-popups/commit/47a5af09ffd941780fc6f55a2e54f4c45246299f)), closes [#379](https://github.com/Automattic/newspack-popups/issues/379)
+
 # [1.22.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.21.0...v1.22.0-alpha.1) (2021-01-12)
 
 
