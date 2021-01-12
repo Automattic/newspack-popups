@@ -10,7 +10,6 @@ import { PluginPostStatusInfo } from '@wordpress/edit-post';
 import { ToggleControl } from '@wordpress/components';
 
 const StatusSidebar = ( {
-	frequency,
 	newspack_popups_is_sitewide_default,
 	isOverlay,
 	onSitewideDefaultChange,
