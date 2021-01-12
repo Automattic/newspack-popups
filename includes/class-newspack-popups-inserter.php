@@ -73,16 +73,6 @@ final class Newspack_Popups_Inserter {
 			// 1. Get all inline popups.
 			$popups_to_maybe_display = Newspack_Popups_Model::retrieve_inline_popups();
 
-			// 2. Get the overlay popup/s. There can be only one displayed, unless in test mode.
-
-			// Any overlay test popups, if the user is logged in.
-			if ( is_user_logged_in() ) {
-				$popups_to_maybe_display = array_merge(
-					$popups_to_maybe_display,
-					Newspack_Popups_Model::retrieve_overlay_test_popups()
-				);
-			}
-
 			// Check if there's an overlay popup with matching category.
 			$category_overlay_popup = Newspack_Popups_Model::retrieve_category_overlay_popup();
 			if ( $category_overlay_popup && self::should_display( $category_overlay_popup ) ) {
@@ -605,19 +595,6 @@ final class Newspack_Popups_Inserter {
 	}
 
 	/**
-	 * If Pop-up Frequency is "Test Mode," assess whether it should be shown.
-	 *
-	 * @param object $popup The popup to assess.
-	 * @return bool Should popup be shown based on Test Mode assessment.
-	 */
-	public static function assess_test_mode( $popup ) {
-		if ( 'test' === $popup['options']['frequency'] ) {
-			return is_user_logged_in() && ( current_user_can( 'edit_others_pages' ) || Newspack_Popups::previewed_popup_id() );
-		}
-		return true;
-	}
-
-	/**
 	 * If Pop-up has categories, it should only be shown on posts/pages with those.
 	 *
 	 * @param object $popup The popup to assess.
@@ -676,13 +653,11 @@ final class Newspack_Popups_Inserter {
 
 		$general_conditions = self::assess_is_post( $popup ) &&
 			self::assess_categories_filter( $popup ) &&
-			self::assess_tags_filter( $popup ) &&
-			'never' !== $popup['options']['frequency'];
-		$is_not_test_mode   = 'test' !== $popup['options']['frequency'];
+			self::assess_tags_filter( $popup );
 
 		// When using "view as" feature, discard test mode campaigns.
 		if ( $general_conditions && Newspack_Popups_View_As::viewing_as_spec() ) {
-			return $is_not_test_mode;
+			return true;
 		}
 		// Hide non-test mode campaigns for logged-in users.
 		if ( is_user_logged_in() && $is_not_test_mode ) {
@@ -690,9 +665,6 @@ final class Newspack_Popups_Inserter {
 		}
 		// Hide overlay campaigns in non-interactive mode, for non-logged-in users.
 		if ( ! is_user_logged_in() && Newspack_Popups_Settings::is_non_interactive() && ! Newspack_Popups_Model::is_inline( $popup ) ) {
-			return false;
-		}
-		if ( ! self::assess_test_mode( $popup ) ) {
 			return false;
 		}
 		if ( $skip_context_checks ) {

@@ -463,8 +463,9 @@ final class Newspack_Popups {
 		if ( $update ) {
 			return;
 		}
-		$type = isset( $_GET['placement'] ) ? sanitize_text_field( $_GET['placement'] ) : null; //phpcs:ignore
-		$frequency = 'test';
+		$type      = isset( $_GET['placement'] ) ? sanitize_text_field( $_GET['placement'] ) : null; //phpcs:ignore
+		$frequency = 'daily';
+
 		switch ( $type ) {
 			case 'overlay-center':
 				$placement = 'center';
@@ -477,6 +478,7 @@ final class Newspack_Popups {
 				break;
 			case 'above-header':
 				$placement = 'above_header';
+				$frequency = 'always';
 				break;
 			case 'manual':
 				$placement = 'inline';
@@ -484,17 +486,33 @@ final class Newspack_Popups {
 				break;
 			default:
 				$placement = 'inline';
+				$frequency = 'always';
+				break;
+		}
+
+		switch ( $type ) {
+			case 'overlay-center':
+			case 'overlay-top':
+			case 'overlay-bottom':
+				$dismiss_text = self::get_default_dismiss_text();
+				$trigger_type = 'time';
+				break;
+			case 'above-header':
+			case 'manual':
+			default:
+				$dismiss_text = null;
+				$trigger_type = 'scroll';
 				break;
 		}
 
 		update_post_meta( $post_id, 'background_color', '#FFFFFF' );
 		update_post_meta( $post_id, 'display_title', false );
-		update_post_meta( $post_id, 'dismiss_text', self::get_default_dismiss_text() );
+		update_post_meta( $post_id, 'dismiss_text', $dismiss_text );
 		update_post_meta( $post_id, 'frequency', $frequency );
 		update_post_meta( $post_id, 'overlay_color', '#000000' );
 		update_post_meta( $post_id, 'overlay_opacity', 30 );
 		update_post_meta( $post_id, 'placement', $placement );
-		update_post_meta( $post_id, 'trigger_type', 'time' );
+		update_post_meta( $post_id, 'trigger_type', $trigger_type );
 		update_post_meta( $post_id, 'trigger_delay', 3 );
 		update_post_meta( $post_id, 'trigger_scroll_progress', 30 );
 		update_post_meta( $post_id, 'utm_suppression', '' );
