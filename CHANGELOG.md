@@ -1,3 +1,24 @@
+# [1.22.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.21.0...v1.22.0-alpha.1) (2021-01-12)
+
+
+### Bug Fixes
+
+* install composer dependencies on release job ([#368](https://github.com/Automattic/newspack-popups/issues/368)) ([f814d27](https://github.com/Automattic/newspack-popups/commit/f814d270d701dec2997981b1cf1da3f9adf66d3b))
+* remove trailing question mark from cleaned non-AMP URLs ([#376](https://github.com/Automattic/newspack-popups/issues/376)) ([25363ae](https://github.com/Automattic/newspack-popups/commit/25363aed2e61d349bc8eb6831a303fb3a03d70e2))
+* session read count in view-as logic ([#362](https://github.com/Automattic/newspack-popups/issues/362)) ([33b65c7](https://github.com/Automattic/newspack-popups/commit/33b65c7d6cf1d8a379246bfbbc4ce41fdde22554))
+
+
+### Features
+
+* handle category affinity segment ([fb01269](https://github.com/Automattic/newspack-popups/commit/fb012699d7e81d04fbb70b3888de205626f7e112))
+* initialize campaigns by placement ([#374](https://github.com/Automattic/newspack-popups/issues/374)) ([5db8e97](https://github.com/Automattic/newspack-popups/commit/5db8e97f339ac7061b16c76939f35c12a46b71b0))
+* manual placement ([#373](https://github.com/Automattic/newspack-popups/issues/373)) ([45b0c67](https://github.com/Automattic/newspack-popups/commit/45b0c677a52c76a3622305a59eb185e316be636d))
+* support for campaign groups in campaigns wizard ([#363](https://github.com/Automattic/newspack-popups/issues/363)) ([fdb12db](https://github.com/Automattic/newspack-popups/commit/fdb12db88cc8c534d25c7a6db430864c866a209a))
+* **view-as:** handle groups ([#349](https://github.com/Automattic/newspack-popups/issues/349)) ([563f3ce](https://github.com/Automattic/newspack-popups/commit/563f3cef14959b5ad26fdd7c5d2f204752fe1443))
+* shortcode ([#321](https://github.com/Automattic/newspack-popups/issues/321)) ([6da09cf](https://github.com/Automattic/newspack-popups/commit/6da09cfcc19b6275f3aa5f7f3e5321cc2f52d178))
+* **segmentation:** add session read count handling ([b1a76cb](https://github.com/Automattic/newspack-popups/commit/b1a76cb83b4a24a2c0626d1a6810cd21865d2c02))
+* view-as feature ([#345](https://github.com/Automattic/newspack-popups/issues/345)) ([632bec7](https://github.com/Automattic/newspack-popups/commit/632bec7e882f9ed7b99f83d24e689cbad278e131))
+
 # [1.21.0](https://github.com/Automattic/newspack-popups/compare/v1.20.0...v1.21.0) (2020-12-15)
 
 
