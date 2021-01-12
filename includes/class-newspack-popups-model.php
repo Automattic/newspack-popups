@@ -164,7 +164,7 @@ final class Newspack_Popups_Model {
 		foreach ( $options as $key => $value ) {
 			switch ( $key ) {
 				case 'frequency':
-					if ( ! in_array( $value, [ 'test', 'never', 'once', 'daily', 'always' ] ) ) {
+					if ( ! in_array( $value, [ 'test', 'never', 'once', 'daily', 'always', 'manual' ] ) ) {
 						return new \WP_Error(
 							'newspack_popups_invalid_option_value',
 							esc_html__( 'Invalid frequency value.', 'newspack-popups' ),
@@ -229,20 +229,38 @@ final class Newspack_Popups_Model {
 	/**
 	 * Retrieve all popups from a given group.
 	 *
-	 * @param string $group_slugs Group slugs.
-	 * @return array Inline popup objects.
+	 * @param  array   $group_slugs array Array of group slugs.
+	 * @param  boolean $include_unpublished Whether to include unpublished posts.
+	 * @return array Array of popup objects.
 	 */
-	public static function retrieve_group_popups( $group_slugs ) {
+	public static function retrieve_group_popups( $group_slugs, $include_unpublished = false ) {
 		$args = [
 			'post_type'   => Newspack_Popups::NEWSPACK_POPUPS_CPT,
-			'post_status' => 'publish',
+			'post_status' => $include_unpublished ? [ 'draft', 'pending', 'future', 'publish' ] : 'publish',
 			'tax_query'   => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
 				[
 					'taxonomy' => Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY,
 					'field'    => 'term_id',
-					'terms'    => explode( ',', $group_slugs ),
+					'terms'    => $group_slugs,
 				],
 			],
+		];
+
+		return self::retrieve_popups_with_query( new WP_Query( $args ) );
+	}
+
+	/**
+	 * Retrieve popups by IDs.
+	 *
+	 * @param  array   $ids array Array of popup IDs.
+	 * @param  boolean $include_unpublished Whether to include unpublished posts.
+	 * @return array Array of popup objects.
+	 */
+	public static function retrieve_popups_by_ids( $ids, $include_unpublished = false ) {
+		$args = [
+			'post_type'   => Newspack_Popups::NEWSPACK_POPUPS_CPT,
+			'post_status' => $include_unpublished ? [ 'draft', 'pending', 'future', 'publish' ] : 'publish',
+			'post__in'    => $ids,
 		];
 
 		return self::retrieve_popups_with_query( new WP_Query( $args ) );
