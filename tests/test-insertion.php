@@ -88,7 +88,7 @@ class InsertionTest extends WP_UnitTestCase {
 			[
 				'placement' => 'center',
 				'frequency' => 'once',
-			] 
+			]
 		);
 
 		update_option( 'newspack_newsletters_non_interative_mode', true );
