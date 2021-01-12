@@ -47,15 +47,16 @@ class Campaign_Data_Utils {
 	public static function canonize_segment( $segment ) {
 		return (object) array_merge(
 			[
-				'min_posts'         => 0,
-				'max_posts'         => 0,
-				'min_session_posts' => 0,
-				'max_session_posts' => 0,
-				'is_subscribed'     => false,
-				'is_not_subscribed' => false,
-				'is_donor'          => false,
-				'is_not_donor'      => false,
-				'referrers'         => '',
+				'min_posts'           => 0,
+				'max_posts'           => 0,
+				'min_session_posts'   => 0,
+				'max_session_posts'   => 0,
+				'is_subscribed'       => false,
+				'is_not_subscribed'   => false,
+				'is_donor'            => false,
+				'is_not_donor'        => false,
+				'referrers'           => '',
+				'favorite_categories' => [],
 			],
 			(array) $segment
 		);
@@ -92,6 +93,9 @@ class Campaign_Data_Utils {
 		$is_donor                 = self::is_donor( $client_data );
 		$campaign_segment         = self::canonize_segment( $campaign_segment );
 
+		/**
+		 * When viewing as a segment, spoof the relevant data to match it.
+		 */
 		if ( $view_as_segment ) {
 			$view_as_segment = self::canonize_segment( $view_as_segment );
 			if ( $view_as_segment->min_posts > 0 ) {
@@ -117,24 +121,39 @@ class Campaign_Data_Utils {
 			}
 		}
 
+		/**
+		 * By posts read count.
+		 */
 		if ( $campaign_segment->min_posts > 0 && $campaign_segment->min_posts > $posts_read_count ) {
 			$should_display = false;
 		}
 		if ( $campaign_segment->max_posts > 0 && $campaign_segment->max_posts < $posts_read_count ) {
 			$should_display = false;
 		}
+
+		/**
+		 * By posts read in session count.
+		 */
 		if ( $campaign_segment->min_session_posts > 0 && $campaign_segment->min_session_posts > $posts_read_count_session ) {
 			$should_display = false;
 		}
 		if ( $campaign_segment->max_session_posts > 0 && $campaign_segment->max_session_posts < $posts_read_count_session ) {
 			$should_display = false;
 		}
+
+		/**
+		 * By subscription status.
+		 */
 		if ( $campaign_segment->is_subscribed && ! $is_subscriber ) {
 			$should_display = false;
 		}
 		if ( $campaign_segment->is_not_subscribed && $is_subscriber ) {
 			$should_display = false;
 		}
+
+		/**
+		 * By donation status.
+		 */
 		if ( $campaign_segment->is_donor && ! $is_donor ) {
 			$should_display = false;
 		}
@@ -142,6 +161,9 @@ class Campaign_Data_Utils {
 			$should_display = false;
 		}
 
+		/**
+		 * By referrer domain.
+		 */
 		if ( ! empty( $campaign_segment->referrers ) ) {
 			if ( empty( $page_referrer_url ) ) {
 				$should_display = false;
@@ -157,6 +179,31 @@ class Campaign_Data_Utils {
 				$should_display = false;
 			}
 		}
+
+		/**
+		 * By most read category.
+		 */
+		if ( isset( $campaign_segment->favorite_categories ) && count( $campaign_segment->favorite_categories ) > 0 ) {
+			$categories_read_counts = array_reduce(
+				$client_data['posts_read'],
+				function ( $read_counts, $read_post ) {
+					foreach ( explode( ',', $read_post['category_ids'] ) as $cat_id ) {
+						if ( isset( $read_counts[ $cat_id ] ) ) {
+							$read_counts[ $cat_id ]++;
+						} else {
+							$read_counts[ $cat_id ] = 1;
+						}
+					}
+					return $read_counts;
+				}
+			);
+			arsort( $categories_read_counts );
+			$favorite_category_matches_segment = in_array( key( $categories_read_counts ), $campaign_segment->favorite_categories );
+			if ( ! $favorite_category_matches_segment ) {
+				$should_display = false;
+			}
+		}
+
 		return $should_display;
 	}
 }
