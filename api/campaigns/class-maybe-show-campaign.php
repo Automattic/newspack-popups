@@ -48,6 +48,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 				$posts_read[] = [
 					'post_id'      => $visit['post_id'],
 					'category_ids' => $visit['categories'],
+					'created_at'   => gmdate( 'Y-m-d H:i:s' ),
 				];
 				$this->save_client_data(
 					$client_id,
@@ -67,12 +68,21 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			);
 		}
 
+
+		$view_as_spec = [];
+		if ( ! empty( $_REQUEST['view_as'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$view_as_spec = Segmentation::parse_view_as( json_decode( $_REQUEST['view_as'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		}
+
+		$page_referer_url = isset( $_REQUEST['ref'] ) ? $_REQUEST['ref'] : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		foreach ( $campaigns as $campaign ) {
 			$response[ $campaign->id ] = $this->should_campaign_be_shown(
 				$client_id,
 				$campaign,
 				$settings,
-				filter_input( INPUT_SERVER, 'HTTP_REFERER', FILTER_SANITIZE_STRING )
+				filter_input( INPUT_SERVER, 'HTTP_REFERER', FILTER_SANITIZE_STRING ),
+				$page_referer_url,
+				$view_as_spec
 			);
 		}
 		$this->response = $response;
@@ -85,18 +95,20 @@ class Maybe_Show_Campaign extends Lightweight_API {
 	 * @param string $client_id Client ID.
 	 * @param object $campaign Campaign.
 	 * @param object $settings Settings.
-	 * @param string $referer_url Referer URL.
+	 * @param string $referer_url URL of the page performing the API request.
+	 * @param string $page_referer_url URL of the referrer of the frontend page that is making the API request.
+	 * @param object $view_as_spec "View As" specification.
 	 * @param string $now Current timestamp.
 	 * @return bool Whether campaign should be shown.
 	 */
-	public function should_campaign_be_shown( $client_id, $campaign, $settings, $referer_url = '', $now = false ) {
+	public function should_campaign_be_shown( $client_id, $campaign, $settings, $referer_url = '', $page_referer_url = '', $view_as_spec = false, $now = false ) {
 		if ( false === $now ) {
 			$now = time();
 		}
 		$campaign_data      = $this->get_campaign_data( $client_id, $campaign->id );
 		$init_campaign_data = $campaign_data;
 
-		if ( $campaign_data['suppress_forever'] ) {
+		if ( ! $view_as_spec && $campaign_data['suppress_forever'] ) {
 			return false;
 		}
 
@@ -111,6 +123,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			case 'once':
 				$should_display = $campaign_data['count'] < 1;
 				break;
+			case 'manual':
 			case 'always':
 				$should_display = true;
 				break;
@@ -169,13 +182,29 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			$campaign_data['suppress_forever'] = true;
 		}
 
+		// Using "view as" feature.
+		$view_as_segment = false;
+		if ( $view_as_spec ) {
+			$should_display = true;
+			if ( isset( $view_as_spec['segment'] ) && $view_as_spec['segment'] ) {
+				$segment_config = [];
+				if ( isset( $settings->all_segments->{$view_as_spec['segment']} ) ) {
+					$segment_config = $settings->all_segments->{$view_as_spec['segment']};
+				}
+				$view_as_segment = empty( $segment_config ) ? false : $segment_config;
+			}
+		}
+
 		// Handle segmentation.
 		$campaign_segment = isset( $settings->all_segments->{$campaign->s} ) ? $settings->all_segments->{$campaign->s} : false;
 		if ( ! empty( $campaign_segment ) ) {
-			$should_display = Campaign_Data_Utils::should_display_campaign(
+			$campaign_segment = Campaign_Data_Utils::canonize_segment( $campaign_segment );
+			$should_display   = Campaign_Data_Utils::should_display_campaign(
 				$campaign_segment,
 				$client_data,
-				$referer_url
+				$referer_url,
+				$page_referer_url,
+				$view_as_segment
 			);
 
 			if (
@@ -186,21 +215,29 @@ class Maybe_Show_Campaign extends Lightweight_API {
 				// Save suppression for this campaign.
 				$campaign_data['suppress_forever'] = true;
 			}
-			if ( isset( $campaign_segment->referrers ) && $campaign_segment->referrers && ! empty( $campaign_segment->referrers ) && isset( $_REQUEST['ref'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-				$referer_domain = parse_url( $_REQUEST['ref'], PHP_URL_HOST ); // phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url, WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-				// Handle the 'www' prefix – assume `www.example.com` and `example.com` referrers are the same.
-				$referer_domain_alternative = strpos( $referer_domain, 'www.' ) === 0 ? substr( $referer_domain, 4 ) : "www.$referer_domain";
-				$referrer_matches           = array_intersect(
-					[ $referer_domain, $referer_domain_alternative ],
-					array_map( 'trim', explode( ',', $campaign_segment->referrers ) )
+			if ( isset( $campaign_segment->favorite_categories ) && count( $campaign_segment->favorite_categories ) > 0 ) {
+				$categories_read_counts = array_reduce(
+					$client_data['posts_read'],
+					function ( $read_counts, $read_post ) {
+						foreach ( explode( ',', $read_post['category_ids'] ) as $cat_id ) {
+							if ( isset( $read_counts[ $cat_id ] ) ) {
+								$read_counts[ $cat_id ]++;
+							} else {
+								$read_counts[ $cat_id ] = 1;
+							}
+						}
+						return $read_counts;
+					}
 				);
-				if ( empty( $referrer_matches ) ) {
+				arsort( $categories_read_counts );
+				$favorite_category_matches_segment = in_array( key( $categories_read_counts ), $campaign_segment->favorite_categories );
+				if ( ! $favorite_category_matches_segment ) {
 					$should_display = false;
 				}
 			}
 		}
 
-		if ( ! empty( array_diff( $init_campaign_data, $campaign_data ) ) ) {
+		if ( ! $view_as_spec && ! empty( array_diff( $init_campaign_data, $campaign_data ) ) ) {
 			$this->save_campaign_data( $client_id, $campaign->id, $campaign_data );
 		}
 

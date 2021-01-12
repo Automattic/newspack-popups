@@ -106,12 +106,13 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
-	 * Set categories for a Popup.
+	 * Set terms for a Popup.
 	 *
 	 * @param integer $id ID of Popup.
-	 * @param array   $categories Array of categories to be set.
+	 * @param array   $terms Array of terms to be set.
+	 * @param string  $taxonomy Taxonomy slug.
 	 */
-	public static function set_popup_categories( $id, $categories ) {
+	public static function set_popup_terms( $id, $terms, $taxonomy ) {
 		$popup = self::retrieve_popup_by_id( $id, true );
 		if ( ! $popup ) {
 			return new \WP_Error(
@@ -123,13 +124,23 @@ final class Newspack_Popups_Model {
 				]
 			);
 		}
-		$category_ids = array_map(
-			function( $category ) {
-				return $category['id'];
+		if ( ! in_array( $taxonomy, [ 'category', Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY ] ) ) {
+			return new \WP_Error(
+				'newspack_popups_invalid_taxonomy',
+				esc_html__( 'Invalid taxonomy.', 'newspack-popups' ),
+				[
+					'status' => 400,
+					'level'  => 'fatal',
+				]
+			);
+		}
+		$term_ids = array_map(
+			function( $term ) {
+				return $term['id'];
 			},
-			$categories
+			$terms
 		);
-		return wp_set_post_categories( $id, $category_ids );
+		return wp_set_post_terms( $id, $term_ids, $taxonomy );
 	}
 
 	/**
@@ -153,7 +164,7 @@ final class Newspack_Popups_Model {
 		foreach ( $options as $key => $value ) {
 			switch ( $key ) {
 				case 'frequency':
-					if ( ! in_array( $value, [ 'test', 'never', 'once', 'daily', 'always' ] ) ) {
+					if ( ! in_array( $value, [ 'test', 'never', 'once', 'daily', 'always', 'manual' ] ) ) {
 						return new \WP_Error(
 							'newspack_popups_invalid_option_value',
 							esc_html__( 'Invalid frequency value.', 'newspack-popups' ),
@@ -210,6 +221,46 @@ final class Newspack_Popups_Model {
 			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 			'meta_value'   => self::$inline_placements,
 			'meta_compare' => 'IN',
+		];
+
+		return self::retrieve_popups_with_query( new WP_Query( $args ) );
+	}
+
+	/**
+	 * Retrieve all popups from a given group.
+	 *
+	 * @param  array   $group_slugs array Array of group slugs.
+	 * @param  boolean $include_unpublished Whether to include unpublished posts.
+	 * @return array Array of popup objects.
+	 */
+	public static function retrieve_group_popups( $group_slugs, $include_unpublished = false ) {
+		$args = [
+			'post_type'   => Newspack_Popups::NEWSPACK_POPUPS_CPT,
+			'post_status' => $include_unpublished ? [ 'draft', 'pending', 'future', 'publish' ] : 'publish',
+			'tax_query'   => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+				[
+					'taxonomy' => Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY,
+					'field'    => 'term_id',
+					'terms'    => $group_slugs,
+				],
+			],
+		];
+
+		return self::retrieve_popups_with_query( new WP_Query( $args ) );
+	}
+
+	/**
+	 * Retrieve popups by IDs.
+	 *
+	 * @param  array   $ids array Array of popup IDs.
+	 * @param  boolean $include_unpublished Whether to include unpublished posts.
+	 * @return array Array of popup objects.
+	 */
+	public static function retrieve_popups_by_ids( $ids, $include_unpublished = false ) {
+		$args = [
+			'post_type'   => Newspack_Popups::NEWSPACK_POPUPS_CPT,
+			'post_status' => $include_unpublished ? [ 'draft', 'pending', 'future', 'publish' ] : 'publish',
+			'post__in'    => $ids,
 		];
 
 		return self::retrieve_popups_with_query( new WP_Query( $args ) );
@@ -395,7 +446,8 @@ final class Newspack_Popups_Model {
 			),
 		];
 		if ( $include_categories ) {
-			$popup['categories'] = get_the_category( $id );
+			$popup['categories']      = get_the_category( $id );
+			$popup['campaign_groups'] = get_the_terms( $id, Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY );
 		}
 
 		if ( self::is_inline( $popup ) ) {

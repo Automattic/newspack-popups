@@ -36,10 +36,10 @@ class ModelTest extends WP_UnitTestCase {
 				'frequency'               => 'test',
 				'overlay_color'           => '#000000',
 				'overlay_opacity'         => '30',
-				'placement'               => 'center',
+				'placement'               => 'inline',
 				'trigger_type'            => 'time',
 				'trigger_delay'           => '3',
-				'trigger_scroll_progress' => 0,
+				'trigger_scroll_progress' => '30',
 				'utm_suppression'         => null,
 				'selected_segment_id'     => '',
 			],
@@ -65,6 +65,13 @@ class ModelTest extends WP_UnitTestCase {
 	 * Test popup markup generation.
 	 */
 	public function test_markup_generation() {
+		Newspack_Popups_Model::set_popup_options(
+			self::$popup_id,
+			[
+				'placement' => 'center',
+			]
+		);
+
 		$popup_object_default = Newspack_Popups_Model::create_popup_object( get_post( self::$popup_id ) );
 
 		$dom = new DomDocument();

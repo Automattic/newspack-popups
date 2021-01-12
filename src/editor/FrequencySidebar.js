@@ -25,6 +25,7 @@ const FrequencySidebar = ( { frequency, onMetaFieldChange, isOverlay, utm_suppre
 						label: __( 'Every page', 'newspack-popups' ),
 						disabled: isOverlay,
 					},
+					{ value: 'manual', label: __( 'Manual Placement', 'newspack-popups' ) },
 				] }
 			/>
 			<TextControl
