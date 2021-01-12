@@ -93,6 +93,24 @@ class Campaign_Data_Utils {
 		$is_donor                 = self::is_donor( $client_data );
 		$campaign_segment         = self::canonize_segment( $campaign_segment );
 
+		// Read counts for categories.
+		$categories_read_counts = array_reduce(
+			$client_data['posts_read'],
+			function ( $read_counts, $read_post ) {
+				foreach ( explode( ',', $read_post['category_ids'] ) as $cat_id ) {
+					if ( isset( $read_counts[ $cat_id ] ) ) {
+						$read_counts[ $cat_id ]++;
+					} else {
+						$read_counts[ $cat_id ] = 1;
+					}
+				}
+				return $read_counts;
+			},
+			[]
+		);
+		arsort( $categories_read_counts );
+		$favorite_category_matches_segment = in_array( key( $categories_read_counts ), $campaign_segment->favorite_categories );
+
 		/**
 		 * When viewing as a segment, spoof the relevant data to match it.
 		 */
@@ -118,6 +136,10 @@ class Campaign_Data_Utils {
 					$first_referrer = 'https://' . $first_referrer;
 				}
 				$page_referrer_url = $first_referrer;
+			}
+			if ( count( $view_as_segment->favorite_categories ) ) {
+				$diff_count                        = count( array_diff( $view_as_segment->favorite_categories, $campaign_segment->favorite_categories ) );
+				$favorite_category_matches_segment = 0 === $diff_count;
 			}
 		}
 
@@ -183,25 +205,8 @@ class Campaign_Data_Utils {
 		/**
 		 * By most read category.
 		 */
-		if ( isset( $campaign_segment->favorite_categories ) && count( $campaign_segment->favorite_categories ) > 0 ) {
-			$categories_read_counts = array_reduce(
-				$client_data['posts_read'],
-				function ( $read_counts, $read_post ) {
-					foreach ( explode( ',', $read_post['category_ids'] ) as $cat_id ) {
-						if ( isset( $read_counts[ $cat_id ] ) ) {
-							$read_counts[ $cat_id ]++;
-						} else {
-							$read_counts[ $cat_id ] = 1;
-						}
-					}
-					return $read_counts;
-				}
-			);
-			arsort( $categories_read_counts );
-			$favorite_category_matches_segment = in_array( key( $categories_read_counts ), $campaign_segment->favorite_categories );
-			if ( ! $favorite_category_matches_segment ) {
-				$should_display = false;
-			}
+		if ( count( $campaign_segment->favorite_categories ) > 0 && ! $favorite_category_matches_segment ) {
+			$should_display = false;
 		}
 
 		return $should_display;
