@@ -12,9 +12,10 @@ defined( 'ABSPATH' ) || exit;
  */
 final class Newspack_Popups {
 
-	const NEWSPACK_POPUPS_CPT              = 'newspack_popups_cpt';
-	const NEWSPACK_POPUPS_SITEWIDE_DEFAULT = 'newspack_popups_sitewide_default';
-	const NEWSPACK_POPUPS_TAXONOMY         = 'newspack_popups_taxonomy';
+	const NEWSPACK_POPUPS_CPT                   = 'newspack_popups_cpt';
+	const NEWSPACK_POPUPS_SITEWIDE_DEFAULT      = 'newspack_popups_sitewide_default';
+	const NEWSPACK_POPUPS_TAXONOMY              = 'newspack_popups_taxonomy';
+	const NEWSPACK_POPUPS_ACTIVE_CAMPAIGN_GROUP = 'newspack_popups_active_campaign_group';
 
 	const NEWSPACK_POPUP_PREVIEW_QUERY_PARAM = 'newspack_popups_preview_id';
 
@@ -359,6 +360,7 @@ final class Newspack_Popups {
 			[
 				'preview_post' => self::preview_post_permalink(),
 				'segments'     => Newspack_Popups_Segmentation::get_segments(),
+				'taxonomy'     => self::NEWSPACK_POPUPS_TAXONOMY,
 			]
 		);
 		\wp_enqueue_style(
@@ -461,12 +463,34 @@ final class Newspack_Popups {
 		if ( $update ) {
 			return;
 		}
-		$placement = isset( $_GET['placement'] ) && 'inline' === sanitize_text_field( $_GET['placement'] ) ? 'inline' : 'center'; //phpcs:ignore
+		$type = isset( $_GET['placement'] ) ? sanitize_text_field( $_GET['placement'] ) : null; //phpcs:ignore
+		$frequency = 'test';
+		switch ( $type ) {
+			case 'overlay-center':
+				$placement = 'center';
+				break;
+			case 'overlay-top':
+				$placement = 'top';
+				break;
+			case 'overlay-bottom':
+				$placement = 'bottom';
+				break;
+			case 'above-header':
+				$placement = 'above_header';
+				break;
+			case 'manual':
+				$placement = 'inline';
+				$frequency = 'manual';
+				break;
+			default:
+				$placement = 'inline';
+				break;
+		}
 
 		update_post_meta( $post_id, 'background_color', '#FFFFFF' );
 		update_post_meta( $post_id, 'display_title', false );
 		update_post_meta( $post_id, 'dismiss_text', self::get_default_dismiss_text() );
-		update_post_meta( $post_id, 'frequency', 'test' );
+		update_post_meta( $post_id, 'frequency', $frequency );
 		update_post_meta( $post_id, 'overlay_color', '#000000' );
 		update_post_meta( $post_id, 'overlay_opacity', 30 );
 		update_post_meta( $post_id, 'placement', $placement );

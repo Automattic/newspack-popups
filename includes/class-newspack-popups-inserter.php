@@ -60,10 +60,15 @@ final class Newspack_Popups_Inserter {
 			return [];
 		}
 
-		$view_as_spec        = Segmentation::parse_view_as( Newspack_Popups_View_As::viewing_as_spec() );
-		$view_as_spec_groups = isset( $view_as_spec['groups'] ) ? $view_as_spec['groups'] : false;
+		$view_as_spec             = Segmentation::parse_view_as( Newspack_Popups_View_As::viewing_as_spec() );
+		$view_as_spec_groups      = isset( $view_as_spec['groups'] ) ? $view_as_spec['groups'] : false;
+		$view_as_spec_campaigns   = isset( $view_as_spec['campaigns'] ) ? $view_as_spec['campaigns'] : false;
+		$view_as_spec_unpublished = isset( $view_as_spec['show_unpublished'] ) && 'true' === $view_as_spec['show_unpublished'] ? true : false;
+
 		if ( $view_as_spec_groups ) {
-			$popups_to_maybe_display = Newspack_Popups_Model::retrieve_group_popups( $view_as_spec['groups'] );
+			$popups_to_maybe_display = Newspack_Popups_Model::retrieve_group_popups( explode( ',', $view_as_spec['groups'] ), $view_as_spec_unpublished );
+		} elseif ( $view_as_spec_campaigns ) {
+			$popups_to_maybe_display = Newspack_Popups_Model::retrieve_popups_by_ids( explode( ',', $view_as_spec['campaigns'] ), $view_as_spec_unpublished );
 		} else {
 			// 1. Get all inline popups.
 			$popups_to_maybe_display = Newspack_Popups_Model::retrieve_inline_popups();
@@ -118,6 +123,14 @@ final class Newspack_Popups_Inserter {
 					}
 				}
 				return true;
+			}
+		);
+
+		// Remove manual placement campaigns.
+		$popups_to_maybe_display_deduped = array_filter(
+			$popups_to_maybe_display_deduped,
+			function( $campaign ) {
+				return 'manual' !== $campaign['options']['frequency'];
 			}
 		);
 
@@ -226,7 +239,6 @@ final class Newspack_Popups_Inserter {
 		if ( function_exists( 'wc_memberships_is_post_content_restricted' ) && wc_memberships_is_post_content_restricted() ) {
 			return $content;
 		}
-
 
 		// If any popups are inserted using a shortcode, skip them.
 		$shortcoded_popups_ids = self::get_shortcoded_popups_ids( get_the_content() );
@@ -372,7 +384,7 @@ final class Newspack_Popups_Inserter {
 		if ( $previewed_popup_id ) {
 			$found_popup = Newspack_Popups_Model::retrieve_preview_popup( $previewed_popup_id );
 		} elseif ( isset( $atts['id'] ) ) {
-			$found_popup = Newspack_Popups_Model::retrieve_popup_by_id( $atts['id'] );
+			$found_popup = Newspack_Popups_Model::retrieve_popup_by_id( $atts['id'], ! empty( Newspack_Popups_View_As::viewing_as_spec() ) );
 		}
 		if (
 			! $found_popup ||
@@ -614,6 +626,15 @@ final class Newspack_Popups_Inserter {
 	public static function assess_categories_filter( $popup ) {
 		$post_categories  = get_the_category();
 		$popup_categories = get_the_category( $popup['id'] );
+
+		// Filter out "Uncategorized" category which is automatically added to uncategorized posts on publish.
+		$popup_categories = array_filter(
+			$popup_categories,
+			function( $popup_category ) {
+				return 'uncategorized' !== $popup_category->slug;
+			}
+		);
+
 		if ( $post_categories && count( $post_categories ) && $popup_categories && count( $popup_categories ) ) {
 			return array_intersect(
 				array_column( $post_categories, 'term_id' ),
@@ -649,6 +670,10 @@ final class Newspack_Popups_Inserter {
 	 * @return bool Should popup be shown.
 	 */
 	public static function should_display( $popup, $skip_context_checks = false ) {
+		if ( 'manual' === $popup['options']['frequency'] ) {
+			return true;
+		}
+
 		$general_conditions = self::assess_is_post( $popup ) &&
 			self::assess_categories_filter( $popup ) &&
 			self::assess_tags_filter( $popup ) &&
