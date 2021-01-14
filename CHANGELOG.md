@@ -1,3 +1,10 @@
+# [1.22.0-alpha.4](https://github.com/Automattic/newspack-popups/compare/v1.22.0-alpha.3...v1.22.0-alpha.4) (2021-01-14)
+
+
+### Bug Fixes
+
+* disregard frequency with view-as; handle all in view-as spec ([f7befc8](https://github.com/Automattic/newspack-popups/commit/f7befc89c6bed5cbd25d247b4d549f6fe0a591af))
+
 # [1.22.0-alpha.3](https://github.com/Automattic/newspack-popups/compare/v1.22.0-alpha.2...v1.22.0-alpha.3) (2021-01-12)
 
 
