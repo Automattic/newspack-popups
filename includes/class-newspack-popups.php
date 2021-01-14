@@ -549,5 +549,13 @@ final class Newspack_Popups {
 			</div>
 		<?php
 	}
+
+	/**
+	 * Is the user an admin user?
+	 */
+	public static function is_user_admin() {
+		return is_user_logged_in() && current_user_can( 'edit_others_pages' );
+	}
+
 }
 Newspack_Popups::instance();

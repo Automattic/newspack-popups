@@ -76,7 +76,7 @@ final class Newspack_Popups_Inserter {
 			// 2. Get the overlay popup/s. There can be only one displayed, unless in test mode.
 
 			// Any overlay test popups, if the user is logged in.
-			if ( is_user_logged_in() ) {
+			if ( Newspack_Popups::is_user_admin() ) {
 				$popups_to_maybe_display = array_merge(
 					$popups_to_maybe_display,
 					Newspack_Popups_Model::retrieve_overlay_test_popups()
@@ -612,7 +612,7 @@ final class Newspack_Popups_Inserter {
 	 */
 	public static function assess_test_mode( $popup ) {
 		if ( 'test' === $popup['options']['frequency'] ) {
-			return is_user_logged_in() && ( current_user_can( 'edit_others_pages' ) || Newspack_Popups::previewed_popup_id() );
+			return Newspack_Popups::is_user_admin() && Newspack_Popups::previewed_popup_id();
 		}
 		return true;
 	}
@@ -684,12 +684,12 @@ final class Newspack_Popups_Inserter {
 		if ( $general_conditions && Newspack_Popups_View_As::viewing_as_spec() ) {
 			return $is_not_test_mode;
 		}
-		// Hide non-test mode campaigns for logged-in users.
-		if ( is_user_logged_in() && $is_not_test_mode ) {
+		// Hide non-test mode campaigns for admin users.
+		if ( Newspack_Popups::is_user_admin() && $is_not_test_mode ) {
 			return false;
 		}
-		// Hide overlay campaigns in non-interactive mode, for non-logged-in users.
-		if ( ! is_user_logged_in() && Newspack_Popups_Settings::is_non_interactive() && ! Newspack_Popups_Model::is_inline( $popup ) ) {
+		// Hide overlay campaigns in non-interactive mode, for non-admin users.
+		if ( ! Newspack_Popups::is_user_admin() && Newspack_Popups_Settings::is_non_interactive() && ! Newspack_Popups_Model::is_inline( $popup ) ) {
 			return false;
 		}
 		if ( ! self::assess_test_mode( $popup ) ) {
