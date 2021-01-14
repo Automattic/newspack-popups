@@ -1097,4 +1097,47 @@ class APITest extends WP_UnitTestCase {
 			'Assert visible, a non-existent segment is disregarded.'
 		);
 	}
+
+	/**
+	 * Serializing a popup object to be sent to the API.
+	 */
+	public function test_popup_object_api_serialization() {
+		$default_payload = self::create_test_popup( [] )['payload'];
+		self::assertArraySubset(
+			(array) [
+				'f'   => 'test',
+				'utm' => null,
+				's'   => '',
+				'n'   => false,
+				'd'   => false,
+			],
+			(array) $default_payload,
+			false,
+			'API payload for the default test popup is correct.'
+		);
+
+		self::assertRegExp(
+			'/id_\d/',
+			$default_payload->id,
+			'The id in the payload is the popup id prefixed with "id_"'
+		);
+
+		self::assertArraySubset(
+			(array) [
+				'f'   => 'once',
+				'utm' => null,
+				's'   => '',
+				'n'   => false,
+				'd'   => false,
+			],
+			(array) self::create_test_popup(
+				[
+					'frequency' => 'always',
+					'placement' => 'top',
+				]
+			)['payload'],
+			false,
+			'An overlay popup with "always" frequency has it corrected to "once".'
+		);
+	}
 }

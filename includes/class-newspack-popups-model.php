@@ -587,7 +587,7 @@ final class Newspack_Popups_Model {
 	 */
 	protected static function insert_event_tracking( $popup, $body, $element_id ) {
 		if (
-			Newspack_Popups::previewed_popup_id() ||
+			Newspack_Popups::is_preview_request() ||
 			'test' === $popup['options']['frequency'] ||
 			Newspack_Popups_Settings::is_non_interactive()
 		) {
@@ -660,7 +660,7 @@ final class Newspack_Popups_Model {
 	 * @param string $element_id The id of the popup element.
 	 */
 	protected static function get_analytics_events( $popup, $body, $element_id ) {
-		if ( Newspack_Popups::previewed_popup_id() ) {
+		if ( Newspack_Popups::is_preview_request() ) {
 			return [];
 		}
 
