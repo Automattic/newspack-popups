@@ -47,8 +47,12 @@ class Segmentation {
 		return array_reduce(
 			explode( ';', $raw_spec ),
 			function( $acc, $item ) {
-				$parts            = explode( ':', $item );
-				$acc[ $parts[0] ] = $parts[1];
+				$parts = explode( ':', $item );
+				if ( 1 === count( $parts ) ) {
+					$acc[ $parts[0] ] = true;
+				} else {
+					$acc[ $parts[0] ] = $parts[1];
+				}
 				return $acc;
 			},
 			[]
