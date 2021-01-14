@@ -228,20 +228,46 @@ final class Newspack_Popups_Segmentation {
 			],
 		];
 
+		$initial_client_report_url_params = [];
+
 		// Handle Mailchimp URL parameters.
 		if ( isset( $_GET['mc_cid'], $_GET['mc_eid'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			$endpoint                         = self::get_client_data_endpoint();
-			$amp_analytics_config['requests'] = [
-				'event' => esc_url( $endpoint ),
+			$initial_client_report_url_params['mc_cid'] = sanitize_text_field( $_GET['mc_cid'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$initial_client_report_url_params['mc_eid'] = sanitize_text_field( $_GET['mc_eid'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		}
+		if ( is_user_logged_in() ) {
+			if ( function_exists( 'wc_get_orders' ) ) {
+				$user_orders = wc_get_orders( [ 'customer_id' => get_current_user_id() ] );
+				if ( count( $user_orders ) ) {
+					$orders = [];
+					foreach ( $user_orders as $order ) {
+						$order_data = $order->get_data();
+						$orders[]   = [
+							'order_id' => $order_data['id'],
+							'date'     => date_format( date_create( $order_data['date_created'] ), 'Y-m-d' ),
+							'amount'   => $order_data['total'],
+						];
+					}
+					$initial_client_report_url_params['orders'] = wp_json_encode( $orders );
+				}
+			}
+
+			$initial_client_report_url_params['user_id'] = get_current_user_id();
+		}
+
+		if ( ! empty( $initial_client_report_url_params ) ) {
+			$amp_analytics_config['requests']                            = [
+				'initialClientDataReport' => esc_url( self::get_client_data_endpoint() ),
 			];
-			$amp_analytics_config['triggers']['trackMailchimpData'] = [
+			$amp_analytics_config['triggers']['initialClientDataReport'] = [
 				'on'             => 'ini-load',
-				'request'        => 'event',
-				'extraUrlParams' => [
-					'mc_cid'    => sanitize_text_field( $_GET['mc_cid'] ), // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-					'mc_eid'    => sanitize_text_field( $_GET['mc_eid'] ), // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-					'client_id' => 'CLIENT_ID(' . esc_attr( self::NEWSPACK_SEGMENTATION_CID_NAME ) . ')',
-				],
+				'request'        => 'initialClientDataReport',
+				'extraUrlParams' => array_merge(
+					$initial_client_report_url_params,
+					[
+						'client_id' => 'CLIENT_ID(' . esc_attr( self::NEWSPACK_SEGMENTATION_CID_NAME ) . ')',
+					]
+				),
 			];
 		}
 

@@ -556,6 +556,5 @@ final class Newspack_Popups {
 	public static function is_user_admin() {
 		return is_user_logged_in() && current_user_can( 'edit_others_pages' );
 	}
-
 }
 Newspack_Popups::instance();
