@@ -768,8 +768,7 @@ final class Newspack_Popups_Model {
 		}
 		if (
 			( 'test' === $popup['options']['frequency'] || Newspack_Popups::previewed_popup_id() ) &&
-			is_user_logged_in() &&
-			current_user_can( 'edit_others_pages' )
+			Newspack_Popups::is_user_admin()
 		) {
 			return '';
 		}
