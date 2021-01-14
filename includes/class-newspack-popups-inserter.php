@@ -63,15 +63,19 @@ final class Newspack_Popups_Inserter {
 		$view_as_spec             = Segmentation::parse_view_as( Newspack_Popups_View_As::viewing_as_spec() );
 		$view_as_spec_groups      = isset( $view_as_spec['groups'] ) ? $view_as_spec['groups'] : false;
 		$view_as_spec_campaigns   = isset( $view_as_spec['campaigns'] ) ? $view_as_spec['campaigns'] : false;
+		$view_as_spec_all         = ! empty( $view_as_spec['all'] ) ? true : false;
+		$view_as_spec_segment     = isset( $view_as_spec['segment'] ) ? $view_as_spec['segment'] : false;
 		$view_as_spec_unpublished = isset( $view_as_spec['show_unpublished'] ) && 'true' === $view_as_spec['show_unpublished'] ? true : false;
 
-		if ( $view_as_spec_groups ) {
+		if ( $view_as_spec_groups ) { // If previewing specific groups.
 			$popups_to_maybe_display = Newspack_Popups_Model::retrieve_group_popups( explode( ',', $view_as_spec['groups'] ), $view_as_spec_unpublished );
-		} elseif ( $view_as_spec_campaigns ) {
+		} elseif ( $view_as_spec_campaigns ) { // If previewing a specific set of campaigns.
 			$popups_to_maybe_display = Newspack_Popups_Model::retrieve_popups_by_ids( explode( ',', $view_as_spec['campaigns'] ), $view_as_spec_unpublished );
-		} else {
+		} elseif ( $view_as_spec_all || $view_as_spec_segment ) { // If previewing and groups and campaigns are unspecified, but 'all' or a segment is specified, retrieve all campaigns.
+			$popups_to_maybe_display = Newspack_Popups_Model::retrieve_popups( $view_as_spec_unpublished );
+		} else { // Retrieve campaigns for front-end display.
 			// 1. Get all inline popups.
-			$popups_to_maybe_display = Newspack_Popups_Model::retrieve_inline_popups();
+			$popups_to_maybe_display = Newspack_Popups_Model::retrieve_inline_popups( $view_as_spec_unpublished );
 
 			// 2. Get the overlay popup/s. There can be only one displayed, unless in test mode.
 
@@ -79,12 +83,12 @@ final class Newspack_Popups_Inserter {
 			if ( is_user_logged_in() ) {
 				$popups_to_maybe_display = array_merge(
 					$popups_to_maybe_display,
-					Newspack_Popups_Model::retrieve_overlay_test_popups()
+					Newspack_Popups_Model::retrieve_overlay_test_popups( $view_as_spec_unpublished )
 				);
 			}
 
 			// Check if there's an overlay popup with matching category.
-			$category_overlay_popup = Newspack_Popups_Model::retrieve_category_overlay_popup();
+			$category_overlay_popup = Newspack_Popups_Model::retrieve_category_overlay_popup( $view_as_spec_unpublished );
 			if ( $category_overlay_popup && self::should_display( $category_overlay_popup ) ) {
 				array_push(
 					$popups_to_maybe_display,
@@ -94,7 +98,7 @@ final class Newspack_Popups_Inserter {
 				// If there's no category-matching popup, get the sitewide pop-up.
 				$sitewide_default = get_option( Newspack_Popups::NEWSPACK_POPUPS_SITEWIDE_DEFAULT, null );
 				if ( $sitewide_default ) {
-					$found_popup = Newspack_Popups_Model::retrieve_popup_by_id( $sitewide_default );
+					$found_popup = Newspack_Popups_Model::retrieve_popup_by_id( $sitewide_default, $view_as_spec_unpublished );
 					if (
 						$found_popup &&
 						// Prevent non-overlay sitewide default from being added.
