@@ -251,23 +251,6 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
-	 * Retrieve popups by IDs.
-	 *
-	 * @param  array   $ids array Array of popup IDs.
-	 * @param  boolean $include_unpublished Whether to include unpublished posts.
-	 * @return array Array of popup objects.
-	 */
-	public static function retrieve_popups_by_ids( $ids, $include_unpublished = false ) {
-		$args = [
-			'post_type'   => Newspack_Popups::NEWSPACK_POPUPS_CPT,
-			'post_status' => $include_unpublished ? [ 'draft', 'pending', 'future', 'publish' ] : 'publish',
-			'post__in'    => $ids,
-		];
-
-		return self::retrieve_popups_with_query( new WP_Query( $args ) );
-	}
-
-	/**
 	 * Get overlay test popups.
 	 *
 	 * @param  boolean $include_unpublished Whether to include unpublished posts.
