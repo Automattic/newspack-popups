@@ -43,6 +43,9 @@ class APITest extends WP_UnitTestCase {
 				'segmentWithReferrers'                => (object) [
 					'referrers' => 'foobar.com, newspack.pub',
 				],
+				'segmentFavCategory42'                => (object) [
+					'favorite_categories' => [ 42 ],
+				],
 			],
 		];
 	}
@@ -65,13 +68,13 @@ class APITest extends WP_UnitTestCase {
 		];
 	}
 
-	public static function create_read_post( $id, $created_at = false ) { // phpcs:ignore Squiz.Commenting.FunctionComment.Missing
+	public static function create_read_post( $id, $created_at = false, $category_ids = '' ) { // phpcs:ignore Squiz.Commenting.FunctionComment.Missing
 		if ( false === $created_at ) {
 			$created_at = gmdate( 'Y-m-d H:i:s' );
 		}
 		return [
 			'post_id'      => $id,
-			'category_ids' => '',
+			'category_ids' => $category_ids,
 			'created_at'   => $created_at,
 		];
 	}
@@ -923,6 +926,55 @@ class APITest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Handling category-affinity-based segmentation.
+	 */
+	public function test_segment_page_favorite_categories() {
+		$test_popup = self::create_test_popup(
+			[
+				'placement'           => 'inline',
+				'frequency'           => 'always',
+				'selected_segment_id' => 'segmentFavCategory42',
+			]
+		);
+
+		self::assertFalse(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
+			'Assert invisible initially.'
+		);
+
+		// Report an article read.
+		self::$maybe_show_campaign->save_client_data(
+			self::$client_id,
+			[
+				'posts_read' => [
+					self::create_read_post( 1 ),
+				],
+			]
+		);
+
+		self::assertFalse(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
+			'Assert invisible with a single category-less article read.'
+		);
+
+		// Report 2 articles from the favorite category read.
+		self::$maybe_show_campaign->save_client_data(
+			self::$client_id,
+			[
+				'posts_read' => [
+					self::create_read_post( 2, false, '42' ),
+					self::create_read_post( 3, false, '42,140' ),
+				],
+			]
+		);
+
+		self::assertTrue(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
+			'Assert visible after favourite category matches.'
+		);
+	}
+
+	/**
 	 * Non-existing segment.
 	 */
 	public function test_segment_non_existing_segment() {
@@ -1007,6 +1059,24 @@ class APITest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * View as a segment – category affinity.
+	 */
+	public function test_view_as_segment_favorite_categories() {
+		$test_popup = self::create_test_popup(
+			[
+				'placement'           => 'inline',
+				'frequency'           => 'always',
+				'selected_segment_id' => 'segmentFavCategory42',
+			]
+		);
+
+		self::assertTrue(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', '', [ 'segment' => 'segmentFavCategory42' ] ),
+			'Assert visible when viewing as a segment member.'
+		);
+	}
+
+	/**
 	 * View as a segment – non-existent segment.
 	 */
 	public function test_view_as_segment_non_existent() {
@@ -1025,6 +1095,49 @@ class APITest extends WP_UnitTestCase {
 		self::assertTrue(
 			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', '', [ 'segment' => 'not-a-segment' ] ),
 			'Assert visible, a non-existent segment is disregarded.'
+		);
+	}
+
+	/**
+	 * Serializing a popup object to be sent to the API.
+	 */
+	public function test_popup_object_api_serialization() {
+		$default_payload = self::create_test_popup( [] )['payload'];
+		self::assertArraySubset(
+			(array) [
+				'f'   => 'always',
+				'utm' => null,
+				's'   => '',
+				'n'   => false,
+				'd'   => false,
+			],
+			(array) $default_payload,
+			false,
+			'API payload for the default test popup is correct.'
+		);
+
+		self::assertRegExp(
+			'/id_\d/',
+			$default_payload->id,
+			'The id in the payload is the popup id prefixed with "id_"'
+		);
+
+		self::assertArraySubset(
+			(array) [
+				'f'   => 'once',
+				'utm' => null,
+				's'   => '',
+				'n'   => false,
+				'd'   => false,
+			],
+			(array) self::create_test_popup(
+				[
+					'frequency' => 'always',
+					'placement' => 'top',
+				]
+			)['payload'],
+			false,
+			'An overlay popup with "always" frequency has it corrected to "once".'
 		);
 	}
 }

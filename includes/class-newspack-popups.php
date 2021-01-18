@@ -16,8 +16,7 @@ final class Newspack_Popups {
 	const NEWSPACK_POPUPS_SITEWIDE_DEFAULT      = 'newspack_popups_sitewide_default';
 	const NEWSPACK_POPUPS_TAXONOMY              = 'newspack_popups_taxonomy';
 	const NEWSPACK_POPUPS_ACTIVE_CAMPAIGN_GROUP = 'newspack_popups_active_campaign_group';
-
-	const NEWSPACK_POPUP_PREVIEW_QUERY_PARAM = 'newspack_popups_preview_id';
+	const NEWSPACK_POPUP_PREVIEW_QUERY_PARAM    = 'newspack_popups_preview_id';
 
 	const LIGHTWEIGHT_API_CONFIG_FILE_PATH_LEGACY = WP_CONTENT_DIR . '/../newspack-popups-config.php';
 	const LIGHTWEIGHT_API_CONFIG_FILE_PATH        = WP_CONTENT_DIR . '/newspack-popups-config.php';
@@ -392,34 +391,31 @@ final class Newspack_Popups {
 	}
 
 	/**
-	 * Hide admin bar if previewing the popup.
+	 * Should admin bar be shown.
 	 *
 	 * @return boolean Whether admin bar should be shown.
 	 */
 	public static function show_admin_bar() {
+		return ! self::is_preview_request();
+	}
+
+	/**
+	 * Is it a preview request – a single popup preview or using "view as" feature.
+	 *
+	 * @return boolean Whether it's a preview request.
+	 */
+	public static function is_preview_request() {
 		$view_as_spec = Newspack_Popups_View_As::viewing_as_spec();
-		return ! self::previewed_popup_id() && false === $view_as_spec;
+		return self::previewed_popup_id() || false !== $view_as_spec;
 	}
 
 	/**
 	 * Get previewed popup id from the URL.
 	 *
-	 * @param string $url URL, if available.
 	 * @return number|null Popup id, if found in the URL
 	 */
-	public static function previewed_popup_id( $url = null ) {
-		if ( $url ) {
-			$query_params = [];
-			$parsed_url   = wp_parse_url( $url );
-			parse_str(
-				isset( $parsed_url['query'] ) ? $parsed_url['query'] : '',
-				$query_params
-			);
-			$param = self::NEWSPACK_POPUP_PREVIEW_QUERY_PARAM;
-			return isset( $query_params[ $param ] ) ? $query_params[ $param ] : false;
-		} else {
-			return filter_input( INPUT_GET, self::NEWSPACK_POPUP_PREVIEW_QUERY_PARAM, FILTER_SANITIZE_STRING );
-		}
+	public static function previewed_popup_id() {
+		return filter_input( INPUT_GET, self::NEWSPACK_POPUP_PREVIEW_QUERY_PARAM, FILTER_SANITIZE_STRING );
 	}
 
 	/**

@@ -32,7 +32,12 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		$response  = [];
 		$client_id = $_REQUEST['cid']; // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 
-		if ( $visit['is_post'] && defined( 'ENABLE_CAMPAIGN_EVENT_LOGGING' ) && ENABLE_CAMPAIGN_EVENT_LOGGING ) {
+		$view_as_spec = [];
+		if ( ! empty( $_REQUEST['view_as'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$view_as_spec = Segmentation::parse_view_as( json_decode( $_REQUEST['view_as'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		}
+
+		if ( empty( $view_as_spec ) && $visit['is_post'] && defined( 'ENABLE_CAMPAIGN_EVENT_LOGGING' ) && ENABLE_CAMPAIGN_EVENT_LOGGING ) {
 			// Update the cache.
 			$posts_read        = $this->get_client_data( $client_id )['posts_read'];
 			$already_read_post = count(
@@ -66,12 +71,6 @@ class Maybe_Show_Campaign extends Lightweight_API {
 					$visit
 				)
 			);
-		}
-
-
-		$view_as_spec = [];
-		if ( ! empty( $_REQUEST['view_as'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			$view_as_spec = Segmentation::parse_view_as( json_decode( $_REQUEST['view_as'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		}
 
 		$page_referer_url = isset( $_REQUEST['ref'] ) ? $_REQUEST['ref'] : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
@@ -199,37 +198,18 @@ class Maybe_Show_Campaign extends Lightweight_API {
 				// Save suppression for this campaign.
 				$campaign_data['suppress_forever'] = true;
 			}
-			if ( isset( $campaign_segment->favorite_categories ) && count( $campaign_segment->favorite_categories ) > 0 ) {
-				$categories_read_counts = array_reduce(
-					$client_data['posts_read'],
-					function ( $read_counts, $read_post ) {
-						foreach ( explode( ',', $read_post['category_ids'] ) as $cat_id ) {
-							if ( isset( $read_counts[ $cat_id ] ) ) {
-								$read_counts[ $cat_id ]++;
-							} else {
-								$read_counts[ $cat_id ] = 1;
-							}
-						}
-						return $read_counts;
-					}
-				);
-				arsort( $categories_read_counts );
-				$favorite_category_matches_segment = in_array( key( $categories_read_counts ), $campaign_segment->favorite_categories );
-				if ( ! $favorite_category_matches_segment ) {
-					$should_display = false;
-				}
+		}
+
+		if ( ! $view_as_spec ) {
+			if ( ! empty( array_diff( $init_campaign_data, $campaign_data ) ) ) {
+				$this->save_campaign_data( $client_id, $campaign->id, $campaign_data );
 			}
-		}
-
-		if ( ! $view_as_spec && ! empty( array_diff( $init_campaign_data, $campaign_data ) ) ) {
-			$this->save_campaign_data( $client_id, $campaign->id, $campaign_data );
-		}
-
-		if ( 'once' === $frequency && $campaign_data['count'] >= 1 ) {
-			$should_display = false;
-		}
-		if ( 'daily' === $frequency && $campaign_data['last_viewed'] >= strtotime( '-1 day', $now ) ) {
-			$should_display = false;
+			if ( 'once' === $frequency && $campaign_data['count'] >= 1 ) {
+				$should_display = false;
+			}
+			if ( 'daily' === $frequency && $campaign_data['last_viewed'] >= strtotime( '-1 day', $now ) ) {
+				$should_display = false;
+			}
 		}
 
 		return $should_display;

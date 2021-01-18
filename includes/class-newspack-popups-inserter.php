@@ -656,11 +656,11 @@ final class Newspack_Popups_Inserter {
 			self::assess_tags_filter( $popup );
 
 		// When using "view as" feature, discard test mode campaigns.
-		if ( $general_conditions && Newspack_Popups_View_As::viewing_as_spec() ) {
-			return true;
+		if ( Newspack_Popups_View_As::viewing_as_spec() ) {
+			return $general_conditions;
 		}
 		// Hide non-test mode campaigns for logged-in users.
-		if ( is_user_logged_in() && $is_not_test_mode ) {
+		if ( is_user_logged_in() ) {
 			return false;
 		}
 		// Hide overlay campaigns in non-interactive mode, for non-logged-in users.
