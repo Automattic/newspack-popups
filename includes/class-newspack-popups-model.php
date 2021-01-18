@@ -211,13 +211,12 @@ final class Newspack_Popups_Model {
 	/**
 	 * Retrieve all inline popups.
 	 *
-	 * @param  boolean $include_unpublished Whether to include unpublished posts.
 	 * @return array Inline popup objects.
 	 */
-	public static function retrieve_inline_popups( $include_unpublished = false ) {
+	public static function retrieve_inline_popups() {
 		$args = [
 			'post_type'    => Newspack_Popups::NEWSPACK_POPUPS_CPT,
-			'post_status'  => $include_unpublished ? [ 'draft', 'pending', 'future', 'publish' ] : 'publish',
+			'post_status'  => 'publish',
 			'meta_key'     => 'placement',
 			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 			'meta_value'   => self::$inline_placements,
@@ -253,13 +252,12 @@ final class Newspack_Popups_Model {
 	/**
 	 * Get overlay test popups.
 	 *
-	 * @param  boolean $include_unpublished Whether to include unpublished posts.
 	 * @return array Overlay test popup objects.
 	 */
-	public static function retrieve_overlay_test_popups( $include_unpublished = false ) {
+	public static function retrieve_overlay_test_popups() {
 		$args = [
 			'post_type'   => Newspack_Popups::NEWSPACK_POPUPS_CPT,
-			'post_status' => $include_unpublished ? [ 'draft', 'pending', 'future', 'publish' ] : 'publish',
+			'post_status' => 'publish',
 			'meta_query'  => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 				[
 					'key'     => 'placement',
@@ -279,10 +277,9 @@ final class Newspack_Popups_Model {
 	/**
 	 * Retrieve first overlay popup matching post categries.
 	 *
-	 * @param  boolean $include_unpublished Whether to include unpublished posts.
 	 * @return object|null Popup object.
 	 */
-	public static function retrieve_category_overlay_popup( $include_unpublished = false ) {
+	public static function retrieve_category_overlay_popup() {
 		$post_categories = get_the_category();
 
 		if ( empty( $post_categories ) ) {
@@ -292,7 +289,7 @@ final class Newspack_Popups_Model {
 		$args = [
 			'post_type'      => Newspack_Popups::NEWSPACK_POPUPS_CPT,
 			'posts_per_page' => 1,
-			'post_status'    => $include_unpublished ? [ 'draft', 'pending', 'future', 'publish' ] : 'publish',
+			'post_status'    => 'publish',
 			'category__in'   => array_column( $post_categories, 'term_id' ),
 			'meta_key'       => 'placement',
 			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
