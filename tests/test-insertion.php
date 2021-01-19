@@ -34,12 +34,12 @@ class InsertionTest extends WP_UnitTestCase {
 				'post_content' => self::$popup_content,
 			]
 		);
-		// Set popup frequency from default 'test'.
+
 		Newspack_Popups_Model::set_popup_options(
 			self::$popup_id,
 			[
-				'placement' => 'inline',
-				'frequency' => 'always',
+				'frequency'    => 'daily',
+				'dismiss_text' => Newspack_Popups::get_default_dismiss_text(),
 			]
 		);
 	}
