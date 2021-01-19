@@ -24,15 +24,18 @@ const EditorAdditions = () => {
 
 	// Render a preview of the dismiss button at the end of the block content area.
 	useEffect(() => {
+		let dismissButtonPreview = document.querySelector(
+			'.newspack-popups__not-interested-button-preview'
+		);
+
 		if ( ! dismiss_text ) {
+			if ( dismissButtonPreview ) {
+				dismissButtonPreview.parentNode.removeChild( dismissButtonPreview );
+			}
 			return;
 		}
 
 		const alignClass = 'has-text-align-' + ( dismiss_text_alignment || 'center' );
-
-		let dismissButtonPreview = document.querySelector(
-			'.newspack-popups__not-interested-button-preview'
-		);
 
 		if ( ! dismissButtonPreview ) {
 			const rootContainer = document.querySelector(
