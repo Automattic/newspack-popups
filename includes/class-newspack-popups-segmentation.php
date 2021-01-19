@@ -292,7 +292,8 @@ final class Newspack_Popups_Segmentation {
 	 * Get all configured segments.
 	 */
 	public static function get_segments() {
-		return get_option( self::SEGMENTS_OPTION_NAME, [] );
+		$segments = get_option( self::SEGMENTS_OPTION_NAME, [] );
+		return $segments;
 	}
 
 	/**
@@ -415,6 +416,16 @@ final class Newspack_Popups_Segmentation {
 			'total'      => count( $all_client_data ),
 			'in_segment' => count( $client_in_segment ),
 		];
+	}
+
+	/**
+	 * Sort all segments by relative priority.
+	 *
+	 * @param object $segments Array of segments, sorted by priority property.
+	 */
+	public static function sort_segments( $segments ) {
+		update_option( self::SEGMENTS_OPTION_NAME, $segments );
+		return self::get_segments();
 	}
 
 	/**
