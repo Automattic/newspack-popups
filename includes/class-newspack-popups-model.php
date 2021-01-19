@@ -360,26 +360,12 @@ final class Newspack_Popups_Model {
 		if ( $query->have_posts() ) {
 			while ( $query->have_posts() ) {
 				$query->the_post();
-				$post  = get_post( get_the_ID() );
 				$popup = self::create_popup_object(
-					$post,
+					get_post( get_the_ID() ),
 					$include_categories
 				);
-				// Deprecate Never and Test Campaigns.
-				if ( in_array( $popup['options']['frequency'], [ 'never', 'test' ] ) ) {
-					if ( in_array( $popup['options']['placement'], [ 'inline', 'above_header' ] ) ) {
-						update_post_meta( get_the_ID(), 'frequency', 'always' );
-					} else {
-						update_post_meta( get_the_ID(), 'frequency', 'daily' );
-					}
+				$popup = self::deprecate_test_never( $popup, 'publish' === $query->get( 'post_status', null ) );
 
-					$post->post_status = 'draft';
-					wp_update_post( $post );
-
-					if ( 'publish' === $query->get( 'post_status', null ) ) {
-						$popup = null;
-					}
-				}
 				if ( $popup ) {
 					$popups[] = $popup;
 				}
@@ -387,6 +373,35 @@ final class Newspack_Popups_Model {
 			wp_reset_postdata();
 		}
 		return $popups;
+	}
+
+	/**
+	 * Deprecate Test Mode and Never frequency.
+	 *
+	 * @param object $popup The popup.
+	 * @param bool   $published_only Whether the result must be a published post.
+	 * @return object|null Popup object or null.
+	 */
+	protected static function deprecate_test_never( $popup, $published_only ) {
+		$frequency = $popup['options']['frequency'];
+		$placement = $popup['options']['placement'];
+		if ( in_array( $frequency, [ 'never', 'test' ] ) ) {
+			if ( in_array( $placement, [ 'inline', 'above_header' ] ) ) {
+				$popup['options']['frequency'] = 'always';
+			} else {
+				$popup['options']['frequency'] = 'daily';
+			}
+			update_post_meta( $popup['id'], 'frequency', $popup['options']['frequency'] );
+			$popup['status'] = 'draft';
+
+			$post->post_status = 'draft';
+			wp_update_post( $post );
+
+			if ( $published_only ) {
+				$popup = null;
+			}
+		}
+		return $popup;
 	}
 
 	/**
