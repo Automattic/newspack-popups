@@ -116,6 +116,7 @@ class Campaign_Data_Utils {
 		 */
 		if ( $view_as_segment ) {
 			$view_as_segment = self::canonize_segment( $view_as_segment );
+
 			if ( $view_as_segment->min_posts > 0 ) {
 				$posts_read_count = $view_as_segment->min_posts;
 			}
@@ -200,6 +201,10 @@ class Campaign_Data_Utils {
 			if ( empty( $referrer_matches ) ) {
 				$should_display = false;
 			}
+		}
+
+		if ( ! empty( $view_as_segment->referrers ) && empty( $campaign_segment->referrers ) ) {
+			$should_display = false;
 		}
 
 		/**
