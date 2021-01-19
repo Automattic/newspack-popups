@@ -394,6 +394,8 @@ final class Newspack_Popups_Model {
 			update_post_meta( $popup['id'], 'frequency', $popup['options']['frequency'] );
 			$popup['status'] = 'draft';
 
+			$post = get_post( $popup['id'] );
+
 			$post->post_status = 'draft';
 			wp_update_post( $post );
 
