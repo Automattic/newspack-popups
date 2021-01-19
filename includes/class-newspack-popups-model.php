@@ -360,10 +360,29 @@ final class Newspack_Popups_Model {
 		if ( $query->have_posts() ) {
 			while ( $query->have_posts() ) {
 				$query->the_post();
-				$popups[] = self::create_popup_object(
-					get_post( get_the_ID() ),
+				$post  = get_post( get_the_ID() );
+				$popup = self::create_popup_object(
+					$post,
 					$include_categories
 				);
+				// Deprecate Never and Test Campaigns.
+				if ( in_array( $popup['options']['frequency'], [ 'never', 'test' ] ) ) {
+					if ( in_array( $popup['options']['placement'], [ 'inline', 'above_header' ] ) ) {
+						update_post_meta( get_the_ID(), 'frequency', 'always' );
+					} else {
+						update_post_meta( get_the_ID(), 'frequency', 'daily' );
+					}
+
+					$post->post_status = 'draft';
+					wp_update_post( $post );
+
+					if ( 'publish' === $query->get( 'post_status', null ) ) {
+						$popup = null;
+					}
+				}
+				if ( $popup ) {
+					$popups[] = $popup;
+				}
 			}
 			wp_reset_postdata();
 		}
