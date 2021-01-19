@@ -512,7 +512,7 @@ final class Newspack_Popups_Model {
 		if ( ! isset( $popup['options'], $popup['options']['placement'] ) ) {
 			return false;
 		}
-		return in_array( $popup['options']['placement'], [ 'inline', 'above_header' ] );
+		return in_array( $popup['options']['placement'], self::$inline_placements );
 	}
 
 	/**
