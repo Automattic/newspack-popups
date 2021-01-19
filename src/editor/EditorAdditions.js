@@ -30,7 +30,7 @@ const EditorAdditions = () => {
 
 		if ( ! dismiss_text ) {
 			if ( dismissButtonPreview ) {
-				dismissButtonPreview.remove();
+				dismissButtonPreview.parentNode.removeChild( dismissButtonPreview );
 			}
 			return;
 		}
