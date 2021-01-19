@@ -292,7 +292,19 @@ final class Newspack_Popups_Segmentation {
 	 * Get all configured segments.
 	 */
 	public static function get_segments() {
-		$segments = get_option( self::SEGMENTS_OPTION_NAME, [] );
+		$segments                  = get_option( self::SEGMENTS_OPTION_NAME, [] );
+		$segments_without_priority = array_filter(
+			$segments,
+			function( $segment ) {
+				return empty( $segment['priority'] );
+			}
+		);
+
+		// Failsafe to ensure that all segments have an assigned priority.
+		if ( 0 < count( $segments_without_priority ) ) {
+			$segments = self::reindex_segments( $segments );
+		}
+
 		return $segments;
 	}
 
@@ -424,8 +436,26 @@ final class Newspack_Popups_Segmentation {
 	 * @param object $segments Array of segments, sorted by priority property.
 	 */
 	public static function sort_segments( $segments ) {
-		update_option( self::SEGMENTS_OPTION_NAME, $segments );
+		update_option( self::SEGMENTS_OPTION_NAME, self::reindex_segments( $segments ) );
 		return self::get_segments();
+	}
+
+	/**
+	 * Reindex segment priorities based on current position in array.
+	 *
+	 * @param object $segments Array of segments.
+	 */
+	public static function reindex_segments( $segments ) {
+		$index = 0;
+		array_map(
+			function( $segment ) use ( $index ) {
+				$segment['priority'] = $index;
+				$index++;
+			},
+			$segments
+		);
+
+		return $segments;
 	}
 
 	/**
