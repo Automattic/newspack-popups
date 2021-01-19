@@ -62,14 +62,19 @@ final class Newspack_Popups_Inserter {
 
 		$view_as_spec             = Segmentation::parse_view_as( Newspack_Popups_View_As::viewing_as_spec() );
 		$view_as_spec_groups      = isset( $view_as_spec['groups'] ) ? $view_as_spec['groups'] : false;
-		$view_as_spec_campaigns   = isset( $view_as_spec['campaigns'] ) ? $view_as_spec['campaigns'] : false;
+		$view_as_spec_all         = ! empty( $view_as_spec['all'] ) ? true : false;
+		$view_as_spec_segment     = isset( $view_as_spec['segment'] ) ? $view_as_spec['segment'] : false;
 		$view_as_spec_unpublished = isset( $view_as_spec['show_unpublished'] ) && 'true' === $view_as_spec['show_unpublished'] ? true : false;
 
 		if ( $view_as_spec_groups ) {
+			// If previewing specific groups.
 			$popups_to_maybe_display = Newspack_Popups_Model::retrieve_group_popups( explode( ',', $view_as_spec['groups'] ), $view_as_spec_unpublished );
-		} elseif ( $view_as_spec_campaigns ) {
-			$popups_to_maybe_display = Newspack_Popups_Model::retrieve_popups_by_ids( explode( ',', $view_as_spec['campaigns'] ), $view_as_spec_unpublished );
+		} elseif ( $view_as_spec_all || $view_as_spec_segment ) {
+			// If previewing and no groups are specified, but 'all' or a segment is specified, retrieve all campaigns.
+			$popups_to_maybe_display = Newspack_Popups_Model::retrieve_popups( $view_as_spec_unpublished );
 		} else {
+			// Retrieve campaigns for front-end display.
+
 			// 1. Get all inline popups.
 			$popups_to_maybe_display = Newspack_Popups_Model::retrieve_inline_popups();
 
@@ -100,21 +105,26 @@ final class Newspack_Popups_Inserter {
 		}
 
 		// Allow only one overlay campaign.
-		$has_overlay                     = false;
-		$popups_to_maybe_display_deduped = array_filter(
-			$popups_to_maybe_display,
-			function ( $campaign ) use ( &$has_overlay ) {
-				if ( Newspack_Popups_Model::is_overlay( $campaign ) ) {
-					if ( $has_overlay ) {
-						return false;
-					} else {
-						$has_overlay = true;
-						return true;
+		if ( empty( $view_as_spec ) ) {
+			$has_overlay                     = false;
+			$popups_to_maybe_display_deduped = array_filter(
+				$popups_to_maybe_display,
+				function ( $campaign ) use ( &$has_overlay ) {
+					if ( Newspack_Popups_Model::is_overlay( $campaign ) ) {
+						if ( $has_overlay ) {
+							return false;
+						} else {
+							$has_overlay = true;
+							return true;
+						}
 					}
+					return true;
 				}
-				return true;
-			}
-		);
+			);
+		} else {
+			// If previewing, allow all matching overlay campaigns to be displayed.
+			$popups_to_maybe_display_deduped = $popups_to_maybe_display;
+		}
 
 		// Remove manual placement campaigns.
 		$popups_to_maybe_display_deduped = array_filter(
