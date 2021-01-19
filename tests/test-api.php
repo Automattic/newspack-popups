@@ -1105,7 +1105,7 @@ class APITest extends WP_UnitTestCase {
 		$default_payload = self::create_test_popup( [] )['payload'];
 		self::assertArraySubset(
 			(array) [
-				'f'   => 'test',
+				'f'   => 'always',
 				'utm' => null,
 				's'   => '',
 				'n'   => false,
