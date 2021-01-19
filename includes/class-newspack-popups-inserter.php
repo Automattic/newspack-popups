@@ -659,7 +659,7 @@ final class Newspack_Popups_Inserter {
 		if ( Newspack_Popups_View_As::viewing_as_spec() ) {
 			return $general_conditions;
 		}
-		// Hide non-test mode campaigns for logged-in users.
+		// Hide campaigns for logged-in users.
 		if ( is_user_logged_in() ) {
 			return false;
 		}
