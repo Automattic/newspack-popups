@@ -1015,6 +1015,37 @@ class APITest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * View as a segment – ignoring client data.
+	 */
+	public function test_view_as_segment_client_data_ignoring() {
+		$api = new Lightweight_API();
+
+		$test_popup = self::create_test_popup(
+			[
+				'placement'           => 'inline',
+				'frequency'           => 'always',
+				'selected_segment_id' => 'segmentBetween3And5',
+			]
+		);
+
+		$api->save_client_data(
+			self::$client_id,
+			[
+				'posts_read' => [
+					self::create_read_post( 1 ),
+					self::create_read_post( 2 ),
+					self::create_read_post( 3 ),
+				],
+			]
+		);
+
+		self::assertFalse(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', '', [ 'segment' => 'segmentWithReferrers' ] ),
+			'Assert not visible when viewing as a different segment.'
+		);
+	}
+
+	/**
 	 * View as a segment – posts read count.
 	 */
 	public function test_view_as_segment_read_count() {
