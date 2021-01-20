@@ -1,3 +1,19 @@
+# [1.22.0-alpha.5](https://github.com/Automattic/newspack-popups/compare/v1.22.0-alpha.4...v1.22.0-alpha.5) (2021-01-20)
+
+
+### Bug Fixes
+
+* corrected logic for above header display ([#403](https://github.com/Automattic/newspack-popups/issues/403)) ([3ca5d71](https://github.com/Automattic/newspack-popups/commit/3ca5d7115f75f31d733f5498caac78d4acdc1040))
+* in preview tab, allow previewing without choosing groups ([#399](https://github.com/Automattic/newspack-popups/issues/399)) ([c9de7e9](https://github.com/Automattic/newspack-popups/commit/c9de7e9b1067f8ca70bafdfd3853ab26b72c88d8))
+* remove dismiss button preview when empty ([#402](https://github.com/Automattic/newspack-popups/issues/402)) ([688d575](https://github.com/Automattic/newspack-popups/commit/688d57572dfec80300bf0906eff766b6c1f72010))
+* remove inline class for above header campaigns ([#401](https://github.com/Automattic/newspack-popups/issues/401)) ([212f39e](https://github.com/Automattic/newspack-popups/commit/212f39ea47ca77cb707926010445a543df0e6f51))
+* view-as-segment should always take min count values ([#404](https://github.com/Automattic/newspack-popups/issues/404)) ([e69a97a](https://github.com/Automattic/newspack-popups/commit/e69a97a698f9c76552b5aa70d671fb0dc435ac67))
+
+
+### Features
+
+* deprecate test mode and never frequency ([#390](https://github.com/Automattic/newspack-popups/issues/390)) ([cc04314](https://github.com/Automattic/newspack-popups/commit/cc04314c8986734e658613ef1f5120be6bfa2012))
+
 # [1.22.0-alpha.4](https://github.com/Automattic/newspack-popups/compare/v1.22.0-alpha.3...v1.22.0-alpha.4) (2021-01-14)
 
 
