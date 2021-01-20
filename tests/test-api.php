@@ -43,6 +43,9 @@ class APITest extends WP_UnitTestCase {
 				'segmentWithReferrers'                => (object) [
 					'referrers' => 'foobar.com, newspack.pub',
 				],
+				'anotherSegmentWithReferrers'                => (object) [
+					'referrers' => 'bar.com',
+				],
 				'segmentFavCategory42'                => (object) [
 					'favorite_categories' => [ 42 ],
 				],
@@ -1081,11 +1084,19 @@ class APITest extends WP_UnitTestCase {
 
 		self::assertFalse(
 			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
-			'Assert not visible, as the referrer does not match.'
+			'Assert not visible without referrer.'
+		);
+		self::assertTrue(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', '', [ 'segment' => 'segmentWithReferrers' ] ),
+			'Assert visible when viewing as a segment member.'
 		);
 		self::assertTrue(
 			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', 'https://newspack.pub', [ 'segment' => 'segmentWithReferrers' ] ),
-			'Assert visible when viewing as a segment member.'
+			'Assert visible when viewing as a segment member, with a referrer.'
+		);
+		self::assertFalse(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', 'https://twitter.com', [ 'segment' => 'anotherSegmentWithReferrers' ] ),
+			'Assert not visible when viewing as a different segment with a referrer.'
 		);
 	}
 

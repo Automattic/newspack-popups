@@ -124,7 +124,7 @@ class Campaign_Data_Utils {
 			$is_subscriber = $view_as_segment->is_subscribed;
 			$is_donor      = $view_as_segment->is_donor;
 			if ( ! empty( $view_as_segment->referrers ) ) {
-				$first_referrer = array_map( 'trim', explode( ',', $campaign_segment->referrers ) )[0];
+				$first_referrer = array_map( 'trim', explode( ',', $view_as_segment->referrers ) )[0];
 				if ( strpos( $first_referrer, 'http' ) !== 0 ) {
 					$first_referrer = 'https://' . $first_referrer;
 				}
