@@ -116,22 +116,15 @@ class Campaign_Data_Utils {
 		 */
 		if ( $view_as_segment ) {
 			$view_as_segment = self::canonize_segment( $view_as_segment );
-			if ( $view_as_segment->min_posts > 0 ) {
-				$posts_read_count = $view_as_segment->min_posts;
-			}
-			if ( $view_as_segment->max_posts > 0 ) {
-				$posts_read_count = $view_as_segment->max_posts;
-			}
-			if ( $view_as_segment->min_session_posts > 0 ) {
-				$posts_read_count_session = $view_as_segment->min_session_posts;
-			}
-			if ( $view_as_segment->max_session_posts > 0 ) {
-				$posts_read_count_session = $view_as_segment->max_session_posts;
-			}
+
+			$posts_read_count = intval( $view_as_segment->min_posts );
+
+			$posts_read_count_session = intval( $view_as_segment->min_session_posts );
+
 			$is_subscriber = $view_as_segment->is_subscribed;
 			$is_donor      = $view_as_segment->is_donor;
 			if ( ! empty( $view_as_segment->referrers ) ) {
-				$first_referrer = array_map( 'trim', explode( ',', $campaign_segment->referrers ) )[0];
+				$first_referrer = array_map( 'trim', explode( ',', $view_as_segment->referrers ) )[0];
 				if ( strpos( $first_referrer, 'http' ) !== 0 ) {
 					$first_referrer = 'https://' . $first_referrer;
 				}
@@ -140,6 +133,8 @@ class Campaign_Data_Utils {
 			if ( count( $view_as_segment->favorite_categories ) ) {
 				$diff_count                        = count( array_diff( $view_as_segment->favorite_categories, $campaign_segment->favorite_categories ) );
 				$favorite_category_matches_segment = 0 === $diff_count;
+			} else {
+				$favorite_category_matches_segment = false;
 			}
 		}
 
