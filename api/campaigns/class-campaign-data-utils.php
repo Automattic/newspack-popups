@@ -133,6 +133,8 @@ class Campaign_Data_Utils {
 			if ( count( $view_as_segment->favorite_categories ) ) {
 				$diff_count                        = count( array_diff( $view_as_segment->favorite_categories, $campaign_segment->favorite_categories ) );
 				$favorite_category_matches_segment = 0 === $diff_count;
+			} else {
+				$favorite_category_matches_segment = false;
 			}
 		}
 
