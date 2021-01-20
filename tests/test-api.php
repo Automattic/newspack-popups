@@ -43,6 +43,9 @@ class APITest extends WP_UnitTestCase {
 				'segmentWithReferrers'                => (object) [
 					'referrers' => 'foobar.com, newspack.pub',
 				],
+				'anotherSegmentWithReferrers'         => (object) [
+					'referrers' => 'bar.com',
+				],
 				'segmentFavCategory42'                => (object) [
 					'favorite_categories' => [ 42 ],
 				],
@@ -1015,6 +1018,50 @@ class APITest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * View as a segment – ignoring client data.
+	 */
+	public function test_view_as_segment_client_data_ignoring() {
+		$api = new Lightweight_API();
+
+		$test_popup = self::create_test_popup(
+			[
+				'placement'           => 'inline',
+				'frequency'           => 'always',
+				'selected_segment_id' => 'segmentBetween3And5',
+			]
+		);
+
+		$api->save_client_data(
+			self::$client_id,
+			[
+				'posts_read' => [
+					self::create_read_post( 1, false, '42' ),
+					self::create_read_post( 2, false, '42' ),
+					self::create_read_post( 3, false, '42' ),
+				],
+			]
+		);
+
+		self::assertFalse(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', '', [ 'segment' => 'segmentWithReferrers' ] ),
+			'Assert campaign with read count not visible when viewing as a different segment.'
+		);
+
+		$test_popup_2 = self::create_test_popup(
+			[
+				'placement'           => 'inline',
+				'frequency'           => 'always',
+				'selected_segment_id' => 'segmentFavCategory42',
+			]
+		);
+
+		self::assertFalse(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_2['payload'], self::$settings, '', '', [ 'segment' => 'segmentWithReferrers' ] ),
+			'Assert campaign with fav. categories segment not visible when viewing as a different segment.'
+		);
+	}
+
+	/**
 	 * View as a segment – posts read count.
 	 */
 	public function test_view_as_segment_read_count() {
@@ -1050,11 +1097,19 @@ class APITest extends WP_UnitTestCase {
 
 		self::assertFalse(
 			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
-			'Assert not visible, as the referrer does not match.'
+			'Assert not visible without referrer.'
+		);
+		self::assertTrue(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', '', [ 'segment' => 'segmentWithReferrers' ] ),
+			'Assert visible when viewing as a segment member.'
 		);
 		self::assertTrue(
 			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', 'https://newspack.pub', [ 'segment' => 'segmentWithReferrers' ] ),
-			'Assert visible when viewing as a segment member.'
+			'Assert visible when viewing as a segment member, with a referrer.'
+		);
+		self::assertFalse(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', 'https://twitter.com', [ 'segment' => 'anotherSegmentWithReferrers' ] ),
+			'Assert not visible when viewing as a different segment with a referrer.'
 		);
 	}
 
@@ -1105,7 +1160,7 @@ class APITest extends WP_UnitTestCase {
 		$default_payload = self::create_test_popup( [] )['payload'];
 		self::assertArraySubset(
 			(array) [
-				'f'   => 'test',
+				'f'   => 'always',
 				'utm' => null,
 				's'   => '',
 				'n'   => false,
