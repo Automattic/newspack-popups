@@ -1,5 +1,5 @@
 /**
- * Popup frequency options.
+ * Popup segmentation options.
  */
 
 /**
@@ -30,7 +30,7 @@ const SegmentationSidebar = ( { onMetaFieldChange, selected_segment_id } ) => {
 				options={ [
 					{
 						value: '',
-						label: __( 'All readers', 'newspack-popups' ),
+						label: __( 'Default (no segment)', 'newspack-popups' ),
 					},
 					...segmentsList.map( segment => ( {
 						value: segment.id,

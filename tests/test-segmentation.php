@@ -9,12 +9,7 @@
  * Segmentation test case.
  */
 class SegmentationTest extends WP_UnitTestCase {
-	private static $post_read_payload = [ // phpcs:ignore Squiz.Commenting.VariableComment.Missing
-		'is_post'    => true,
-		'clientId'   => 'test-1',
-		'post_id'    => '42',
-		'categories' => '5,6',
-	];
+	private static $post_read_payload = []; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
 
 	private static $request = []; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
 
@@ -25,13 +20,13 @@ class SegmentationTest extends WP_UnitTestCase {
 		if ( file_exists( Segmentation::get_log_file_path() ) ) {
 			unlink( Segmentation::get_log_file_path() ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_unlink
 		}
-		// Reset client id.
-		self::$post_read_payload = array_merge(
-			self::$post_read_payload,
-			[
-				'clientId' => 'test-' . uniqid(),
-			]
-		);
+		self::$post_read_payload = [
+			'is_post'    => true,
+			'clientId'   => 'test-' . uniqid(),
+			'post_id'    => '42',
+			'categories' => '5,6',
+			'created_at' => gmdate( 'Y-m-d H:i:s' ),
+		];
 		self::$request           = [
 			'cid'      => self::$post_read_payload['clientId'],
 			'popups'   => wp_json_encode( [] ),
@@ -131,6 +126,7 @@ class SegmentationTest extends WP_UnitTestCase {
 			[
 				'post_id'      => self::$post_read_payload['post_id'],
 				'category_ids' => self::$post_read_payload['categories'],
+				'created_at'   => self::$post_read_payload['created_at'],
 			],
 			$read_posts[0],
 			'The read posts array contains the reported post.'
@@ -175,6 +171,34 @@ class SegmentationTest extends WP_UnitTestCase {
 			2,
 			count( $read_posts ),
 			'The read posts array is not updated after a non-post visit was made.'
+		);
+	}
+
+	/**
+	 * Parse a "view as" spec.
+	 */
+	public function test_parse_view_as() {
+		self::assertEquals(
+			Segmentation::parse_view_as( 'groups:one,two;segment:123' ),
+			[
+				'groups'  => 'one,two',
+				'segment' => '123',
+			],
+			'Spec is parsed.'
+		);
+
+		self::assertEquals(
+			Segmentation::parse_view_as( 'all' ),
+			[
+				'all' => true,
+			],
+			'Spec is parsed with the "all" value'
+		);
+
+		self::assertEquals(
+			Segmentation::parse_view_as( '' ),
+			[],
+			'Empty array is returned if there is no spec.'
 		);
 	}
 }

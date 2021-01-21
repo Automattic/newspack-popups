@@ -12,11 +12,11 @@ defined( 'ABSPATH' ) || exit;
  */
 final class Newspack_Popups {
 
-	const NEWSPACK_POPUPS_CPT              = 'newspack_popups_cpt';
-	const NEWSPACK_POPUPS_SITEWIDE_DEFAULT = 'newspack_popups_sitewide_default';
-	const NEWSPACK_POPUPS_TAXONOMY         = 'newspack_popups_taxonomy';
-
-	const NEWSPACK_POPUP_PREVIEW_QUERY_PARAM = 'newspack_popups_preview_id';
+	const NEWSPACK_POPUPS_CPT                   = 'newspack_popups_cpt';
+	const NEWSPACK_POPUPS_SITEWIDE_DEFAULT      = 'newspack_popups_sitewide_default';
+	const NEWSPACK_POPUPS_TAXONOMY              = 'newspack_popups_taxonomy';
+	const NEWSPACK_POPUPS_ACTIVE_CAMPAIGN_GROUP = 'newspack_popups_active_campaign_group';
+	const NEWSPACK_POPUP_PREVIEW_QUERY_PARAM    = 'newspack_popups_preview_id';
 
 	const LIGHTWEIGHT_API_CONFIG_FILE_PATH_LEGACY = WP_CONTENT_DIR . '/../newspack-popups-config.php';
 	const LIGHTWEIGHT_API_CONFIG_FILE_PATH        = WP_CONTENT_DIR . '/newspack-popups-config.php';
@@ -55,9 +55,7 @@ final class Newspack_Popups {
 		add_action( 'rest_api_init', [ __CLASS__, 'rest_api_init' ] );
 		add_action( 'save_post_' . self::NEWSPACK_POPUPS_CPT, [ __CLASS__, 'popup_default_fields' ], 10, 3 );
 
-		if ( filter_input( INPUT_GET, 'newspack_popups_preview_id', FILTER_SANITIZE_STRING ) ) {
-			add_filter( 'show_admin_bar', [ __CLASS__, 'hide_admin_bar_for_preview' ], 10, 2 ); // phpcs:ignore WordPressVIPMinimum.UserExperience.AdminBarRemoval.RemovalDetected
-		}
+		add_filter( 'show_admin_bar', [ __CLASS__, 'show_admin_bar' ], 10, 2 ); // phpcs:ignore WordPressVIPMinimum.UserExperience.AdminBarRemoval.RemovalDetected
 
 		include_once dirname( __FILE__ ) . '/class-newspack-popups-model.php';
 		include_once dirname( __FILE__ ) . '/class-newspack-popups-inserter.php';
@@ -66,6 +64,7 @@ final class Newspack_Popups {
 		include_once dirname( __FILE__ ) . '/class-newspack-popups-segmentation.php';
 		include_once dirname( __FILE__ ) . '/class-newspack-popups-parse-logs.php';
 		include_once dirname( __FILE__ ) . '/class-newspack-popups-donations.php';
+		include_once dirname( __FILE__ ) . '/class-newspack-popups-view-as.php';
 	}
 
 	/**
@@ -360,6 +359,7 @@ final class Newspack_Popups {
 			[
 				'preview_post' => self::preview_post_permalink(),
 				'segments'     => Newspack_Popups_Segmentation::get_segments(),
+				'taxonomy'     => self::NEWSPACK_POPUPS_TAXONOMY,
 			]
 		);
 		\wp_enqueue_style(
@@ -391,33 +391,31 @@ final class Newspack_Popups {
 	}
 
 	/**
-	 * Hide admin bar if previewing the popup.
+	 * Should admin bar be shown.
 	 *
-	 * @return boolean Whether admin bar should be hidden
+	 * @return boolean Whether admin bar should be shown.
 	 */
-	public static function hide_admin_bar_for_preview() {
-		return ! self::previewed_popup_id();
+	public static function show_admin_bar() {
+		return ! self::is_preview_request();
+	}
+
+	/**
+	 * Is it a preview request – a single popup preview or using "view as" feature.
+	 *
+	 * @return boolean Whether it's a preview request.
+	 */
+	public static function is_preview_request() {
+		$view_as_spec = Newspack_Popups_View_As::viewing_as_spec();
+		return self::previewed_popup_id() || false !== $view_as_spec;
 	}
 
 	/**
 	 * Get previewed popup id from the URL.
 	 *
-	 * @param string $url URL, if available.
 	 * @return number|null Popup id, if found in the URL
 	 */
-	public static function previewed_popup_id( $url = null ) {
-		if ( $url ) {
-			$query_params = [];
-			$parsed_url   = wp_parse_url( $url );
-			parse_str(
-				isset( $parsed_url['query'] ) ? $parsed_url['query'] : '',
-				$query_params
-			);
-			$param = self::NEWSPACK_POPUP_PREVIEW_QUERY_PARAM;
-			return isset( $query_params[ $param ] ) ? $query_params[ $param ] : false;
-		} else {
-			return filter_input( INPUT_GET, self::NEWSPACK_POPUP_PREVIEW_QUERY_PARAM, FILTER_SANITIZE_STRING );
-		}
+	public static function previewed_popup_id() {
+		return filter_input( INPUT_GET, self::NEWSPACK_POPUP_PREVIEW_QUERY_PARAM, FILTER_SANITIZE_STRING );
 	}
 
 	/**
@@ -461,16 +459,56 @@ final class Newspack_Popups {
 		if ( $update ) {
 			return;
 		}
-		$placement = isset( $_GET['placement'] ) && 'inline' === sanitize_text_field( $_GET['placement'] ) ? 'inline' : 'center'; //phpcs:ignore
+		$type      = isset( $_GET['placement'] ) ? sanitize_text_field( $_GET['placement'] ) : null; //phpcs:ignore
+		$frequency = 'daily';
+
+		switch ( $type ) {
+			case 'overlay-center':
+				$placement = 'center';
+				break;
+			case 'overlay-top':
+				$placement = 'top';
+				break;
+			case 'overlay-bottom':
+				$placement = 'bottom';
+				break;
+			case 'above-header':
+				$placement = 'above_header';
+				$frequency = 'always';
+				break;
+			case 'manual':
+				$placement = 'inline';
+				$frequency = 'manual';
+				break;
+			default:
+				$placement = 'inline';
+				$frequency = 'always';
+				break;
+		}
+
+		switch ( $type ) {
+			case 'overlay-center':
+			case 'overlay-top':
+			case 'overlay-bottom':
+				$dismiss_text = self::get_default_dismiss_text();
+				$trigger_type = 'time';
+				break;
+			case 'above-header':
+			case 'manual':
+			default:
+				$dismiss_text = null;
+				$trigger_type = 'scroll';
+				break;
+		}
 
 		update_post_meta( $post_id, 'background_color', '#FFFFFF' );
 		update_post_meta( $post_id, 'display_title', false );
-		update_post_meta( $post_id, 'dismiss_text', self::get_default_dismiss_text() );
-		update_post_meta( $post_id, 'frequency', 'test' );
+		update_post_meta( $post_id, 'dismiss_text', $dismiss_text );
+		update_post_meta( $post_id, 'frequency', $frequency );
 		update_post_meta( $post_id, 'overlay_color', '#000000' );
 		update_post_meta( $post_id, 'overlay_opacity', 30 );
 		update_post_meta( $post_id, 'placement', $placement );
-		update_post_meta( $post_id, 'trigger_type', 'time' );
+		update_post_meta( $post_id, 'trigger_type', $trigger_type );
 		update_post_meta( $post_id, 'trigger_delay', 3 );
 		update_post_meta( $post_id, 'trigger_scroll_progress', 30 );
 		update_post_meta( $post_id, 'utm_suppression', '' );

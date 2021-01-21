@@ -104,6 +104,12 @@ export const getCookieValueFromLinker = (
 		const linkerParam = getQueryArg( url, linkerName );
 		const hasCIDCookie = documentCookie.indexOf( cookieName ) >= 0;
 		cleanURL = removeQueryArgs( url, linkerName );
+
+		// Strip trailing `?` character from clean URL.
+		if ( '?' === cleanURL.charAt( cleanURL.length - 1 ) ) {
+			cleanURL = cleanURL.slice( 0, cleanURL.length - 1 );
+		}
+
 		if ( linkerParam && ! hasCIDCookie ) {
 			// eslint-disable-next-line no-unused-vars
 			const [ version, checksum, cidName, cidValue ] = linkerParam.split( '*' );

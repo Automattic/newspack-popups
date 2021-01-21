@@ -47,7 +47,7 @@ const manageAnalyticsLinkers = () => {
 			document.cookie = cookieValue;
 		}
 		if ( cleanURL ) {
-			window.history.pushState( {}, document.title, cleanURL );
+			window.history.replaceState( {}, document.title, cleanURL );
 		}
 	} );
 };
@@ -61,8 +61,10 @@ const manageAnalyticsEvents = () => {
 			fetch( parseDynamicURL( config ) )
 				.then( response => response.json() )
 				.then( remoteConfig => {
-					const gaId = remoteConfig.vars.gtag_id;
-					gtag( 'config', gaId, remoteConfig.vars.config[ gaId ] );
+					const gaId = remoteConfig?.vars?.gtag_id;
+					if ( gaId ) {
+						gtag( 'config', gaId, remoteConfig.vars.config[ gaId ] );
+					}
 				} );
 		}
 
