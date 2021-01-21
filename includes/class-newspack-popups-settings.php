@@ -73,6 +73,25 @@ class Newspack_Popups_Settings {
 	 * Return all settings.
 	 */
 	public static function get_settings() {
+		$donor_landing_options       = [];
+		$donor_landing_options_query = new \WP_Query(
+			[
+				'post_type'      => [ 'page' ],
+				'post_status'    => [ 'publish' ],
+				'post_parent'    => 0,
+				'posts_per_page' => 100,
+			]
+		);
+
+		if ( $donor_landing_options_query->have_posts() ) {
+			foreach ( $donor_landing_options_query->posts as $page ) {
+				$donor_landing_options[] = [
+					'label' => $page->post_title,
+					'value' => $page->ID,
+				];
+			}
+		}
+
 		return [
 			[
 				'key'   => 'suppress_newsletter_campaigns',
@@ -111,6 +130,21 @@ class Newspack_Popups_Settings {
 				),
 			],
 			[
+				'key'            => 'newspack_popups_donor_landing_page',
+				'value'          => self::donor_landing_page(),
+				'label'          => __(
+					'Donor landing page',
+					'newspack-popups'
+				),
+				'help'           => __(
+					'When using an off-site donation platform, you can set it to landing to a page on your site. When a reader is landinged to this page, they will be marked as a donor.',
+					'newspack-popups'
+				),
+				'type'           => 'select',
+				'options'        => $donor_landing_options,
+				'no_option_text' => __( '-- None --', 'newspack-popups' ),
+			],
+			[
 				'key'   => 'all_segments',
 				'value' => array_reduce(
 					Newspack_Popups_Segmentation::get_segments(),
@@ -134,6 +168,13 @@ class Newspack_Popups_Settings {
 	public static function is_non_interactive() {
 		// Handle legacy option name.
 		return get_option( 'newspack_newsletters_non_interative_mode', false ) || get_option( 'newspack_popups_non_interative_mode', false );
+	}
+
+	/**
+	 * Donor landing page.
+	 */
+	public static function donor_landing_page() {
+		return get_option( 'newspack_popups_donor_landing_page', '' );
 	}
 
 	/**
