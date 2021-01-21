@@ -1,3 +1,10 @@
+## [1.22.1](https://github.com/Automattic/newspack-popups/compare/v1.22.0...v1.22.1) (2021-01-21)
+
+
+### Bug Fixes
+
+* bug that causes admin bar to be hidden ([#409](https://github.com/Automattic/newspack-popups/issues/409)) ([4b67894](https://github.com/Automattic/newspack-popups/commit/4b67894f911cd2e7dc7ec4ecb967c696b32a1e20))
+
 # [1.22.0](https://github.com/Automattic/newspack-popups/compare/v1.21.0...v1.22.0) (2021-01-21)
 
 
