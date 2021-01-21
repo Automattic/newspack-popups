@@ -99,7 +99,7 @@ class Newspack_Popups_Settings {
 				),
 			],
 			[
-				'key'   => 'newspack_newsletters_non_interative_mode',
+				'key'   => 'newspack_popups_non_interative_mode',
 				'value' => self::is_non_interactive(),
 				'label' => __(
 					'Enable non-interactive mode.',
@@ -132,7 +132,8 @@ class Newspack_Popups_Settings {
 	 * Is the non-interactive setting on?
 	 */
 	public static function is_non_interactive() {
-		return get_option( 'newspack_newsletters_non_interative_mode', false );
+		// Handle legacy option name.
+		return get_option( 'newspack_newsletters_non_interative_mode', false ) || get_option( 'newspack_popups_non_interative_mode', false );
 	}
 
 	/**
