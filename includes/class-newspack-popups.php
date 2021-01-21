@@ -406,7 +406,7 @@ final class Newspack_Popups {
 	 */
 	public static function is_preview_request() {
 		$view_as_spec = Newspack_Popups_View_As::viewing_as_spec();
-		return self::previewed_popup_id() || false !== $view_as_spec;
+		return self::previewed_popup_id() || false != $view_as_spec;
 	}
 
 	/**
