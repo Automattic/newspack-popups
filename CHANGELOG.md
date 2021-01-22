@@ -1,3 +1,10 @@
+## [1.22.2](https://github.com/Automattic/newspack-popups/compare/v1.22.1...v1.22.2) (2021-01-22)
+
+
+### Bug Fixes
+
+* admin bar shown on front end logged out ([#411](https://github.com/Automattic/newspack-popups/issues/411)) ([e9c53fa](https://github.com/Automattic/newspack-popups/commit/e9c53fa1693cc936ca2ce2b202c8ae069905284e))
+
 ## [1.22.1](https://github.com/Automattic/newspack-popups/compare/v1.22.0...v1.22.1) (2021-01-21)
 
 
