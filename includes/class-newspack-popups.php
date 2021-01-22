@@ -393,10 +393,14 @@ final class Newspack_Popups {
 	/**
 	 * Should admin bar be shown.
 	 *
+	 * @param bool $show Whether to show admin bar.
 	 * @return boolean Whether admin bar should be shown.
 	 */
-	public static function show_admin_bar() {
-		return ! self::is_preview_request();
+	public static function show_admin_bar( $show ) {
+		if ( $show ) {
+			return ! self::is_preview_request();
+		}
+		return $show;
 	}
 
 	/**
