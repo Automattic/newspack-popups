@@ -210,52 +210,106 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
-	 * Retrieve all inline popups.
+	 * Retrieve all overlay popups.
 	 *
-	 * @return array Inline popup objects.
+	 * @param  boolean       $include_unpublished Whether to include unpublished posts.
+	 * @param  array|boolean $group_slugs array Array of group slugs, or false to ignore groups.
+	 * @return array Overlay popup objects.
 	 */
-	public static function retrieve_inline_popups() {
+	public static function retrieve_overlay_popups( $include_unpublished = false, $group_slugs = false ) {
 		$args = [
 			'post_type'    => Newspack_Popups::NEWSPACK_POPUPS_CPT,
-			'post_status'  => 'publish',
+			'post_status'  => $include_unpublished ? [ 'draft', 'pending', 'future', 'publish' ] : 'publish',
 			'meta_key'     => 'placement',
 			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-			'meta_value'   => self::$inline_placements,
+			'meta_value'   => self::$overlay_placements,
 			'meta_compare' => 'IN',
 		];
 
-		return self::retrieve_popups_with_query( new WP_Query( $args ) );
-	}
-
-	/**
-	 * Retrieve all popups from a given group.
-	 *
-	 * @param  array   $group_slugs array Array of group slugs.
-	 * @param  boolean $include_unpublished Whether to include unpublished posts.
-	 * @return array Array of popup objects.
-	 */
-	public static function retrieve_group_popups( $group_slugs, $include_unpublished = false ) {
-		$args = [
-			'post_type'   => Newspack_Popups::NEWSPACK_POPUPS_CPT,
-			'post_status' => $include_unpublished ? [ 'draft', 'pending', 'future', 'publish' ] : 'publish',
-			'tax_query'   => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+		// If previewing specific groups.
+		if ( ! empty( $group_slugs ) ) {
+			$args['tax_query'] = [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
 				[
 					'taxonomy' => Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY,
 					'field'    => 'term_id',
 					'terms'    => $group_slugs,
 				],
-			],
-		];
+			];
+		}
 
 		return self::retrieve_popups_with_query( new WP_Query( $args ) );
 	}
 
 	/**
-	 * Retrieve first overlay popup matching post categries.
+	 * Retrieve all inline popups, excluding above-header popups.
 	 *
-	 * @return object|null Popup object.
+	 * @param  boolean       $include_unpublished Whether to include unpublished posts.
+	 * @param  array|boolean $group_slugs array Array of group slugs, or false to ignore groups.
+	 * @return array Inline popup objects.
 	 */
-	public static function retrieve_category_overlay_popup() {
+	public static function retrieve_inline_popups( $include_unpublished = false, $group_slugs = false ) {
+		$args = [
+			'post_type'    => Newspack_Popups::NEWSPACK_POPUPS_CPT,
+			'post_status'  => $include_unpublished ? [ 'draft', 'pending', 'future', 'publish' ] : 'publish',
+			'meta_key'     => 'placement',
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+			'meta_value'   => [ 'inline' ],
+			'meta_compare' => 'IN',
+		];
+
+		// If previewing specific groups.
+		if ( ! empty( $group_slugs ) ) {
+			$args['tax_query'] = [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+				[
+					'taxonomy' => Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY,
+					'field'    => 'term_id',
+					'terms'    => $group_slugs,
+				],
+			];
+		}
+
+		return self::retrieve_popups_with_query( new WP_Query( $args ) );
+	}
+
+	/**
+	 * Retrieve all above-header popups.
+	 *
+	 * @param  boolean       $include_unpublished Whether to include unpublished posts.
+	 * @param  array|boolean $group_slugs array Array of group slugs, or false to ignore groups.
+	 * @return array Above-header popup objects.
+	 */
+	public static function retrieve_above_header_popups( $include_unpublished = false, $group_slugs = false ) {
+		$args = [
+			'post_type'    => Newspack_Popups::NEWSPACK_POPUPS_CPT,
+			'post_status'  => $include_unpublished ? [ 'draft', 'pending', 'future', 'publish' ] : 'publish',
+			'meta_key'     => 'placement',
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+			'meta_value'   => [ 'above_header' ],
+			'meta_compare' => 'IN',
+		];
+
+		// If previewing specific groups.
+		if ( ! empty( $group_slugs ) ) {
+			$args['tax_query'] = [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+				[
+					'taxonomy' => Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY,
+					'field'    => 'term_id',
+					'terms'    => $group_slugs,
+				],
+			];
+		}
+
+		return self::retrieve_popups_with_query( new WP_Query( $args ) );
+	}
+
+	/**
+	 * Retrieve overlay popups matching post categories.
+	 *
+	 * @param  boolean       $include_unpublished Whether to include unpublished posts.
+	 * @param  array|boolean $group_slugs array Array of group slugs, or false to ignore groups.
+	 * @return array|null Array of popup objects.
+	 */
+	public static function retrieve_category_overlay_popups( $include_unpublished = false, $group_slugs = false ) {
 		$post_categories = get_the_category();
 
 		if ( empty( $post_categories ) ) {
@@ -265,7 +319,7 @@ final class Newspack_Popups_Model {
 		$args = [
 			'post_type'      => Newspack_Popups::NEWSPACK_POPUPS_CPT,
 			'posts_per_page' => 1,
-			'post_status'    => 'publish',
+			'post_status'    => $include_unpublished ? [ 'draft', 'pending', 'future', 'publish' ] : 'publish',
 			'category__in'   => array_column( $post_categories, 'term_id' ),
 			'meta_key'       => 'placement',
 			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
@@ -273,8 +327,19 @@ final class Newspack_Popups_Model {
 			'meta_compare'   => 'IN',
 		];
 
+		// If previewing specific groups.
+		if ( ! empty( $group_slugs ) ) {
+			$args['tax_query'] = [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+				[
+					'taxonomy' => Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY,
+					'field'    => 'term_id',
+					'terms'    => $group_slugs,
+				],
+			];
+		}
+
 		$popups = self::retrieve_popups_with_query( new WP_Query( $args ) );
-		return count( $popups ) > 0 ? $popups[0] : null;
+		return count( $popups ) > 0 ? $popups : null;
 	}
 
 	/**

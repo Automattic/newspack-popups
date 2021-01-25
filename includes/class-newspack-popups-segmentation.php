@@ -309,6 +309,29 @@ final class Newspack_Popups_Segmentation {
 	}
 
 	/**
+	 * Get a single segment by ID.
+	 *
+	 * @param string $id A segment id.
+	 * @return object|null The single segment object with matching ID, or null.
+	 */
+	public static function get_segment( $id ) {
+		$matching_segments = array_values(
+			array_filter(
+				self::get_segments(),
+				function( $segment ) use ( $id ) {
+					return $segment['id'] === $id;
+				}
+			)
+		);
+
+		if ( 0 < count( $matching_segments ) ) {
+			return $matching_segments[0];
+		}
+
+		return null;
+	}
+
+	/**
 	 * Create a segment.
 	 *
 	 * @param object $segment A segment.

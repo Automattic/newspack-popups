@@ -22,8 +22,8 @@ final class Newspack_Popups_Inserter {
 	protected static $popups = [];
 
 	/**
-	 * Whether we've already inserted campaigns into the content.
-	 * If we've already inserted campaigns into the content, don't try to do it again.
+	 * Whether we've already inserted popups into the content.
+	 * If we've already inserted popups into the content, don't try to do it again.
 	 *
 	 * @var boolean
 	 */
@@ -35,7 +35,7 @@ final class Newspack_Popups_Inserter {
 	 * @return array Popup objects.
 	 */
 	public static function popups_for_post() {
-		// Inject campaigns only in posts, pages, and CPTs that explicitly opt in.
+		// Inject popups only in posts, pages, and CPTs that explicitly opt in.
 		if ( ! in_array(
 			get_post_type(),
 			apply_filters(
@@ -55,87 +55,64 @@ final class Newspack_Popups_Inserter {
 			return [ Newspack_Popups_Model::retrieve_preview_popup( Newspack_Popups::previewed_popup_id() ) ];
 		}
 
-		// Campaigns disabled for this page.
+		// Popups disabled for this page.
 		if ( self::assess_has_disabled_popups() ) {
 			return [];
 		}
 
 		$view_as_spec             = Segmentation::parse_view_as( Newspack_Popups_View_As::viewing_as_spec() );
 		$view_as_spec_groups      = isset( $view_as_spec['groups'] ) ? $view_as_spec['groups'] : false;
-		$view_as_spec_all         = ! empty( $view_as_spec['all'] ) ? true : false;
-		$view_as_spec_segment     = isset( $view_as_spec['segment'] ) ? $view_as_spec['segment'] : false;
 		$view_as_spec_unpublished = isset( $view_as_spec['show_unpublished'] ) && 'true' === $view_as_spec['show_unpublished'] ? true : false;
 
-		if ( $view_as_spec_groups ) {
-			// If previewing specific groups.
-			$popups_to_maybe_display = Newspack_Popups_Model::retrieve_group_popups( explode( ',', $view_as_spec['groups'] ), $view_as_spec_unpublished );
-		} elseif ( $view_as_spec_all || $view_as_spec_segment ) {
-			// If previewing and no groups are specified, but 'all' or a segment is specified, retrieve all campaigns.
-			$popups_to_maybe_display = Newspack_Popups_Model::retrieve_popups( $view_as_spec_unpublished );
-		} else {
-			// Retrieve campaigns for front-end display.
+		// Retrieve all popups eligible for display.
 
-			// 1. Get all inline popups.
-			$popups_to_maybe_display = Newspack_Popups_Model::retrieve_inline_popups();
+		// 1. If previewing specific groups, only get popups that match those groups.
+		$group_slugs = $view_as_spec_groups ? explode( ',', $view_as_spec['groups'] ) : false;
 
-			// Check if there's an overlay popup with matching category.
-			$category_overlay_popup = Newspack_Popups_Model::retrieve_category_overlay_popup();
-			if ( $category_overlay_popup && self::should_display( $category_overlay_popup ) ) {
-				array_push(
-					$popups_to_maybe_display,
-					$category_overlay_popup
-				);
-			} else {
-				// If there's no category-matching popup, get the sitewide pop-up.
-				$sitewide_default = get_option( Newspack_Popups::NEWSPACK_POPUPS_SITEWIDE_DEFAULT, null );
-				if ( $sitewide_default ) {
-					$found_popup = Newspack_Popups_Model::retrieve_popup_by_id( $sitewide_default );
-					if (
-						$found_popup &&
-						// Prevent non-overlay sitewide default from being added.
-						Newspack_Popups_Model::is_overlay( $found_popup )
-					) {
-						array_push(
-							$popups_to_maybe_display,
-							$found_popup
-						);
-					}
-				}
-			}
-		}
+		// 2. Get all inline popups.
+		$popups_to_maybe_display = Newspack_Popups_Model::retrieve_inline_popups( $view_as_spec_unpublished, $group_slugs );
 
-		// Allow only one overlay campaign.
-		if ( empty( $view_as_spec ) ) {
-			$has_overlay                     = false;
-			$popups_to_maybe_display_deduped = array_filter(
+		// 3. Get all above-header popups.
+		$above_header_popups = Newspack_Popups_Model::retrieve_above_header_popups( $view_as_spec_unpublished, $group_slugs );
+
+		// 4. Check if there are any overlay popups with matching category.
+		$category_overlay_popups = Newspack_Popups_Model::retrieve_category_overlay_popups( $view_as_spec_unpublished, $group_slugs );
+
+		// 5. If there are matching category overlays, use those. Otherwise, get all valid overlay popups.
+		$overlay_popups = ! empty( $category_overlay_popups ) ?
+			$category_overlay_popups :
+			Newspack_Popups_Model::retrieve_overlay_popups( $view_as_spec_unpublished, $group_slugs );
+
+		// 6. Allow only one above-header popup with the highest segment priority.
+		if ( ! empty( $above_header_popups ) ) {
+			$above_header_popup = self::get_highest_priority( $above_header_popups );
+
+			array_push(
 				$popups_to_maybe_display,
-				function ( $campaign ) use ( &$has_overlay ) {
-					if ( Newspack_Popups_Model::is_overlay( $campaign ) ) {
-						if ( $has_overlay ) {
-							return false;
-						} else {
-							$has_overlay = true;
-							return true;
-						}
-					}
-					return true;
-				}
+				$above_header_popup
 			);
-		} else {
-			// If previewing, allow all matching overlay campaigns to be displayed.
-			$popups_to_maybe_display_deduped = $popups_to_maybe_display;
 		}
 
-		// Remove manual placement campaigns.
-		$popups_to_maybe_display_deduped = array_filter(
-			$popups_to_maybe_display_deduped,
-			function( $campaign ) {
-				return 'manual' !== $campaign['options']['frequency'];
+		// 7. Allow only one overlay popup with the highest segment priority.
+		if ( ! empty( $overlay_popups ) ) {
+			$overlay_popup = self::get_highest_priority( $overlay_popups );
+
+			array_push(
+				$popups_to_maybe_display,
+				$overlay_popup
+			);
+		}
+
+		// 8. Remove manual placement popups.
+		$popups_to_maybe_display = array_filter(
+			$popups_to_maybe_display,
+			function( $popup ) {
+				return 'manual' !== $popup['options']['frequency'];
 			}
 		);
 
 		return array_filter(
-			$popups_to_maybe_display_deduped,
+			$popups_to_maybe_display,
 			[ __CLASS__, 'should_display' ]
 		);
 	}
@@ -182,7 +159,7 @@ final class Newspack_Popups_Inserter {
 		);
 
 		// These hooks are fired before and after rendering posts in the Homepage Posts block.
-		// By removing the the_content filter before rendering, we avoid incorrectly injecting campaign content into excerpts in the block.
+		// By removing the the_content filter before rendering, we avoid incorrectly injecting popup content into excerpts in the block.
 		add_action(
 			'newspack_blocks_homepage_posts_before_render',
 			function() {
@@ -219,7 +196,7 @@ final class Newspack_Popups_Inserter {
 			return $content;
 		}
 
-		// No campaign insertion in archive pages.
+		// No popup insertion in archive pages.
 		if ( ! is_singular() ) {
 			return $content;
 		}
@@ -229,7 +206,7 @@ final class Newspack_Popups_Inserter {
 			return $content;
 		}
 
-		// If the current post is a Campaign, ignore.
+		// If the current post is a popup, ignore.
 		if ( Newspack_Popups::NEWSPACK_POPUPS_CPT == get_post_type() ) {
 			return $content;
 		}
@@ -265,7 +242,7 @@ final class Newspack_Popups_Inserter {
 
 		$total_length = strlen( $content );
 
-		// 1. Separate campaigns into inline and overlay.
+		// 1. Separate popups into inline and overlay.
 		$inline_popups  = [];
 		$overlay_popups = [];
 		foreach ( $popups as $popup ) {
@@ -284,7 +261,7 @@ final class Newspack_Popups_Inserter {
 			return $content;
 		}
 
-		// 2. Iterate overall blocks and insert inline campaigns.
+		// 2. Iterate overall blocks and insert inline popups.
 		$pos    = 0;
 		$output = '';
 		foreach ( parse_blocks( $content ) as $block ) {
@@ -300,7 +277,7 @@ final class Newspack_Popups_Inserter {
 			$output .= $block_content;
 		}
 
-		// 3. Insert any remaining inline campaigns at the end.
+		// 3. Insert any remaining inline popups at the end.
 		foreach ( $inline_popups as $inline_popup ) {
 			if ( ! $inline_popup['is_inserted'] ) {
 				$output .= '<!-- wp:shortcode -->[newspack-popup id="' . $inline_popup['id'] . '"]<!-- /wp:shortcode -->';
@@ -309,7 +286,7 @@ final class Newspack_Popups_Inserter {
 			}
 		}
 
-		// 4. Insert overlay campaigns at the top of content.
+		// 4. Insert overlay popups at the top of content.
 		foreach ( $overlay_popups as $overlay_popup ) {
 			$output = '<!-- wp:html -->' . Newspack_Popups_Model::generate_popup( $overlay_popup ) . '<!-- /wp:html -->' . $output;
 		}
@@ -374,7 +351,7 @@ final class Newspack_Popups_Inserter {
 	/**
 	 * The popup shortcode function.
 	 * Primarily, the shortcode is inserted by the plugin, but it may also be inserted manually to
-	 * display a specific campaign anywhere on the site.
+	 * display a specific popup anywhere on the site.
 	 *
 	 * @param array $atts Shortcode attributes.
 	 * @return HTML
@@ -388,7 +365,7 @@ final class Newspack_Popups_Inserter {
 		}
 		if (
 			! $found_popup ||
-			// Bail if it's a non-preview campaign which should not be displayed.
+			// Bail if it's a non-preview popup which should not be displayed.
 			( ! self::should_display( $found_popup, true ) && ! Newspack_Popups::previewed_popup_id() ) ||
 			// Only inline popups can be inserted via the  shortcode.
 			! Newspack_Popups_Model::is_inline( $found_popup )
@@ -458,7 +435,7 @@ final class Newspack_Popups_Inserter {
 			self::popups_for_post(),
 			$shortcoded_popups
 		);
-		// "Escape hatch" if there's a need to block adding amp-access for pages that have no campaigns.
+		// "Escape hatch" if there's a need to block adding amp-access for pages that have no popups.
 		if ( apply_filters( 'newspack_popups_suppress_insert_amp_access', false, $popups ) ) {
 			return;
 		}
@@ -497,7 +474,7 @@ final class Newspack_Popups_Inserter {
 			},
 			(object) []
 		);
-		$popups_access_provider['authorization'] .= '&ref=DOCUMENT_REFERRER';
+		$popups_access_provider['authorization'] .= '&ref=https://gmail.google.com';
 		$popups_access_provider['authorization'] .= '&popups=' . wp_json_encode( $popups_configs );
 		$popups_access_provider['authorization'] .= '&settings=' . wp_json_encode( $settings );
 		$popups_access_provider['authorization'] .= '&visit=' . wp_json_encode(
@@ -665,15 +642,15 @@ final class Newspack_Popups_Inserter {
 			self::assess_categories_filter( $popup ) &&
 			self::assess_tags_filter( $popup );
 
-		// When using "view as" feature, discard test mode campaigns.
+		// When using "view as" feature, discard test mode popups.
 		if ( Newspack_Popups_View_As::viewing_as_spec() ) {
 			return $general_conditions;
 		}
-		// Hide campaigns for logged-in users.
+		// Hide popups for logged-in users.
 		if ( is_user_logged_in() ) {
 			return false;
 		}
-		// Hide overlay campaigns in non-interactive mode, for non-logged-in users.
+		// Hide overlay popups in non-interactive mode, for non-logged-in users.
 		if ( ! is_user_logged_in() && Newspack_Popups_Settings::is_non_interactive() && ! Newspack_Popups_Model::is_inline( $popup ) ) {
 			return false;
 		}
@@ -681,6 +658,30 @@ final class Newspack_Popups_Inserter {
 			return true;
 		}
 		return $general_conditions;
+	}
+
+	/**
+	 * Given an array of popups, get the one with the highest segment priority.
+	 * If there are multiple candidates with the same priority, or only popups with no assigned segment,
+	 * just return the first candidate, which will ususally be the most recently created one.
+	 *
+	 * @param array $popups Array of popup objects.
+	 * @return object The popup with the highest segment priority.
+	 */
+	public static function get_highest_priority( $popups ) {
+		$priority               = PHP_INT_MAX;
+		$highest_priority_popup = null;
+
+		foreach ( $popups as $popup ) {
+			$segment = Newspack_Popups_Segmentation::get_segment( $popup['options']['selected_segment_id'] );
+
+			if ( ! empty( $segment ) && $segment['priority'] < $priority && self::should_display( $popup ) ) {
+				$priority               = $segment['priority'];
+				$highest_priority_popup = $popup;
+			}
+		}
+
+		return ! empty( $highest_priority_popup ) ? $highest_priority_popup : $popups[0];
 	}
 
 	/**
