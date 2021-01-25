@@ -38,71 +38,8 @@ final class Newspack_Popups_Model {
 			'posts_per_page' => 100,
 		];
 
-		$sitewide_default_id = get_option( Newspack_Popups::NEWSPACK_POPUPS_SITEWIDE_DEFAULT, null );
-
 		$popups = self::retrieve_popups_with_query( new WP_Query( $args ), true );
-		foreach ( $popups as &$popup ) {
-			// UI will not allow for setting inline as sitewide default, but there may be
-			// legacy popups from before this update.
-			if ( self::is_overlay( $popup ) ) {
-				$popup['sitewide_default'] = absint( $sitewide_default_id ) === absint( $popup['id'] );
-			}
-		}
 		return $popups;
-	}
-
-	/**
-	 * Set post time to now, making it the sitewide popup.
-	 *
-	 * @param integer $id ID of the Popup to make sitewide default.
-	 */
-	public static function set_sitewide_popup( $id ) {
-		$popup = self::retrieve_popup_by_id( $id );
-		if ( ! $popup ) {
-			return new \WP_Error(
-				'newspack_popups_popup_doesnt_exist',
-				esc_html__( 'The Campaign specified does not exist.', 'newspack-popups' ),
-				[
-					'status' => 400,
-					'level'  => 'fatal',
-				]
-			);
-		}
-
-		// Such update will not be permitted by the UI, but it's handled just to be explicit about it.
-		if ( self::is_inline( $popup ) ) {
-			return new \WP_Error(
-				'newspack_popups_inline_sitewide',
-				esc_html__( 'An inline Campaign cannot be a sitewide default.', 'newspack-popups' ),
-				[
-					'status' => 400,
-					'level'  => 'fatal',
-				]
-			);
-		}
-		return update_option( Newspack_Popups::NEWSPACK_POPUPS_SITEWIDE_DEFAULT, $id );
-	}
-
-	/**
-	 * If a certain post is sitewide default, clear it.
-	 *
-	 * @param integer $id ID of the Popup to unset as sitewide default.
-	 */
-	public static function unset_sitewide_popup( $id ) {
-		$popup = self::retrieve_popup_by_id( $id );
-		if ( ! $popup ) {
-			return new \WP_Error(
-				'newspack_popups_popup_doesnt_exist',
-				esc_html__( 'The Campaign specified does not exist.', 'newspack-popups' ),
-				[
-					'status' => 400,
-					'level'  => 'fatal',
-				]
-			);
-		}
-		if ( absint( get_option( Newspack_Popups::NEWSPACK_POPUPS_SITEWIDE_DEFAULT, null ) ) === absint( $id ) ) {
-			return update_option( Newspack_Popups::NEWSPACK_POPUPS_SITEWIDE_DEFAULT, null );
-		}
 	}
 
 	/**
