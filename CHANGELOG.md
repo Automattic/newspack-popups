@@ -1,3 +1,10 @@
+# [1.23.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.22.2...v1.23.0-alpha.1) (2021-01-26)
+
+
+### Features
+
+* **segmentation:** handle referrer exclusion segmentation ([#415](https://github.com/Automattic/newspack-popups/issues/415)) ([011e0eb](https://github.com/Automattic/newspack-popups/commit/011e0eb3fc629ed907bccd3da38eed9e99a42b41)), closes [#386](https://github.com/Automattic/newspack-popups/issues/386)
+
 ## [1.22.2](https://github.com/Automattic/newspack-popups/compare/v1.22.1...v1.22.2) (2021-01-22)
 
 
