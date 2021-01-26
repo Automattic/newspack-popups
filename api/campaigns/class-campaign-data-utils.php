@@ -34,11 +34,10 @@ class Campaign_Data_Utils {
 	 * @param string $referrers_list_string Comma-separated referrer domains list.
 	 */
 	public static function does_referrer_match( $page_referrer_url, $referrers_list_string ) {
-		$referer_domain = parse_url( $page_referrer_url, PHP_URL_HOST ); // phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url, WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		// Handle the 'www' prefix – assume `www.example.com` and `example.com` referrers are the same.
-		$referer_domain_alternative = strpos( $referer_domain, 'www.' ) === 0 ? substr( $referer_domain, 4 ) : "www.$referer_domain";
-		$referrer_matches           = array_intersect(
-			[ $referer_domain, $referer_domain_alternative ],
+		$referer_domain      = parse_url( $page_referrer_url, PHP_URL_HOST ); // phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url, WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$referer_domain_root = implode( '.', array_slice( explode( '.', $referer_domain ), -2 ) );
+		$referrer_matches    = in_array(
+			$referer_domain_root,
 			array_map( 'trim', explode( ',', $referrers_list_string ) )
 		);
 		return $referrer_matches;

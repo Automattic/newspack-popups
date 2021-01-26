@@ -922,6 +922,10 @@ class APITest extends WP_UnitTestCase {
 			'Assert visible if second referrer matches.'
 		);
 		self::assertTrue(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings, '', 'https://sub.newspack.pub' ),
+			'Assert visible if referrer with subdomain matches.'
+		);
+		self::assertTrue(
 			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings, '', 'https://www.foobar.com' ),
 			'Assert visible if referrer matches, with a www subdomain.'
 		);
