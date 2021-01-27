@@ -46,6 +46,9 @@ class APITest extends WP_UnitTestCase {
 				'anotherSegmentWithReferrers'         => (object) [
 					'referrers' => 'bar.com',
 				],
+				'segmentWithNegativeReferrer'         => (object) [
+					'referrers_not' => 'baz.com',
+				],
 				'segmentFavCategory42'                => (object) [
 					'favorite_categories' => [ 42 ],
 				],
@@ -917,12 +920,46 @@ class APITest extends WP_UnitTestCase {
 			'Assert visible if second referrer matches.'
 		);
 		self::assertTrue(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings, '', 'https://sub.newspack.pub' ),
+			'Assert visible if referrer with subdomain matches.'
+		);
+		self::assertTrue(
 			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings, '', 'https://www.foobar.com' ),
 			'Assert visible if referrer matches, with a www subdomain.'
 		);
 		self::assertFalse(
 			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings, '', 'https://google.com' ),
 			'Assert not visible if referrer does not match.'
+		);
+	}
+
+	/**
+	 * Handling negative referrer-based segmentation.
+	 */
+	public function test_segment_page_not_referrer() {
+		$test_popup_with_segment = self::create_test_popup(
+			[
+				'placement'           => 'inline',
+				'frequency'           => 'always',
+				'selected_segment_id' => 'segmentWithNegativeReferrer',
+			]
+		);
+
+		self::assertTrue(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings ),
+			'Assert visible without referrer.'
+		);
+		self::assertFalse(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings, '', 'http://baz.com' ),
+			'Assert not visible if referrer matches.'
+		);
+		self::assertFalse(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings, '', 'https://www.baz.com' ),
+			'Assert not visible if referrer matches, with a www subdomain.'
+		);
+		self::assertTrue(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings, '', 'https://google.com' ),
+			'Assert visible if referrer does not match.'
 		);
 	}
 
@@ -1108,6 +1145,32 @@ class APITest extends WP_UnitTestCase {
 		self::assertFalse(
 			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', 'https://twitter.com', [ 'segment' => 'anotherSegmentWithReferrers' ] ),
 			'Assert not visible when viewing as a different segment with a referrer.'
+		);
+	}
+
+	/**
+	 * View as a segment – referrers.
+	 */
+	public function test_view_as_segment_referrers_negative() {
+		$test_popup = self::create_test_popup(
+			[
+				'placement'           => 'inline',
+				'frequency'           => 'always',
+				'selected_segment_id' => 'segmentWithNegativeReferrer',
+			]
+		);
+
+		self::assertTrue(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
+			'Assert visible without referrer.'
+		);
+		self::assertTrue(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', '', [ 'segment' => 'segmentWithNegativeReferrer' ] ),
+			'Assert visible when viewing as a segment member.'
+		);
+		self::assertTrue(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', 'https://newspack.pub', [ 'segment' => 'segmentWithNegativeReferrer' ] ),
+			'Assert visible when viewing as a segment member, with a referrer.'
 		);
 	}
 
