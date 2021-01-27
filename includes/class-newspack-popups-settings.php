@@ -137,7 +137,7 @@ class Newspack_Popups_Settings {
 					'newspack-popups'
 				),
 				'help'           => __(
-					'When using an off-site donation platform, you can set it to landing to a page on your site. When a reader is landinged to this page, they will be marked as a donor.',
+					'Set a page on your site as a donation landing page. Once a reader views this page, they will be considered a donor. This is helpful if you're using an off-site donation platform but still want to target donors as an audience segment.',
 					'newspack-popups'
 				),
 				'type'           => 'select',
