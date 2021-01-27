@@ -137,7 +137,7 @@ class Newspack_Popups_Settings {
 					'newspack-popups'
 				),
 				'help'           => __(
-					'Set a page on your site as a donation landing page. Once a reader views this page, they will be considered a donor. This is helpful if you're using an off-site donation platform but still want to target donors as an audience segment.',
+					"Set a page on your site as a donation landing page. Once a reader views this page, they will be considered a donor. This is helpful if you're using an off-site donation platform but still want to target donors as an audience segment.",
 					'newspack-popups'
 				),
 				'type'           => 'select',
