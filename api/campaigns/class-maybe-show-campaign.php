@@ -262,7 +262,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		$priority_a = ! empty( $segments->{$campaign_a->s}->priority ) ? $segments->{$campaign_a->s}->priority : PHP_INT_MAX;
 		$priority_b = ! empty( $segments->{$campaign_b->s}->priority ) ? $segments->{$campaign_b->s}->priority : PHP_INT_MAX;
 
-		if ( $priority_a === $priority_b || $priority_a < $priority_b ) {
+		if ( $priority_a <= $priority_b ) {
 			return $campaign_a;
 		}
 
