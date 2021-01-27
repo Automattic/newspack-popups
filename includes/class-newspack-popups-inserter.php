@@ -69,41 +69,26 @@ final class Newspack_Popups_Inserter {
 		// 1. If previewing specific groups, only get popups that match those groups.
 		$group_slugs = $view_as_spec_groups ? explode( ',', $view_as_spec['groups'] ) : false;
 
-		// 2. Get all inline popups.
+		// 2. Get all inline and above-header popups.
 		$popups_to_maybe_display = Newspack_Popups_Model::retrieve_inline_popups( $view_as_spec_unpublished, $group_slugs );
 
-		// 3. Get all above-header popups.
-		$above_header_popups = Newspack_Popups_Model::retrieve_above_header_popups( $view_as_spec_unpublished, $group_slugs );
-
-		// 4. Check if there are any overlay popups with matching category.
+		// 3. Check if there are any overlay popups with matching category.
 		$category_overlay_popups = Newspack_Popups_Model::retrieve_category_overlay_popups( $view_as_spec_unpublished, $group_slugs );
 
-		// 5. If there are matching category overlays, use those. Otherwise, get all valid overlay popups.
+		// 4. If there are matching category overlays, use those. Otherwise, get all valid overlay popups.
 		$overlay_popups = ! empty( $category_overlay_popups ) ?
 			$category_overlay_popups :
 			Newspack_Popups_Model::retrieve_overlay_popups( $view_as_spec_unpublished, $group_slugs );
 
-		// 6. Allow only one above-header popup with the highest segment priority.
-		if ( ! empty( $above_header_popups ) ) {
-			$above_header_popup = self::get_highest_priority( $above_header_popups );
-
-			array_push(
-				$popups_to_maybe_display,
-				$above_header_popup
-			);
-		}
-
-		// 7. Allow only one overlay popup with the highest segment priority.
+		// 5. Add overlay popups to array.
 		if ( ! empty( $overlay_popups ) ) {
-			$overlay_popup = self::get_highest_priority( $overlay_popups );
-
-			array_push(
+			$popups_to_maybe_display = array_merge(
 				$popups_to_maybe_display,
-				$overlay_popup
+				$overlay_popups
 			);
 		}
 
-		// 8. Remove manual placement popups.
+		// 6. Remove manual placement popups.
 		$popups_to_maybe_display = array_filter(
 			$popups_to_maybe_display,
 			function( $popup ) {
@@ -386,9 +371,22 @@ final class Newspack_Popups_Inserter {
 	public static function create_single_popup_access_payload( $popup ) {
 		$popup_id_string = Newspack_Popups_Model::canonize_popup_id( esc_attr( $popup['id'] ) );
 		$frequency       = $popup['options']['frequency'];
-		if ( Newspack_Popups_Model::is_overlay( $popup ) && 'always' === $frequency ) {
-			$frequency = 'once';
+		$is_overlay      = Newspack_Popups_Model::is_overlay( $popup );
+		$is_above_header = Newspack_Popups_Model::is_above_header( $popup );
+		$type            = 'i';
+
+		if ( $is_overlay ) {
+			$type = 'o';
+
+			if ( 'always' === $frequency ) {
+				$frequency = 'once';
+			}
 		}
+
+		if ( $is_above_header ) {
+			$type = 'a';
+		}
+
 		return [
 			'id'  => $popup_id_string,
 			'f'   => $frequency,
@@ -396,6 +394,7 @@ final class Newspack_Popups_Inserter {
 			's'   => $popup['options']['selected_segment_id'],
 			'n'   => \Newspack_Popups_Model::has_newsletter_prompt( $popup ),
 			'd'   => \Newspack_Popups_Model::has_donation_block( $popup ),
+			't'   => $type,
 		];
 	}
 
@@ -658,30 +657,6 @@ final class Newspack_Popups_Inserter {
 			return true;
 		}
 		return $general_conditions;
-	}
-
-	/**
-	 * Given an array of popups, get the one with the highest segment priority.
-	 * If there are multiple candidates with the same priority, or only popups with no assigned segment,
-	 * just return the first candidate, which will ususally be the most recently created one.
-	 *
-	 * @param array $popups Array of popup objects.
-	 * @return object The popup with the highest segment priority.
-	 */
-	public static function get_highest_priority( $popups ) {
-		$priority               = PHP_INT_MAX;
-		$highest_priority_popup = null;
-
-		foreach ( $popups as $popup ) {
-			$segment = Newspack_Popups_Segmentation::get_segment( $popup['options']['selected_segment_id'] );
-
-			if ( ! empty( $segment ) && $segment['priority'] < $priority && self::should_display( $popup ) ) {
-				$priority               = $segment['priority'];
-				$highest_priority_popup = $popup;
-			}
-		}
-
-		return ! empty( $highest_priority_popup ) ? $highest_priority_popup : $popups[0];
 	}
 
 	/**

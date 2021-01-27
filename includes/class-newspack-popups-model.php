@@ -178,7 +178,7 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
-	 * Retrieve all inline popups, excluding above-header popups.
+	 * Retrieve all inline and above-header popups.
 	 *
 	 * @param  boolean       $include_unpublished Whether to include unpublished posts.
 	 * @param  array|boolean $group_slugs array Array of group slugs, or false to ignore groups.
@@ -190,38 +190,7 @@ final class Newspack_Popups_Model {
 			'post_status'  => $include_unpublished ? [ 'draft', 'pending', 'future', 'publish' ] : 'publish',
 			'meta_key'     => 'placement',
 			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-			'meta_value'   => [ 'inline' ],
-			'meta_compare' => 'IN',
-		];
-
-		// If previewing specific groups.
-		if ( ! empty( $group_slugs ) ) {
-			$args['tax_query'] = [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
-				[
-					'taxonomy' => Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY,
-					'field'    => 'term_id',
-					'terms'    => $group_slugs,
-				],
-			];
-		}
-
-		return self::retrieve_popups_with_query( new WP_Query( $args ) );
-	}
-
-	/**
-	 * Retrieve all above-header popups.
-	 *
-	 * @param  boolean       $include_unpublished Whether to include unpublished posts.
-	 * @param  array|boolean $group_slugs array Array of group slugs, or false to ignore groups.
-	 * @return array Above-header popup objects.
-	 */
-	public static function retrieve_above_header_popups( $include_unpublished = false, $group_slugs = false ) {
-		$args = [
-			'post_type'    => Newspack_Popups::NEWSPACK_POPUPS_CPT,
-			'post_status'  => $include_unpublished ? [ 'draft', 'pending', 'future', 'publish' ] : 'publish',
-			'meta_key'     => 'placement',
-			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-			'meta_value'   => [ 'above_header' ],
+			'meta_value'   => self::$inline_placements,
 			'meta_compare' => 'IN',
 		];
 
@@ -549,6 +518,19 @@ final class Newspack_Popups_Model {
 			return false;
 		}
 		return in_array( $popup['options']['placement'], self::$overlay_placements, true );
+	}
+
+	/**
+	 * Is it an above-header popup?
+	 *
+	 * @param object $popup The popup object.
+	 * @return boolean True if it is an above-header popup.
+	 */
+	public static function is_above_header( $popup ) {
+		if ( ! isset( $popup['options'], $popup['options']['placement'] ) ) {
+			return false;
+		}
+		return 'above_header' === $popup['options']['placement'];
 	}
 
 	/**
