@@ -1,3 +1,10 @@
+# [1.23.0-alpha.2](https://github.com/Automattic/newspack-popups/compare/v1.23.0-alpha.1...v1.23.0-alpha.2) (2021-01-28)
+
+
+### Features
+
+* add donor landing page setting ([#408](https://github.com/Automattic/newspack-popups/issues/408)) ([a3be6ca](https://github.com/Automattic/newspack-popups/commit/a3be6caacf51f464c904aa42e8d6b61da17daf5e))
+
 # [1.23.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.22.2...v1.23.0-alpha.1) (2021-01-26)
 
 
