@@ -11,7 +11,7 @@ import apiFetch from '@wordpress/api-fetch';
 /**
  * External dependencies
  */
-import { Card, Grid, FormattedHeader, CheckboxControl } from 'newspack-components';
+import { Card, Grid, FormattedHeader, CheckboxControl, SelectControl } from 'newspack-components';
 import HeaderIcon from '@material-ui/icons/Settings';
 
 /**
@@ -34,26 +34,38 @@ const App = () => {
 		} );
 	};
 
+	const renderSetting = setting => {
+		if ( setting.label ) {
+			const props = {
+				key: setting.key,
+				label: setting.label,
+				help: setting.help,
+				disabled: inFlight,
+				onChange: handleSettingChange( setting.key ),
+			};
+			switch ( setting.type ) {
+				case 'select':
+					return (
+						<SelectControl
+							{ ...props }
+							value={ setting.value }
+							options={ [ { label: setting.no_option_text, value: '' }, ...setting.options ] }
+						/>
+					);
+				default:
+					return <CheckboxControl { ...props } checked={ setting.value === '1' } />;
+			}
+		}
+		return null;
+	};
+
 	return (
 		<Grid>
 			<FormattedHeader
 				headerIcon={ <HeaderIcon /> }
 				headerText={ __( 'Campaigns Settings', 'newspack-popups' ) }
 			/>
-			<Card>
-				{ settings.map( setting =>
-					setting.label ? (
-						<CheckboxControl
-							key={ setting.key }
-							label={ setting.label }
-							help={ setting.help }
-							disabled={ inFlight }
-							checked={ setting.value === '1' }
-							onChange={ handleSettingChange( setting.key ) }
-						/>
-					) : null
-				) }
-			</Card>
+			<Card>{ settings.map( renderSetting ) }</Card>
 		</Grid>
 	);
 };
