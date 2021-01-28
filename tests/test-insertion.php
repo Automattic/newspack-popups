@@ -149,21 +149,21 @@ class InsertionTest extends WP_UnitTestCase {
 			]
 		);
 
-		update_option( 'newspack_newsletters_non_interative_mode', true );
+		update_option( 'newspack_popups_non_interative_mode', true );
 		self::render_post();
 		self::assertNotContains(
 			self::$popup_content,
 			self::$post_content,
 			'Does not include the popup content, since it is an overlay campaign.'
 		);
-		update_option( 'newspack_newsletters_non_interative_mode', false );
+		update_option( 'newspack_popups_non_interative_mode', false );
 	}
 
 	/**
 	 * Test non-interactive setting for inline campaigns.
 	 */
 	public function test_non_interactive_inline() {
-		update_option( 'newspack_newsletters_non_interative_mode', true );
+		update_option( 'newspack_popups_non_interative_mode', true );
 		self::render_post();
 		self::assertContains(
 			self::$popup_content,
@@ -175,6 +175,6 @@ class InsertionTest extends WP_UnitTestCase {
 			self::$post_content,
 			'Does not include the dismissal text.'
 		);
-		update_option( 'newspack_newsletters_non_interative_mode', false );
+		update_option( 'newspack_popups_non_interative_mode', false );
 	}
 }
