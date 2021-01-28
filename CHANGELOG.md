@@ -1,3 +1,11 @@
+# [1.23.0](https://github.com/Automattic/newspack-popups/compare/v1.22.2...v1.23.0) (2021-01-28)
+
+
+### Features
+
+* add donor landing page setting ([#408](https://github.com/Automattic/newspack-popups/issues/408)) ([a3be6ca](https://github.com/Automattic/newspack-popups/commit/a3be6caacf51f464c904aa42e8d6b61da17daf5e))
+* **segmentation:** handle referrer exclusion segmentation ([#415](https://github.com/Automattic/newspack-popups/issues/415)) ([011e0eb](https://github.com/Automattic/newspack-popups/commit/011e0eb3fc629ed907bccd3da38eed9e99a42b41)), closes [#386](https://github.com/Automattic/newspack-popups/issues/386)
+
 ## [1.22.2](https://github.com/Automattic/newspack-popups/compare/v1.22.1...v1.22.2) (2021-01-22)
 
 
