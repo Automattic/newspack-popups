@@ -619,10 +619,34 @@ final class Newspack_Popups {
 	/**
 	 * Archive campaign.
 	 *
-	 * @param int $id Campaign ID.
+	 * @param int  $id Campaign ID.
+	 * @param bool $status Whether to archive or unarchive (true = archive, false = unarchive).
 	 */
-	public static function archive_campaign( $id ) {
-		update_term_meta( $id, self::NEWSPACK_POPUPS_TAXONOMY_STATUS, 'archive' );
+	public static function archive_campaign( $id, $status ) {
+		update_term_meta( $id, self::NEWSPACK_POPUPS_TAXONOMY_STATUS, $status ? 'archive' : '' );
+	}
+
+	/**
+	 * Retrieve campaign groups.
+	 */
+	public static function get_groups() {
+		$groups = array_map(
+			function( $group ) {
+				$group->status = get_term_meta(
+					$group->term_id,
+					self::NEWSPACK_POPUPS_TAXONOMY_STATUS,
+					true
+				);
+				return $group;
+			},
+			get_terms(
+				self::NEWSPACK_POPUPS_TAXONOMY,
+				[
+					'hide_empty' => false,
+				]
+			)
+		);
+		return $groups;
 	}
 }
 Newspack_Popups::instance();
