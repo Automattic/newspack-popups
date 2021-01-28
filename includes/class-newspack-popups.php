@@ -17,6 +17,7 @@ final class Newspack_Popups {
 	const NEWSPACK_POPUPS_TAXONOMY              = 'newspack_popups_taxonomy';
 	const NEWSPACK_POPUPS_ACTIVE_CAMPAIGN_GROUP = 'newspack_popups_active_campaign_group';
 	const NEWSPACK_POPUP_PREVIEW_QUERY_PARAM    = 'newspack_popups_preview_id';
+	const NEWSPACK_POPUPS_TAXONOMY_STATUS       = 'newspack_popups_taxonomy_status';
 
 	const LIGHTWEIGHT_API_CONFIG_FILE_PATH_LEGACY = WP_CONTENT_DIR . '/../newspack-popups-config.php';
 	const LIGHTWEIGHT_API_CONFIG_FILE_PATH        = WP_CONTENT_DIR . '/newspack-popups-config.php';
@@ -572,6 +573,56 @@ final class Newspack_Popups {
 				</p>
 			</div>
 		<?php
+	}
+
+	/**
+	 * Delete campaign.
+	 *
+	 * @param int $id Campaign ID.
+	 */
+	public static function delete_campaign( $id ) {
+		wp_delete_term( $id, self::NEWSPACK_POPUPS_TAXONOMY );
+	}
+
+	/**
+	 * Duplicate campaign.
+	 *
+	 * @param int    $id Campaign ID.
+	 * @param string $name New campaign name.
+	 */
+	public static function duplicate_campaign( $id, $name ) {
+		$term = wp_insert_term( $name, self::NEWSPACK_POPUPS_TAXONOMY );
+		if ( is_wp_error( $term ) ) {
+			$term = get_term_by( 'name', $name, self::NEWSPACK_POPUPS_TAXONOMY );
+		}
+		$term = (object) $term;
+		$args = [
+			'post_type'      => self::NEWSPACK_POPUPS_CPT,
+			'posts_per_page' => 100,
+			'fields'         => 'ids',
+			'post_status'    => [ 'publish', 'pending', 'draft', 'future' ],
+			'tax_query'      => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+				[
+					'taxonomy' => self::NEWSPACK_POPUPS_TAXONOMY,
+					'field'    => 'term_id',
+					'terms'    => [ $id ],
+				],
+			],
+		];
+
+		$query = new WP_Query( $args );
+		foreach ( $query->posts as $id ) {
+			wp_set_post_terms( $id, $term->term_id, self::NEWSPACK_POPUPS_TAXONOMY, true );
+		}
+	}
+
+	/**
+	 * Archive campaign.
+	 *
+	 * @param int $id Campaign ID.
+	 */
+	public static function archive_campaign( $id ) {
+		update_term_meta( $id, self::NEWSPACK_POPUPS_TAXONOMY_STATUS, 'archive' );
 	}
 }
 Newspack_Popups::instance();
