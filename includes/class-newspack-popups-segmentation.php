@@ -488,7 +488,7 @@ final class Newspack_Popups_Segmentation {
 	public static function reindex_segments( $segments ) {
 		$index = 0;
 		array_map(
-			function( $segment ) use ( $index ) {
+			function( $segment ) use ( &$index ) {
 				$segment['priority'] = $index;
 				$index++;
 			},

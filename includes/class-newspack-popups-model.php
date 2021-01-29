@@ -178,7 +178,7 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
-	 * Retrieve all inline and above-header popups.
+	 * Retrieve all inline popups.
 	 *
 	 * @param  boolean       $include_unpublished Whether to include unpublished posts.
 	 * @param  array|boolean $group_slugs array Array of group slugs, or false to ignore groups.
