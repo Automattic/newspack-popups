@@ -1,3 +1,10 @@
+## [1.23.1](https://github.com/Automattic/newspack-popups/compare/v1.23.0...v1.23.1) (2021-01-29)
+
+
+### Bug Fixes
+
+* insertion edge case bug ([6e783ed](https://github.com/Automattic/newspack-popups/commit/6e783ed45aeb35ac6089dd8724dcc807573e56f0))
+
 # [1.23.0](https://github.com/Automattic/newspack-popups/compare/v1.22.2...v1.23.0) (2021-01-28)
 
 
