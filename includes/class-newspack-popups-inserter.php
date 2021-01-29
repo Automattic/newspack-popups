@@ -69,7 +69,7 @@ final class Newspack_Popups_Inserter {
 		// 1. If previewing specific groups, only get popups that match those groups.
 		$group_slugs = $view_as_spec_groups ? explode( ',', $view_as_spec['groups'] ) : false;
 
-		// 2. Get all inline and above-header popups.
+		// 2. Get all inline popups.
 		$popups_to_maybe_display = Newspack_Popups_Model::retrieve_inline_popups( $view_as_spec_unpublished, $group_slugs );
 
 		// 3. Check if there are any overlay popups with matching category.
