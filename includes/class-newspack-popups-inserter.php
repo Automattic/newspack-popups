@@ -262,8 +262,8 @@ final class Newspack_Popups_Inserter {
 			$output .= $block_content;
 		}
 
-		// 3. Insert any remaining inline popups at the end.
-		foreach ( $inline_popups as $inline_popup ) {
+		// 3. Insert any remaining inline campaigns at the end.
+		foreach ( $inline_popups as &$inline_popup ) {
 			if ( ! $inline_popup['is_inserted'] ) {
 				$output .= '<!-- wp:shortcode -->[newspack-popup id="' . $inline_popup['id'] . '"]<!-- /wp:shortcode -->';
 
