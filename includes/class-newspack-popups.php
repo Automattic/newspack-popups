@@ -617,6 +617,22 @@ final class Newspack_Popups {
 	}
 
 	/**
+	 * Rename campaign.
+	 *
+	 * @param int    $id Campaign ID.
+	 * @param string $name New campaign name.
+	 */
+	public static function rename_campaign( $id, $name ) {
+		wp_update_term(
+			$id,
+			self::NEWSPACK_POPUPS_TAXONOMY,
+			[
+				'name' => $name,
+			]
+		);
+	}
+
+	/**
 	 * Archive campaign.
 	 *
 	 * @param int  $id Campaign ID.
