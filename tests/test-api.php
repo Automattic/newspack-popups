@@ -685,7 +685,7 @@ class APITest extends WP_UnitTestCase {
 			[
 				'placement'           => 'inline',
 				'frequency'           => 'always',
-				'selected_segment_id' => 'defaultSegment',
+				'selected_segment_id' => self::$segment_ids['defaultSegment'],
 			]
 		);
 
@@ -1223,7 +1223,7 @@ class APITest extends WP_UnitTestCase {
 			[
 				'placement'           => 'inline',
 				'frequency'           => 'always',
-				'selected_segment_id' => 'defaultSegment',
+				'selected_segment_id' => self::$segment_ids['defaultSegment'],
 			]
 		);
 
@@ -1277,6 +1277,24 @@ class APITest extends WP_UnitTestCase {
 			)['payload'],
 			false,
 			'An overlay popup with "always" frequency has it corrected to "once".'
+		);
+	}
+
+	/**
+	 * Test missing segment.
+	 */
+	public function test_missing_segment() {
+		$test_popup = self::create_test_popup(
+			[
+				'placement'           => 'inline',
+				'frequency'           => 'always',
+				'selected_segment_id' => 'garbagio',
+			]
+		);
+
+		self::assertNull(
+			$test_popup['payload']->s,
+			'Returns null if segment is missing.'
 		);
 	}
 }
