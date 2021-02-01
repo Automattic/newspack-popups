@@ -643,7 +643,7 @@ final class Newspack_Popups {
 	}
 
 	/**
-	 * Retrieve campaign groups.
+	 * Retrieve campaigns.
 	 */
 	public static function get_groups() {
 		$groups = array_map(
