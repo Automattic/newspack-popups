@@ -313,7 +313,7 @@ final class Newspack_Popups_Segmentation {
 		$segments_without_priority = array_filter(
 			$segments,
 			function( $segment ) {
-				return empty( $segment['priority'] );
+				return ! isset( $segment['priority'] );
 			}
 		);
 
@@ -486,16 +486,7 @@ final class Newspack_Popups_Segmentation {
 	 * @param object $segments Array of segments.
 	 */
 	public static function reindex_segments( $segments ) {
-		$index = 0;
-		array_map(
-			function( $segment ) use ( &$index ) {
-				$segment['priority'] = $index;
-				$index++;
-			},
-			$segments
-		);
-
-		return $segments;
+		return array_values( $segments );
 	}
 
 	/**
