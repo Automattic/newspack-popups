@@ -465,6 +465,8 @@ final class Newspack_Popups {
 			return;
 		}
 		$type      = isset( $_GET['placement'] ) ? sanitize_text_field( $_GET['placement'] ) : null; //phpcs:ignore
+		$segment   = isset( $_GET['segment'] ) ? sanitize_text_field( $_GET['segment'] ) : ''; //phpcs:ignore
+		$group     = isset( $_GET['group'] ) ? absint( $_GET['group'] ) : null; //phpcs:ignore
 		$frequency = 'daily';
 
 		switch ( $type ) {
@@ -517,7 +519,11 @@ final class Newspack_Popups {
 		update_post_meta( $post_id, 'trigger_delay', 3 );
 		update_post_meta( $post_id, 'trigger_scroll_progress', 30 );
 		update_post_meta( $post_id, 'utm_suppression', '' );
-		update_post_meta( $post_id, 'selected_segment_id', '' );
+		update_post_meta( $post_id, 'selected_segment_id', $segment );
+
+		if ( $group ) {
+			wp_set_post_terms( $post_id, [ $group ], self::NEWSPACK_POPUPS_TAXONOMY );
+		}
 	}
 
 	/**
