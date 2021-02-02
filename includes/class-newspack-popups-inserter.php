@@ -22,8 +22,8 @@ final class Newspack_Popups_Inserter {
 	protected static $popups = [];
 
 	/**
-	 * Whether we've already inserted campaigns into the content.
-	 * If we've already inserted campaigns into the content, don't try to do it again.
+	 * Whether we've already inserted prompts into the content.
+	 * If we've already inserted prompts into the content, don't try to do it again.
 	 *
 	 * @var boolean
 	 */
@@ -35,7 +35,7 @@ final class Newspack_Popups_Inserter {
 	 * @return array Popup objects.
 	 */
 	public static function popups_for_post() {
-		// Inject campaigns only in posts, pages, and CPTs that explicitly opt in.
+		// Inject prompts only in posts, pages, and CPTs that explicitly opt in.
 		if ( ! in_array(
 			get_post_type(),
 			apply_filters(
@@ -70,10 +70,10 @@ final class Newspack_Popups_Inserter {
 			// If previewing specific groups.
 			$popups_to_maybe_display = Newspack_Popups_Model::retrieve_group_popups( explode( ',', $view_as_spec['groups'] ), $view_as_spec_unpublished );
 		} elseif ( $view_as_spec_all || $view_as_spec_segment ) {
-			// If previewing and no groups are specified, but 'all' or a segment is specified, retrieve all campaigns.
+			// If previewing and no campaigns are specified, but 'all' or a segment is specified, retrieve all prompts.
 			$popups_to_maybe_display = Newspack_Popups_Model::retrieve_popups( $view_as_spec_unpublished );
 		} else {
-			// Retrieve campaigns for front-end display.
+			// Retrieve prompts for front-end display.
 
 			// 1. Get all inline popups.
 			$popups_to_maybe_display = Newspack_Popups_Model::retrieve_inline_popups();
@@ -122,11 +122,11 @@ final class Newspack_Popups_Inserter {
 				}
 			);
 		} else {
-			// If previewing, allow all matching overlay campaigns to be displayed.
+			// If previewing, allow all matching overlay prompts to be displayed.
 			$popups_to_maybe_display_deduped = $popups_to_maybe_display;
 		}
 
-		// Remove manual placement campaigns.
+		// Remove manual placement prompts.
 		$popups_to_maybe_display_deduped = array_filter(
 			$popups_to_maybe_display_deduped,
 			function( $campaign ) {
@@ -265,7 +265,7 @@ final class Newspack_Popups_Inserter {
 
 		$total_length = strlen( $content );
 
-		// 1. Separate campaigns into inline and overlay.
+		// 1. Separate prompts into inline and overlay.
 		$inline_popups  = [];
 		$overlay_popups = [];
 		foreach ( $popups as $popup ) {
@@ -284,7 +284,7 @@ final class Newspack_Popups_Inserter {
 			return $content;
 		}
 
-		// 2. Iterate overall blocks and insert inline campaigns.
+		// 2. Iterate overall blocks and insert inline prompts.
 		$pos    = 0;
 		$output = '';
 		foreach ( parse_blocks( $content ) as $block ) {
@@ -300,7 +300,7 @@ final class Newspack_Popups_Inserter {
 			$output .= $block_content;
 		}
 
-		// 3. Insert any remaining inline campaigns at the end.
+		// 3. Insert any remaining inline prompts at the end.
 		foreach ( $inline_popups as &$inline_popup ) {
 			if ( ! $inline_popup['is_inserted'] ) {
 				$output .= '<!-- wp:shortcode -->[newspack-popup id="' . $inline_popup['id'] . '"]<!-- /wp:shortcode -->';
@@ -309,7 +309,7 @@ final class Newspack_Popups_Inserter {
 			}
 		}
 
-		// 4. Insert overlay campaigns at the top of content.
+		// 4. Insert overlay prompts at the top of content.
 		foreach ( $overlay_popups as $overlay_popup ) {
 			$output = '<!-- wp:html -->' . Newspack_Popups_Model::generate_popup( $overlay_popup ) . '<!-- /wp:html -->' . $output;
 		}
@@ -458,7 +458,7 @@ final class Newspack_Popups_Inserter {
 			self::popups_for_post(),
 			$shortcoded_popups
 		);
-		// "Escape hatch" if there's a need to block adding amp-access for pages that have no campaigns.
+		// "Escape hatch" if there's a need to block adding amp-access for pages that have no prompts.
 		if ( apply_filters( 'newspack_popups_suppress_insert_amp_access', false, $popups ) ) {
 			return;
 		}
@@ -665,15 +665,15 @@ final class Newspack_Popups_Inserter {
 			self::assess_categories_filter( $popup ) &&
 			self::assess_tags_filter( $popup );
 
-		// When using "view as" feature, discard test mode campaigns.
+		// When using "view as" feature, discard test mode prompts.
 		if ( Newspack_Popups_View_As::viewing_as_spec() ) {
 			return $general_conditions;
 		}
-		// Hide campaigns for logged-in users.
+		// Hide prompts for logged-in users.
 		if ( is_user_logged_in() ) {
 			return false;
 		}
-		// Hide overlay campaigns in non-interactive mode, for non-logged-in users.
+		// Hide overlay prompts in non-interactive mode, for non-logged-in users.
 		if ( ! is_user_logged_in() && Newspack_Popups_Settings::is_non_interactive() && ! Newspack_Popups_Model::is_inline( $popup ) ) {
 			return false;
 		}

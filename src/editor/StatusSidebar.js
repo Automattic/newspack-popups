@@ -19,7 +19,7 @@ const StatusSidebar = ( {
 			<div className="newspack-popups__status-options">
 				<ToggleControl
 					label={ __( 'Sitewide Default', 'newspack-popups' ) }
-					help={ __( 'Sitewide default campaigns can appear on any page.', 'newspack-popups' ) }
+					help={ __( 'Sitewide default prompts can appear on any page.', 'newspack-popups' ) }
 					checked={ newspack_popups_is_sitewide_default }
 					onChange={ value => onSitewideDefaultChange( value ) }
 				/>

@@ -30,7 +30,7 @@ const FrequencySidebar = ( { frequency, onMetaFieldChange, isOverlay, utm_suppre
 			<TextControl
 				label={ __( 'UTM Suppression' ) }
 				help={ __(
-					'Readers arriving at the site via URLs with this utm_source parameter will never be shown the campaign.'
+					'Readers arriving at the site via URLs with this utm_source parameter will never be shown the prompt.'
 				) }
 				value={ utm_suppression }
 				onChange={ value => onMetaFieldChange( 'utm_suppression', value ) }

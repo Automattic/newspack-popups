@@ -19,9 +19,9 @@ const SegmentationSidebar = ( { onMetaFieldChange, selected_segment_id } ) => {
 				label={ __( 'Segment' ) }
 				help={
 					! selected_segment_id
-						? __( 'The campaign will be shown to all readers.', 'newspack-popups' )
+						? __( 'The prompt will be shown to all readers.', 'newspack-popups' )
 						: __(
-								'The campaign will be shown only to readers who match the selected segment.',
+								'The prompt will be shown only to readers who match the selected segment.',
 								'newspack-popups'
 						  )
 				}
@@ -42,7 +42,7 @@ const SegmentationSidebar = ( { onMetaFieldChange, selected_segment_id } ) => {
 				href="/wp-admin/admin.php?page=newspack-popups-wizard#/segmentation"
 				key="segmentation-link"
 			>
-				{ __( 'Manage your campaign segments' ) }
+				{ __( 'Manage segments' ) }
 			</ExternalLink>
 		</Fragment>
 	);

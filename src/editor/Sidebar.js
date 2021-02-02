@@ -30,7 +30,7 @@ const Sidebar = ( {
 	return (
 		<Fragment>
 			<ToggleControl
-				label={ __( 'Inline Campaign', 'newspack-popups' ) }
+				label={ __( 'Inline Prompt', 'newspack-popups' ) }
 				checked={ ! isOverlay }
 				onChange={ value => updatePlacement( value ? 'inline' : 'center' ) }
 			/>
@@ -38,8 +38,8 @@ const Sidebar = ( {
 				label={ __( 'Placement' ) }
 				help={
 					isOverlay
-						? __( 'The location to display the overlay campaign.', 'newspack-popups' )
-						: __( 'The location to insert the campaign.', 'newspack-popups' )
+						? __( 'The location to display the overlay prompt.', 'newspack-popups' )
+						: __( 'The location to insert the prompt.', 'newspack-popups' )
 				}
 				value={ placement }
 				onChange={ updatePlacement }
@@ -60,7 +60,7 @@ const Sidebar = ( {
 				<Fragment>
 					<SelectControl
 						label={ __( 'Trigger' ) }
-						help={ __( 'The event to trigger the campaign.', 'newspack-popups' ) }
+						help={ __( 'The event to trigger the prompt.', 'newspack-popups' ) }
 						selected={ trigger_type }
 						options={ [
 							{ label: __( 'Timer' ), value: 'time' },
@@ -98,7 +98,7 @@ const Sidebar = ( {
 				/>
 			) }
 			<ToggleControl
-				label={ __( 'Display Campaign Title', 'newspack-popups' ) }
+				label={ __( 'Display Prompt Title', 'newspack-popups' ) }
 				checked={ display_title }
 				onChange={ value => onMetaFieldChange( 'display_title', value ) }
 			/>

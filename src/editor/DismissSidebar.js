@@ -15,7 +15,7 @@ const DismissSidebar = ( { dismiss_text, dismiss_text_alignment, onMetaFieldChan
 			<TextControl
 				label={ __( 'Label', 'newspack-popups' ) }
 				help={ __(
-					'When clicked, this button will permanently dismiss the campaign for the current reader.',
+					'When clicked, this button will permanently dismiss the prompt for the current reader.',
 					'newspack-popups'
 				) }
 				value={ dismiss_text }
