@@ -498,7 +498,16 @@ final class Newspack_Popups_Segmentation {
 	 * @param object $segments Array of segments.
 	 */
 	public static function reindex_segments( $segments ) {
-		return array_values( $segments );
+		$index = 0;
+
+		return array_map(
+			function( $segment ) use ( &$index ) {
+				$segment['priority'] = $index;
+				$index++;
+				return $segment;
+			},
+			$segments
+		);
 	}
 
 	/**
