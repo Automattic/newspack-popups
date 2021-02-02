@@ -411,6 +411,9 @@ final class Newspack_Popups_Model {
 				]
 			),
 		];
+		if ( $popup['options']['selected_segment_id'] && ! in_array( $popup['options']['selected_segment_id'], Newspack_Popups_Segmentation::get_segment_ids() ) ) {
+			$popup['options']['selected_segment_id'] = null;
+		}
 		if ( $include_categories ) {
 			$popup['categories']      = get_the_category( $id );
 			$popup['campaign_groups'] = get_the_terms( $id, Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY );

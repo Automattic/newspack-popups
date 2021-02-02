@@ -16,6 +16,7 @@ final class Newspack_Popups {
 	const NEWSPACK_POPUPS_TAXONOMY              = 'newspack_popups_taxonomy';
 	const NEWSPACK_POPUPS_ACTIVE_CAMPAIGN_GROUP = 'newspack_popups_active_campaign_group';
 	const NEWSPACK_POPUP_PREVIEW_QUERY_PARAM    = 'newspack_popups_preview_id';
+	const NEWSPACK_POPUPS_TAXONOMY_STATUS       = 'newspack_popups_taxonomy_status';
 
 	const LIGHTWEIGHT_API_CONFIG_FILE_PATH_LEGACY = WP_CONTENT_DIR . '/../newspack-popups-config.php';
 	const LIGHTWEIGHT_API_CONFIG_FILE_PATH        = WP_CONTENT_DIR . '/newspack-popups-config.php';
@@ -440,6 +441,8 @@ final class Newspack_Popups {
 			return;
 		}
 		$type      = isset( $_GET['placement'] ) ? sanitize_text_field( $_GET['placement'] ) : null; //phpcs:ignore
+		$segment   = isset( $_GET['segment'] ) ? sanitize_text_field( $_GET['segment'] ) : ''; //phpcs:ignore
+		$group     = isset( $_GET['group'] ) ? absint( $_GET['group'] ) : null; //phpcs:ignore
 		$frequency = 'daily';
 
 		switch ( $type ) {
@@ -492,7 +495,11 @@ final class Newspack_Popups {
 		update_post_meta( $post_id, 'trigger_delay', 3 );
 		update_post_meta( $post_id, 'trigger_scroll_progress', 30 );
 		update_post_meta( $post_id, 'utm_suppression', '' );
-		update_post_meta( $post_id, 'selected_segment_id', '' );
+		update_post_meta( $post_id, 'selected_segment_id', $segment );
+
+		if ( $group ) {
+			wp_set_post_terms( $post_id, [ $group ], self::NEWSPACK_POPUPS_TAXONOMY );
+		}
 	}
 
 	/**
@@ -542,6 +549,96 @@ final class Newspack_Popups {
 				</p>
 			</div>
 		<?php
+	}
+
+	/**
+	 * Delete campaign.
+	 *
+	 * @param int $id Campaign ID.
+	 */
+	public static function delete_campaign( $id ) {
+		wp_delete_term( $id, self::NEWSPACK_POPUPS_TAXONOMY );
+	}
+
+	/**
+	 * Duplicate campaign.
+	 *
+	 * @param int    $id Campaign ID.
+	 * @param string $name New campaign name.
+	 */
+	public static function duplicate_campaign( $id, $name ) {
+		$term = wp_insert_term( $name, self::NEWSPACK_POPUPS_TAXONOMY );
+		if ( is_wp_error( $term ) ) {
+			$term = get_term_by( 'name', $name, self::NEWSPACK_POPUPS_TAXONOMY );
+		}
+		$term = (object) $term;
+		$args = [
+			'post_type'      => self::NEWSPACK_POPUPS_CPT,
+			'posts_per_page' => 100,
+			'fields'         => 'ids',
+			'post_status'    => [ 'publish', 'pending', 'draft', 'future' ],
+			'tax_query'      => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+				[
+					'taxonomy' => self::NEWSPACK_POPUPS_TAXONOMY,
+					'field'    => 'term_id',
+					'terms'    => [ $id ],
+				],
+			],
+		];
+
+		$query = new WP_Query( $args );
+		foreach ( $query->posts as $id ) {
+			wp_set_post_terms( $id, $term->term_id, self::NEWSPACK_POPUPS_TAXONOMY, true );
+		}
+	}
+
+	/**
+	 * Rename campaign.
+	 *
+	 * @param int    $id Campaign ID.
+	 * @param string $name New campaign name.
+	 */
+	public static function rename_campaign( $id, $name ) {
+		wp_update_term(
+			$id,
+			self::NEWSPACK_POPUPS_TAXONOMY,
+			[
+				'name' => $name,
+			]
+		);
+	}
+
+	/**
+	 * Archive campaign.
+	 *
+	 * @param int  $id Campaign ID.
+	 * @param bool $status Whether to archive or unarchive (true = archive, false = unarchive).
+	 */
+	public static function archive_campaign( $id, $status ) {
+		update_term_meta( $id, self::NEWSPACK_POPUPS_TAXONOMY_STATUS, $status ? 'archive' : '' );
+	}
+
+	/**
+	 * Retrieve campaigns.
+	 */
+	public static function get_groups() {
+		$groups = array_map(
+			function( $group ) {
+				$group->status = get_term_meta(
+					$group->term_id,
+					self::NEWSPACK_POPUPS_TAXONOMY_STATUS,
+					true
+				);
+				return $group;
+			},
+			get_terms(
+				self::NEWSPACK_POPUPS_TAXONOMY,
+				[
+					'hide_empty' => false,
+				]
+			)
+		);
+		return $groups;
 	}
 }
 Newspack_Popups::instance();

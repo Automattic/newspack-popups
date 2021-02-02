@@ -349,6 +349,18 @@ final class Newspack_Popups_Segmentation {
 	}
 
 	/**
+	 * Get segment IDs.
+	 */
+	public static function get_segment_ids() {
+		return array_map(
+			function( $segment ) {
+				return $segment['id'];
+			},
+			self::get_segments()
+		);
+	}
+
+	/**
 	 * Create a segment.
 	 *
 	 * @param object $segment A segment.
