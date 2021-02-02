@@ -576,6 +576,20 @@ final class Newspack_Popups {
 	}
 
 	/**
+	 * Create campaign.
+	 *
+	 * @param string $name New campaign name.
+	 */
+	public static function create_campaign( $name ) {
+		$term = wp_insert_term( $name, self::NEWSPACK_POPUPS_TAXONOMY );
+		if ( is_wp_error( $term ) ) {
+			$term = get_term_by( 'name', $name, self::NEWSPACK_POPUPS_TAXONOMY );
+		}
+		$term = (object) $term;
+		return $term->term_id;
+	}
+
+	/**
 	 * Delete campaign.
 	 *
 	 * @param int $id Campaign ID.
@@ -614,6 +628,7 @@ final class Newspack_Popups {
 		foreach ( $query->posts as $id ) {
 			wp_set_post_terms( $id, $term->term_id, self::NEWSPACK_POPUPS_TAXONOMY, true );
 		}
+		return $term->term_id;
 	}
 
 	/**
