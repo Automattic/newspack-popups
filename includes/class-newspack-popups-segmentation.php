@@ -309,7 +309,43 @@ final class Newspack_Popups_Segmentation {
 	 * Get all configured segments.
 	 */
 	public static function get_segments() {
-		return get_option( self::SEGMENTS_OPTION_NAME, [] );
+		$segments                  = get_option( self::SEGMENTS_OPTION_NAME, [] );
+		$segments_without_priority = array_filter(
+			$segments,
+			function( $segment ) {
+				return ! isset( $segment['priority'] );
+			}
+		);
+
+		// Failsafe to ensure that all segments have an assigned priority.
+		if ( 0 < count( $segments_without_priority ) ) {
+			$segments = self::reindex_segments( $segments );
+		}
+
+		return $segments;
+	}
+
+	/**
+	 * Get a single segment by ID.
+	 *
+	 * @param string $id A segment id.
+	 * @return object|null The single segment object with matching ID, or null.
+	 */
+	public static function get_segment( $id ) {
+		$matching_segments = array_values(
+			array_filter(
+				self::get_segments(),
+				function( $segment ) use ( $id ) {
+					return $segment['id'] === $id;
+				}
+			)
+		);
+
+		if ( 0 < count( $matching_segments ) ) {
+			return $matching_segments[0];
+		}
+
+		return null;
 	}
 
 	/**
@@ -444,6 +480,34 @@ final class Newspack_Popups_Segmentation {
 			'total'      => count( $all_client_data ),
 			'in_segment' => count( $client_in_segment ),
 		];
+	}
+
+	/**
+	 * Sort all segments by relative priority.
+	 *
+	 * @param object $segments Array of segments, sorted by priority property.
+	 */
+	public static function sort_segments( $segments ) {
+		update_option( self::SEGMENTS_OPTION_NAME, self::reindex_segments( $segments ) );
+		return self::get_segments();
+	}
+
+	/**
+	 * Reindex segment priorities based on current position in array.
+	 *
+	 * @param object $segments Array of segments.
+	 */
+	public static function reindex_segments( $segments ) {
+		$index = 0;
+
+		return array_map(
+			function( $segment ) use ( &$index ) {
+				$segment['priority'] = $index;
+				$index++;
+				return $segment;
+			},
+			$segments
+		);
 	}
 
 	/**

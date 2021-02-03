@@ -25,34 +25,6 @@ final class Newspack_Popups_API {
 	public function register_api_endpoints() {
 		\register_rest_route(
 			'newspack-popups/v1',
-			'sitewide_default/(?P<id>\d+)',
-			[
-				'methods'             => \WP_REST_Server::EDITABLE,
-				'callback'            => [ $this, 'set_sitewide_default_endpoint' ],
-				'permission_callback' => [ $this, 'permission_callback' ],
-				'args'                => [
-					'id' => [
-						'sanitize_callback' => 'absint',
-					],
-				],
-			]
-		);
-		\register_rest_route(
-			'newspack-popups/v1',
-			'sitewide_default/(?P<id>\d+)',
-			[
-				'methods'             => \WP_REST_Server::DELETABLE,
-				'callback'            => [ $this, 'unset_sitewide_default_endpoint' ],
-				'permission_callback' => [ $this, 'permission_callback' ],
-				'args'                => [
-					'id' => [
-						'sanitize_callback' => 'absint',
-					],
-				],
-			]
-		);
-		\register_rest_route(
-			'newspack-popups/v1',
 			'settings',
 			[
 				'methods'             => \WP_REST_Server::EDITABLE,
@@ -118,26 +90,6 @@ final class Newspack_Popups_API {
 				'option_value' => $request['option_value'],
 			]
 		);
-	}
-
-	/**
-	 * Set sitewide default.
-	 *
-	 * @param WP_REST_Request $request Request object.
-	 */
-	public function set_sitewide_default_endpoint( $request ) {
-		$response = Newspack_Popups_Model::set_sitewide_popup( $request['id'] );
-		return is_wp_error( $response ) ? $response : [ 'success' => true ];
-	}
-
-	/**
-	 * Unset sitewide default Popup (if it is the specified post)
-	 *
-	 * @param WP_REST_Request $request Request object.
-	 */
-	public function unset_sitewide_default_endpoint( $request ) {
-		$response = Newspack_Popups_Model::unset_sitewide_popup( $request['id'] );
-		return is_wp_error( $response ) ? $response : [ 'success' => true ];
 	}
 }
 $newspack_popups_api = new Newspack_Popups_API();

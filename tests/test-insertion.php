@@ -140,7 +140,6 @@ class InsertionTest extends WP_UnitTestCase {
 	 * Test non-interactive setting for overlay campaigns.
 	 */
 	public function test_non_interactive_overlay() {
-		Newspack_Popups_Model::set_sitewide_popup( self::$popup_id );
 		Newspack_Popups_Model::set_popup_options(
 			self::$popup_id,
 			[

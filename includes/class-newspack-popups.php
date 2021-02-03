@@ -13,7 +13,6 @@ defined( 'ABSPATH' ) || exit;
 final class Newspack_Popups {
 
 	const NEWSPACK_POPUPS_CPT                   = 'newspack_popups_cpt';
-	const NEWSPACK_POPUPS_SITEWIDE_DEFAULT      = 'newspack_popups_sitewide_default';
 	const NEWSPACK_POPUPS_TAXONOMY              = 'newspack_popups_taxonomy';
 	const NEWSPACK_POPUPS_ACTIVE_CAMPAIGN_GROUP = 'newspack_popups_active_campaign_group';
 	const NEWSPACK_POPUP_PREVIEW_QUERY_PARAM    = 'newspack_popups_preview_id';
@@ -53,7 +52,6 @@ final class Newspack_Popups {
 		add_action( 'init', [ __CLASS__, 'register_taxonomy' ] );
 		add_action( 'enqueue_block_editor_assets', [ __CLASS__, 'enqueue_block_editor_assets' ] );
 		add_filter( 'display_post_states', [ __CLASS__, 'display_post_states' ], 10, 2 );
-		add_action( 'rest_api_init', [ __CLASS__, 'rest_api_init' ] );
 		add_action( 'save_post_' . self::NEWSPACK_POPUPS_CPT, [ __CLASS__, 'popup_default_fields' ], 10, 3 );
 
 		add_filter( 'show_admin_bar', [ __CLASS__, 'show_admin_bar' ], 10, 2 ); // phpcs:ignore WordPressVIPMinimum.UserExperience.AdminBarRemoval.RemovalDetected
@@ -383,11 +381,11 @@ final class Newspack_Popups {
 		}
 		$post_status_object = get_post_status_object( $post->post_status );
 		$is_inline          = get_post_meta( $post->ID, 'placement', true ) == 'inline';
+
 		if ( $is_inline ) {
 			$post_states[ $post_status_object->name ] = __( 'Inline', 'newspack-popups' );
-		} elseif ( absint( get_option( self::NEWSPACK_POPUPS_SITEWIDE_DEFAULT, null ) ) === absint( $post->ID ) ) {
-			$post_states[ $post_status_object->name ] = __( 'Sitewide Default', 'newspack-popups' );
 		}
+
 		return $post_states;
 	}
 
@@ -421,28 +419,6 @@ final class Newspack_Popups {
 	 */
 	public static function previewed_popup_id() {
 		return filter_input( INPUT_GET, self::NEWSPACK_POPUP_PREVIEW_QUERY_PARAM, FILTER_SANITIZE_STRING );
-	}
-
-	/**
-	 * Add newspack_popups_is_sitewide_default to Popup object.
-	 */
-	public static function rest_api_init() {
-		register_rest_field(
-			[ self::NEWSPACK_POPUPS_CPT ],
-			'newspack_popups_is_sitewide_default',
-			[
-				'get_callback'    => function( $post ) {
-					return absint( $post['id'] ) === absint( get_option( self::NEWSPACK_POPUPS_SITEWIDE_DEFAULT, null ) );
-				},
-				'update_callback' => function ( $value, $post ) {
-					if ( $value ) {
-						return Newspack_Popups_Model::set_sitewide_popup( $post->ID );
-					} else {
-						return Newspack_Popups_Model::unset_sitewide_popup( $post->ID );
-					}
-				},
-			]
-		);
 	}
 
 	/**
