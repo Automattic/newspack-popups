@@ -136,7 +136,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 
 		// Only show campaigns with the best-priority segment.
 		foreach ( $response as $campaign_id => $should_display ) {
-			if ( $should_display && $campaign_priorities[ $campaign_id ] > $best_segment_priority ) {
+			if ( $should_display && isset( $campaign_priorities[ $campaign_id ] ) && $campaign_priorities[ $campaign_id ] > $best_segment_priority ) {
 				$response[ $campaign_id ] = false;
 			}
 		}
@@ -224,14 +224,12 @@ class Maybe_Show_Campaign extends Lightweight_API {
 
 		// Using "view as" feature.
 		$view_as_segment = false;
-		if ( $view_as_spec ) {
+		if ( $view_as_spec && ! empty( $view_as_spec['all'] ) ) {
 			$should_display = true;
 			if ( isset( $view_as_spec['segment'] ) && $view_as_spec['segment'] ) {
-				$segment_config = [];
-				if ( isset( $settings->all_segments->{$view_as_spec['segment']} ) ) {
-					$segment_config = $settings->all_segments->{$view_as_spec['segment']};
-				}
-				$view_as_segment = empty( $segment_config ) ? false : $segment_config;
+				$view_as_segment = $view_as_spec['segment'];
+			} else {
+				$view_as_segment = 'everyone';
 			}
 		}
 
@@ -239,12 +237,13 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		$campaign_segment = isset( $settings->all_segments->{$campaign->s} ) ? $settings->all_segments->{$campaign->s} : false;
 		if ( ! empty( $campaign_segment ) ) {
 			$campaign_segment = Campaign_Data_Utils::canonize_segment( $campaign_segment );
-			$should_display   = Campaign_Data_Utils::should_display_campaign(
+
+			// If previewing, only show prompts that match the preview segment.
+			$should_display = $view_as_segment ? $campaign->s === $view_as_segment : Campaign_Data_Utils::should_display_campaign(
 				$campaign_segment,
 				$client_data,
 				$referer_url,
-				$page_referer_url,
-				$view_as_segment
+				$page_referer_url
 			);
 
 			if (
@@ -255,6 +254,11 @@ class Maybe_Show_Campaign extends Lightweight_API {
 				// Save suppression for this campaign.
 				$campaign_data['suppress_forever'] = true;
 			}
+		}
+
+		// If previewing as "Everyone", only show prompts assigned to "Everyone".
+		if ( empty( $campaign->s ) && 'everyone' === $view_as_segment ) {
+			$should_display = true;
 		}
 
 		if ( ! $view_as_spec ) {
