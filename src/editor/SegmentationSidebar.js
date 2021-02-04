@@ -30,7 +30,7 @@ const SegmentationSidebar = ( { onMetaFieldChange, selected_segment_id } ) => {
 				options={ [
 					{
 						value: '',
-						label: __( 'Default (no segment)', 'newspack-popups' ),
+						label: __( 'Everyone', 'newspack-popups' ),
 					},
 					...segmentsList.map( segment => ( {
 						value: segment.id,
