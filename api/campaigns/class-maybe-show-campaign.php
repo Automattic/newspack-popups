@@ -271,7 +271,6 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			if ( 'daily' === $frequency && $campaign_data['last_viewed'] >= strtotime( '-1 day', $now ) ) {
 				$should_display = false;
 			}
-
 		}
 
 		return $should_display;
