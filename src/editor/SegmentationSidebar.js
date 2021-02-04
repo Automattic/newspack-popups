@@ -39,7 +39,7 @@ const SegmentationSidebar = ( { onMetaFieldChange, selected_segment_id } ) => {
 				] }
 			/>
 			<ExternalLink
-				href="/wp-admin/admin.php?page=newspack-popups-wizard#/segmentation"
+				href="/wp-admin/admin.php?page=newspack-popups-wizard#/segments"
 				key="segmentation-link"
 			>
 				{ __( 'Manage segments' ) }
