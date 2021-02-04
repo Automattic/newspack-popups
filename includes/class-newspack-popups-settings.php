@@ -149,7 +149,8 @@ class Newspack_Popups_Settings {
 				'value' => array_reduce(
 					Newspack_Popups_Segmentation::get_segments(),
 					function( $acc, $item ) {
-						$acc[ $item['id'] ] = $item['configuration'];
+						$acc[ $item['id'] ]             = $item['configuration'];
+						$acc[ $item['id'] ]['priority'] = $item['priority'];
 						return $acc;
 					},
 					[]

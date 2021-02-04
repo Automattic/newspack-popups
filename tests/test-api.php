@@ -111,7 +111,6 @@ class APITest extends WP_UnitTestCase {
 	 */
 	public function test_once_frequency() {
 		$test_popup = self::create_test_popup( [ 'frequency' => 'once' ] );
-		Newspack_Popups_Model::set_sitewide_popup( $test_popup['id'] );
 
 		self::assertTrue(
 			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
@@ -137,7 +136,6 @@ class APITest extends WP_UnitTestCase {
 	 */
 	public function test_daily_frequency() {
 		$test_popup = self::create_test_popup( [ 'frequency' => 'daily' ] );
-		Newspack_Popups_Model::set_sitewide_popup( $test_popup['id'] );
 
 		self::assertTrue(
 			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),

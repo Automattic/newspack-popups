@@ -74,8 +74,12 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		}
 
 		$page_referer_url = isset( $_REQUEST['ref'] ) ? $_REQUEST['ref'] : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+
+		$overlay_to_maybe_display      = null;
+		$above_header_to_maybe_display = null;
+
 		foreach ( $campaigns as $campaign ) {
-			$response[ $campaign->id ] = $this->should_campaign_be_shown(
+			$campaign_should_be_shown = $this->should_campaign_be_shown(
 				$client_id,
 				$campaign,
 				$settings,
@@ -83,6 +87,36 @@ class Maybe_Show_Campaign extends Lightweight_API {
 				$page_referer_url,
 				$view_as_spec
 			);
+
+			// If an overlay is already able to be shown, pick the one that has the higher priority.
+			if ( $campaign_should_be_shown && 'o' === $campaign->t ) {
+				if ( empty( $overlay_to_maybe_display ) ) {
+					$overlay_to_maybe_display = $campaign;
+				} else {
+					$higher_priority_item = self::get_higher_priority_item( $overlay_to_maybe_display, $campaign, $settings->all_segments );
+
+					// If the previous overlay already has a higher priority, only show that one. Otherwise, show this one instead.
+					$response[ $overlay_to_maybe_display->id ] = $overlay_to_maybe_display->id === $higher_priority_item->id;
+					$campaign_should_be_shown                  = $campaign->id === $higher_priority_item->id;
+					$overlay_to_maybe_display                  = $higher_priority_item;
+				}
+			}
+
+			// If an above-header is already able to be shown, pick the one that has the higher priority.
+			if ( $campaign_should_be_shown && 'a' === $campaign->t ) {
+				if ( empty( $above_header_to_maybe_display ) ) {
+					$above_header_to_maybe_display = $campaign;
+				} else {
+					$higher_priority_item = self::get_higher_priority_item( $above_header_to_maybe_display, $campaign, $settings->all_segments );
+
+					// If the previous above-header already has a higher priority, only show that one. Otherwise, show this one instead.
+					$response[ $above_header_to_maybe_display->id ] = $above_header_to_maybe_display->id === $higher_priority_item->id;
+					$campaign_should_be_shown                       = $campaign->id === $higher_priority_item->id;
+					$above_header_to_maybe_display                  = $higher_priority_item;
+				}
+			}
+
+			$response[ $campaign->id ] = $campaign_should_be_shown;
 		}
 		$this->response = $response;
 		$this->respond();
@@ -213,6 +247,26 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		}
 
 		return $should_display;
+	}
+
+	/**
+	 * Compare two campaign objects and return the one with the higher segment priority (lower priority index).
+	 * If both have equal priority, just return the first one.
+	 *
+	 * @param object $campaign_a First campaign to compare.
+	 * @param object $campaign_b Second campaign to compare.
+	 * @param array  $segments   Array of segments, to extract priority values from.
+	 * @return integer The campaign with the higher priority.
+	 */
+	public function get_higher_priority_item( $campaign_a, $campaign_b, $segments ) {
+		$priority_a = ! empty( $segments->{$campaign_a->s}->priority ) ? $segments->{$campaign_a->s}->priority : PHP_INT_MAX;
+		$priority_b = ! empty( $segments->{$campaign_b->s}->priority ) ? $segments->{$campaign_b->s}->priority : PHP_INT_MAX;
+
+		if ( $priority_a <= $priority_b ) {
+			return $campaign_a;
+		}
+
+		return $campaign_b;
 	}
 }
 new Maybe_Show_Campaign();

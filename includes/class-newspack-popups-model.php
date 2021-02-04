@@ -38,71 +38,8 @@ final class Newspack_Popups_Model {
 			'posts_per_page' => 100,
 		];
 
-		$sitewide_default_id = get_option( Newspack_Popups::NEWSPACK_POPUPS_SITEWIDE_DEFAULT, null );
-
 		$popups = self::retrieve_popups_with_query( new WP_Query( $args ), true );
-		foreach ( $popups as &$popup ) {
-			// UI will not allow for setting inline as sitewide default, but there may be
-			// legacy popups from before this update.
-			if ( self::is_overlay( $popup ) ) {
-				$popup['sitewide_default'] = absint( $sitewide_default_id ) === absint( $popup['id'] );
-			}
-		}
 		return $popups;
-	}
-
-	/**
-	 * Set post time to now, making it the sitewide popup.
-	 *
-	 * @param integer $id ID of the Popup to make sitewide default.
-	 */
-	public static function set_sitewide_popup( $id ) {
-		$popup = self::retrieve_popup_by_id( $id );
-		if ( ! $popup ) {
-			return new \WP_Error(
-				'newspack_popups_popup_doesnt_exist',
-				esc_html__( 'The prompt specified does not exist.', 'newspack-popups' ),
-				[
-					'status' => 400,
-					'level'  => 'fatal',
-				]
-			);
-		}
-
-		// Such update will not be permitted by the UI, but it's handled just to be explicit about it.
-		if ( self::is_inline( $popup ) ) {
-			return new \WP_Error(
-				'newspack_popups_inline_sitewide',
-				esc_html__( 'An inline prompt cannot be a sitewide default.', 'newspack-popups' ),
-				[
-					'status' => 400,
-					'level'  => 'fatal',
-				]
-			);
-		}
-		return update_option( Newspack_Popups::NEWSPACK_POPUPS_SITEWIDE_DEFAULT, $id );
-	}
-
-	/**
-	 * If a certain post is sitewide default, clear it.
-	 *
-	 * @param integer $id ID of the Popup to unset as sitewide default.
-	 */
-	public static function unset_sitewide_popup( $id ) {
-		$popup = self::retrieve_popup_by_id( $id );
-		if ( ! $popup ) {
-			return new \WP_Error(
-				'newspack_popups_popup_doesnt_exist',
-				esc_html__( 'The prompt specified does not exist.', 'newspack-popups' ),
-				[
-					'status' => 400,
-					'level'  => 'fatal',
-				]
-			);
-		}
-		if ( absint( get_option( Newspack_Popups::NEWSPACK_POPUPS_SITEWIDE_DEFAULT, null ) ) === absint( $id ) ) {
-			return update_option( Newspack_Popups::NEWSPACK_POPUPS_SITEWIDE_DEFAULT, null );
-		}
 	}
 
 	/**
@@ -210,52 +147,75 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
-	 * Retrieve all inline popups.
+	 * Retrieve all overlay popups.
 	 *
-	 * @return array Inline popup objects.
+	 * @param  boolean       $include_unpublished Whether to include unpublished posts.
+	 * @param  array|boolean $group_slugs array Array of group slugs, or false to ignore groups.
+	 * @return array Overlay popup objects.
 	 */
-	public static function retrieve_inline_popups() {
+	public static function retrieve_overlay_popups( $include_unpublished = false, $group_slugs = false ) {
 		$args = [
 			'post_type'    => Newspack_Popups::NEWSPACK_POPUPS_CPT,
-			'post_status'  => 'publish',
+			'post_status'  => $include_unpublished ? [ 'draft', 'pending', 'future', 'publish' ] : 'publish',
+			'meta_key'     => 'placement',
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+			'meta_value'   => self::$overlay_placements,
+			'meta_compare' => 'IN',
+		];
+
+		// If previewing specific groups.
+		if ( ! empty( $group_slugs ) ) {
+			$args['tax_query'] = [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+				[
+					'taxonomy' => Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY,
+					'field'    => 'term_id',
+					'terms'    => $group_slugs,
+				],
+			];
+		}
+
+		return self::retrieve_popups_with_query( new WP_Query( $args ) );
+	}
+
+	/**
+	 * Retrieve all inline prompts.
+	 *
+	 * @param  boolean       $include_unpublished Whether to include unpublished posts.
+	 * @param  array|boolean $group_slugs array Array of group slugs, or false to ignore groups.
+	 * @return array Inline popup objects.
+	 */
+	public static function retrieve_inline_popups( $include_unpublished = false, $group_slugs = false ) {
+		$args = [
+			'post_type'    => Newspack_Popups::NEWSPACK_POPUPS_CPT,
+			'post_status'  => $include_unpublished ? [ 'draft', 'pending', 'future', 'publish' ] : 'publish',
 			'meta_key'     => 'placement',
 			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 			'meta_value'   => self::$inline_placements,
 			'meta_compare' => 'IN',
 		];
 
-		return self::retrieve_popups_with_query( new WP_Query( $args ) );
-	}
-
-	/**
-	 * Retrieve all prompts from a given campaign.
-	 *
-	 * @param  array   $group_slugs array Array of campaign slugs.
-	 * @param  boolean $include_unpublished Whether to include unpublished posts.
-	 * @return array Array of prompt objects.
-	 */
-	public static function retrieve_group_popups( $group_slugs, $include_unpublished = false ) {
-		$args = [
-			'post_type'   => Newspack_Popups::NEWSPACK_POPUPS_CPT,
-			'post_status' => $include_unpublished ? [ 'draft', 'pending', 'future', 'publish' ] : 'publish',
-			'tax_query'   => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+		// If previewing specific groups.
+		if ( ! empty( $group_slugs ) ) {
+			$args['tax_query'] = [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
 				[
 					'taxonomy' => Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY,
 					'field'    => 'term_id',
 					'terms'    => $group_slugs,
 				],
-			],
-		];
+			];
+		}
 
 		return self::retrieve_popups_with_query( new WP_Query( $args ) );
 	}
 
 	/**
-	 * Retrieve first overlay popup matching post categries.
+	 * Retrieve overlay popups matching post categories.
 	 *
-	 * @return object|null Popup object.
+	 * @param  boolean       $include_unpublished Whether to include unpublished posts.
+	 * @param  array|boolean $group_slugs array Array of group slugs, or false to ignore groups.
+	 * @return array|null Array of popup objects.
 	 */
-	public static function retrieve_category_overlay_popup() {
+	public static function retrieve_category_overlay_popups( $include_unpublished = false, $group_slugs = false ) {
 		$post_categories = get_the_category();
 
 		if ( empty( $post_categories ) ) {
@@ -265,7 +225,7 @@ final class Newspack_Popups_Model {
 		$args = [
 			'post_type'      => Newspack_Popups::NEWSPACK_POPUPS_CPT,
 			'posts_per_page' => 1,
-			'post_status'    => 'publish',
+			'post_status'    => $include_unpublished ? [ 'draft', 'pending', 'future', 'publish' ] : 'publish',
 			'category__in'   => array_column( $post_categories, 'term_id' ),
 			'meta_key'       => 'placement',
 			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
@@ -273,8 +233,19 @@ final class Newspack_Popups_Model {
 			'meta_compare'   => 'IN',
 		];
 
+		// If previewing specific groups.
+		if ( ! empty( $group_slugs ) ) {
+			$args['tax_query'] = [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+				[
+					'taxonomy' => Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY,
+					'field'    => 'term_id',
+					'terms'    => $group_slugs,
+				],
+			];
+		}
+
 		$popups = self::retrieve_popups_with_query( new WP_Query( $args ) );
-		return count( $popups ) > 0 ? $popups[0] : null;
+		return count( $popups ) > 0 ? $popups : null;
 	}
 
 	/**
@@ -550,6 +521,19 @@ final class Newspack_Popups_Model {
 			return false;
 		}
 		return in_array( $popup['options']['placement'], self::$overlay_placements, true );
+	}
+
+	/**
+	 * Is it an above-header popup?
+	 *
+	 * @param object $popup The popup object.
+	 * @return boolean True if it is an above-header popup.
+	 */
+	public static function is_above_header( $popup ) {
+		if ( ! isset( $popup['options'], $popup['options']['placement'] ) ) {
+			return false;
+		}
+		return 'above_header' === $popup['options']['placement'];
 	}
 
 	/**

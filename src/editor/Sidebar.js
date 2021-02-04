@@ -1,5 +1,5 @@
 /**
- * Popup sisplay settings.
+ * Prompt display settings.
  */
 
 /**
