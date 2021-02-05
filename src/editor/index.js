@@ -53,7 +53,7 @@ registerPlugin( 'newspack-popups', {
 	render: () => (
 		<PluginDocumentSettingPanel
 			name="popup-settings-panel"
-			title={ __( 'Campaign Settings', 'newspack-popups' ) }
+			title={ __( 'Prompt Settings', 'newspack-popups' ) }
 		>
 			<SidebarWithData />
 		</PluginDocumentSettingPanel>
