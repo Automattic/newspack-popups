@@ -105,6 +105,7 @@ class Lightweight_API {
 		}
 		header( 'Access-Control-Allow-Origin: https://' . parse_url( $_SERVER['HTTP_REFERER'] )['host'], false ); // phpcs:ignore
 		header( 'Access-Control-Allow-Credentials: true', false );
+		header( 'Cache-Control: no-store, no-cache, must-revalidate' );
 		http_response_code( 200 );
 		print json_encode( $this->response ); // phpcs:ignore
 		exit;
