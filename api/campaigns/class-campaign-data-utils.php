@@ -87,7 +87,7 @@ class Campaign_Data_Utils {
 	 * @param string $page_referrer_url URL of the referrer of the frontend page that is making the API request.
 	 * @return bool Whether the campaign should be shown.
 	 */
-	public static function should_display_campaign( $campaign_segment, $client_data, $referer_url = '', $page_referrer_url = '' ) {
+	public static function does_client_match_segment( $campaign_segment, $client_data, $referer_url = '', $page_referrer_url = '' ) {
 		$should_display = true;
 		// Posts read.
 		$posts_read_count = count( $client_data['posts_read'] );

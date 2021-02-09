@@ -61,24 +61,21 @@ final class Newspack_Popups_Inserter {
 		}
 
 		$view_as_spec             = Segmentation::parse_view_as( Newspack_Popups_View_As::viewing_as_spec() );
-		$view_as_spec_groups      = isset( $view_as_spec['groups'] ) ? $view_as_spec['groups'] : false;
+		$view_as_spec_campaign    = isset( $view_as_spec['campaign'] ) ? $view_as_spec['campaign'] : false;
 		$view_as_spec_unpublished = isset( $view_as_spec['show_unpublished'] ) && 'true' === $view_as_spec['show_unpublished'] ? true : false;
 
 		// Retrieve all popups eligible for display.
 
-		// 1. If previewing specific groups, only get popups that match those groups.
-		$group_slugs = $view_as_spec_groups ? explode( ',', $view_as_spec['groups'] ) : false;
-
 		// 2. Get all inline popups.
-		$popups_to_maybe_display = Newspack_Popups_Model::retrieve_inline_popups( $view_as_spec_unpublished, $group_slugs );
+		$popups_to_maybe_display = Newspack_Popups_Model::retrieve_inline_popups( $view_as_spec_unpublished, $view_as_spec_campaign );
 
 		// 3. Check if there are any overlay popups with matching category.
-		$category_overlay_popups = Newspack_Popups_Model::retrieve_category_overlay_popups( $view_as_spec_unpublished, $group_slugs );
+		$category_overlay_popups = Newspack_Popups_Model::retrieve_category_overlay_popups( $view_as_spec_unpublished, $view_as_spec_campaign );
 
 		// 4. If there are matching category overlays, use those. Otherwise, get all valid overlay popups.
 		$overlay_popups = ! empty( $category_overlay_popups ) ?
 			$category_overlay_popups :
-			Newspack_Popups_Model::retrieve_overlay_popups( $view_as_spec_unpublished, $group_slugs );
+			Newspack_Popups_Model::retrieve_overlay_popups( $view_as_spec_unpublished, $view_as_spec_campaign );
 
 		// 5. Add overlay popups to array.
 		if ( ! empty( $overlay_popups ) ) {

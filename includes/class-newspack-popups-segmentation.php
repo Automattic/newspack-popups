@@ -469,7 +469,7 @@ final class Newspack_Popups_Segmentation {
 		$client_in_segment = array_filter(
 			$all_client_data,
 			function ( $client_data ) use ( $segment_config ) {
-				return Campaign_Data_Utils::should_display_campaign(
+				return Campaign_Data_Utils::does_client_match_segment(
 					$segment_config,
 					$client_data
 				);
