@@ -103,14 +103,14 @@ class InsertionTest extends WP_UnitTestCase {
 			'Includes tracking by default.'
 		);
 
-		$user_id = $this->factory->user->create();
+		$user_id = $this->factory->user->create( [ 'role' => 'administrator' ] );
 		wp_set_current_user( $user_id );
 
 		self::render_post( 'view_as=all' );
 		self::assertEquals(
 			self::$dom_xpath->query( '//amp-analytics' )->length,
 			0,
-			'Does not include tracking when a user is logged in.'
+			'Does not include tracking when a user is an admin.'
 		);
 	}
 
@@ -125,14 +125,14 @@ class InsertionTest extends WP_UnitTestCase {
 			'Includes tracking with "view as", since there is no logged in user.'
 		);
 
-		$user_id = $this->factory->user->create();
+		$user_id = $this->factory->user->create( [ 'role' => 'administrator' ] );
 		wp_set_current_user( $user_id );
 
 		self::render_post( 'view_as=all' );
 		self::assertEquals(
 			self::$dom_xpath->query( '//amp-analytics' )->length,
 			0,
-			'Does not include tracking when a user is logged in.'
+			'Does not include tracking when a user is an admin.'
 		);
 	}
 
