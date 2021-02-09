@@ -14,39 +14,66 @@ class APITest extends WP_UnitTestCase {
 	private static $report_campaign_data = null; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
 	private static $report_client_data   = null; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
 	private static $client_id            = 'abc-123'; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
+	private static $segment_ids          = []; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
 
 	public static function wpSetUpBeforeClass() { // phpcs:ignore Squiz.Commenting.FunctionComment.Missing
 		self::$maybe_show_campaign  = new Maybe_Show_Campaign();
 		self::$report_campaign_data = new Report_Campaign_Data();
 		self::$report_client_data   = new Segmentation_Client_Data();
 
+		$test_segments = [
+			'defaultSegment'                      => [],
+			'segmentBetween3And5'                 => [
+				'min_posts' => 2,
+				'max_posts' => 3,
+			],
+			'segmentSessionReadCountBetween3And5' => [
+				'min_session_posts' => 2,
+				'max_session_posts' => 3,
+			],
+			'segmentSubscribers'                  => [
+				'is_subscribed' => true,
+			],
+			'segmentNonSubscribers'               => [
+				'is_not_subscribed' => true,
+			],
+			'segmentWithReferrers'                => [
+				'referrers' => 'foobar.com, newspack.pub',
+			],
+			'anotherSegmentWithReferrers'         => [
+				'referrers' => 'bar.com',
+			],
+			'segmentWithNegativeReferrer'         => [
+				'referrers_not' => 'baz.com',
+			],
+			'segmentFavCategory42'                => [
+				'favorite_categories' => [ 42 ],
+			],
+		];
+
+		foreach ( $test_segments as $key => $value ) {
+			$segments = Newspack_Popups_Segmentation::create_segment(
+				[
+					'name'          => $key,
+					'configuration' => $value,
+				]
+			);
+
+			self::$segment_ids[ $key ] = end( $segments )['id'];
+		}
+
 		self::$settings = (object) [ // phpcs:ignore Squiz.Commenting.VariableComment.Missing
 			'suppress_newsletter_campaigns'        => true,
 			'suppress_all_newsletter_campaigns_if_one_dismissed' => true,
 			'suppress_donation_campaigns_if_donor' => true,
-			'all_segments'                         => (object) [
-				'defaultSegment'                      => (object) [],
-				'segmentBetween3And5'                 => (object) [
-					'min_posts' => 2,
-					'max_posts' => 3,
-				],
-				'segmentSessionReadCountBetween3And5' => (object) [
-					'min_session_posts' => 2,
-					'max_session_posts' => 3,
-				],
-				'segmentSubscribers'                  => (object) [
-					'is_subscribed' => true,
-				],
-				'segmentNonSubscribers'               => (object) [
-					'is_not_subscribed' => true,
-				],
-				'segmentWithReferrers'                => (object) [
-					'referrers' => 'foobar.com, newspack.pub',
-				],
-				'segmentFavCategory42'                => (object) [
-					'favorite_categories' => [ 42 ],
-				],
-			],
+			'all_segments'                         => (object) array_reduce(
+				Newspack_Popups_Segmentation::get_segments(),
+				function( $acc, $item ) {
+					$acc[ $item['id'] ] = $item['configuration'];
+					return $acc;
+				},
+				[]
+			),
 		];
 	}
 
@@ -84,7 +111,6 @@ class APITest extends WP_UnitTestCase {
 	 */
 	public function test_once_frequency() {
 		$test_popup = self::create_test_popup( [ 'frequency' => 'once' ] );
-		Newspack_Popups_Model::set_sitewide_popup( $test_popup['id'] );
 
 		self::assertTrue(
 			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
@@ -110,7 +136,6 @@ class APITest extends WP_UnitTestCase {
 	 */
 	public function test_daily_frequency() {
 		$test_popup = self::create_test_popup( [ 'frequency' => 'daily' ] );
-		Newspack_Popups_Model::set_sitewide_popup( $test_popup['id'] );
 
 		self::assertTrue(
 			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
@@ -585,7 +610,7 @@ class APITest extends WP_UnitTestCase {
 			[
 				'placement'           => 'inline',
 				'frequency'           => 'always',
-				'selected_segment_id' => 'segmentSubscribers',
+				'selected_segment_id' => self::$segment_ids['segmentSubscribers'],
 			]
 		);
 
@@ -624,7 +649,7 @@ class APITest extends WP_UnitTestCase {
 			[
 				'placement'           => 'inline',
 				'frequency'           => 'always',
-				'selected_segment_id' => 'segmentNonSubscribers',
+				'selected_segment_id' => self::$segment_ids['segmentNonSubscribers'],
 			]
 		);
 
@@ -663,7 +688,7 @@ class APITest extends WP_UnitTestCase {
 			[
 				'placement'           => 'inline',
 				'frequency'           => 'always',
-				'selected_segment_id' => 'defaultSegment',
+				'selected_segment_id' => self::$segment_ids['defaultSegment'],
 			]
 		);
 
@@ -681,7 +706,7 @@ class APITest extends WP_UnitTestCase {
 			[
 				'placement'           => 'inline',
 				'frequency'           => 'always',
-				'selected_segment_id' => 'segmentBetween3And5',
+				'selected_segment_id' => self::$segment_ids['segmentBetween3And5'],
 			]
 		);
 
@@ -733,7 +758,7 @@ class APITest extends WP_UnitTestCase {
 			[
 				'placement'           => 'inline',
 				'frequency'           => 'once',
-				'selected_segment_id' => 'segmentBetween3And5',
+				'selected_segment_id' => self::$segment_ids['segmentBetween3And5'],
 			]
 		);
 
@@ -780,7 +805,7 @@ class APITest extends WP_UnitTestCase {
 			[
 				'placement'           => 'inline',
 				'frequency'           => 'daily',
-				'selected_segment_id' => 'segmentBetween3And5',
+				'selected_segment_id' => self::$segment_ids['segmentBetween3And5'],
 			]
 		);
 
@@ -827,7 +852,7 @@ class APITest extends WP_UnitTestCase {
 			[
 				'placement'           => 'inline',
 				'frequency'           => 'always',
-				'selected_segment_id' => 'segmentSessionReadCountBetween3And5',
+				'selected_segment_id' => self::$segment_ids['segmentSessionReadCountBetween3And5'],
 			]
 		);
 
@@ -908,7 +933,7 @@ class APITest extends WP_UnitTestCase {
 			[
 				'placement'           => 'inline',
 				'frequency'           => 'always',
-				'selected_segment_id' => 'segmentWithReferrers',
+				'selected_segment_id' => self::$segment_ids['segmentWithReferrers'],
 			]
 		);
 
@@ -921,12 +946,46 @@ class APITest extends WP_UnitTestCase {
 			'Assert visible if second referrer matches.'
 		);
 		self::assertTrue(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings, '', 'https://sub.newspack.pub' ),
+			'Assert visible if referrer with subdomain matches.'
+		);
+		self::assertTrue(
 			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings, '', 'https://www.foobar.com' ),
 			'Assert visible if referrer matches, with a www subdomain.'
 		);
 		self::assertFalse(
 			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings, '', 'https://google.com' ),
 			'Assert not visible if referrer does not match.'
+		);
+	}
+
+	/**
+	 * Handling negative referrer-based segmentation.
+	 */
+	public function test_segment_page_not_referrer() {
+		$test_popup_with_segment = self::create_test_popup(
+			[
+				'placement'           => 'inline',
+				'frequency'           => 'always',
+				'selected_segment_id' => self::$segment_ids['segmentWithNegativeReferrer'],
+			]
+		);
+
+		self::assertTrue(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings ),
+			'Assert visible without referrer.'
+		);
+		self::assertFalse(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings, '', 'http://baz.com' ),
+			'Assert not visible if referrer matches.'
+		);
+		self::assertFalse(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings, '', 'https://www.baz.com' ),
+			'Assert not visible if referrer matches, with a www subdomain.'
+		);
+		self::assertTrue(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings, '', 'https://google.com' ),
+			'Assert visible if referrer does not match.'
 		);
 	}
 
@@ -938,7 +997,7 @@ class APITest extends WP_UnitTestCase {
 			[
 				'placement'           => 'inline',
 				'frequency'           => 'always',
-				'selected_segment_id' => 'segmentFavCategory42',
+				'selected_segment_id' => self::$segment_ids['segmentFavCategory42'],
 			]
 		);
 
@@ -1005,7 +1064,7 @@ class APITest extends WP_UnitTestCase {
 			[
 				'placement'           => 'inline',
 				'frequency'           => 'always',
-				'selected_segment_id' => 'segmentSubscribers',
+				'selected_segment_id' => self::$segment_ids['segmentSubscribers'],
 			]
 		);
 
@@ -1014,8 +1073,52 @@ class APITest extends WP_UnitTestCase {
 			'Assert not visible, as the client is not a subscriber.'
 		);
 		self::assertTrue(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', '', [ 'segment' => 'segmentSubscribers' ] ),
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', '', [ 'segment' => self::$segment_ids['segmentSubscribers'] ] ),
 			'Assert visible when viewing as a segment member.'
+		);
+	}
+
+	/**
+	 * View as a segment – ignoring client data.
+	 */
+	public function test_view_as_segment_client_data_ignoring() {
+		$api = new Lightweight_API();
+
+		$test_popup = self::create_test_popup(
+			[
+				'placement'           => 'inline',
+				'frequency'           => 'always',
+				'selected_segment_id' => self::$segment_ids['segmentBetween3And5'],
+			]
+		);
+
+		$api->save_client_data(
+			self::$client_id,
+			[
+				'posts_read' => [
+					self::create_read_post( 1, false, '42' ),
+					self::create_read_post( 2, false, '42' ),
+					self::create_read_post( 3, false, '42' ),
+				],
+			]
+		);
+
+		self::assertFalse(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', '', [ 'segment' => self::$segment_ids['segmentWithReferrers'] ] ),
+			'Assert campaign with read count not visible when viewing as a different segment.'
+		);
+
+		$test_popup_2 = self::create_test_popup(
+			[
+				'placement'           => 'inline',
+				'frequency'           => 'always',
+				'selected_segment_id' => self::$segment_ids['segmentFavCategory42'],
+			]
+		);
+
+		self::assertFalse(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_2['payload'], self::$settings, '', '', [ 'segment' => self::$segment_ids['segmentWithReferrers'] ] ),
+			'Assert campaign with fav. categories segment not visible when viewing as a different segment.'
 		);
 	}
 
@@ -1027,7 +1130,7 @@ class APITest extends WP_UnitTestCase {
 			[
 				'placement'           => 'inline',
 				'frequency'           => 'always',
-				'selected_segment_id' => 'segmentBetween3And5',
+				'selected_segment_id' => self::$segment_ids['segmentBetween3And5'],
 			]
 		);
 
@@ -1036,7 +1139,7 @@ class APITest extends WP_UnitTestCase {
 			'Assert not visible, as the client does not have the appropriate read count.'
 		);
 		self::assertTrue(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', '', [ 'segment' => 'segmentBetween3And5' ] ),
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', '', [ 'segment' => self::$segment_ids['segmentBetween3And5'] ] ),
 			'Assert visible when viewing as a segment member.'
 		);
 	}
@@ -1049,17 +1152,51 @@ class APITest extends WP_UnitTestCase {
 			[
 				'placement'           => 'inline',
 				'frequency'           => 'always',
-				'selected_segment_id' => 'segmentWithReferrers',
+				'selected_segment_id' => self::$segment_ids['segmentWithReferrers'],
 			]
 		);
 
 		self::assertFalse(
 			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
-			'Assert not visible, as the referrer does not match.'
+			'Assert not visible without referrer.'
 		);
 		self::assertTrue(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', 'https://newspack.pub', [ 'segment' => 'segmentWithReferrers' ] ),
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', '', [ 'segment' => self::$segment_ids['segmentWithReferrers'] ] ),
 			'Assert visible when viewing as a segment member.'
+		);
+		self::assertTrue(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', 'https://newspack.pub', [ 'segment' => self::$segment_ids['segmentWithReferrers'] ] ),
+			'Assert visible when viewing as a segment member, with a referrer.'
+		);
+		self::assertFalse(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', 'https://twitter.com', [ 'segment' => self::$segment_ids['anotherSegmentWithReferrers'] ] ),
+			'Assert not visible when viewing as a different segment with a referrer.'
+		);
+	}
+
+	/**
+	 * View as a segment – referrers.
+	 */
+	public function test_view_as_segment_referrers_negative() {
+		$test_popup = self::create_test_popup(
+			[
+				'placement'           => 'inline',
+				'frequency'           => 'always',
+				'selected_segment_id' => self::$segment_ids['segmentWithNegativeReferrer'],
+			]
+		);
+
+		self::assertTrue(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
+			'Assert visible without referrer.'
+		);
+		self::assertTrue(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', '', [ 'segment' => self::$segment_ids['segmentWithNegativeReferrer'] ] ),
+			'Assert visible when viewing as a segment member.'
+		);
+		self::assertTrue(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', 'https://newspack.pub', [ 'segment' => self::$segment_ids['segmentWithNegativeReferrer'] ] ),
+			'Assert visible when viewing as a segment member, with a referrer.'
 		);
 	}
 
@@ -1071,12 +1208,12 @@ class APITest extends WP_UnitTestCase {
 			[
 				'placement'           => 'inline',
 				'frequency'           => 'always',
-				'selected_segment_id' => 'segmentFavCategory42',
+				'selected_segment_id' => self::$segment_ids['segmentFavCategory42'],
 			]
 		);
 
 		self::assertTrue(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', '', [ 'segment' => 'segmentFavCategory42' ] ),
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', '', [ 'segment' => self::$segment_ids['segmentFavCategory42'] ] ),
 			'Assert visible when viewing as a segment member.'
 		);
 	}
@@ -1089,7 +1226,7 @@ class APITest extends WP_UnitTestCase {
 			[
 				'placement'           => 'inline',
 				'frequency'           => 'always',
-				'selected_segment_id' => 'defaultSegment',
+				'selected_segment_id' => self::$segment_ids['defaultSegment'],
 			]
 		);
 
@@ -1100,6 +1237,67 @@ class APITest extends WP_UnitTestCase {
 		self::assertTrue(
 			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', '', [ 'segment' => 'not-a-segment' ] ),
 			'Assert visible, a non-existent segment is disregarded.'
+		);
+	}
+
+	/**
+	 * Serializing a popup object to be sent to the API.
+	 */
+	public function test_popup_object_api_serialization() {
+		$default_payload = self::create_test_popup( [] )['payload'];
+		self::assertArraySubset(
+			(array) [
+				'f'   => 'always',
+				'utm' => null,
+				's'   => '',
+				'n'   => false,
+				'd'   => false,
+			],
+			(array) $default_payload,
+			false,
+			'API payload for the default test popup is correct.'
+		);
+
+		self::assertRegExp(
+			'/id_\d/',
+			$default_payload->id,
+			'The id in the payload is the popup id prefixed with "id_"'
+		);
+
+		self::assertArraySubset(
+			(array) [
+				'f'   => 'once',
+				'utm' => null,
+				's'   => '',
+				'n'   => false,
+				'd'   => false,
+			],
+			(array) self::create_test_popup(
+				[
+					'frequency' => 'always',
+					'placement' => 'top',
+				]
+			)['payload'],
+			false,
+			'An overlay popup with "always" frequency has it corrected to "once".'
+		);
+	}
+
+	/**
+	 * Test missing segment.
+	 */
+	public function test_missing_segment() {
+		$test_popup = self::create_test_popup(
+			[
+				'placement'           => 'inline',
+				'frequency'           => 'always',
+				'selected_segment_id' => 'garbagio',
+			]
+		);
+
+		self::assertNull(
+			$test_popup['payload']->s,
+			'Returns null if segment is missing.'
 		);
 	}
 }

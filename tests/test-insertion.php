@@ -9,9 +9,12 @@
  * Insertion test case.
  */
 class InsertionTest extends WP_UnitTestCase {
-	private static $post_id       = false; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
-	private static $popup_content = 'Faucibus placerat senectus metus molestie varius tincidunt.'; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
-	private static $popup_id      = false; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
+	private static $post_id          = false; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
+	private static $popup_content    = 'The popup content.'; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
+	private static $popup_id         = false; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
+	private static $raw_post_content = 'The post content.'; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
+	private static $post_content     = false; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
+	private static $dom_xpath        = false; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
 
 	public function setUp() { // phpcs:ignore Squiz.Commenting.FunctionComment.Missing
 		// Remove any popups (from previous tests).
@@ -21,44 +24,53 @@ class InsertionTest extends WP_UnitTestCase {
 
 		self::$post_id  = self::factory()->post->create(
 			[
-				'post_content' => 'Elit platea a convallis dolor id mollis ultricies sociosqu dapibus.',
+				'post_content' => self::$raw_post_content,
 			]
 		);
 		self::$popup_id = self::factory()->post->create(
 			[
 				'post_type'    => Newspack_Popups::NEWSPACK_POPUPS_CPT,
-				'post_title'   => 'Platea fames',
+				'post_title'   => 'Popup title',
 				'post_content' => self::$popup_content,
 			]
 		);
-		// Set popup frequency from default 'test'.
+
 		Newspack_Popups_Model::set_popup_options(
 			self::$popup_id,
 			[
-				'frequency' => 'always',
+				'frequency'    => 'daily',
+				'dismiss_text' => Newspack_Popups::get_default_dismiss_text(),
 			]
 		);
+	}
 
+	/**
+	 * Trigger post rendering with popups in it.
+	 *
+	 * @param string $url_query Query to append to URL.
+	 */
+	public function render_post( $url_query = '' ) {
 		// Navigate to post.
-		self::go_to( get_permalink( self::$post_id ) );
+		self::go_to( get_permalink( self::$post_id ) . '&' . $url_query );
 		global $wp_query, $post;
 		$wp_query->in_the_loop = true;
 		setup_postdata( $post );
 
 		// Reset internal duplicate-prevention.
 		Newspack_Popups_Inserter::$the_content_has_rendered = false;
+
+		self::$post_content = apply_filters( 'the_content', get_post( self::$post_id )->post_content );
+		$dom                = new DomDocument();
+		@$dom->loadHTML( self::$post_content ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+		self::$dom_xpath = new DOMXpath( $dom );
 	}
 
 	/**
 	 * Test popup insertion into a post.
 	 */
 	public function test_insertion() {
-		$post_content = apply_filters( 'the_content', get_post( self::$post_id )->post_content );
-
-		$dom = new DomDocument();
-		@$dom->loadHTML( $post_content ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
-		$xpath               = new DOMXpath( $dom );
-		$amp_layout_elements = $xpath->query( '//amp-layout' );
+		self::render_post();
+		$amp_layout_elements = self::$dom_xpath->query( '//amp-layout' );
 		$popup_text_content  = $amp_layout_elements->item( 0 )->textContent;
 
 		self::assertContains(
@@ -72,9 +84,55 @@ class InsertionTest extends WP_UnitTestCase {
 			'Includes the dismissal text.'
 		);
 		self::assertContains(
-			$post_content,
-			$post_content,
+			self::$raw_post_content,
+			self::$post_content,
 			'Includes the original post content.'
+		);
+	}
+
+	/**
+	 * Tracking.
+	 */
+	public function test_insertion_analytics() {
+		self::render_post();
+		$amp_analytics_elements = self::$dom_xpath->query( '//amp-analytics' );
+
+		self::assertEquals(
+			$amp_analytics_elements->length,
+			1,
+			'Includes tracking by default.'
+		);
+
+		$user_id = $this->factory->user->create();
+		wp_set_current_user( $user_id );
+
+		self::render_post( 'view_as=all' );
+		self::assertEquals(
+			self::$dom_xpath->query( '//amp-analytics' )->length,
+			0,
+			'Does not include tracking when a user is logged in.'
+		);
+	}
+
+	/**
+	 * With view-as feature.
+	 */
+	public function test_insertion_view_as() {
+		self::render_post( 'view_as=all' );
+		self::assertEquals(
+			self::$dom_xpath->query( '//amp-analytics' )->length,
+			1,
+			'Includes tracking with "view as", since there is no logged in user.'
+		);
+
+		$user_id = $this->factory->user->create();
+		wp_set_current_user( $user_id );
+
+		self::render_post( 'view_as=all' );
+		self::assertEquals(
+			self::$dom_xpath->query( '//amp-analytics' )->length,
+			0,
+			'Does not include tracking when a user is logged in.'
 		);
 	}
 
@@ -82,7 +140,6 @@ class InsertionTest extends WP_UnitTestCase {
 	 * Test non-interactive setting for overlay campaigns.
 	 */
 	public function test_non_interactive_overlay() {
-		Newspack_Popups_Model::set_sitewide_popup( self::$popup_id );
 		Newspack_Popups_Model::set_popup_options(
 			self::$popup_id,
 			[
@@ -91,34 +148,32 @@ class InsertionTest extends WP_UnitTestCase {
 			]
 		);
 
-		update_option( 'newspack_newsletters_non_interative_mode', true );
-
-		$post_content = apply_filters( 'the_content', get_post( self::$post_id )->post_content );
-
+		update_option( 'newspack_popups_non_interative_mode', true );
+		self::render_post();
 		self::assertNotContains(
 			self::$popup_content,
-			$post_content,
+			self::$post_content,
 			'Does not include the popup content, since it is an overlay campaign.'
 		);
+		update_option( 'newspack_popups_non_interative_mode', false );
 	}
 
 	/**
 	 * Test non-interactive setting for inline campaigns.
 	 */
 	public function test_non_interactive_inline() {
-		update_option( 'newspack_newsletters_non_interative_mode', true );
-
-		$post_content = apply_filters( 'the_content', get_post( self::$post_id )->post_content );
-
+		update_option( 'newspack_popups_non_interative_mode', true );
+		self::render_post();
 		self::assertContains(
 			self::$popup_content,
-			$post_content,
+			self::$post_content,
 			'Does include the popup content.'
 		);
 		self::assertNotContains(
 			Newspack_Popups::get_default_dismiss_text(),
-			$post_content,
+			self::$post_content,
 			'Does not include the dismissal text.'
 		);
+		update_option( 'newspack_popups_non_interative_mode', false );
 	}
 }

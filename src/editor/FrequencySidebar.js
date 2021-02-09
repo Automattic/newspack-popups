@@ -17,12 +17,11 @@ const FrequencySidebar = ( { frequency, onMetaFieldChange, isOverlay, utm_suppre
 				value={ frequency }
 				onChange={ value => onMetaFieldChange( 'frequency', value ) }
 				options={ [
-					{ value: 'never', label: __( 'Never', 'newspack-popups' ) },
 					{ value: 'once', label: __( 'Once', 'newspack-popups' ) },
 					{ value: 'daily', label: __( 'Once a day', 'newspack-popups' ) },
 					{
 						value: 'always',
-						label: __( 'Every page', 'newspack-popups' ),
+						label: __( 'Until dismissed', 'newspack-popups' ),
 						disabled: isOverlay,
 					},
 					{ value: 'manual', label: __( 'Manual Placement', 'newspack-popups' ) },
@@ -31,7 +30,7 @@ const FrequencySidebar = ( { frequency, onMetaFieldChange, isOverlay, utm_suppre
 			<TextControl
 				label={ __( 'UTM Suppression' ) }
 				help={ __(
-					'Readers arriving at the site via URLs with this utm_source parameter will never be shown the campaign.'
+					'Readers arriving at the site via URLs with this utm_source parameter will never be shown the prompt.'
 				) }
 				value={ utm_suppression }
 				onChange={ value => onMetaFieldChange( 'utm_suppression', value ) }
