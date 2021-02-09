@@ -54,7 +54,7 @@ final class Newspack_Popups_Model {
 		if ( ! $popup ) {
 			return new \WP_Error(
 				'newspack_popups_popup_doesnt_exist',
-				esc_html__( 'The Campaign specified does not exist.', 'newspack-popups' ),
+				esc_html__( 'The prompt specified does not exist.', 'newspack-popups' ),
 				[
 					'status' => 400,
 					'level'  => 'fatal',
@@ -91,7 +91,7 @@ final class Newspack_Popups_Model {
 		if ( ! $popup ) {
 			return new \WP_Error(
 				'newspack_popups_popup_doesnt_exist',
-				esc_html__( 'The Campaign specified does not exist.', 'newspack-popups' ),
+				esc_html__( 'The prompt specified does not exist.', 'newspack-popups' ),
 				[
 					'status' => 400,
 					'level'  => 'fatal',
@@ -136,7 +136,7 @@ final class Newspack_Popups_Model {
 				default:
 					return new \WP_Error(
 						'newspack_popups_invalid_option',
-						esc_html__( 'Invalid Campaign option.', 'newspack-popups' ),
+						esc_html__( 'Invalid prompt option.', 'newspack-popups' ),
 						[
 							'status' => 400,
 							'level'  => 'fatal',
@@ -182,7 +182,7 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
-	 * Retrieve all inline popups.
+	 * Retrieve all inline prompts.
 	 *
 	 * @param  boolean     $include_unpublished Whether to include unpublished posts.
 	 * @param  int|boolean $campaign_id Campaign term ID, or false to ignore campaign.
@@ -369,7 +369,7 @@ final class Newspack_Popups_Model {
 	/**
 	 * Create the popup object.
 	 *
-	 * @param WP_Post $campaign_post The campaign post object.
+	 * @param WP_Post $campaign_post The prompt post object.
 	 * @param boolean $include_categories If true, returned objects will include assigned categories.
 	 * @param object  $options Popup options to use instead of the options retrieved from the post. Used for popup previews.
 	 * @return object Popup object

@@ -13,7 +13,6 @@ require_once dirname( __FILE__ ) . '/../api/segmentation/class-segmentation.php'
  * API endpoints
  */
 final class Newspack_Popups_Inserter {
-
 	/**
 	 * The popup objects to display.
 	 *
@@ -22,7 +21,7 @@ final class Newspack_Popups_Inserter {
 	protected static $popups = [];
 
 	/**
-	 * Whether we've already inserted popups into the content.
+	 * Whether we've already inserted prompts into the content.
 	 * If we've already inserted popups into the content, don't try to do it again.
 	 *
 	 * @var boolean
@@ -35,7 +34,7 @@ final class Newspack_Popups_Inserter {
 	 * @return array Popup objects.
 	 */
 	public static function popups_for_post() {
-		// Inject popups only in posts, pages, and CPTs that explicitly opt in.
+		// Inject prompts only in posts, pages, and CPTs that explicitly opt in.
 		if ( ! in_array(
 			get_post_type(),
 			apply_filters(
@@ -85,7 +84,7 @@ final class Newspack_Popups_Inserter {
 			);
 		}
 
-		// 6. Remove manual placement popups.
+		// 6. Remove manual placement prompts.
 		$popups_to_maybe_display = array_filter(
 			$popups_to_maybe_display,
 			function( $popup ) {
@@ -224,7 +223,7 @@ final class Newspack_Popups_Inserter {
 
 		$total_length = strlen( $content );
 
-		// 1. Separate popups into inline and overlay.
+		// 1. Separate prompts into inline and overlay.
 		$inline_popups  = [];
 		$overlay_popups = [];
 		foreach ( $popups as $popup ) {
@@ -243,7 +242,7 @@ final class Newspack_Popups_Inserter {
 			return $content;
 		}
 
-		// 2. Iterate overall blocks and insert inline popups.
+		// 2. Iterate over all blocks and insert inline prompts.
 		$pos    = 0;
 		$output = '';
 		foreach ( parse_blocks( $content ) as $block ) {
@@ -259,7 +258,7 @@ final class Newspack_Popups_Inserter {
 			$output .= $block_content;
 		}
 
-		// 3. Insert any remaining inline campaigns at the end.
+		// 3. Insert any remaining inline prompts at the end.
 		foreach ( $inline_popups as &$inline_popup ) {
 			if ( ! $inline_popup['is_inserted'] ) {
 				$output .= '<!-- wp:shortcode -->[newspack-popup id="' . $inline_popup['id'] . '"]<!-- /wp:shortcode -->';
@@ -268,7 +267,7 @@ final class Newspack_Popups_Inserter {
 			}
 		}
 
-		// 4. Insert overlay popups at the top of content.
+		// 4. Insert overlay prompts at the top of content.
 		foreach ( $overlay_popups as $overlay_popup ) {
 			$output = '<!-- wp:html -->' . Newspack_Popups_Model::generate_popup( $overlay_popup ) . '<!-- /wp:html -->' . $output;
 		}
@@ -431,7 +430,8 @@ final class Newspack_Popups_Inserter {
 			self::popups_for_post(),
 			$shortcoded_popups
 		);
-		// "Escape hatch" if there's a need to block adding amp-access for pages that have no popups.
+
+		// "Escape hatch" if there's a need to block adding amp-access for pages that have no prompts.
 		if ( apply_filters( 'newspack_popups_suppress_insert_amp_access', false, $popups ) ) {
 			return;
 		}
@@ -642,11 +642,11 @@ final class Newspack_Popups_Inserter {
 		if ( Newspack_Popups_View_As::viewing_as_spec() ) {
 			return $general_conditions;
 		}
-		// Hide popups for logged-in users.
+		// Hide prompts for logged-in users.
 		if ( is_user_logged_in() ) {
 			return false;
 		}
-		// Hide overlay popups in non-interactive mode, for non-logged-in users.
+		// Hide overlay prompts in non-interactive mode, for non-logged-in users.
 		if ( ! is_user_logged_in() && Newspack_Popups_Settings::is_non_interactive() && ! Newspack_Popups_Model::is_inline( $popup ) ) {
 			return false;
 		}

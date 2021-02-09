@@ -48,13 +48,13 @@ class Report_Campaign_Data extends Lightweight_API {
 		if ( $this->get_request_param( 'suppress_forever', $request ) ) {
 			$campaign_data['suppress_forever'] = true;
 
-			// Suppressed a newsletter campaign.
+			// Suppressed a newsletter prompt.
 			if ( $this->get_request_param( 'is_newsletter_popup', $request ) ) {
 				$client_data_update['suppressed_newsletter_campaign'] = true;
 			}
 		}
 
-		// Subscribed to a newsletter – suppress this campaign.
+		// Subscribed to a newsletter – suppress this prompt.
 		if ( 'subscribed' === $this->get_request_param( 'mailing_list_status', $request ) ) {
 			$campaign_data['suppress_forever'] = true;
 		}

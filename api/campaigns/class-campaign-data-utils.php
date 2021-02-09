@@ -79,13 +79,13 @@ class Campaign_Data_Utils {
 	}
 
 	/**
-	 * Given a segment and client data, decide if the campaign should be shown.
+	 * Given a segment and client data, decide if the prompt should be shown.
 	 *
 	 * @param object $campaign_segment Segment data.
 	 * @param object $client_data Client data.
 	 * @param string $referer_url URL of the page performing the API request.
 	 * @param string $page_referrer_url URL of the referrer of the frontend page that is making the API request.
-	 * @return bool Whether the campaign should be shown.
+	 * @return bool Whether the prompt should be shown.
 	 */
 	public static function does_client_match_segment( $campaign_segment, $client_data, $referer_url = '', $page_referrer_url = '' ) {
 		$should_display = true;

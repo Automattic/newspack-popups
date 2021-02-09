@@ -1,6 +1,6 @@
 <?php
 /**
- * Newspack Campaigns maybe display campaign.
+ * Newspack Campaigns maybe display prompt.
  *
  * @package Newspack
  */
@@ -14,7 +14,7 @@ require_once dirname( __FILE__ ) . '/../segmentation/class-segmentation-report.p
 require_once dirname( __FILE__ ) . '/class-campaign-data-utils.php';
 
 /**
- * GET endpoint to determine if campaign is shown or not.
+ * GET endpoint to determine if prompt is shown or not.
  */
 class Maybe_Show_Campaign extends Lightweight_API {
 
@@ -165,15 +165,15 @@ class Maybe_Show_Campaign extends Lightweight_API {
 	}
 
 	/**
-	 * Primary campaign visibility logic.
+	 * Primary prompt visibility logic.
 	 *
 	 * @param string $client_id Client ID.
 	 * @param object $client_data Client data.
-	 * @param object $campaign Campaign.
+	 * @param object $campaign Prompt.
 	 * @param object $settings Settings.
 	 * @param string $referer_url URL of the page performing the API request.
 	 * @param string $now Current timestamp.
-	 * @return bool Whether campaign should be shown.
+	 * @return bool Whether prompt should be shown.
 	 */
 	public function should_campaign_be_shown( $client_id, $client_data, $campaign, $settings, $referer_url = '', $now = false ) {
 		if ( false === $now ) {
@@ -213,7 +213,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 
 		$has_suppressed_newsletter_campaign = $client_data['suppressed_newsletter_campaign'];
 
-		// Handle suppressing a newsletter campaign if any newsletter campaign was dismissed.
+		// Handle suppressing a newsletter prompt if any newsletter prompt was dismissed.
 		if (
 			$has_newsletter_prompt &&
 			$settings->suppress_all_newsletter_campaigns_if_one_dismissed &&
@@ -226,7 +226,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		$has_donated        = count( $client_data['donations'] ) > 0;
 		$has_donation_block = $campaign->d;
 
-		// Handle suppressing a donation campaign if reader is a donor and appropriate setting is active.
+		// Handle suppressing a donation prompt if reader is a donor and appropriate setting is active.
 		if (
 			$has_donation_block &&
 			$settings->suppress_donation_campaigns_if_donor &&
@@ -246,7 +246,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 				$has_utm_medium_in_url &&
 				! empty( $client_data['email_subscriptions'] )
 			) {
-				// Save suppression for this campaign.
+				// Save suppression for this prompt.
 				$campaign_data['suppress_forever'] = true;
 			}
 		}

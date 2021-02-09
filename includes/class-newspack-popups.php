@@ -71,20 +71,20 @@ final class Newspack_Popups {
 	 */
 	public static function register_cpt() {
 		$labels = [
-			'name'               => _x( 'Campaigns', 'post type general name', 'newspack-popups' ),
-			'singular_name'      => _x( 'Campaign', 'post type singular name', 'newspack-popups' ),
-			'menu_name'          => _x( 'Campaigns', 'admin menu', 'newspack-popups' ),
-			'name_admin_bar'     => _x( 'Campaign', 'add new on admin bar', 'newspack-popups' ),
+			'name'               => _x( 'Prompts', 'post type general name', 'newspack-popups' ),
+			'singular_name'      => _x( 'Prompt', 'post type singular name', 'newspack-popups' ),
+			'menu_name'          => _x( 'Prompts', 'admin menu', 'newspack-popups' ),
+			'name_admin_bar'     => _x( 'Prompt', 'add new on admin bar', 'newspack-popups' ),
 			'add_new'            => _x( 'Add New', 'popup', 'newspack-popups' ),
-			'add_new_item'       => __( 'Add New Campaign', 'newspack-popups' ),
-			'new_item'           => __( 'New Campaign', 'newspack-popups' ),
-			'edit_item'          => __( 'Edit Campaign', 'newspack-popups' ),
-			'view_item'          => __( 'View Campaign', 'newspack-popups' ),
-			'all_items'          => __( 'All Campaigns', 'newspack-popups' ),
-			'search_items'       => __( 'Search Campaigns', 'newspack-popups' ),
-			'parent_item_colon'  => __( 'Parent Campaigns:', 'newspack-popups' ),
-			'not_found'          => __( 'No Campaigns found.', 'newspack-popups' ),
-			'not_found_in_trash' => __( 'No Campaigns found in Trash.', 'newspack-popups' ),
+			'add_new_item'       => __( 'Add New Prompt', 'newspack-popups' ),
+			'new_item'           => __( 'New Prompt', 'newspack-popups' ),
+			'edit_item'          => __( 'Edit Prompt', 'newspack-popups' ),
+			'view_item'          => __( 'View Prompt', 'newspack-popups' ),
+			'all_items'          => __( 'All Prompts', 'newspack-popups' ),
+			'search_items'       => __( 'Search Prompts', 'newspack-popups' ),
+			'parent_item_colon'  => __( 'Parent Prompts:', 'newspack-popups' ),
+			'not_found'          => __( 'No Prompts found.', 'newspack-popups' ),
+			'not_found_in_trash' => __( 'No Prompts found in Trash.', 'newspack-popups' ),
 		];
 
 		$cpt_args = [
@@ -276,9 +276,9 @@ final class Newspack_Popups {
 	public static function register_taxonomy() {
 		$taxonomy_args = [
 			'labels'        => [
-				'name'          => __( 'Campaign Groups', 'newspack-popups' ),
-				'singular_name' => __( 'Campaign Group', 'newspack-popups' ),
-				'add_new_item'  => __( 'Add Campaign Group', 'newspack-popups' ),
+				'name'          => __( 'Campaigns', 'newspack-popups' ),
+				'singular_name' => __( 'Campaign', 'newspack-popups' ),
+				'add_new_item'  => __( 'Add Campaign', 'newspack-popups' ),
 			],
 			'hierarchical'  => true,
 			'public'        => false,
