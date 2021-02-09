@@ -508,8 +508,8 @@ final class Newspack_Popups {
 	public static function create_lightweight_api_config() {
 		// Don't create a config file if not on Newspack's Atomic platform, or if there is a file already.
 		if (
-		! ( defined( 'ATOMIC_SITE_ID' ) && ATOMIC_SITE_ID ) ||
-		( file_exists( self::LIGHTWEIGHT_API_CONFIG_FILE_PATH_LEGACY ) || file_exists( self::LIGHTWEIGHT_API_CONFIG_FILE_PATH ) )
+			! ( defined( 'ATOMIC_SITE_ID' ) && ATOMIC_SITE_ID ) ||
+			( file_exists( self::LIGHTWEIGHT_API_CONFIG_FILE_PATH_LEGACY ) || file_exists( self::LIGHTWEIGHT_API_CONFIG_FILE_PATH ) )
 		) {
 			return;
 		}
@@ -534,17 +534,17 @@ final class Newspack_Popups {
 	 */
 	public static function api_config_missing_notice() {
 		if (
-		file_exists( self::LIGHTWEIGHT_API_CONFIG_FILE_PATH_LEGACY ) ||
-		file_exists( self::LIGHTWEIGHT_API_CONFIG_FILE_PATH )
+			file_exists( self::LIGHTWEIGHT_API_CONFIG_FILE_PATH_LEGACY ) ||
+			file_exists( self::LIGHTWEIGHT_API_CONFIG_FILE_PATH )
 		) {
 			return;
 		}
 		?>
 			<div class="notice notice-error">
 				<p>
-				<?php _e( 'Newspack Campaigns requires a custom configuration file, which is missing. Please create this file following instructions found ', 'newspack-popups' ); ?>
+					<?php _e( 'Newspack Campaigns requires a custom configuration file, which is missing. Please create this file following instructions found ', 'newspack-popups' ); ?>
 					<a href="https://github.com/Automattic/newspack-popups/blob/master/api/README.md">
-					<?php _e( 'here.', 'newspack-popups' ); ?>
+						<?php _e( 'here.', 'newspack-popups' ); ?>
 					</a>
 				</p>
 			</div>
@@ -559,9 +559,9 @@ final class Newspack_Popups {
 	}
 
 	/**
-	 * Create campaign .
+	 * Create campaign.
 	 *
-	 * @param string $name new campaign name.
+	 * @param string $name New campaign name.
 	 */
 	public static function create_campaign( $name ) {
 		$term = wp_insert_term( $name, self::NEWSPACK_POPUPS_TAXONOMY );

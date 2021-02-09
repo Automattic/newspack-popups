@@ -62,7 +62,7 @@ class Segmentation_Client_Data extends Lightweight_API {
 		if ( $user_id ) {
 			$client_data_update['user_id'] = $user_id;
 		}
-		// Fetch donations data.
+		// Add donations data from WC orders.
 		$orders = $this->get_request_param( 'orders', $request );
 		if ( $orders ) {
 			$client_data_update['donations'] = json_decode( $orders );
