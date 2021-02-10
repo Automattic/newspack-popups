@@ -204,6 +204,10 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		if ( $view_as_spec ) {
 			$should_display = true;
 			if ( isset( $view_as_spec['segment'] ) && $view_as_spec['segment'] ) {
+				// If previewing the "Everyone" segment, only show prompts with no segment.
+				if ( 'everyone' === $view_as_spec['segment'] && ! empty( $campaign->s ) ) {
+					return false;
+				}
 				$segment_config = [];
 				if ( isset( $settings->all_segments->{$view_as_spec['segment']} ) ) {
 					$segment_config = $settings->all_segments->{$view_as_spec['segment']};
