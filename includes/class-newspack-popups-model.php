@@ -149,11 +149,11 @@ final class Newspack_Popups_Model {
 	/**
 	 * Retrieve all overlay popups.
 	 *
-	 * @param  boolean       $include_unpublished Whether to include unpublished posts.
-	 * @param  array|boolean $group_slugs array Array of group slugs, or false to ignore groups.
+	 * @param  boolean     $include_unpublished Whether to include unpublished prompts.
+	 * @param  int|boolean $campaign_id Campaign term ID, or false to ignore campaign.
 	 * @return array Overlay popup objects.
 	 */
-	public static function retrieve_overlay_popups( $include_unpublished = false, $group_slugs = false ) {
+	public static function retrieve_overlay_popups( $include_unpublished = false, $campaign_id = false ) {
 		$args = [
 			'post_type'    => Newspack_Popups::NEWSPACK_POPUPS_CPT,
 			'post_status'  => $include_unpublished ? [ 'draft', 'pending', 'future', 'publish' ] : 'publish',
@@ -168,18 +168,23 @@ final class Newspack_Popups_Model {
 			'operator' => 'NOT EXISTS',
 		];
 
-		// If previewing specific groups.
-		if ( ! empty( $group_slugs ) ) {
-			$tax_query[] = [
-				'taxonomy' => Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY,
-				'field'    => 'term_id',
-				'terms'    => $group_slugs,
-			];
+		// If previewing specific campaign.
+		if ( ! empty( $campaign_id ) ) {
+			$campaign_tax_query = [ 'taxonomy' => Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY ];
+
+			if ( -1 === (int) $campaign_id ) {
+				$campaign_tax_query['operator'] = 'NOT EXISTS';
+			} else {
+				$campaign_tax_query['field'] = 'term_id';
+				$campaign_tax_query['terms'] = [ $campaign_id ];
+			}
+
+			$tax_query[] = $campaign_tax_query;
 		}
 
 		$args['tax_query'] = [ $tax_query ]; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
 
-		if ( ! empty( $group_slugs ) ) {
+		if ( ! empty( $campaign_id ) ) {
 			$args['tax_query']['relation'] = 'AND';
 		}
 
@@ -189,11 +194,11 @@ final class Newspack_Popups_Model {
 	/**
 	 * Retrieve all inline prompts.
 	 *
-	 * @param  boolean       $include_unpublished Whether to include unpublished posts.
-	 * @param  array|boolean $group_slugs array Array of group slugs, or false to ignore groups.
+	 * @param  boolean     $include_unpublished Whether to include unpublished prompts.
+	 * @param  int|boolean $campaign_id Campaign term ID, or false to ignore campaign.
 	 * @return array Inline popup objects.
 	 */
-	public static function retrieve_inline_popups( $include_unpublished = false, $group_slugs = false ) {
+	public static function retrieve_inline_popups( $include_unpublished = false, $campaign_id = false ) {
 		$args = [
 			'post_type'    => Newspack_Popups::NEWSPACK_POPUPS_CPT,
 			'post_status'  => $include_unpublished ? [ 'draft', 'pending', 'future', 'publish' ] : 'publish',
@@ -203,15 +208,18 @@ final class Newspack_Popups_Model {
 			'meta_compare' => 'IN',
 		];
 
-		// If previewing specific groups.
-		if ( ! empty( $group_slugs ) ) {
-			$args['tax_query'] = [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
-				[
-					'taxonomy' => Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY,
-					'field'    => 'term_id',
-					'terms'    => $group_slugs,
-				],
-			];
+		// If previewing specific campaign.
+		if ( ! empty( $campaign_id ) ) {
+			$tax_query = [ 'taxonomy' => Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY ];
+
+			if ( -1 === (int) $campaign_id ) {
+				$tax_query['operator'] = 'NOT EXISTS';
+			} else {
+				$tax_query['field'] = 'term_id';
+				$tax_query['terms'] = [ $campaign_id ];
+			}
+
+			$args['tax_query'] = [ $tax_query ]; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
 		}
 
 		return self::retrieve_popups_with_query( new WP_Query( $args ) );
@@ -220,11 +228,11 @@ final class Newspack_Popups_Model {
 	/**
 	 * Retrieve overlay popups matching post categories.
 	 *
-	 * @param  boolean       $include_unpublished Whether to include unpublished posts.
-	 * @param  array|boolean $group_slugs array Array of group slugs, or false to ignore groups.
+	 * @param  boolean     $include_unpublished Whether to include unpublished prompts.
+	 * @param  int|boolean $campaign_id Campaign term ID, or false to ignore campaign.
 	 * @return array|null Array of popup objects.
 	 */
-	public static function retrieve_category_overlay_popups( $include_unpublished = false, $group_slugs = false ) {
+	public static function retrieve_category_overlay_popups( $include_unpublished = false, $campaign_id = false ) {
 		$post_categories = get_the_category();
 
 		if ( empty( $post_categories ) ) {
@@ -242,15 +250,18 @@ final class Newspack_Popups_Model {
 			'meta_compare'   => 'IN',
 		];
 
-		// If previewing specific groups.
-		if ( ! empty( $group_slugs ) ) {
-			$args['tax_query'] = [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
-				[
-					'taxonomy' => Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY,
-					'field'    => 'term_id',
-					'terms'    => $group_slugs,
-				],
-			];
+		// If previewing specific campaign.
+		if ( ! empty( $campaign_id ) ) {
+			$tax_query = [ 'taxonomy' => Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY ];
+
+			if ( -1 === (int) $campaign_id ) {
+				$tax_query['operator'] = 'NOT EXISTS';
+			} else {
+				$tax_query['field'] = 'term_id';
+				$tax_query['terms'] = [ $campaign_id ];
+			}
+
+			$args['tax_query'] = [ $tax_query ]; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
 		}
 
 		$popups = self::retrieve_popups_with_query( new WP_Query( $args ) );
