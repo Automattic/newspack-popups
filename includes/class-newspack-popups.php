@@ -552,6 +552,13 @@ final class Newspack_Popups {
 	}
 
 	/**
+	 * Is the user an admin user?
+	 */
+	public static function is_user_admin() {
+		return is_user_logged_in() && current_user_can( 'edit_others_pages' );
+	}
+
+	/**
 	 * Create campaign.
 	 *
 	 * @param string $name New campaign name.

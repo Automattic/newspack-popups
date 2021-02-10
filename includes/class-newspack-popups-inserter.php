@@ -645,11 +645,11 @@ final class Newspack_Popups_Inserter {
 			return $general_conditions;
 		}
 		// Hide prompts for logged-in users.
-		if ( is_user_logged_in() ) {
+		if ( Newspack_Popups::is_user_admin() ) {
 			return false;
 		}
 		// Hide overlay prompts in non-interactive mode, for non-logged-in users.
-		if ( ! is_user_logged_in() && Newspack_Popups_Settings::is_non_interactive() && ! Newspack_Popups_Model::is_inline( $popup ) ) {
+		if ( ! Newspack_Popups::is_user_admin() && Newspack_Popups_Settings::is_non_interactive() && ! Newspack_Popups_Model::is_inline( $popup ) ) {
 			return false;
 		}
 		if ( $skip_context_checks ) {
