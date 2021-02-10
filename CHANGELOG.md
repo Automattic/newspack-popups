@@ -1,3 +1,20 @@
+# [1.24.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.23.1...v1.24.0-alpha.1) (2021-02-10)
+
+
+### Bug Fixes
+
+* add cache control headers ([#434](https://github.com/Automattic/newspack-popups/issues/434)) ([3a0d7f5](https://github.com/Automattic/newspack-popups/commit/3a0d7f5d01db930cb4945b49435f8fb2681ac44c))
+* set segment id to null if segment doesn't exist ([#425](https://github.com/Automattic/newspack-popups/issues/425)) ([ef70393](https://github.com/Automattic/newspack-popups/commit/ef70393500bd7444849f247014ffe35b6a30074d))
+
+
+### Features
+
+* campaign management functions ([#427](https://github.com/Automattic/newspack-popups/issues/427)) ([df72141](https://github.com/Automattic/newspack-popups/commit/df7214139826a37ee8033d8d95654b72faef2b5c))
+* create campaign function ([#429](https://github.com/Automattic/newspack-popups/issues/429)) ([52a0e23](https://github.com/Automattic/newspack-popups/commit/52a0e23e4676b3145280c79f995af9f4ffe0a269))
+* retrieve existing WC orders data as donations ([#397](https://github.com/Automattic/newspack-popups/issues/397)) ([b2ab539](https://github.com/Automattic/newspack-popups/commit/b2ab5399d4a4d1c8db0f76141c42ee772f375030)), closes [#313](https://github.com/Automattic/newspack-popups/issues/313)
+* segment priority UI and logic ([#416](https://github.com/Automattic/newspack-popups/issues/416)) ([31ffb38](https://github.com/Automattic/newspack-popups/commit/31ffb3888d8ea0e6a0cf86a1eb832f0b1d792ce6))
+* specify group and segment in url for new campaigns ([#426](https://github.com/Automattic/newspack-popups/issues/426)) ([bcf4c3f](https://github.com/Automattic/newspack-popups/commit/bcf4c3f51896e663e5d84b0b908f365e28aa0e37))
+
 ## [1.23.1](https://github.com/Automattic/newspack-popups/compare/v1.23.0...v1.23.1) (2021-01-29)
 
 
