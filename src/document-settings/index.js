@@ -16,7 +16,7 @@ const PopupsSettingsPanel = ( { hasDisabledPopups, onChange } ) => (
 		<ToggleControl
 			checked={ hasDisabledPopups }
 			onChange={ () => onChange( ! hasDisabledPopups ) }
-			label={ __( 'Disable Campaigns on this post or page', 'newspack-popups' ) }
+			label={ __( 'Disable prompts on this post or page', 'newspack-popups' ) }
 		/>
 	</PluginDocumentSettingPanel>
 );

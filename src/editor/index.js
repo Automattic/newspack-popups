@@ -16,7 +16,6 @@ import { PluginDocumentSettingPanel, PluginPostStatusInfo } from '@wordpress/edi
  */
 import { optionsFieldsSelector } from './utils';
 import Sidebar from './Sidebar';
-import StatusSidebar from './StatusSidebar';
 import FrequencySidebar from './FrequencySidebar';
 import SegmentationSidebar from './SegmentationSidebar';
 import DismissSidebar from './DismissSidebar';
@@ -32,9 +31,6 @@ const mapDispatchToProps = dispatch => {
 		onMetaFieldChange: ( key, value ) => {
 			dispatch( 'core/editor' ).editPost( { meta: { [ key ]: value } } );
 		},
-		onSitewideDefaultChange: value => {
-			dispatch( 'core/editor' ).editPost( { newspack_popups_is_sitewide_default: value } );
-		},
 		createNotice,
 		removeNotice,
 	};
@@ -46,7 +42,6 @@ const connectData = compose( [
 ] );
 
 // Connect data to components.
-const StatusSidebarWithData = connectData( StatusSidebar );
 const SidebarWithData = connectData( Sidebar );
 const FrequencySidebarWithData = connectData( FrequencySidebar );
 const SegmentationSidebarWithData = connectData( SegmentationSidebar );
@@ -54,13 +49,11 @@ const DismissSidebarWithData = connectData( DismissSidebar );
 const ColorsSidebarWithData = connectData( ColorsSidebar );
 
 // Register components.
-registerPlugin( 'newspack-popups-status', { render: StatusSidebarWithData } );
-
 registerPlugin( 'newspack-popups', {
 	render: () => (
 		<PluginDocumentSettingPanel
 			name="popup-settings-panel"
-			title={ __( 'Campaign Settings', 'newspack-popups' ) }
+			title={ __( 'Prompt Settings', 'newspack-popups' ) }
 		>
 			<SidebarWithData />
 		</PluginDocumentSettingPanel>

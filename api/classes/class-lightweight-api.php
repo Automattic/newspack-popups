@@ -35,6 +35,7 @@ class Lightweight_API {
 		'posts_read'                     => [],
 		'donations'                      => [],
 		'email_subscriptions'            => [],
+		'user_id'                        => false,
 	];
 
 	/**
@@ -105,6 +106,7 @@ class Lightweight_API {
 		}
 		header( 'Access-Control-Allow-Origin: https://' . parse_url( $_SERVER['HTTP_REFERER'] )['host'], false ); // phpcs:ignore
 		header( 'Access-Control-Allow-Credentials: true', false );
+		header( 'Cache-Control: no-store, no-cache, must-revalidate' );
 		http_response_code( 200 );
 		print json_encode( $this->response ); // phpcs:ignore
 		exit;
@@ -168,11 +170,11 @@ class Lightweight_API {
 	}
 
 	/**
-	 * Retrieve campaign data.
+	 * Retrieve prompt data.
 	 *
 	 * @param string $client_id Client ID.
-	 * @param string $campaign_id Campaign ID.
-	 * @return object Campaign data.
+	 * @param string $campaign_id Prompt ID.
+	 * @return object Prompt data.
 	 */
 	public function get_campaign_data( $client_id, $campaign_id ) {
 		$data = $this->get_transient( $this->get_transient_name( $client_id, $campaign_id ) );
@@ -180,17 +182,17 @@ class Lightweight_API {
 			'count'            => ! empty( $data['count'] ) ? (int) $data['count'] : 0,
 			'last_viewed'      => ! empty( $data['last_viewed'] ) ? (int) $data['last_viewed'] : 0,
 			// Primarily caused by permanent dismissal, but also by email signup
-			// (on a newsletter campaign) or a UTM param suppression.
+			// (on a newsletter prompt) or a UTM param suppression.
 			'suppress_forever' => ! empty( $data['suppress_forever'] ) ? (int) $data['suppress_forever'] : false,
 		];
 	}
 
 	/**
-	 * Save campaign data.
+	 * Save prompt data.
 	 *
 	 * @param string $client_id Client ID.
-	 * @param string $campaign_id Campaign ID.
-	 * @param string $campaign_data Campaign data.
+	 * @param string $campaign_id Prompt ID.
+	 * @param string $campaign_data Prompt data.
 	 */
 	public function save_campaign_data( $client_id, $campaign_id, $campaign_data ) {
 		return $this->set_transient( $this->get_transient_name( $client_id, $campaign_id ), $campaign_data );
@@ -274,6 +276,9 @@ class Lightweight_API {
 		$updated_client_data['posts_read']          = array_unique( $updated_client_data['posts_read'], SORT_REGULAR );
 		$updated_client_data['email_subscriptions'] = array_unique( $updated_client_data['email_subscriptions'], SORT_REGULAR );
 		$updated_client_data['donations']           = array_unique( $updated_client_data['donations'], SORT_REGULAR );
+		if ( isset( $client_data_update['user_id'] ) ) {
+			$updated_client_data['user_id'] = $client_data_update['user_id'];
+		}
 		return $this->set_transient(
 			$this->get_transient_name( $client_id ),
 			$updated_client_data

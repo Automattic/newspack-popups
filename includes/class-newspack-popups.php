@@ -13,10 +13,10 @@ defined( 'ABSPATH' ) || exit;
 final class Newspack_Popups {
 
 	const NEWSPACK_POPUPS_CPT                   = 'newspack_popups_cpt';
-	const NEWSPACK_POPUPS_SITEWIDE_DEFAULT      = 'newspack_popups_sitewide_default';
 	const NEWSPACK_POPUPS_TAXONOMY              = 'newspack_popups_taxonomy';
 	const NEWSPACK_POPUPS_ACTIVE_CAMPAIGN_GROUP = 'newspack_popups_active_campaign_group';
 	const NEWSPACK_POPUP_PREVIEW_QUERY_PARAM    = 'newspack_popups_preview_id';
+	const NEWSPACK_POPUPS_TAXONOMY_STATUS       = 'newspack_popups_taxonomy_status';
 
 	const LIGHTWEIGHT_API_CONFIG_FILE_PATH_LEGACY = WP_CONTENT_DIR . '/../newspack-popups-config.php';
 	const LIGHTWEIGHT_API_CONFIG_FILE_PATH        = WP_CONTENT_DIR . '/newspack-popups-config.php';
@@ -52,7 +52,6 @@ final class Newspack_Popups {
 		add_action( 'init', [ __CLASS__, 'register_taxonomy' ] );
 		add_action( 'enqueue_block_editor_assets', [ __CLASS__, 'enqueue_block_editor_assets' ] );
 		add_filter( 'display_post_states', [ __CLASS__, 'display_post_states' ], 10, 2 );
-		add_action( 'rest_api_init', [ __CLASS__, 'rest_api_init' ] );
 		add_action( 'save_post_' . self::NEWSPACK_POPUPS_CPT, [ __CLASS__, 'popup_default_fields' ], 10, 3 );
 
 		add_filter( 'show_admin_bar', [ __CLASS__, 'show_admin_bar' ], 10, 2 ); // phpcs:ignore WordPressVIPMinimum.UserExperience.AdminBarRemoval.RemovalDetected
@@ -72,20 +71,20 @@ final class Newspack_Popups {
 	 */
 	public static function register_cpt() {
 		$labels = [
-			'name'               => _x( 'Campaigns', 'post type general name', 'newspack-popups' ),
-			'singular_name'      => _x( 'Campaign', 'post type singular name', 'newspack-popups' ),
-			'menu_name'          => _x( 'Campaigns', 'admin menu', 'newspack-popups' ),
-			'name_admin_bar'     => _x( 'Campaign', 'add new on admin bar', 'newspack-popups' ),
+			'name'               => _x( 'Prompts', 'post type general name', 'newspack-popups' ),
+			'singular_name'      => _x( 'Prompt', 'post type singular name', 'newspack-popups' ),
+			'menu_name'          => _x( 'Prompts', 'admin menu', 'newspack-popups' ),
+			'name_admin_bar'     => _x( 'Prompt', 'add new on admin bar', 'newspack-popups' ),
 			'add_new'            => _x( 'Add New', 'popup', 'newspack-popups' ),
-			'add_new_item'       => __( 'Add New Campaign', 'newspack-popups' ),
-			'new_item'           => __( 'New Campaign', 'newspack-popups' ),
-			'edit_item'          => __( 'Edit Campaign', 'newspack-popups' ),
-			'view_item'          => __( 'View Campaign', 'newspack-popups' ),
-			'all_items'          => __( 'All Campaigns', 'newspack-popups' ),
-			'search_items'       => __( 'Search Campaigns', 'newspack-popups' ),
-			'parent_item_colon'  => __( 'Parent Campaigns:', 'newspack-popups' ),
-			'not_found'          => __( 'No Campaigns found.', 'newspack-popups' ),
-			'not_found_in_trash' => __( 'No Campaigns found in Trash.', 'newspack-popups' ),
+			'add_new_item'       => __( 'Add New Prompt', 'newspack-popups' ),
+			'new_item'           => __( 'New Prompt', 'newspack-popups' ),
+			'edit_item'          => __( 'Edit Prompt', 'newspack-popups' ),
+			'view_item'          => __( 'View Prompt', 'newspack-popups' ),
+			'all_items'          => __( 'All Prompts', 'newspack-popups' ),
+			'search_items'       => __( 'Search Prompts', 'newspack-popups' ),
+			'parent_item_colon'  => __( 'Parent Prompts:', 'newspack-popups' ),
+			'not_found'          => __( 'No Prompts found.', 'newspack-popups' ),
+			'not_found_in_trash' => __( 'No Prompts found in Trash.', 'newspack-popups' ),
 		];
 
 		$cpt_args = [
@@ -277,9 +276,9 @@ final class Newspack_Popups {
 	public static function register_taxonomy() {
 		$taxonomy_args = [
 			'labels'        => [
-				'name'          => __( 'Campaign Groups', 'newspack-popups' ),
-				'singular_name' => __( 'Campaign Group', 'newspack-popups' ),
-				'add_new_item'  => __( 'Add Campaign Group', 'newspack-popups' ),
+				'name'          => __( 'Campaigns', 'newspack-popups' ),
+				'singular_name' => __( 'Campaign', 'newspack-popups' ),
+				'add_new_item'  => __( 'Add Campaign', 'newspack-popups' ),
 			],
 			'hierarchical'  => true,
 			'public'        => false,
@@ -382,11 +381,11 @@ final class Newspack_Popups {
 		}
 		$post_status_object = get_post_status_object( $post->post_status );
 		$is_inline          = get_post_meta( $post->ID, 'placement', true ) == 'inline';
+
 		if ( $is_inline ) {
 			$post_states[ $post_status_object->name ] = __( 'Inline', 'newspack-popups' );
-		} elseif ( absint( get_option( self::NEWSPACK_POPUPS_SITEWIDE_DEFAULT, null ) ) === absint( $post->ID ) ) {
-			$post_states[ $post_status_object->name ] = __( 'Sitewide Default', 'newspack-popups' );
 		}
+
 		return $post_states;
 	}
 
@@ -423,28 +422,6 @@ final class Newspack_Popups {
 	}
 
 	/**
-	 * Add newspack_popups_is_sitewide_default to Popup object.
-	 */
-	public static function rest_api_init() {
-		register_rest_field(
-			[ self::NEWSPACK_POPUPS_CPT ],
-			'newspack_popups_is_sitewide_default',
-			[
-				'get_callback'    => function( $post ) {
-					return absint( $post['id'] ) === absint( get_option( self::NEWSPACK_POPUPS_SITEWIDE_DEFAULT, null ) );
-				},
-				'update_callback' => function ( $value, $post ) {
-					if ( $value ) {
-						return Newspack_Popups_Model::set_sitewide_popup( $post->ID );
-					} else {
-						return Newspack_Popups_Model::unset_sitewide_popup( $post->ID );
-					}
-				},
-			]
-		);
-	}
-
-	/**
 	 * Get the default dismiss text.
 	 */
 	public static function get_default_dismiss_text() {
@@ -464,6 +441,8 @@ final class Newspack_Popups {
 			return;
 		}
 		$type      = isset( $_GET['placement'] ) ? sanitize_text_field( $_GET['placement'] ) : null; //phpcs:ignore
+		$segment   = isset( $_GET['segment'] ) ? sanitize_text_field( $_GET['segment'] ) : ''; //phpcs:ignore
+		$group     = isset( $_GET['group'] ) ? absint( $_GET['group'] ) : null; //phpcs:ignore
 		$frequency = 'daily';
 
 		switch ( $type ) {
@@ -516,7 +495,11 @@ final class Newspack_Popups {
 		update_post_meta( $post_id, 'trigger_delay', 3 );
 		update_post_meta( $post_id, 'trigger_scroll_progress', 30 );
 		update_post_meta( $post_id, 'utm_suppression', '' );
-		update_post_meta( $post_id, 'selected_segment_id', '' );
+		update_post_meta( $post_id, 'selected_segment_id', $segment );
+
+		if ( $group ) {
+			wp_set_post_terms( $post_id, [ $group ], self::NEWSPACK_POPUPS_TAXONOMY );
+		}
 	}
 
 	/**
@@ -566,6 +549,118 @@ final class Newspack_Popups {
 				</p>
 			</div>
 		<?php
+	}
+
+	/**
+	 * Is the user an admin user?
+	 */
+	public static function is_user_admin() {
+		return is_user_logged_in() && current_user_can( 'edit_others_pages' );
+	}
+
+	/**
+	 * Create campaign.
+	 *
+	 * @param string $name New campaign name.
+	 */
+	public static function create_campaign( $name ) {
+		$term = wp_insert_term( $name, self::NEWSPACK_POPUPS_TAXONOMY );
+		if ( is_wp_error( $term ) ) {
+			$term = get_term_by( 'name', $name, self::NEWSPACK_POPUPS_TAXONOMY );
+		}
+		$term = (object) $term;
+		return $term->term_id;
+	}
+
+	/**
+	 * Delete campaign.
+	 *
+	 * @param int $id Campaign ID.
+	 */
+	public static function delete_campaign( $id ) {
+		wp_delete_term( $id, self::NEWSPACK_POPUPS_TAXONOMY );
+	}
+
+	/**
+	 * Duplicate campaign.
+	 *
+	 * @param int    $id Campaign ID.
+	 * @param string $name New campaign name.
+	 */
+	public static function duplicate_campaign( $id, $name ) {
+		$term = wp_insert_term( $name, self::NEWSPACK_POPUPS_TAXONOMY );
+		if ( is_wp_error( $term ) ) {
+			$term = get_term_by( 'name', $name, self::NEWSPACK_POPUPS_TAXONOMY );
+		}
+		$term = (object) $term;
+		$args = [
+			'post_type'      => self::NEWSPACK_POPUPS_CPT,
+			'posts_per_page' => 100,
+			'fields'         => 'ids',
+			'post_status'    => [ 'publish', 'pending', 'draft', 'future' ],
+			'tax_query'      => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+				[
+					'taxonomy' => self::NEWSPACK_POPUPS_TAXONOMY,
+					'field'    => 'term_id',
+					'terms'    => [ $id ],
+				],
+			],
+		];
+
+		$query = new WP_Query( $args );
+		foreach ( $query->posts as $id ) {
+			wp_set_post_terms( $id, $term->term_id, self::NEWSPACK_POPUPS_TAXONOMY, true );
+		}
+		return $term->term_id;
+	}
+
+	/**
+	 * Rename campaign.
+	 *
+	 * @param int    $id Campaign ID.
+	 * @param string $name New campaign name.
+	 */
+	public static function rename_campaign( $id, $name ) {
+		wp_update_term(
+			$id,
+			self::NEWSPACK_POPUPS_TAXONOMY,
+			[
+				'name' => $name,
+			]
+		);
+	}
+
+	/**
+	 * Archive campaign.
+	 *
+	 * @param int  $id Campaign ID.
+	 * @param bool $status Whether to archive or unarchive (true = archive, false = unarchive).
+	 */
+	public static function archive_campaign( $id, $status ) {
+		update_term_meta( $id, self::NEWSPACK_POPUPS_TAXONOMY_STATUS, $status ? 'archive' : '' );
+	}
+
+	/**
+	 * Retrieve campaigns.
+	 */
+	public static function get_groups() {
+		$groups = array_map(
+			function( $group ) {
+				$group->status = get_term_meta(
+					$group->term_id,
+					self::NEWSPACK_POPUPS_TAXONOMY_STATUS,
+					true
+				);
+				return $group;
+			},
+			get_terms(
+				self::NEWSPACK_POPUPS_TAXONOMY,
+				[
+					'hide_empty' => false,
+				]
+			)
+		);
+		return $groups;
 	}
 }
 Newspack_Popups::instance();
