@@ -211,14 +211,15 @@ $font__system: -apple-system, blinkmacsystemfont, 'Segoe UI', roboto, oxygen, ub
 	}
 }
 
-.newspack-draft-popup {
+.newspack-inactive-popup-status {
 	&::before {
 		background: black;
 		color: white;
-		content: 'INACTIVE';
+		content: attr( data-popup-status );
 		font-family: $font__system;
 		font-size: 0.8em;
 		font-weight: bold;
+		text-transform: uppercase;
 		left: 6px;
 		line-height: 1.5;
 		padding: 0 0.25em;
