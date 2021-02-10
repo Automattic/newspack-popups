@@ -168,6 +168,8 @@ final class Newspack_Popups_Model {
 			'operator' => 'NOT EXISTS',
 		];
 
+		$args['tax_query'] = [ $tax_query ]; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+
 		// If previewing specific campaign.
 		if ( ! empty( $campaign_id ) ) {
 			$campaign_tax_query = [ 'taxonomy' => Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY ];
@@ -179,10 +181,8 @@ final class Newspack_Popups_Model {
 				$campaign_tax_query['terms'] = [ $campaign_id ];
 			}
 
-			$tax_query[] = $campaign_tax_query;
+			$args['tax_query'][] = $campaign_tax_query;
 		}
-
-		$args['tax_query'] = [ $tax_query ]; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
 
 		if ( ! empty( $campaign_id ) ) {
 			$args['tax_query']['relation'] = 'AND';
