@@ -163,15 +163,24 @@ final class Newspack_Popups_Model {
 			'meta_compare' => 'IN',
 		];
 
+		$tax_query = [
+			'taxonomy' => 'category',
+			'operator' => 'NOT EXISTS',
+		];
+
 		// If previewing specific groups.
 		if ( ! empty( $group_slugs ) ) {
-			$args['tax_query'] = [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
-				[
-					'taxonomy' => Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY,
-					'field'    => 'term_id',
-					'terms'    => $group_slugs,
-				],
+			$tax_query[] = [
+				'taxonomy' => Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY,
+				'field'    => 'term_id',
+				'terms'    => $group_slugs,
 			];
+		}
+
+		$args['tax_query'] = [ $tax_query ]; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+
+		if ( ! empty( $group_slugs ) ) {
+			$args['tax_query']['relation'] = 'AND';
 		}
 
 		return self::retrieve_popups_with_query( new WP_Query( $args ) );
