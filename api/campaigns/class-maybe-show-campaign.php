@@ -88,20 +88,20 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			}
 		);
 
+		$this->debug['campaigns'] = $matching_campaigns;
+
 		// Check each matching campaign against other global factors.
 		foreach ( $matching_campaigns as $campaign ) {
-			$campaign_should_be_shown = $view_as_spec && isset( $view_as_spec['segment'] ) && $campaign->s === $view_as_spec['segment'] ?
-				true :
-				$this->should_campaign_be_shown(
-					$client_id,
-					$campaign,
-					$settings,
-					filter_input( INPUT_SERVER, 'HTTP_REFERER', FILTER_SANITIZE_STRING ),
-					'',
-					$view_as_spec,
-					false,
-					false
-				);
+			$campaign_should_be_shown = $this->should_campaign_be_shown(
+				$client_id,
+				$campaign,
+				$settings,
+				filter_input( INPUT_SERVER, 'HTTP_REFERER', FILTER_SANITIZE_STRING ),
+				'',
+				$view_as_spec,
+				false,
+				false
+			);
 
 			// If an overlay is already able to be shown, pick the one that has the higher priority.
 			if ( $campaign_should_be_shown && 'o' === $campaign->t ) {
@@ -261,7 +261,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			$campaign_data['suppress_forever'] = true;
 		}
 
-		// Handle newsletter subscription conditions.
+		// Handle segmentation.
 		$campaign_segment = isset( $settings->all_segments->{$campaign->s} ) ? $settings->all_segments->{$campaign->s} : false;
 		if ( ! empty( $campaign_segment ) ) {
 			$campaign_segment = Campaign_Data_Utils::canonize_segment( $campaign_segment );
@@ -300,10 +300,17 @@ class Maybe_Show_Campaign extends Lightweight_API {
 
 		// Using "view as" feature.
 		if ( $view_as_spec ) {
-			if ( ( isset( $view_as_spec['segment'] ) && $view_as_spec['segment'] === $campaign->s ) || ! property_exists( $settings->all_segments, $view_as_spec['segment'] ) ) {
-				$should_display = true;
-			} else {
-				$should_display = false;
+			$should_display = false;
+			if ( isset( $view_as_spec['segment'] ) && $view_as_spec['segment'] ) {
+				// Show prompts with a matching segment, or "everyone". Don't show any prompts that don't match the previewed segment.
+				if ( $view_as_spec['segment'] === $campaign->s || empty( $campaign->s ) ) {
+					$should_display = true;
+				}
+
+				// Show prompts if the view_as segment doesn't exist.
+				if ( ! property_exists( $settings->all_segments, $view_as_spec['segment'] ) ) {
+					$should_display = true;
+				}
 			}
 		}
 
