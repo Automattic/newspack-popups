@@ -1,3 +1,11 @@
+# [1.24.0-alpha.2](https://github.com/Automattic/newspack-popups/compare/v1.24.0-alpha.1...v1.24.0-alpha.2) (2021-02-11)
+
+
+### Bug Fixes
+
+* prevent category overlays from being fetched erroneously ([#439](https://github.com/Automattic/newspack-popups/issues/439)) ([14f3c88](https://github.com/Automattic/newspack-popups/commit/14f3c88e12cc440459e5228b64c50002c1b45471))
+* preview functionality by campaign/group ([#438](https://github.com/Automattic/newspack-popups/issues/438)) ([fb79dfa](https://github.com/Automattic/newspack-popups/commit/fb79dfaccbed418d6dcb26a36686f779660ee6fb))
+
 # [1.24.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.23.1...v1.24.0-alpha.1) (2021-02-10)
 
 
