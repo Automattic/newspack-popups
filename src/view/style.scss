@@ -2,6 +2,10 @@
 $color__secondary: #555;
 $color__secondary-variation: darken( $color__secondary, 10% );
 
+// System Font
+$font__system: -apple-system, blinkmacsystemfont, 'Segoe UI', roboto, oxygen, ubuntu, cantarell,
+	'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+
 .newspack-lightbox {
 	align-items: center;
 	bottom: 0;
@@ -204,6 +208,24 @@ $color__secondary-variation: darken( $color__secondary, 10% );
 
 	&:focus {
 		outline: none;
+	}
+}
+
+.newspack-inactive-popup-status {
+	&::before {
+		background: black;
+		color: white;
+		content: attr( data-popup-status );
+		font-family: $font__system;
+		font-size: 0.8em;
+		font-weight: bold;
+		text-transform: uppercase;
+		left: 6px;
+		line-height: 1.5;
+		padding: 0 0.25em;
+		position: absolute;
+		top: 6px;
+		z-index: 1;
 	}
 }
 
