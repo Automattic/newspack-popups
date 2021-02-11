@@ -201,12 +201,12 @@ final class Newspack_Popups_Model {
 	 */
 	public static function retrieve_inline_popups( $include_unpublished = false, $campaign_id = false ) {
 		$args = [
-			'post_type'    => Newspack_Popups::NEWSPACK_POPUPS_CPT,
-			'post_status'  => $include_unpublished ? [ 'draft', 'pending', 'future', 'publish' ] : 'publish',
-			'meta_key'     => 'placement',
+			'post_type'      => Newspack_Popups::NEWSPACK_POPUPS_CPT,
+			'post_status'    => $include_unpublished ? [ 'draft', 'pending', 'future', 'publish' ] : 'publish',
+			'meta_key'       => 'placement',
 			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-			'meta_value'   => self::$inline_placements,
-			'meta_compare' => 'IN',
+			'meta_value'     => self::$inline_placements,
+			'meta_compare'   => 'IN',
 			'posts_per_page' => 100,
 		];
 
