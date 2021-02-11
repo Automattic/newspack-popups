@@ -767,12 +767,23 @@ final class Newspack_Popups_Model {
 		if ( Newspack_Popups_Settings::is_non_interactive() ) {
 			return '';
 		}
-		if ( Newspack_Popups::previewed_popup_id() &&
-			Newspack_Popups::is_user_admin()
-		) {
+		if ( Newspack_Popups::previewed_popup_id() && Newspack_Popups::is_user_admin() ) {
 			return '';
 		}
 		return 'amp-access="popups.' . esc_attr( self::canonize_popup_id( $popup['id'] ) ) . '" amp-access-hide ';
+	}
+
+	/**
+	 * Get data-popup-status attribute for use in previews, if viewing as an admin.
+	 *
+	 * @param object $popup Popup.
+	 */
+	public static function get_data_status_preview_attrs( $popup ) {
+		if ( ! Newspack_Popups::is_user_admin() ) {
+			return '';
+		}
+		$status = 'future' === $popup['status'] ? __( 'scheduled', 'newspack-popups' ) : $popup['status'];
+		return 'data-popup-status="' . esc_attr( $status ) . '" ';
 	}
 
 	/**
@@ -802,6 +813,7 @@ final class Newspack_Popups_Model {
 		$classes                = [];
 		$classes[]              = 'above_header' === $popup['options']['placement'] ? 'newspack-above-header-popup' : null;
 		$classes[]              = 'inline' === $popup['options']['placement'] ? 'newspack-inline-popup' : null;
+		$classes[]              = 'publish' !== $popup['status'] ? 'newspack-inactive-popup-status' : null;
 		$classes[]              = ( ! empty( $popup['title'] ) && $display_title ) ? 'newspack-lightbox-has-title' : null;
 		$classes[]              = $is_newsletter_prompt ? 'newspack-newsletter-prompt-inline' : null;
 
@@ -818,7 +830,15 @@ final class Newspack_Popups_Model {
 		ob_start();
 		?>
 			<?php self::insert_event_tracking( $popup, $body, $element_id ); ?>
-			<amp-layout <?php echo self::get_access_attrs( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?> class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>" role="button" tabindex="0" style="<?php echo esc_attr( self::container_style( $popup ) ); ?>" id="<?php echo esc_attr( $element_id ); ?>">
+			<amp-layout
+				<?php echo self::get_access_attrs( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+				<?php echo self::get_data_status_preview_attrs( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+				class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>"
+				role="button"
+				tabindex="0"
+				style="<?php echo esc_attr( self::container_style( $popup ) ); ?>"
+				id="<?php echo esc_attr( $element_id ); ?>"
+			>
 						<?php if ( ! empty( $popup['title'] ) && $display_title ) : ?>
 					<h1 class="newspack-popup-title"><?php echo esc_html( $popup['title'] ); ?></h1>
 				<?php endif; ?>
@@ -873,6 +893,8 @@ final class Newspack_Popups_Model {
 		$classes                = array( 'newspack-lightbox', 'newspack-lightbox-placement-' . $popup['options']['placement'] );
 		$classes[]              = ( ! empty( $popup['title'] ) && $display_title ) ? 'newspack-lightbox-has-title' : null;
 		$classes[]              = $is_newsletter_prompt ? 'newspack-newsletter-prompt-overlay' : null;
+		$wrapper_classes        = [ 'newspack-popup-wrapper' ];
+		$wrapper_classes[]      = 'publish' !== $popup['status'] ? 'newspack-inactive-popup-status' : null;
 		$is_scroll_triggered    = 'scroll' === $popup['options']['trigger_type'];
 
 		add_filter(
@@ -884,8 +906,15 @@ final class Newspack_Popups_Model {
 
 		ob_start();
 		?>
-		<amp-layout <?php echo self::get_access_attrs( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?> class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>" role="button" tabindex="0" id="<?php echo esc_attr( $element_id ); ?>">
-			<div class="newspack-popup-wrapper" style="<?php echo esc_attr( self::container_style( $popup ) ); ?>">
+		<amp-layout
+			<?php echo self::get_access_attrs( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+			<?php echo self::get_data_status_preview_attrs( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+			class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>"
+			role="button"
+			tabindex="0"
+			id="<?php echo esc_attr( $element_id ); ?>"
+		>
+			<div class="<?php echo esc_attr( implode( ' ', $wrapper_classes ) ); ?>" data-popup-status="<?php echo esc_attr( $popup['status'] ); ?>" style="<?php echo esc_attr( self::container_style( $popup ) ); ?>">
 				<div class="newspack-popup">
 					<?php if ( ! empty( $popup['title'] ) && $display_title ) : ?>
 						<h1 class="newspack-popup-title"><?php echo esc_html( $popup['title'] ); ?></h1>
