@@ -163,18 +163,29 @@ final class Newspack_Popups_Model {
 			'meta_compare' => 'IN',
 		];
 
+		$tax_query = [
+			'taxonomy' => 'category',
+			'operator' => 'NOT EXISTS',
+		];
+
+		$args['tax_query'] = [ $tax_query ]; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+
 		// If previewing specific campaign.
 		if ( ! empty( $campaign_id ) ) {
-			$tax_query = [ 'taxonomy' => Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY ];
+			$campaign_tax_query = [ 'taxonomy' => Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY ];
 
 			if ( -1 === (int) $campaign_id ) {
-				$tax_query['operator'] = 'NOT EXISTS';
+				$campaign_tax_query['operator'] = 'NOT EXISTS';
 			} else {
-				$tax_query['field'] = 'term_id';
-				$tax_query['terms'] = [ $campaign_id ];
+				$campaign_tax_query['field'] = 'term_id';
+				$campaign_tax_query['terms'] = [ $campaign_id ];
 			}
 
-			$args['tax_query'] = [ $tax_query ]; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+			$args['tax_query'][] = $campaign_tax_query;
+		}
+
+		if ( ! empty( $campaign_id ) ) {
+			$args['tax_query']['relation'] = 'AND';
 		}
 
 		return self::retrieve_popups_with_query( new WP_Query( $args ) );
