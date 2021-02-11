@@ -37,7 +37,7 @@ final class Newspack_Popups_View_As {
 	 * @return string "View as" specification.
 	 */
 	public static function viewing_as_spec() {
-		if ( ! is_user_logged_in() || ! current_user_can( 'edit_others_pages' ) ) {
+		if ( ! Newspack_Popups::is_user_admin() ) {
 			return false;
 		}
 		if ( isset( $_GET['view_as'] ) && $_GET['view_as'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized

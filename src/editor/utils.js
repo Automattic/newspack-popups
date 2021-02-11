@@ -34,9 +34,6 @@ export const optionsFieldsSelector = select => {
 		frequency,
 		overlay_color,
 		overlay_opacity,
-		newspack_popups_is_sitewide_default: getEditedPostAttribute(
-			'newspack_popups_is_sitewide_default'
-		),
 		placement,
 		trigger_scroll_progress,
 		trigger_delay,

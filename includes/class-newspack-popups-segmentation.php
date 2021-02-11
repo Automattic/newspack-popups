@@ -228,21 +228,46 @@ final class Newspack_Popups_Segmentation {
 			],
 		];
 
-		$client_data_endpoint             = self::get_client_data_endpoint();
-		$amp_analytics_config['requests'] = [
-			'event' => esc_url( $client_data_endpoint ),
-		];
+		$initial_client_report_url_params = [];
 
 		// Handle Mailchimp URL parameters.
 		if ( isset( $_GET['mc_cid'], $_GET['mc_eid'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			$amp_analytics_config['triggers']['trackMailchimpData'] = [
+			$initial_client_report_url_params['mc_cid'] = sanitize_text_field( $_GET['mc_cid'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$initial_client_report_url_params['mc_eid'] = sanitize_text_field( $_GET['mc_eid'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		}
+		if ( is_user_logged_in() ) {
+			if ( function_exists( 'wc_get_orders' ) ) {
+				$user_orders = wc_get_orders( [ 'customer_id' => get_current_user_id() ] );
+				if ( count( $user_orders ) ) {
+					$orders = [];
+					foreach ( $user_orders as $order ) {
+						$order_data = $order->get_data();
+						$orders[]   = [
+							'order_id' => $order_data['id'],
+							'date'     => date_format( date_create( $order_data['date_created'] ), 'Y-m-d' ),
+							'amount'   => $order_data['total'],
+						];
+					}
+					$initial_client_report_url_params['orders'] = wp_json_encode( $orders );
+				}
+			}
+
+			$initial_client_report_url_params['user_id'] = get_current_user_id();
+		}
+
+		if ( ! empty( $initial_client_report_url_params ) ) {
+			$amp_analytics_config['requests']                            = [
+				'initialClientDataReport' => esc_url( self::get_client_data_endpoint() ),
+			];
+			$amp_analytics_config['triggers']['initialClientDataReport'] = [
 				'on'             => 'ini-load',
-				'request'        => 'event',
-				'extraUrlParams' => [
-					'mc_cid'    => sanitize_text_field( $_GET['mc_cid'] ), // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-					'mc_eid'    => sanitize_text_field( $_GET['mc_eid'] ), // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-					'client_id' => 'CLIENT_ID(' . esc_attr( self::NEWSPACK_SEGMENTATION_CID_NAME ) . ')',
-				],
+				'request'        => 'initialClientDataReport',
+				'extraUrlParams' => array_merge(
+					$initial_client_report_url_params,
+					[
+						'client_id' => 'CLIENT_ID(' . esc_attr( self::NEWSPACK_SEGMENTATION_CID_NAME ) . ')',
+					]
+				),
 			];
 		}
 
@@ -309,7 +334,55 @@ final class Newspack_Popups_Segmentation {
 	 * Get all configured segments.
 	 */
 	public static function get_segments() {
-		return get_option( self::SEGMENTS_OPTION_NAME, [] );
+		$segments                  = get_option( self::SEGMENTS_OPTION_NAME, [] );
+		$segments_without_priority = array_filter(
+			$segments,
+			function( $segment ) {
+				return ! isset( $segment['priority'] );
+			}
+		);
+
+		// Failsafe to ensure that all segments have an assigned priority.
+		if ( 0 < count( $segments_without_priority ) ) {
+			$segments = self::reindex_segments( $segments );
+		}
+
+		return $segments;
+	}
+
+	/**
+	 * Get a single segment by ID.
+	 *
+	 * @param string $id A segment id.
+	 * @return object|null The single segment object with matching ID, or null.
+	 */
+	public static function get_segment( $id ) {
+		$matching_segments = array_values(
+			array_filter(
+				self::get_segments(),
+				function( $segment ) use ( $id ) {
+					return $segment['id'] === $id;
+				}
+			)
+		);
+
+		if ( 0 < count( $matching_segments ) ) {
+			return $matching_segments[0];
+		}
+
+		return null;
+	}
+
+	/**
+	 * Get segment IDs.
+	 */
+	public static function get_segment_ids() {
+		return array_map(
+			function( $segment ) {
+				return $segment['id'];
+			},
+			self::get_segments()
+		);
 	}
 
 	/**
@@ -432,6 +505,34 @@ final class Newspack_Popups_Segmentation {
 			'total'      => count( $all_client_data ),
 			'in_segment' => count( $client_in_segment ),
 		];
+	}
+
+	/**
+	 * Sort all segments by relative priority.
+	 *
+	 * @param object $segments Array of segments, sorted by priority property.
+	 */
+	public static function sort_segments( $segments ) {
+		update_option( self::SEGMENTS_OPTION_NAME, self::reindex_segments( $segments ) );
+		return self::get_segments();
+	}
+
+	/**
+	 * Reindex segment priorities based on current position in array.
+	 *
+	 * @param object $segments Array of segments.
+	 */
+	public static function reindex_segments( $segments ) {
+		$index = 0;
+
+		return array_map(
+			function( $segment ) use ( &$index ) {
+				$segment['priority'] = $index;
+				$index++;
+				return $segment;
+			},
+			$segments
+		);
 	}
 
 	/**

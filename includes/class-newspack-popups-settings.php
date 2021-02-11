@@ -97,7 +97,7 @@ class Newspack_Popups_Settings {
 				'key'   => 'suppress_newsletter_campaigns',
 				'value' => get_option( 'suppress_newsletter_campaigns', true ),
 				'label' => __(
-					'Suppress Newsletter campaigns if visitor is coming from email.',
+					'Suppress Newsletter prompts if visitor is coming from email.',
 					'newspack-popups'
 				),
 			],
@@ -105,7 +105,7 @@ class Newspack_Popups_Settings {
 				'key'   => 'suppress_all_newsletter_campaigns_if_one_dismissed',
 				'value' => get_option( 'suppress_all_newsletter_campaigns_if_one_dismissed', true ),
 				'label' => __(
-					'Suppress all Newsletter campaigns if at least one Newsletter campaign was permanently dismissed.',
+					'Suppress all Newsletter prompts if at least one Newsletter campaign was permanently dismissed.',
 					'newspack-popups'
 				),
 			],
@@ -113,7 +113,7 @@ class Newspack_Popups_Settings {
 				'key'   => 'suppress_donation_campaigns_if_donor',
 				'value' => get_option( 'suppress_donation_campaigns_if_donor', false ),
 				'label' => __(
-					'Suppress all donation campaigns if the reader has donated.',
+					'Suppress all donation prompts if the reader has donated.',
 					'newspack-popups'
 				),
 			],
@@ -125,7 +125,7 @@ class Newspack_Popups_Settings {
 					'newspack-popups'
 				),
 				'help'  => __(
-					'Use this setting in high traffic scenarios. No API requests will be made, reducing server load. Inline campaigns will be shown to all users without dismissal buttons, and overlay campaigns will be suppressed.',
+					'Use this setting in high traffic scenarios. No API requests will be made, reducing server load. Inline prompts will be shown to all users without dismissal buttons, and overlay prompts will be suppressed.',
 					'newspack-popups'
 				),
 			],
@@ -149,7 +149,8 @@ class Newspack_Popups_Settings {
 				'value' => array_reduce(
 					Newspack_Popups_Segmentation::get_segments(),
 					function( $acc, $item ) {
-						$acc[ $item['id'] ] = $item['configuration'];
+						$acc[ $item['id'] ]             = $item['configuration'];
+						$acc[ $item['id'] ]['priority'] = $item['priority'];
 						return $acc;
 					},
 					[]
@@ -211,7 +212,7 @@ class Newspack_Popups_Settings {
 	}
 
 	/**
-	 * Activate campaigns by group.
+	 * Activate prompts by campaign.
 	 *
 	 * @param int $ids Campaign IDs to publish.
 	 * @return bool Whether operation was successful.
@@ -251,7 +252,7 @@ class Newspack_Popups_Settings {
 	}
 
 	/**
-	 * Unpublish campaigns by group.
+	 * Unpublish prompts by campaign.
 	 *
 	 * @param int $ids Campaign IDs to unpublish.
 	 * @return bool Whether operation was successful.
