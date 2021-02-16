@@ -1,3 +1,10 @@
+## [1.24.1](https://github.com/Automattic/newspack-popups/compare/v1.24.0...v1.24.1) (2021-02-16)
+
+
+### Bug Fixes
+
+* increase max number of prompts to retrieve ([#446](https://github.com/Automattic/newspack-popups/issues/446)) ([fb380bf](https://github.com/Automattic/newspack-popups/commit/fb380bf79b4f1a79645fa27d4156981fec22442a))
+
 # [1.24.0](https://github.com/Automattic/newspack-popups/compare/v1.23.1...v1.24.0) (2021-02-11)
 
 
