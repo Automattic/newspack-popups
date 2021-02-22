@@ -73,19 +73,34 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			);
 		}
 
-		$page_referer_url = isset( $_REQUEST['ref'] ) ? $_REQUEST['ref'] : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-
+		$referer_url                   = filter_input( INPUT_SERVER, 'HTTP_REFERER', FILTER_SANITIZE_STRING );
+		$page_referer_url              = isset( $_REQUEST['ref'] ) ? $_REQUEST['ref'] : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$all_segments                  = isset( $settings->all_segments ) ? $settings->all_segments : [];
+		$best_priority_segment         = $this->get_best_priority_segment( $all_segments, $client_id, $referer_url, $page_referer_url, $view_as_spec );
 		$overlay_to_maybe_display      = null;
 		$above_header_to_maybe_display = null;
 
-		foreach ( $campaigns as $campaign ) {
+		// Filter campaigns to only those that match the best priority segment, or the default segment.
+		$matching_campaigns = array_filter(
+			$campaigns,
+			function( $campaign ) use ( $best_priority_segment ) {
+				return ( $best_priority_segment === $campaign->s || empty( $campaign->s ) );
+			}
+		);
+
+		$this->debug['campaigns'] = $matching_campaigns;
+
+		// Check each matching campaign against other global factors.
+		foreach ( $matching_campaigns as $campaign ) {
 			$campaign_should_be_shown = $this->should_campaign_be_shown(
 				$client_id,
 				$campaign,
 				$settings,
 				filter_input( INPUT_SERVER, 'HTTP_REFERER', FILTER_SANITIZE_STRING ),
-				$page_referer_url,
-				$view_as_spec
+				'',
+				$view_as_spec,
+				false,
+				false
 			);
 
 			// If an overlay is already able to be shown, pick the one that has the higher priority.
@@ -93,7 +108,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 				if ( empty( $overlay_to_maybe_display ) ) {
 					$overlay_to_maybe_display = $campaign;
 				} else {
-					$higher_priority_item = self::get_higher_priority_item( $overlay_to_maybe_display, $campaign, $settings->all_segments );
+					$higher_priority_item = self::get_higher_priority_item( $overlay_to_maybe_display, $campaign, $all_segments );
 
 					// If the previous overlay already has a higher priority, only show that one. Otherwise, show this one instead.
 					$response[ $overlay_to_maybe_display->id ] = $overlay_to_maybe_display->id === $higher_priority_item->id;
@@ -107,7 +122,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 				if ( empty( $above_header_to_maybe_display ) ) {
 					$above_header_to_maybe_display = $campaign;
 				} else {
-					$higher_priority_item = self::get_higher_priority_item( $above_header_to_maybe_display, $campaign, $settings->all_segments );
+					$higher_priority_item = self::get_higher_priority_item( $above_header_to_maybe_display, $campaign, $all_segments );
 
 					// If the previous above-header already has a higher priority, only show that one. Otherwise, show this one instead.
 					$response[ $above_header_to_maybe_display->id ] = $above_header_to_maybe_display->id === $higher_priority_item->id;
@@ -118,8 +133,56 @@ class Maybe_Show_Campaign extends Lightweight_API {
 
 			$response[ $campaign->id ] = $campaign_should_be_shown;
 		}
+
 		$this->response = $response;
 		$this->respond();
+	}
+
+	/**
+	 * Get the highest-priority segment that matches the client.
+	 *
+	 * @param object      $all_segments All segments.
+	 * @param string      $client_id Client ID.
+	 * @param string      $referer_url URL of the page performing the API request.
+	 * @param string      $page_referer_url URL of the referrer of the frontend page that is making the API request.
+	 * @param object|bool $view_as_spec View as spec.
+	 *
+	 * @return string|null ID of the best matching segment, or null if the client matches no segment.
+	 */
+	public function get_best_priority_segment( $all_segments = [], $client_id, $referer_url = '', $page_referer_url = '', $view_as_spec = false ) {
+		$client_data           = $this->get_client_data( $client_id );
+		$best_segment_priority = PHP_INT_MAX;
+		$best_priority_segment = null;
+
+		foreach ( $all_segments as $segment_id => $segment ) {
+			// If using "view as" feature, automatically make that the matching segment. Otherwise, find the matching segment with the highest priority.
+			if ( $view_as_spec && isset( $view_as_spec['segment'] ) ) {
+				if ( $view_as_spec['segment'] === $segment_id ) {
+					$best_priority_segment = $segment_id;
+				}
+			} else {
+				// Determine whether the client matches the segment criteria.
+				$segment                = Campaign_Data_Utils::canonize_segment( $segment );
+				$client_matches_segment = Campaign_Data_Utils::does_client_match_segment(
+					$segment,
+					$client_data,
+					$referer_url,
+					$page_referer_url
+				);
+
+				// Find the matching segment with the highest priority.
+				if ( $client_matches_segment ) {
+					$segment_priority = isset( $segment->priority ) ? $segment->priority : $best_segment_priority;
+
+					if ( $segment_priority < $best_segment_priority ) {
+						$best_segment_priority = $segment_priority;
+						$best_priority_segment = $segment_id;
+					}
+				}
+			}
+		}
+
+		return $best_priority_segment;
 	}
 
 	/**
@@ -132,23 +195,21 @@ class Maybe_Show_Campaign extends Lightweight_API {
 	 * @param string $page_referer_url URL of the referrer of the frontend page that is making the API request.
 	 * @param object $view_as_spec "View As" specification.
 	 * @param string $now Current timestamp.
+	 * @param bool   $check_segment Whether to check if the client matches the prompt's segment. If false, the client is assumed to match the segment.
 	 * @return bool Whether prompt should be shown.
 	 */
-	public function should_campaign_be_shown( $client_id, $campaign, $settings, $referer_url = '', $page_referer_url = '', $view_as_spec = false, $now = false ) {
+	public function should_campaign_be_shown( $client_id, $campaign, $settings, $referer_url = '', $page_referer_url = '', $view_as_spec = false, $now = false, $check_segment = true ) {
 		if ( false === $now ) {
 			$now = time();
 		}
 		$campaign_data      = $this->get_campaign_data( $client_id, $campaign->id );
 		$init_campaign_data = $campaign_data;
 
-		if ( ! $view_as_spec && $campaign_data['suppress_forever'] ) {
+		if ( $campaign_data['suppress_forever'] ) {
 			return false;
 		}
 
 		$should_display = true;
-
-		// Handle frequency.
-		$frequency = $campaign->f;
 
 		$has_newsletter_prompt = $campaign->n;
 		// Suppressing based on UTM Medium parameter in the URL.
@@ -173,7 +234,8 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			}
 		}
 
-		$client_data                        = $this->get_client_data( $client_id );
+		$client_data = $this->get_client_data( $client_id );
+
 		$has_suppressed_newsletter_campaign = $client_data['suppressed_newsletter_campaign'];
 
 		// Handle suppressing a newsletter prompt if any newsletter prompt was dismissed.
@@ -199,34 +261,20 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			$campaign_data['suppress_forever'] = true;
 		}
 
-		// Using "view as" feature.
-		$view_as_segment = false;
-		if ( $view_as_spec ) {
-			$should_display = true;
-			if ( isset( $view_as_spec['segment'] ) && $view_as_spec['segment'] ) {
-				// If previewing the "Everyone" segment, only show prompts with no segment.
-				if ( 'everyone' === $view_as_spec['segment'] && ! empty( $campaign->s ) ) {
-					return false;
-				}
-				$segment_config = [];
-				if ( isset( $settings->all_segments->{$view_as_spec['segment']} ) ) {
-					$segment_config = $settings->all_segments->{$view_as_spec['segment']};
-				}
-				$view_as_segment = empty( $segment_config ) ? false : $segment_config;
-			}
-		}
-
 		// Handle segmentation.
 		$campaign_segment = isset( $settings->all_segments->{$campaign->s} ) ? $settings->all_segments->{$campaign->s} : false;
 		if ( ! empty( $campaign_segment ) ) {
 			$campaign_segment = Campaign_Data_Utils::canonize_segment( $campaign_segment );
-			$should_display   = Campaign_Data_Utils::should_display_campaign(
-				$campaign_segment,
-				$client_data,
-				$referer_url,
-				$page_referer_url,
-				$view_as_segment
-			);
+
+			// Check whether client matches the prompt's segment.
+			if ( $check_segment ) {
+				$should_display = Campaign_Data_Utils::does_client_match_segment(
+					$campaign_segment,
+					$client_data,
+					$referer_url,
+					$page_referer_url
+				);
+			}
 
 			if (
 				$campaign_segment->is_not_subscribed &&
@@ -238,15 +286,31 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			}
 		}
 
-		if ( ! $view_as_spec ) {
-			if ( ! empty( array_diff( $init_campaign_data, $campaign_data ) ) ) {
-				$this->save_campaign_data( $client_id, $campaign->id, $campaign_data );
-			}
-			if ( 'once' === $frequency && $campaign_data['count'] >= 1 ) {
-				$should_display = false;
-			}
-			if ( 'daily' === $frequency && $campaign_data['last_viewed'] >= strtotime( '-1 day', $now ) ) {
-				$should_display = false;
+		// Handle frequency.
+		$frequency = $campaign->f;
+		if ( ! empty( array_diff( $init_campaign_data, $campaign_data ) ) ) {
+			$this->save_campaign_data( $client_id, $campaign->id, $campaign_data );
+		}
+		if ( 'once' === $frequency && $campaign_data['count'] >= 1 ) {
+			$should_display = false;
+		}
+		if ( 'daily' === $frequency && $campaign_data['last_viewed'] >= strtotime( '-1 day', $now ) ) {
+			$should_display = false;
+		}
+
+		// Using "view as" feature.
+		if ( $view_as_spec ) {
+			$should_display = false;
+			if ( isset( $view_as_spec['segment'] ) && $view_as_spec['segment'] ) {
+				// Show prompts with a matching segment, or "everyone". Don't show any prompts that don't match the previewed segment.
+				if ( $view_as_spec['segment'] === $campaign->s || empty( $campaign->s ) ) {
+					$should_display = true;
+				}
+
+				// Show prompts if the view_as segment doesn't exist.
+				if ( ! property_exists( $settings->all_segments, $view_as_spec['segment'] ) ) {
+					$should_display = true;
+				}
 			}
 		}
 
