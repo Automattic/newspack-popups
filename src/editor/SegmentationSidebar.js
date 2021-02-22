@@ -31,6 +31,7 @@ const SegmentationSidebar = ( { onMetaFieldChange, selected_segment_id } ) => {
 	return (
 		<Fragment>
 			<BaseControl
+				className="newspack-popups__segmentation-sidebar"
 				help={
 					! selected_segment_id
 						? __( 'The prompt will be shown to all readers.', 'newspack-popups' )
