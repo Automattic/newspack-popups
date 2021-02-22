@@ -26,28 +26,36 @@ class APITest extends WP_UnitTestCase {
 			'segmentBetween3And5'                 => [
 				'min_posts' => 2,
 				'max_posts' => 3,
+				'priority'  => 0,
 			],
 			'segmentSessionReadCountBetween3And5' => [
 				'min_session_posts' => 2,
 				'max_session_posts' => 3,
+				'priority'          => 1,
 			],
 			'segmentSubscribers'                  => [
 				'is_subscribed' => true,
+				'priority'      => 2,
 			],
 			'segmentNonSubscribers'               => [
 				'is_not_subscribed' => true,
+				'priority'          => 3,
 			],
 			'segmentWithReferrers'                => [
 				'referrers' => 'foobar.com, newspack.pub',
+				'priority'  => 4,
 			],
 			'anotherSegmentWithReferrers'         => [
 				'referrers' => 'bar.com',
+				'priority'  => 5,
 			],
 			'segmentWithNegativeReferrer'         => [
 				'referrers_not' => 'baz.com',
+				'priority'      => 6,
 			],
 			'segmentFavCategory42'                => [
 				'favorite_categories' => [ 42 ],
+				'priority'            => 7,
 			],
 		];
 
@@ -688,7 +696,7 @@ class APITest extends WP_UnitTestCase {
 			[
 				'placement'           => 'inline',
 				'frequency'           => 'always',
-				'selected_segment_id' => self::$segment_ids['defaultSegment'],
+				'selected_segment_id' => '',
 			]
 		);
 
@@ -937,6 +945,8 @@ class APITest extends WP_UnitTestCase {
 			]
 		);
 
+		self::$settings->best_priority_segment = self::$segment_ids['segmentWithReferrers'];
+
 		self::assertTrue(
 			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings, '', 'http://foobar.com' ),
 			'Assert visible if first referrer matches.'
@@ -971,6 +981,8 @@ class APITest extends WP_UnitTestCase {
 			]
 		);
 
+		self::$settings->best_priority_segment = self::$segment_ids['segmentWithNegativeReferrer'];
+
 		self::assertTrue(
 			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings ),
 			'Assert visible without referrer.'
@@ -1000,6 +1012,8 @@ class APITest extends WP_UnitTestCase {
 				'selected_segment_id' => self::$segment_ids['segmentFavCategory42'],
 			]
 		);
+
+		self::$settings->best_priority_segment = self::$segment_ids['segmentFavCategory42'];
 
 		self::assertFalse(
 			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
@@ -1186,6 +1200,8 @@ class APITest extends WP_UnitTestCase {
 			]
 		);
 
+		self::$settings->best_priority_segment = self::$segment_ids['segmentWithNegativeReferrer'];
+
 		self::assertTrue(
 			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
 			'Assert visible without referrer.'
@@ -1226,7 +1242,7 @@ class APITest extends WP_UnitTestCase {
 			[
 				'placement'           => 'inline',
 				'frequency'           => 'always',
-				'selected_segment_id' => self::$segment_ids['defaultSegment'],
+				'selected_segment_id' => '',
 			]
 		);
 

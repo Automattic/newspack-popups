@@ -76,30 +76,23 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		$referer_url                   = filter_input( INPUT_SERVER, 'HTTP_REFERER', FILTER_SANITIZE_STRING );
 		$page_referer_url              = isset( $_REQUEST['ref'] ) ? $_REQUEST['ref'] : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		$all_segments                  = isset( $settings->all_segments ) ? $settings->all_segments : [];
-		$best_priority_segment         = $this->get_best_priority_segment( $all_segments, $client_id, $referer_url, $page_referer_url, $view_as_spec );
 		$overlay_to_maybe_display      = null;
 		$above_header_to_maybe_display = null;
 
-		// Filter campaigns to only those that match the best priority segment, or the default segment.
-		$matching_campaigns = array_filter(
-			$campaigns,
-			function( $campaign ) use ( $best_priority_segment ) {
-				return ( $best_priority_segment === $campaign->s || empty( $campaign->s ) );
-			}
-		);
-
-		$this->debug['campaigns'] = $matching_campaigns;
+		if ( $settings ) {
+			$settings->best_priority_segment = $this->get_best_priority_segment( $all_segments, $client_id, $referer_url, $page_referer_url, $view_as_spec );
+			$this->debug['matching_segment'] = $settings->best_priority_segment;
+		}
 
 		// Check each matching campaign against other global factors.
-		foreach ( $matching_campaigns as $campaign ) {
+		foreach ( $campaigns as $campaign ) {
 			$campaign_should_be_shown = $this->should_campaign_be_shown(
 				$client_id,
 				$campaign,
 				$settings,
-				filter_input( INPUT_SERVER, 'HTTP_REFERER', FILTER_SANITIZE_STRING ),
-				'',
+				$referer_url,
+				$page_referer_url,
 				$view_as_spec,
-				false,
 				false
 			);
 
@@ -141,16 +134,17 @@ class Maybe_Show_Campaign extends Lightweight_API {
 	/**
 	 * Get the highest-priority segment that matches the client.
 	 *
-	 * @param object      $all_segments All segments.
-	 * @param string      $client_id Client ID.
+	 * @param object      $all_segments Segments to check.
+	 * @param string|bool $client_id Client ID. If false, assume the client matches all given segments.
 	 * @param string      $referer_url URL of the page performing the API request.
 	 * @param string      $page_referer_url URL of the referrer of the frontend page that is making the API request.
 	 * @param object|bool $view_as_spec View as spec.
 	 *
 	 * @return string|null ID of the best matching segment, or null if the client matches no segment.
 	 */
-	public function get_best_priority_segment( $all_segments = [], $client_id, $referer_url = '', $page_referer_url = '', $view_as_spec = false ) {
-		$client_data           = $this->get_client_data( $client_id );
+	public function get_best_priority_segment( $all_segments = [], $client_id = false, $referer_url = '', $page_referer_url = '', $view_as_spec = false ) {
+		// Determine whether the client matches the segment criteria.
+		$client_data           = $client_id ? $this->get_client_data( $client_id ) : [];
 		$best_segment_priority = PHP_INT_MAX;
 		$best_priority_segment = null;
 
@@ -161,14 +155,15 @@ class Maybe_Show_Campaign extends Lightweight_API {
 					$best_priority_segment = $segment_id;
 				}
 			} else {
-				// Determine whether the client matches the segment criteria.
 				$segment                = Campaign_Data_Utils::canonize_segment( $segment );
-				$client_matches_segment = Campaign_Data_Utils::does_client_match_segment(
-					$segment,
-					$client_data,
-					$referer_url,
-					$page_referer_url
-				);
+				$client_matches_segment = $client_id ?
+					Campaign_Data_Utils::does_client_match_segment(
+						$segment,
+						$client_data,
+						$referer_url,
+						$page_referer_url
+					) :
+					true;
 
 				// Find the matching segment with the highest priority.
 				if ( $client_matches_segment ) {
@@ -198,7 +193,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 	 * @param bool   $check_segment Whether to check if the client matches the prompt's segment. If false, the client is assumed to match the segment.
 	 * @return bool Whether prompt should be shown.
 	 */
-	public function should_campaign_be_shown( $client_id, $campaign, $settings, $referer_url = '', $page_referer_url = '', $view_as_spec = false, $now = false, $check_segment = true ) {
+	public function should_campaign_be_shown( $client_id, $campaign, $settings, $referer_url = '', $page_referer_url = '', $view_as_spec = false, $now = false ) {
 		if ( false === $now ) {
 			$now = time();
 		}
@@ -262,19 +257,28 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		}
 
 		// Handle segmentation.
-		$campaign_segment = isset( $settings->all_segments->{$campaign->s} ) ? $settings->all_segments->{$campaign->s} : false;
-		if ( ! empty( $campaign_segment ) ) {
+		$campaign_segment_ids = ! empty( $campaign->s ) ? explode( ',', $campaign->s ) : [];
+
+		if ( ! empty( $campaign_segment_ids ) ) {
+			$best_priority_segment = isset( $settings->best_priority_segment ) ?
+				$settings->best_priority_segment :
+				$this->get_best_priority_segment( $settings->all_segments, $client_id, $referer_url, $page_referer_url, $view_as_spec );
+
+			// Only factor in the best=priority segment.
+			$is_best_priority = ! empty( $best_priority_segment ) ? in_array( $best_priority_segment, $campaign_segment_ids ) : false;
+			$campaign_segment = $is_best_priority ?
+				$settings->all_segments->{$best_priority_segment} :
+				[];
+
 			$campaign_segment = Campaign_Data_Utils::canonize_segment( $campaign_segment );
 
 			// Check whether client matches the prompt's segment.
-			if ( $check_segment ) {
-				$should_display = Campaign_Data_Utils::does_client_match_segment(
-					$campaign_segment,
-					$client_data,
-					$referer_url,
-					$page_referer_url
-				);
-			}
+			$should_display = ( empty( $campaign->s ) || $is_best_priority ) && Campaign_Data_Utils::does_client_match_segment(
+				$campaign_segment,
+				$client_data,
+				$referer_url,
+				$page_referer_url
+			);
 
 			if (
 				$campaign_segment->is_not_subscribed &&
