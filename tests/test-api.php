@@ -150,6 +150,37 @@ class APITest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Test comparing prompts with different-priority segments.
+	 */
+	public function test_segment_priority() {
+		$test_overlay_a = self::create_test_popup(
+			[
+				'placement'           => 'center',
+				'frequency'           => 'daily',
+				'selected_segment_id' => self::$segment_ids['segmentBetween3And5'],
+			]
+		);
+		$test_overlay_b = self::create_test_popup(
+			[
+				'placement'           => 'center',
+				'frequency'           => 'daily',
+				'selected_segment_id' => self::$segment_ids['segmentNonSubscribers'],
+			]
+		);
+
+		$higher_priority = self::$maybe_show_campaign->get_higher_priority_item(
+			$test_overlay_a['payload'],
+			$test_overlay_b['payload'],
+			self::$settings->all_segments
+		);
+
+		self::assertTrue(
+			$higher_priority->id === $test_overlay_a['payload']->id,
+			'Assert the prompt with the highest priority is shown.'
+		);
+	}
+
+	/**
 	 * Suppression caused by "once" frequency.
 	 */
 	public function test_once_frequency() {
