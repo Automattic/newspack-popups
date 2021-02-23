@@ -115,6 +115,41 @@ class APITest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Test multiple segments assigned per prompt.
+	 */
+	public function test_multiple_segments() {
+		$segments   = [ self::$segment_ids['segmentBetween3And5'], self::$segment_ids['segmentSubscribers'] ];
+		$test_popup = self::create_test_popup(
+			[
+				'placement'           => 'inline',
+				'frequency'           => 'always',
+				'selected_segment_id' => implode( ',', $segments ),
+			]
+		);
+
+		self::assertFalse(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
+			'Assert not shown if client matches no assigned segments.'
+		);
+
+		// Report 2 articles read.
+		self::$maybe_show_campaign->save_client_data(
+			self::$client_id,
+			[
+				'posts_read' => [
+					self::create_read_post( 1 ),
+					self::create_read_post( 2 ),
+				],
+			]
+		);
+
+		self::assertTrue(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
+			'Assert shown if client’s highest-priority matching segment is assigned.'
+		);
+	}
+
+	/**
 	 * Suppression caused by "once" frequency.
 	 */
 	public function test_once_frequency() {
