@@ -272,7 +272,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			$campaign_segment = Campaign_Data_Utils::canonize_segment( $campaign_segment );
 
 			// Check whether client matches the prompt's segment.
-			$should_display = ( empty( $campaign->s ) || $is_best_priority ) && Campaign_Data_Utils::does_client_match_segment(
+			$should_display = $is_best_priority && Campaign_Data_Utils::does_client_match_segment(
 				$campaign_segment,
 				$client_data,
 				$referer_url,
