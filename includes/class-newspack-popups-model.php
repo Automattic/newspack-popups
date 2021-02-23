@@ -430,6 +430,7 @@ final class Newspack_Popups_Model {
 				]
 			),
 		];
+
 		$assigned_segments = explode( ',', $popup['options']['selected_segment_id'] );
 		if ( $popup['options']['selected_segment_id'] && 0 === count( array_intersect( $assigned_segments, Newspack_Popups_Segmentation::get_segment_ids() ) ) ) {
 			$popup['options']['selected_segment_id'] = null;

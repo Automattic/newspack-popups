@@ -190,7 +190,6 @@ class Maybe_Show_Campaign extends Lightweight_API {
 	 * @param string $page_referer_url URL of the referrer of the frontend page that is making the API request.
 	 * @param object $view_as_spec "View As" specification.
 	 * @param string $now Current timestamp.
-	 * @param bool   $check_segment Whether to check if the client matches the prompt's segment. If false, the client is assumed to match the segment.
 	 * @return bool Whether prompt should be shown.
 	 */
 	public function should_campaign_be_shown( $client_id, $campaign, $settings, $referer_url = '', $page_referer_url = '', $view_as_spec = false, $now = false ) {
