@@ -79,6 +79,15 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		$overlay_to_maybe_display      = null;
 		$above_header_to_maybe_display = null;
 
+		/**
+		 * When previewing, spoof client ID so that user actions performed outside the preview window don't affect prompt display.
+		 * If a `cid` param is passed as part of the view_as spec, use that so it will persist across page loads within the preview session.
+		 * Otherwise, generate a unique ID for the current page view only.
+		 */
+		if ( ! empty( $view_as_spec ) ) {
+			$client_id = isset( $view_as_spec['cid'] ) ? $view_as_spec['cid'] : uniqid( 'view_as_client_' );
+		}
+
 		if ( $settings ) {
 			$settings->best_priority_segment = $this->get_best_priority_segment( $all_segments, $client_id, $referer_url, $page_referer_url, $view_as_spec );
 			$this->debug['matching_segment'] = $settings->best_priority_segment;
