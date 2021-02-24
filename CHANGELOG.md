@@ -1,3 +1,10 @@
+## [1.24.2-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.24.1...v1.24.2-alpha.1) (2021-02-24)
+
+
+### Bug Fixes
+
+* show shortcoded prompts in previews ([#452](https://github.com/Automattic/newspack-popups/issues/452)) ([846df25](https://github.com/Automattic/newspack-popups/commit/846df254897441280808e35c8660550ff100cfd2))
+
 ## [1.24.1](https://github.com/Automattic/newspack-popups/compare/v1.24.0...v1.24.1) (2021-02-16)
 
 
