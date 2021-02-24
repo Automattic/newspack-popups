@@ -1,3 +1,10 @@
+# [1.25.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.24.2-alpha.1...v1.25.0-alpha.1) (2021-02-24)
+
+
+### Features
+
+* validate segmentation sort operations ([#455](https://github.com/Automattic/newspack-popups/issues/455)) ([8b17170](https://github.com/Automattic/newspack-popups/commit/8b17170b84de4a1315d5862ef66b5b8d4651d6da))
+
 ## [1.24.2-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.24.1...v1.24.2-alpha.1) (2021-02-24)
 
 
