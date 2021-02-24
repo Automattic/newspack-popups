@@ -337,7 +337,6 @@ final class Newspack_Popups_Segmentation {
 	 */
 	public static function get_segments() {
 		$segments                  = get_option( self::SEGMENTS_OPTION_NAME, [] );
-
 		$segments_without_priority = array_filter(
 			$segments,
 			function( $segment ) {
