@@ -522,7 +522,7 @@ final class Newspack_Popups_Segmentation {
 		if ( ! $is_valid ) {
 			return new WP_Error(
 				'invalid_segment_sort',
-				__( 'Failed to sort due to outdated segment data. Please refresh and try again.' )
+				__( 'Failed to sort due to outdated segment data. Please refresh and try again.', 'newspack-popups'  )
 			);
 		}
 
