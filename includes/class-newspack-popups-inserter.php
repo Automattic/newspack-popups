@@ -640,7 +640,7 @@ final class Newspack_Popups_Inserter {
 
 		// When using "view as" feature, discard test mode popups.
 		if ( Newspack_Popups_View_As::viewing_as_spec() ) {
-			return $general_conditions;
+			return $skip_context_checks ? true : $general_conditions;
 		}
 		// Hide prompts for logged-in users.
 		if ( Newspack_Popups::is_user_admin() ) {
