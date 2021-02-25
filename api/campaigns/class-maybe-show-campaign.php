@@ -89,8 +89,8 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		}
 
 		if ( $settings ) {
-			$settings->best_priority_segment = $this->get_best_priority_segment( $all_segments, $client_id, $referer_url, $page_referer_url, $view_as_spec );
-			$this->debug['matching_segment'] = $settings->best_priority_segment;
+			$settings->best_priority_segment_id = $this->get_best_priority_segment_id( $all_segments, $client_id, $referer_url, $page_referer_url, $view_as_spec );
+			$this->debug['matching_segment']    = $settings->best_priority_segment_id;
 		}
 
 		// Check each matching campaign against other global factors.
@@ -151,15 +151,15 @@ class Maybe_Show_Campaign extends Lightweight_API {
 	 *
 	 * @return string|null ID of the best matching segment, or null if the client matches no segment.
 	 */
-	public function get_best_priority_segment( $all_segments = [], $client_id, $referer_url = '', $page_referer_url = '', $view_as_spec = false ) {
+	public function get_best_priority_segment_id( $all_segments = [], $client_id, $referer_url = '', $page_referer_url = '', $view_as_spec = false ) {
 		// If using "view as" feature, automatically make that the matching segment. Otherwise, find the matching segment with the best priority.
 		if ( $view_as_spec && isset( $view_as_spec['segment'] ) ) {
 			return $view_as_spec['segment'];
 		}
 
-		$client_data           = $this->get_client_data( $client_id );
-		$best_segment_priority = PHP_INT_MAX;
-		$best_priority_segment = null;
+		$client_data              = $this->get_client_data( $client_id );
+		$best_segment_priority    = PHP_INT_MAX;
+		$best_priority_segment_id = null;
 
 		foreach ( $all_segments as $segment_id => $segment ) {
 			// Determine whether the client matches the segment criteria.
@@ -173,12 +173,12 @@ class Maybe_Show_Campaign extends Lightweight_API {
 
 			// Find the matching segment with the best priority.
 			if ( $client_matches_segment && $segment->priority < $best_segment_priority ) {
-				$best_segment_priority = $segment->priority;
-				$best_priority_segment = $segment_id;
+				$best_segment_priority    = $segment->priority;
+				$best_priority_segment_id = $segment_id;
 			}
 		}
 
-		return $best_priority_segment;
+		return $best_priority_segment_id;
 	}
 
 	/**
@@ -260,14 +260,14 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		$campaign_segment_ids = ! empty( $campaign->s ) ? explode( ',', $campaign->s ) : [];
 
 		if ( ! empty( $campaign_segment_ids ) ) {
-			$best_priority_segment = isset( $settings->best_priority_segment ) ?
-				$settings->best_priority_segment :
-				$this->get_best_priority_segment( $settings->all_segments, $client_id, $referer_url, $page_referer_url, $view_as_spec );
+			$best_priority_segment_id = isset( $settings->best_priority_segment_id ) ?
+				$settings->best_priority_segment_id :
+				$this->get_best_priority_segment_id( $settings->all_segments, $client_id, $referer_url, $page_referer_url, $view_as_spec );
 
 			// Only factor in the best=priority segment.
-			$is_best_priority = ! empty( $best_priority_segment ) ? in_array( $best_priority_segment, $campaign_segment_ids ) : false;
+			$is_best_priority = ! empty( $best_priority_segment_id ) ? in_array( $best_priority_segment_id, $campaign_segment_ids ) : false;
 			$campaign_segment = $is_best_priority ?
-				$settings->all_segments->{$best_priority_segment} :
+				$settings->all_segments->{$best_priority_segment_id} :
 				[];
 
 			$campaign_segment = Campaign_Data_Utils::canonize_segment( $campaign_segment );
