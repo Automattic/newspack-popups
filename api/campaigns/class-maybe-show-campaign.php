@@ -306,7 +306,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		if ( $view_as_spec ) {
 			$should_display = false;
 			if ( isset( $view_as_spec['segment'] ) && $view_as_spec['segment'] ) {
-				// Show prompts with a matching segment, or "everyone". Don't show any prompts that don't match the previewed segment.
+				// Show prompts with matching segments, or "everyone". Don't show any prompts that don't match the previewed segment.
 				if ( in_array( $view_as_spec['segment'], $campaign_segment_ids ) || empty( $campaign->s ) ) {
 					$should_display = true;
 				}
