@@ -139,7 +139,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 	}
 
 	/**
-	 * Get the highest-priority segment that matches the client.
+	 * Get the best-priority segment that matches the client.
 	 *
 	 * @param object      $all_segments All segments.
 	 * @param string      $client_id Client ID.
@@ -150,7 +150,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 	 * @return string|null ID of the best matching segment, or null if the client matches no segment.
 	 */
 	public function get_best_priority_segment( $all_segments = [], $client_id, $referer_url = '', $page_referer_url = '', $view_as_spec = false ) {
-		// If using "view as" feature, automatically make that the matching segment. Otherwise, find the matching segment with the highest priority.
+		// If using "view as" feature, automatically make that the matching segment. Otherwise, find the matching segment with the best priority.
 		if ( $view_as_spec && isset( $view_as_spec['segment'] ) ) {
 			return $view_as_spec['segment'];
 		}
@@ -169,7 +169,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 				$page_referer_url
 			);
 
-			// Find the matching segment with the highest priority.
+			// Find the matching segment with the best priority.
 			if ( $client_matches_segment && $segment->priority < $best_segment_priority ) {
 				$best_segment_priority = $segment->priority;
 				$best_priority_segment = $segment_id;
