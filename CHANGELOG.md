@@ -1,3 +1,15 @@
+# [1.25.0](https://github.com/Automattic/newspack-popups/compare/v1.24.1...v1.25.0) (2021-02-25)
+
+
+### Bug Fixes
+
+* show shortcoded prompts in previews ([#452](https://github.com/Automattic/newspack-popups/issues/452)) ([846df25](https://github.com/Automattic/newspack-popups/commit/846df254897441280808e35c8660550ff100cfd2))
+
+
+### Features
+
+* validate segmentation sort operations ([#455](https://github.com/Automattic/newspack-popups/issues/455)) ([8b17170](https://github.com/Automattic/newspack-popups/commit/8b17170b84de4a1315d5862ef66b5b8d4651d6da))
+
 ## [1.24.1](https://github.com/Automattic/newspack-popups/compare/v1.24.0...v1.24.1) (2021-02-16)
 
 
