@@ -170,13 +170,9 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			);
 
 			// Find the matching segment with the highest priority.
-			if ( $client_matches_segment ) {
-				$segment_priority = isset( $segment->priority ) ? $segment->priority : $best_segment_priority;
-
-				if ( $segment_priority < $best_segment_priority ) {
-					$best_segment_priority = $segment_priority;
-					$best_priority_segment = $segment_id;
-				}
+			if ( $client_matches_segment && $segment->priority < $best_segment_priority ) {
+				$best_segment_priority = $segment->priority;
+				$best_priority_segment = $segment_id;
 			}
 		}
 
