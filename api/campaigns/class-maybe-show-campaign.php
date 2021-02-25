@@ -97,7 +97,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 				$campaign,
 				$settings,
 				filter_input( INPUT_SERVER, 'HTTP_REFERER', FILTER_SANITIZE_STRING ),
-				'',
+				$page_referer_url,
 				$view_as_spec,
 				false,
 				false
