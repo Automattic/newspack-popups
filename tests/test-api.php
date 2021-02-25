@@ -1011,7 +1011,7 @@ class APITest extends WP_UnitTestCase {
 			]
 		);
 
-		self::$settings->best_priority_segment = self::$segment_ids['segmentWithReferrers'];
+		self::$settings->best_priority_segment_id = self::$segment_ids['segmentWithReferrers'];
 
 		self::assertTrue(
 			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings, '', 'http://foobar.com' ),
@@ -1047,7 +1047,7 @@ class APITest extends WP_UnitTestCase {
 			]
 		);
 
-		self::$settings->best_priority_segment = self::$segment_ids['segmentWithNegativeReferrer'];
+		self::$settings->best_priority_segment_id = self::$segment_ids['segmentWithNegativeReferrer'];
 
 		self::assertTrue(
 			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings ),
@@ -1079,7 +1079,7 @@ class APITest extends WP_UnitTestCase {
 			]
 		);
 
-		self::$settings->best_priority_segment = self::$segment_ids['segmentFavCategory42'];
+		self::$settings->best_priority_segment_id = self::$segment_ids['segmentFavCategory42'];
 
 		self::assertFalse(
 			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
@@ -1266,7 +1266,7 @@ class APITest extends WP_UnitTestCase {
 			]
 		);
 
-		self::$settings->best_priority_segment = self::$segment_ids['segmentWithNegativeReferrer'];
+		self::$settings->best_priority_segment_id = self::$segment_ids['segmentWithNegativeReferrer'];
 
 		self::assertTrue(
 			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
