@@ -150,34 +150,32 @@ class Maybe_Show_Campaign extends Lightweight_API {
 	 * @return string|null ID of the best matching segment, or null if the client matches no segment.
 	 */
 	public function get_best_priority_segment( $all_segments = [], $client_id, $referer_url = '', $page_referer_url = '', $view_as_spec = false ) {
+		// If using "view as" feature, automatically make that the matching segment. Otherwise, find the matching segment with the highest priority.
+		if ( $view_as_spec && isset( $view_as_spec['segment'] ) ) {
+			return $view_as_spec['segment'];
+		}
+
 		$client_data           = $this->get_client_data( $client_id );
 		$best_segment_priority = PHP_INT_MAX;
 		$best_priority_segment = null;
 
 		foreach ( $all_segments as $segment_id => $segment ) {
-			// If using "view as" feature, automatically make that the matching segment. Otherwise, find the matching segment with the highest priority.
-			if ( $view_as_spec && isset( $view_as_spec['segment'] ) ) {
-				if ( $view_as_spec['segment'] === $segment_id ) {
+			// Determine whether the client matches the segment criteria.
+			$segment                = Campaign_Data_Utils::canonize_segment( $segment );
+			$client_matches_segment = Campaign_Data_Utils::does_client_match_segment(
+				$segment,
+				$client_data,
+				$referer_url,
+				$page_referer_url
+			);
+
+			// Find the matching segment with the highest priority.
+			if ( $client_matches_segment ) {
+				$segment_priority = isset( $segment->priority ) ? $segment->priority : $best_segment_priority;
+
+				if ( $segment_priority < $best_segment_priority ) {
+					$best_segment_priority = $segment_priority;
 					$best_priority_segment = $segment_id;
-				}
-			} else {
-				// Determine whether the client matches the segment criteria.
-				$segment                = Campaign_Data_Utils::canonize_segment( $segment );
-				$client_matches_segment = Campaign_Data_Utils::does_client_match_segment(
-					$segment,
-					$client_data,
-					$referer_url,
-					$page_referer_url
-				);
-
-				// Find the matching segment with the highest priority.
-				if ( $client_matches_segment ) {
-					$segment_priority = isset( $segment->priority ) ? $segment->priority : $best_segment_priority;
-
-					if ( $segment_priority < $best_segment_priority ) {
-						$best_segment_priority = $segment_priority;
-						$best_priority_segment = $segment_id;
-					}
 				}
 			}
 		}
