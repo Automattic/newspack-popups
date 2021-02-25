@@ -54,6 +54,10 @@ const SegmentationSidebar = ( { onMetaFieldChange, selected_segment_id } ) => {
 								segment => segment.name === _segment[ 0 ]
 							);
 
+							if ( ! segmentToAssign ) {
+								return;
+							}
+
 							if ( ! segmentToAssign.id ) {
 								return onMetaFieldChange( 'selected_segment_id', '' );
 							}
