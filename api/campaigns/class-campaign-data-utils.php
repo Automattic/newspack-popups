@@ -73,6 +73,7 @@ class Campaign_Data_Utils {
 				'is_not_donor'        => false,
 				'referrers'           => '',
 				'favorite_categories' => [],
+				'priority'            => PHP_INT_MAX,
 			],
 			(array) $segment
 		);
