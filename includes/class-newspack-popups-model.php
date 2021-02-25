@@ -237,6 +237,10 @@ final class Newspack_Popups_Model {
 	public static function retrieve_category_overlay_popups( $include_unpublished = false, $campaign_id = false ) {
 		$post_categories = get_the_category();
 
+		if ( empty( $post_categories ) ) {
+			return null;
+		}
+
 		$args = [
 			'post_type'      => Newspack_Popups::NEWSPACK_POPUPS_CPT,
 			'posts_per_page' => 1,

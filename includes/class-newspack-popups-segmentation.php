@@ -332,6 +332,8 @@ final class Newspack_Popups_Segmentation {
 
 	/**
 	 * Get all configured segments.
+	 *
+	 * @return array Array of segments.
 	 */
 	public static function get_segments() {
 		$segments                  = get_option( self::SEGMENTS_OPTION_NAME, [] );
@@ -510,11 +512,57 @@ final class Newspack_Popups_Segmentation {
 	/**
 	 * Sort all segments by relative priority.
 	 *
-	 * @param object $segments Array of segments, sorted by priority property.
+	 * @param array $segment_ids Array of segment IDs, in order of desired priority.
+	 * @return array Array of sorted segments.
 	 */
-	public static function sort_segments( $segments ) {
-		update_option( self::SEGMENTS_OPTION_NAME, self::reindex_segments( $segments ) );
+	public static function sort_segments( $segment_ids ) {
+		$segments = get_option( self::SEGMENTS_OPTION_NAME, [] );
+		$is_valid = self::validate_segment_ids( $segment_ids, $segments );
+
+		if ( ! $is_valid ) {
+			return new WP_Error(
+				'invalid_segment_sort',
+				__( 'Failed to sort due to outdated segment data. Please refresh and try again.', 'newspack-popups' )
+			);
+		}
+
+		$sorted_segments = array_map(
+			function( $segment_id ) use ( $segments ) {
+				$segment = array_filter(
+					$segments,
+					function( $segment ) use ( $segment_id ) {
+						return $segment['id'] === $segment_id;
+					}
+				);
+
+				return reset( $segment );
+			},
+			$segment_ids
+		);
+
+		$sorted_segments = self::reindex_segments( $sorted_segments );
+		update_option( self::SEGMENTS_OPTION_NAME, $sorted_segments );
 		return self::get_segments();
+	}
+
+	/**
+	 * Validate an array of segment IDs against the existing segment IDs in the options table.
+	 * When re-sorting segments, the IDs passed should all exist, albeit in a different order,
+	 * so if there are any differences, validation will fail.
+	 *
+	 * @param array $segment_ids Array of segment IDs to validate.
+	 * @param array $segments    Array of existing segments to validate against.
+	 * @return boolean Whether $segment_ids is valid.
+	 */
+	public static function validate_segment_ids( $segment_ids, $segments ) {
+		$existing_ids = array_map(
+			function( $segment ) {
+				return $segment['id'];
+			},
+			$segments
+		);
+
+		return array_diff( $segment_ids, $existing_ids ) === array_diff( $existing_ids, $segment_ids );
 	}
 
 	/**
