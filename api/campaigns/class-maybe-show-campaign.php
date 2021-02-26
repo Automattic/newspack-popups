@@ -79,15 +79,6 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		$overlay_to_maybe_display      = null;
 		$above_header_to_maybe_display = null;
 
-		/**
-		 * When previewing, spoof client ID so that user actions performed outside the preview window don't affect prompt display.
-		 * If a `cid` param is passed as part of the view_as spec, use that so it will persist across page loads within the preview session.
-		 * Otherwise, generate a unique ID for the current page view only.
-		 */
-		if ( ! empty( $view_as_spec ) ) {
-			$client_id = isset( $view_as_spec['cid'] ) ? $view_as_spec['cid'] : uniqid( 'view_as_client_' );
-		}
-
 		if ( $settings ) {
 			$settings->best_priority_segment_id = $this->get_best_priority_segment_id( $all_segments, $client_id, $referer_url, $page_referer_url, $view_as_spec );
 			$this->debug['matching_segment']    = $settings->best_priority_segment_id;
@@ -200,7 +191,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		$campaign_data      = $this->get_campaign_data( $client_id, $campaign->id );
 		$init_campaign_data = $campaign_data;
 
-		if ( $campaign_data['suppress_forever'] ) {
+		if ( $view_as_spec && $campaign_data['suppress_forever'] ) {
 			return false;
 		}
 
@@ -259,7 +250,21 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		// Handle segmentation.
 		$campaign_segment_ids = ! empty( $campaign->s ) ? explode( ',', $campaign->s ) : [];
 
-		if ( ! empty( $campaign_segment_ids ) ) {
+		// Using "view as" feature.
+		if ( $view_as_spec ) {
+			$should_display = false;
+			if ( isset( $view_as_spec['segment'] ) && $view_as_spec['segment'] ) {
+				// Show prompts with matching segments, or "everyone". Don't show any prompts that don't match the previewed segment.
+				if ( in_array( $view_as_spec['segment'], $campaign_segment_ids ) || empty( $campaign->s ) ) {
+					$should_display = true;
+				}
+
+				// Show prompts if the view_as segment doesn't exist.
+				if ( ! property_exists( $settings->all_segments, $view_as_spec['segment'] ) ) {
+					$should_display = true;
+				}
+			}
+		} elseif ( ! empty( $campaign_segment_ids ) ) {
 			$best_priority_segment_id = isset( $settings->best_priority_segment_id ) ?
 				$settings->best_priority_segment_id :
 				$this->get_best_priority_segment_id( $settings->all_segments, $client_id, $referer_url, $page_referer_url, $view_as_spec );
@@ -291,30 +296,16 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		}
 
 		// Handle frequency.
-		$frequency = $campaign->f;
-		if ( ! empty( array_diff( $init_campaign_data, $campaign_data ) ) ) {
-			$this->save_campaign_data( $client_id, $campaign->id, $campaign_data );
-		}
-		if ( 'once' === $frequency && $campaign_data['count'] >= 1 ) {
-			$should_display = false;
-		}
-		if ( 'daily' === $frequency && $campaign_data['last_viewed'] >= strtotime( '-1 day', $now ) ) {
-			$should_display = false;
-		}
-
-		// Using "view as" feature.
-		if ( $view_as_spec ) {
-			$should_display = false;
-			if ( isset( $view_as_spec['segment'] ) && $view_as_spec['segment'] ) {
-				// Show prompts with matching segments, or "everyone". Don't show any prompts that don't match the previewed segment.
-				if ( in_array( $view_as_spec['segment'], $campaign_segment_ids ) || empty( $campaign->s ) ) {
-					$should_display = true;
-				}
-
-				// Show prompts if the view_as segment doesn't exist.
-				if ( ! property_exists( $settings->all_segments, $view_as_spec['segment'] ) ) {
-					$should_display = true;
-				}
+		if ( ! $view_as_spec ) {
+			$frequency = $campaign->f;
+			if ( ! empty( array_diff( $init_campaign_data, $campaign_data ) ) ) {
+				$this->save_campaign_data( $client_id, $campaign->id, $campaign_data );
+			}
+			if ( 'once' === $frequency && $campaign_data['count'] >= 1 ) {
+				$should_display = false;
+			}
+			if ( 'daily' === $frequency && $campaign_data['last_viewed'] >= strtotime( '-1 day', $now ) ) {
+				$should_display = false;
 			}
 		}
 
