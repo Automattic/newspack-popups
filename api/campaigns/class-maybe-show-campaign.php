@@ -37,7 +37,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			$view_as_spec = Segmentation::parse_view_as( json_decode( $_REQUEST['view_as'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		}
 
-		if ( empty( $view_as_spec ) && $visit['is_post'] && defined( 'ENABLE_CAMPAIGN_EVENT_LOGGING' ) && ENABLE_CAMPAIGN_EVENT_LOGGING ) {
+		if ( $visit['is_post'] && defined( 'ENABLE_CAMPAIGN_EVENT_LOGGING' ) && ENABLE_CAMPAIGN_EVENT_LOGGING ) {
 			// Update the cache.
 			$posts_read        = $this->get_client_data( $client_id )['posts_read'];
 			$already_read_post = count(
@@ -141,7 +141,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		$campaign_data      = $this->get_campaign_data( $client_id, $campaign->id );
 		$init_campaign_data = $campaign_data;
 
-		if ( ! $view_as_spec && $campaign_data['suppress_forever'] ) {
+		if ( $campaign_data['suppress_forever'] ) {
 			return false;
 		}
 
@@ -238,16 +238,14 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			}
 		}
 
-		if ( ! $view_as_spec ) {
-			if ( ! empty( array_diff( $init_campaign_data, $campaign_data ) ) ) {
-				$this->save_campaign_data( $client_id, $campaign->id, $campaign_data );
-			}
-			if ( 'once' === $frequency && $campaign_data['count'] >= 1 ) {
-				$should_display = false;
-			}
-			if ( 'daily' === $frequency && $campaign_data['last_viewed'] >= strtotime( '-1 day', $now ) ) {
-				$should_display = false;
-			}
+		if ( ! empty( array_diff( $init_campaign_data, $campaign_data ) ) ) {
+			$this->save_campaign_data( $client_id, $campaign->id, $campaign_data );
+		}
+		if ( 'once' === $frequency && $campaign_data['count'] >= 1 ) {
+			$should_display = false;
+		}
+		if ( 'daily' === $frequency && $campaign_data['last_viewed'] >= strtotime( '-1 day', $now ) ) {
+			$should_display = false;
 		}
 
 		return $should_display;
