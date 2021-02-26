@@ -191,7 +191,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		$campaign_data      = $this->get_campaign_data( $client_id, $campaign->id );
 		$init_campaign_data = $campaign_data;
 
-		if ( $view_as_spec && $campaign_data['suppress_forever'] ) {
+		if ( ! $view_as_spec && $campaign_data['suppress_forever'] ) {
 			return false;
 		}
 
