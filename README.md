@@ -18,12 +18,6 @@ define( 'DB_PREFIX', 'wp_' );
 
 ## Segmentation features
 
-The segmentation features rely on visit logging. This is currently opt-in, managed by the `ENABLE_CAMPAIGN_EVENT_LOGGING` flag defined in the aforementioned file:
-
-```
-define( 'ENABLE_CAMPAIGN_EVENT_LOGGING', true );
-```
-
 The segmentation feature causes amp-access to be added to all pages whether or not prompts are present. To override this behavior use the `newspack_popups_suppress_insert_amp_access` filter. The filter receives an array of prompts for the current page. To suppress, return true, for example:
 
 ```
