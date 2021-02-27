@@ -37,7 +37,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			$view_as_spec = Segmentation::parse_view_as( json_decode( $_REQUEST['view_as'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		}
 
-		if ( empty( $view_as_spec ) && $visit['is_post'] ) {
+		if ( empty( $view_as_spec ) && $visit['is_post'] && ( ! defined( 'DISABLE_CAMPAIGN_EVENT_LOGGING' ) || true !== DISABLE_CAMPAIGN_EVENT_LOGGING ) ) {
 			// Update the cache.
 			$posts_read        = $this->get_client_data( $client_id )['posts_read'];
 			$already_read_post = count(
