@@ -265,6 +265,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 				}
 			}
 		} elseif ( ! empty( $campaign_segment_ids ) ) {
+			// $settings->best_priority_segment_id should always be present, but in case it's not (e.g. in a unit test), we can fetch it here.
 			$best_priority_segment_id = isset( $settings->best_priority_segment_id ) ?
 				$settings->best_priority_segment_id :
 				$this->get_best_priority_segment_id( $settings->all_segments, $client_id, $referer_url, $page_referer_url, $view_as_spec );
