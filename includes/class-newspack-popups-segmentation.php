@@ -235,7 +235,7 @@ final class Newspack_Popups_Segmentation {
 			$initial_client_report_url_params['mc_cid'] = sanitize_text_field( $_GET['mc_cid'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$initial_client_report_url_params['mc_eid'] = sanitize_text_field( $_GET['mc_eid'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		}
-		if ( is_user_logged_in() ) {
+		if ( is_user_logged_in() && ! Newspack_Popups::is_preview_request() ) {
 			if ( function_exists( 'wc_get_orders' ) ) {
 				$user_orders = wc_get_orders( [ 'customer_id' => get_current_user_id() ] );
 				if ( count( $user_orders ) ) {
@@ -496,7 +496,7 @@ final class Newspack_Popups_Segmentation {
 		$client_in_segment = array_filter(
 			$all_client_data,
 			function ( $client_data ) use ( $segment_config ) {
-				return Campaign_Data_Utils::should_display_campaign(
+				return Campaign_Data_Utils::does_client_match_segment(
 					$segment_config,
 					$client_data
 				);
