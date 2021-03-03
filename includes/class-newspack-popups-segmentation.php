@@ -55,15 +55,17 @@ final class Newspack_Popups_Segmentation {
 		add_action( 'init', [ __CLASS__, 'create_database_table' ] );
 		add_action( 'wp_footer', [ __CLASS__, 'insert_amp_analytics' ], 20 );
 
-		add_filter( 'newspack_custom_dimensions', [ __CLASS__, 'register_custom_dimensions' ] );
+		if ( ! Newspack_Popups_Settings::is_non_interactive() && ( ! defined( 'NEWSPACK_POPUPS_DISABLE_REPORTING_CUSTOM_DIMENSIONS' ) || true !== NEWSPACK_POPUPS_DISABLE_REPORTING_CUSTOM_DIMENSIONS ) ) {
+			add_filter( 'newspack_custom_dimensions', [ __CLASS__, 'register_custom_dimensions' ] );
 
-		// Sending pageviews with segmentation-related custom dimensions.
-		// 1. Disable pageview sending from Site Kit's GTAG implementation. The custom events sent using Site Kit's
-		// GTAG will not contain the segmentation-related custom dimensions.
-		add_filter( 'googlesitekit_gtag_opt', [ __CLASS__, 'remove_pageview_reporting' ] );
-		add_filter( 'googlesitekit_amp_gtag_opt', [ __CLASS__, 'remove_pageview_reporting_amp' ] );
-		// 2. Add an amp-analytics tag which will send the PV with custom dimensions attached.
-		add_action( 'wp_footer', [ __CLASS__, 'insert_gtag_amp_analytics' ] );
+			// Sending pageviews with segmentation-related custom dimensions.
+			// 1. Disable pageview sending from Site Kit's GTAG implementation. The custom events sent using Site Kit's
+			// GTAG will not contain the segmentation-related custom dimensions.
+			add_filter( 'googlesitekit_gtag_opt', [ __CLASS__, 'remove_pageview_reporting' ] );
+			add_filter( 'googlesitekit_amp_gtag_opt', [ __CLASS__, 'remove_pageview_reporting_amp' ] );
+			// 2. Add an amp-analytics tag which will send the PV with custom dimensions attached.
+			add_action( 'wp_footer', [ __CLASS__, 'insert_gtag_amp_analytics' ] );
+		}
 
 		add_action( 'newspack_popups_segmentation_data_prune', [ __CLASS__, 'prune_data' ] );
 		if ( ! wp_next_scheduled( 'newspack_popups_segmentation_data_prune' ) ) {
