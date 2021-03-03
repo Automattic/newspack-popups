@@ -1,3 +1,12 @@
+# [1.26.0](https://github.com/Automattic/newspack-popups/compare/v1.25.0...v1.26.0) (2021-03-03)
+
+
+### Features
+
+* enable visit logging by default ([#460](https://github.com/Automattic/newspack-popups/issues/460)) ([0ed17c2](https://github.com/Automattic/newspack-popups/commit/0ed17c2df42b7f7dc4bc5bd772b53687daa536c5))
+* handle visit data when previewing ([#458](https://github.com/Automattic/newspack-popups/issues/458)) ([f58c0ec](https://github.com/Automattic/newspack-popups/commit/f58c0ec4f9a58bed6e6f9fdc38c5d467f1bb770a))
+* non-cascading segment logic; multiple segments per prompt ([#432](https://github.com/Automattic/newspack-popups/issues/432), [#451](https://github.com/Automattic/newspack-popups/issues/451)) ([8c0e903](https://github.com/Automattic/newspack-popups/commit/8c0e903c4b72ea9d02e0a832e92721f91b2018c4))
+
 # [1.25.0](https://github.com/Automattic/newspack-popups/compare/v1.24.1...v1.25.0) (2021-02-25)
 
 
