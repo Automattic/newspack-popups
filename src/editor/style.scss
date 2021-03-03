@@ -21,4 +21,10 @@
 		font-size: 0.7em;
 		text-decoration: underline;
 	}
+
+	&__segmentation-sidebar {
+		.components-form-token-field__help {
+			display: none;
+		}
+	}
 }
