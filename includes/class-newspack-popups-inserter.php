@@ -247,7 +247,13 @@ final class Newspack_Popups_Inserter {
 		$output = '';
 		foreach ( parse_blocks( $content ) as $block ) {
 			$block_content = render_block( $block );
-			$pos          += strlen( $block_content );
+			$block_length  = strlen( $block_content );
+
+			if ( $block_length > 2 * strlen( $block['innerHTML'] ) ) {
+				$block_length = strlen( $block['innerHTML'] );
+			}
+
+			$pos += $block_length;
 			foreach ( $inline_popups as &$inline_popup ) {
 				if ( ! $inline_popup['is_inserted'] && $pos > $inline_popup['precise_position'] ) {
 					$output .= '<!-- wp:shortcode -->[newspack-popup id="' . $inline_popup['id'] . '"]<!-- /wp:shortcode -->';
