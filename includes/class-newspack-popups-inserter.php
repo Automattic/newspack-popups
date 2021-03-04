@@ -432,11 +432,11 @@ final class Newspack_Popups_Inserter {
 		$custom_placement_ids      = self::get_custom_placement_ids( get_the_content() );
 		$custom_placement_popups   = array_reduce(
 			Newspack_Popups_Custom_Placements::get_prompts_for_custom_placement( $custom_placement_ids ),
-			function ( $acc, $custom_placement_popup ) use ( $custom_placement_segments ) {
+			function ( $acc, $custom_placement_popup ) {
 				if ( $custom_placement_popup ) {
 					$popup_object = Newspack_Popups_Model::create_popup_object( $custom_placement_popup );
 
-					if ( $popup_object && ! in_array( $segment_id, $custom_placement_segments[ $placement ] ) ) {
+					if ( $popup_object ) {
 						$acc[] = $popup_object;
 					}
 				}
