@@ -461,9 +461,9 @@ final class Newspack_Popups {
 				$placement = 'above_header';
 				$frequency = 'always';
 				break;
-			case 'manual':
-				$placement = 'inline';
-				$frequency = 'manual';
+			case 'custom':
+				$placement = 'custom1';
+				$frequency = 'always';
 				break;
 			default:
 				$placement = 'inline';
@@ -479,7 +479,7 @@ final class Newspack_Popups {
 				$trigger_type = 'time';
 				break;
 			case 'above-header':
-			case 'manual':
+			case 'custom':
 			default:
 				$dismiss_text = null;
 				$trigger_type = 'scroll';

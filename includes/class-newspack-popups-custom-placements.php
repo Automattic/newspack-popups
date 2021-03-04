@@ -71,5 +71,18 @@ final class Newspack_Popups_Custom_Placements {
 	public static function get_custom_placement_values() {
 		return array_keys( self::get_custom_placements() );
 	}
+
+	/**
+	 * Determine whether the given prompt should be displayed via custom placement.
+	 *
+	 * @param object $prompt The prompt to assess.
+	 * @return boolean Whether or not the prompt has a custom placement.
+	 */
+	public static function is_custom_placement( $prompt ) {
+		return (
+			'manual' === $prompt['options']['frequency'] ||
+			in_array( $prompt['options']['frequency'], self::get_custom_placement_values() )
+		);
+	}
 }
 Newspack_Popups_Custom_Placements::instance();

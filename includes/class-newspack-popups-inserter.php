@@ -88,10 +88,7 @@ final class Newspack_Popups_Inserter {
 		$popups_to_maybe_display = array_filter(
 			$popups_to_maybe_display,
 			function( $popup ) {
-				return (
-					'manual' !== $popup['options']['frequency'] &&
-					! in_array( $popup['options']['frequency'], Newspack_Popups_Custom_Placements::get_custom_placement_values() )
-				);
+				return ! Newspack_Popups_Custom_Placements::is_custom_placement( $popup );
 			}
 		);
 
@@ -351,7 +348,7 @@ final class Newspack_Popups_Inserter {
 			! $found_popup ||
 			// Bail if it's a non-preview popup which should not be displayed.
 			( ! self::should_display( $found_popup, true ) && ! Newspack_Popups::previewed_popup_id() ) ||
-			// Only inline popups can be inserted via the  shortcode.
+			// Only inline popups can be inserted via the shortcode.
 			! Newspack_Popups_Model::is_inline( $found_popup )
 		) {
 			return;
@@ -633,7 +630,7 @@ final class Newspack_Popups_Inserter {
 	 * @return bool Should popup be shown.
 	 */
 	public static function should_display( $popup, $skip_context_checks = false ) {
-		if ( 'manual' === $popup['options']['frequency'] ) {
+		if ( Newspack_Popups_Custom_Placements::is_custom_placement( $popup ) ) {
 			return true;
 		}
 
