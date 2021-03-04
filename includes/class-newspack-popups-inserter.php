@@ -413,7 +413,7 @@ final class Newspack_Popups_Inserter {
 		);
 
 		// Get shortcoded prompts.
-		$shortcoded_popups    = array_reduce(
+		$shortcoded_popups = array_reduce(
 			$shortcoded_popup_ids,
 			function ( $acc, $id ) {
 				$popup_post = get_post( $id );
