@@ -429,24 +429,15 @@ final class Newspack_Popups_Inserter {
 		);
 
 		// Get prompts for custom placements.
-		$custom_placement_segments = [];
 		$custom_placement_ids      = self::get_custom_placement_ids( get_the_content() );
 		$custom_placement_popups   = array_reduce(
 			Newspack_Popups_Custom_Placements::get_prompts_for_custom_placement( $custom_placement_ids ),
 			function ( $acc, $custom_placement_popup ) use ( $custom_placement_segments ) {
 				if ( $custom_placement_popup ) {
 					$popup_object = Newspack_Popups_Model::create_popup_object( $custom_placement_popup );
-					$segment_id   = $popup_object['options']['selected_segment_id'] ? $popup_object['options']['selected_segment_id'] : 'everyone';
-					$placement    = $popup_object['options']['placement'];
-
-					// Only show one prompt per segment, per custom placement.
-					if ( empty( $custom_placement_segments[ $placement ] ) ) {
-						$custom_placement_segments[ $placement ] = [];
-					}
 
 					if ( $popup_object && ! in_array( $segment_id, $custom_placement_segments[ $placement ] ) ) {
-						$custom_placement_segments[ $placement ] = $segment_id;
-						$acc[]                                   = $popup_object;
+						$acc[] = $popup_object;
 					}
 				}
 				return $acc;

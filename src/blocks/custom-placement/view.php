@@ -39,20 +39,35 @@ function render_block( $attributes ) {
 		return $content;
 	}
 
-	// Get prompts for the custom placement.
-	$prompts = \Newspack_Popups_Custom_Placements::get_prompts_for_custom_placement( [ $custom_placement_id ], 'ids' );
+	$post_categories = array_map(
+		function( $term ) {
+			return $term->term_id;
+		},
+		get_the_category()
+	);
+
+	// Get category-matching prompts for the custom placement.
+	$prompts = \Newspack_Popups_Custom_Placements::get_prompts_for_custom_placement( [ $custom_placement_id ], 'ids', $post_categories );
+
+	// If no category-matching prompts, get uncategorized prompts.
+	if ( empty( $prompts ) ) {
+		$prompts = \Newspack_Popups_Custom_Placements::get_prompts_for_custom_placement( [ $custom_placement_id ], 'ids', [] );
+	}
 
 	if ( ! empty( $prompts ) ) {
+		$content .= '<!-- start custom placement: ' . $custom_placement_id . '-->';
 		$segments = [];
 		foreach ( $prompts as $prompt_id ) {
 			$segment_id = get_post_meta( $prompt_id, 'selected_segment_id', true );
 
-			// Only show one prompt per segment for each custom placement.
+			// Only render one prompt per segment and category for each custom placement.
 			if ( ! in_array( $segment_id, $segments ) ) {
 				$segments[] = $segment_id;
 				$content   .= '<!-- wp:shortcode -->[newspack-popup id="' . $prompt_id . '"]<!-- /wp:shortcode -->';
 			}
 		}
+
+		$content .= '<!-- end custom placement: ' . $custom_placement_id . '-->';
 	}
 
 	return $content;

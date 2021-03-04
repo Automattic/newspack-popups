@@ -160,11 +160,13 @@ final class Newspack_Popups_Custom_Placements {
 	/**
 	 * Query for prompts with the given custom placements.
 	 *
-	 * @param array  $custom_placement_ids Array of IDs for custom placements to look up.
-	 * @param string $fields Field values to return in response: 'all' or 'ids'.
+	 * @param array         $custom_placement_ids Array of IDs for custom placements to look up.
+	 * @param string        $fields Field values to return in response: 'all' or 'ids'.
+	 * @param array|boolean $categories Array of category IDs to filter by, empty array if fetching only uncategorized prompts, or false to ignore categories.
+	 *
 	 * @return array Array of prompt posts matching the custom placement.
 	 */
-	public static function get_prompts_for_custom_placement( $custom_placement_ids, $fields = 'all' ) {
+	public static function get_prompts_for_custom_placement( $custom_placement_ids, $fields = 'all', $categories = false ) {
 		$args  = [
 			'posts_per_page' => 100,
 			'post_status'    => 'publish',
@@ -175,6 +177,19 @@ final class Newspack_Popups_Custom_Placements {
 			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 			'meta_value'     => $custom_placement_ids,
 		];
+
+		if ( ! empty( $categories ) ) {
+			$args['category__in'] = $categories;
+		} elseif ( is_array( $categories ) ) {
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+			$args['tax_query'] = [
+				[
+					'taxonomy' => 'category',
+					'operator' => 'NOT EXISTS',
+				],
+			];
+		}
+
 		$query = new \WP_Query( $args );
 
 		if ( $query->have_posts() ) {
