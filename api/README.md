@@ -17,4 +17,4 @@ The feature requires a custom config file named `newspack-popups-config.php` at 
 
 ## Disabling the API calls
 
-In high-traffic periods or for debugging purposes, it's possible to disable any calls to the API with the "non-interactive mode" setting (`newspack_popups_non_interative_mode` option).
+In high-traffic periods or for debugging purposes, it's possible to disable any calls to the API with the "non-interactive mode" setting (`newspack_popups_non_interactive_mode` option).
