@@ -10,18 +10,18 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Main Newspack Placements Plugin Class.
  */
-final class Newspack_Popups_Placements {
+final class Newspack_Popups_Custom_Placements {
 	/**
 	 * The single instance of the class.
 	 *
-	 * @var Newspack_Popups_Placements
+	 * @var Newspack_Popups_Custom_Placements
 	 */
 	protected static $instance = null;
 
 	/**
 	 * Name of the option to store placements under.
 	 */
-	const PLACEMENTS_OPTION_NAME = 'newspack_popups_placements';
+	const PLACEMENTS_OPTION_NAME = 'newspack_popups_custom_placements';
 
 	/**
 	 * Main Newspack Placements Plugin Instance.
@@ -45,7 +45,7 @@ final class Newspack_Popups_Placements {
 	/**
 	 * Get default placements that exist for all sites.
 	 */
-	public static function get_default_placements() {
+	public static function get_default_custom_placements() {
 		return [
 			'custom1' => __( 'Custom Placement 1' ),
 			'custom2' => __( 'Custom Placement 2' ),
@@ -58,9 +58,18 @@ final class Newspack_Popups_Placements {
 	 *
 	 * @return array Array of placements.
 	 */
-	public static function get_placements() {
+	public static function get_custom_placements() {
 		$placements = get_option( self::PLACEMENTS_OPTION_NAME, [] );
-		return array_merge( $placements, self::get_default_placements() );
+		return array_merge( self::get_default_custom_placements(), $placements );
+	}
+
+	/**
+	 * Get a simple array of placement values.
+	 *
+	 * @return array Array of placement values.
+	 */
+	public static function get_custom_placement_values() {
+		return array_keys( self::get_custom_placements() );
 	}
 }
-Newspack_Popups_Placements::instance();
+Newspack_Popups_Custom_Placements::instance();

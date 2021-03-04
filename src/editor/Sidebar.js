@@ -26,7 +26,7 @@ const Sidebar = ( {
 			onMetaFieldChange( 'frequency', 'once' );
 		}
 	};
-	const customPlacements = window.newspack_popups_data?.placements || {};
+	const customPlacements = window.newspack_popups_data?.custom_placements || {};
 
 	return (
 		<Fragment>

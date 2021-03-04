@@ -117,7 +117,7 @@ final class Newspack_Popups_Model {
 					$valid_placements = array_merge(
 						self::$overlay_placements,
 						self::$inline_placements,
-						array_keys( Newspack_Popups_Placements::get_placements() )
+						Newspack_Popups_Custom_Placements::get_custom_placement_values()
 					);
 					if ( ! in_array( $value, $valid_placements ) ) {
 						return new \WP_Error(

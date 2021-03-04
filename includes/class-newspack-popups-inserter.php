@@ -88,7 +88,10 @@ final class Newspack_Popups_Inserter {
 		$popups_to_maybe_display = array_filter(
 			$popups_to_maybe_display,
 			function( $popup ) {
-				return 'manual' !== $popup['options']['frequency'];
+				return (
+					'manual' !== $popup['options']['frequency'] &&
+					! in_array( $popup['options']['frequency'], Newspack_Popups_Custom_Placements::get_custom_placement_values() )
+				);
 			}
 		);
 

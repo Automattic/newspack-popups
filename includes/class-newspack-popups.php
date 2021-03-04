@@ -61,7 +61,7 @@ final class Newspack_Popups {
 		include_once dirname( __FILE__ ) . '/class-newspack-popups-api.php';
 		include_once dirname( __FILE__ ) . '/class-newspack-popups-settings.php';
 		include_once dirname( __FILE__ ) . '/class-newspack-popups-segmentation.php';
-		include_once dirname( __FILE__ ) . '/class-newspack-popups-placements.php';
+		include_once dirname( __FILE__ ) . '/class-newspack-popups-custom-placements.php';
 		include_once dirname( __FILE__ ) . '/class-newspack-popups-parse-logs.php';
 		include_once dirname( __FILE__ ) . '/class-newspack-popups-donations.php';
 		include_once dirname( __FILE__ ) . '/class-newspack-popups-view-as.php';
@@ -357,10 +357,10 @@ final class Newspack_Popups {
 			'newspack-popups',
 			'newspack_popups_data',
 			[
-				'preview_post' => self::preview_post_permalink(),
-				'segments'     => Newspack_Popups_Segmentation::get_segments(),
-				'placements'   => Newspack_Popups_Placements::get_placements(),
-				'taxonomy'     => self::NEWSPACK_POPUPS_TAXONOMY,
+				'preview_post'      => self::preview_post_permalink(),
+				'segments'          => Newspack_Popups_Segmentation::get_segments(),
+				'custom_placements' => Newspack_Popups_Custom_Placements::get_custom_placements(),
+				'taxonomy'          => self::NEWSPACK_POPUPS_TAXONOMY,
 			]
 		);
 		\wp_enqueue_style(
