@@ -12,6 +12,7 @@ import CallToActionIcon from '@material-ui/icons/CallToAction';
 /**
  * Internal dependencies.
  */
+import './editor.scss';
 import metadata from './block.json';
 const { attributes, category, name } = metadata;
 import { CustomPlacementEditor } from './edit';

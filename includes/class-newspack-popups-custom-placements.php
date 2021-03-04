@@ -42,6 +42,7 @@ final class Newspack_Popups_Custom_Placements {
 	public function __construct() {
 		add_action( 'enqueue_block_editor_assets', [ __CLASS__, 'manage_editor_assets' ] );
 		add_action( 'init', [ __CLASS__, 'manage_view_assets' ] );
+		add_action( 'rest_api_init', [ __CLASS__, 'rest_api_init' ] );
 	}
 
 	/**
@@ -63,6 +64,15 @@ final class Newspack_Popups_Custom_Placements {
 				'custom_placements' => self::get_custom_placements(),
 			]
 		);
+
+		\wp_register_style(
+			'newspack-popups-blocks',
+			plugins_url( '../dist/blocks.css', __FILE__ ),
+			[],
+			filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/blocks.css' )
+		);
+		wp_style_add_data( 'newspack-popups-blocks', 'rtl', 'replace' );
+		wp_enqueue_style( 'newspack-popups-blocks' );
 	}
 
 	/**
@@ -93,6 +103,46 @@ final class Newspack_Popups_Custom_Placements {
 		}
 	}
 
+	/**
+	 * Initialise REST API endpoints.
+	 */
+	public static function rest_api_init() {
+		\register_rest_route(
+			'newspack-popups/v1',
+			'custom-placement',
+			[
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => [ __CLASS__, 'api_get_prompts_for_custom_placement' ],
+				'permission_callback' => '__return_true',
+				'args'                => [
+					'custom_placement' => [
+						'validate_callback' => [ __CLASS__, 'validate_custom_placement' ],
+						'sanitize_callback' => 'esc_attr',
+					],
+				],
+			]
+		);
+	}
+
+	/**
+	 * Validate a custom placement slug.
+	 *
+	 * @param string $slug The slug of the custom placement to check.
+	 * @return boolean Whether the slug is a valid custom placement.
+	 */
+	public static function validate_custom_placement( $slug ) {
+		return in_array( $slug, self::get_custom_placement_values() );
+	}
+
+	/**
+	 * Get prompts assigned to a given custom placement.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 * @return WP_REST_Response.
+	 */
+	public static function api_get_prompts_for_custom_placement( $request ) {
+		return [];
+	}
 
 	/**
 	 * Get default placements that exist for all sites.
