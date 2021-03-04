@@ -380,6 +380,7 @@ final class Newspack_Popups_Model {
 			// Update 'manual' prompts to a default custom placement.
 			if ( 'manual' === $frequency ) {
 				$popup['options']['placement'] = 'custom1';
+				update_post_meta( $popup['id'], 'placement', $popup['options']['placement'] );
 			}
 
 			// Set 'never' and 'test' prompts to draft status.
