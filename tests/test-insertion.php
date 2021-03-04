@@ -176,4 +176,24 @@ class InsertionTest extends WP_UnitTestCase {
 		);
 		update_option( 'newspack_popups_non_interative_mode', false );
 	}
+
+	/**
+	 * Test custom placement campaigns.
+	 */
+	public function test_custom_placement_prompt() {
+		Newspack_Popups_Model::set_popup_options(
+			self::$popup_id,
+			[
+				'placement' => 'custom1',
+				'frequency' => 'always',
+			]
+		);
+
+		self::render_post();
+		self::assertNotContains(
+			self::$popup_content,
+			self::$post_content,
+			'Does not include the popup content, since it is a custom placement campaign.'
+		);
+	}
 }
