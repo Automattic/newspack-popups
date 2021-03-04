@@ -114,7 +114,12 @@ final class Newspack_Popups_Model {
 					update_post_meta( $id, $key, $value );
 					break;
 				case 'placement':
-					if ( ! in_array( $value, array_merge( self::$overlay_placements, self::$inline_placements ) ) ) {
+					$valid_placements = array_merge(
+						self::$overlay_placements,
+						self::$inline_placements,
+						array_keys( Newspack_Popups_Placements::get_placements() )
+					);
+					if ( ! in_array( $value, $valid_placements ) ) {
 						return new \WP_Error(
 							'newspack_popups_invalid_option_value',
 							esc_html__( 'Invalid placement value.', 'newspack-popups' ),
