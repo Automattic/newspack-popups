@@ -18,6 +18,13 @@ const { attributes, category, name } = metadata;
 import { CustomPlacementEditor } from './edit';
 
 export const registerCustomPlacementBlock = () => {
+	const isPrompt = Boolean( window.newspack_popups_data?.is_prompt );
+
+	// No prompts inside prompts.
+	if ( isPrompt ) {
+		return null;
+	}
+
 	registerBlockType( name, {
 		title: __( 'Newspack Campaigns: Custom Placement', 'newspack-listing' ),
 		icon: <CallToActionIcon />,

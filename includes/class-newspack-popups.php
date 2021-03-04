@@ -361,6 +361,7 @@ final class Newspack_Popups {
 				'segments'          => Newspack_Popups_Segmentation::get_segments(),
 				'custom_placements' => Newspack_Popups_Custom_Placements::get_custom_placements(),
 				'taxonomy'          => self::NEWSPACK_POPUPS_TAXONOMY,
+				'is_prompt'         => self::NEWSPACK_POPUPS_CPT == get_post_type(),
 			]
 		);
 		\wp_enqueue_style(
