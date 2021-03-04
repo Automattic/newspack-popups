@@ -32,7 +32,29 @@ function register_block() {
  * @param array $attributes Block attributes.
  */
 function render_block( $attributes ) {
-	$content = '<div class="newspack-popups__custom-placement">Custom Placement!!</div>';
+	$content             = '';
+	$custom_placement_id = \Newspack_Popups_Custom_Placements::validate_custom_placement_id( $attributes['customPlacement'] );
+
+	if ( empty( $custom_placement_id ) ) {
+		return $content;
+	}
+
+	// Get prompts for the custom placement.
+	$prompts = \Newspack_Popups_Custom_Placements::get_prompts_for_custom_placement( [ $custom_placement_id ], 'ids' );
+
+	if ( ! empty( $prompts ) ) {
+		$segments = [];
+		foreach ( $prompts as $prompt_id ) {
+			$segment_id = get_post_meta( $prompt_id, 'selected_segment_id', true );
+
+			// Only show one prompt per segment for each custom placement.
+			if ( ! in_array( $segment_id, $segments ) ) {
+				$segments[] = $segment_id;
+				$content   .= '<!-- wp:shortcode -->[newspack-popup id="' . $prompt_id . '"]<!-- /wp:shortcode -->';
+			}
+		}
+	}
+
 	return $content;
 }
 
