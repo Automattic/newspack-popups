@@ -125,7 +125,55 @@ final class Newspack_Popups_Custom_Placements {
 	 * @return WP_REST_Response.
 	 */
 	public static function api_get_prompts_for_custom_placement( $request ) {
+		$custom_placement_id = self::validate_custom_placement_id( $request['custom_placement'] );
+
+		if ( empty( $custom_placement_id ) ) {
+			return new \WP_Error(
+				'newspack_popups_custom_placement',
+				esc_html__( 'Invalid custom placement ID.', 'newspack-popups' ),
+				[
+					'status' => 400,
+					'level'  => 'fatal',
+				]
+			);
+		}
+
+		$args  = [
+			'posts_per_page' => 100,
+			'post_status'    => 'publish',
+			'post_type'      => Newspack_Popups::NEWSPACK_POPUPS_CPT,
+			'meta_key'       => 'placement',
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+			'meta_value'     => $custom_placement_id,
+		];
+		$query = new \WP_Query( $args );
+
+		if ( $query->have_posts() ) {
+			return new \WP_REST_Response(
+				array_map(
+					function( $post ) {
+						return [
+							'id'    => $post->ID,
+							'title' => $post->post_title,
+						];
+					},
+					$query->posts
+				)
+			);
+		}
+
 		return [];
+	}
+
+	/**
+	 * Validate a custom placement ID.
+	 *
+	 * @param string $custom_placement_id The slug of the custom placement to check.
+	 * @return string|boolean The ID if it's valid, false if not.
+	 */
+	public static function validate_custom_placement_id( $custom_placement_id ) {
+		$custom_placement_id = sanitize_text_field( $custom_placement_id );
+		return in_array( $custom_placement_id, self::get_custom_placement_values() ) ? $custom_placement_id : false;
 	}
 
 	/**

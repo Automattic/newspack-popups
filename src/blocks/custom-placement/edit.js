@@ -2,8 +2,8 @@
  * WordPress dependencies.
  */
 import apiFetch from '@wordpress/api-fetch';
-import { __ } from '@wordpress/i18n';
-import { Notice, Placeholder, SelectControl, Spinner } from '@wordpress/components';
+import { __, sprintf } from '@wordpress/i18n';
+import { ExternalLink, Notice, Placeholder, SelectControl, Spinner } from '@wordpress/components';
 import { useEffect, useState } from '@wordpress/element';
 import { addQueryArgs } from '@wordpress/url';
 
@@ -87,8 +87,33 @@ export const CustomPlacementEditor = ( { attributes, setAttributes } ) => {
 
 			{ ! loading && ! error && Array.isArray( prompts ) && (
 				<div className="newspack-popups__custom-placement-prompts">
-					{ 0 === prompts.length &&
-						__( 'No prompts found for this custom placement.', 'newspack-popups' ) }
+					{ 0 === prompts.length && (
+						<Notice status="warning" isDismissible={ false }>
+							{ __( 'No prompts found for this custom placement.', 'newspack-popups' ) }
+						</Notice>
+					) }
+					{ 0 < prompts.length && (
+						<>
+							<p>
+								{ sprintf(
+									__(
+										'This custom placement contains the following active prompt%s:',
+										'newspack-popups'
+									),
+									1 < prompts.length ? 's' : ''
+								) }
+							</p>
+							<ul>
+								{ prompts.map( prompt => (
+									<li key={ prompt.id }>
+										<ExternalLink href={ `/wp-admin/post.php?post=${ prompt.id }&action=edit` }>
+											{ prompt.title }
+										</ExternalLink>
+									</li>
+								) ) }
+							</ul>
+						</>
+					) }
 				</div>
 			) }
 		</Placeholder>
