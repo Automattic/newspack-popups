@@ -40,7 +40,59 @@ final class Newspack_Popups_Custom_Placements {
 	 * Constructor.
 	 */
 	public function __construct() {
+		add_action( 'enqueue_block_editor_assets', [ __CLASS__, 'manage_editor_assets' ] );
+		add_action( 'init', [ __CLASS__, 'manage_view_assets' ] );
 	}
+
+	/**
+	 * Enqueue editor assets.
+	 */
+	public static function manage_editor_assets() {
+		\wp_enqueue_script(
+			'newspack-popups-blocks',
+			plugins_url( '../dist/blocks.js', __FILE__ ),
+			[],
+			filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/blocks.js' ),
+			true
+		);
+
+		\wp_localize_script(
+			'newspack-popups-blocks',
+			'newspack_popups_blocks_data',
+			[
+				'custom_placements' => self::get_custom_placements(),
+			]
+		);
+	}
+
+	/**
+	 * Enqueue front-end assets.
+	 */
+	public static function manage_view_assets() {
+		// Do nothing in editor environment.
+		if ( is_admin() ) {
+			return;
+		}
+
+		$src_directory  = dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/src/blocks/';
+		$dist_directory = dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/';
+		$iterator       = new \DirectoryIterator( $src_directory );
+
+		foreach ( $iterator as $block_directory ) {
+			if ( ! $block_directory->isDir() || $block_directory->isDot() ) {
+				continue;
+			}
+			$type = $block_directory->getFilename();
+
+			/* If view.php is found, include it and use for block rendering. */
+			$view_php_path = $src_directory . $type . '/view.php';
+			if ( file_exists( $view_php_path ) ) {
+				include_once $view_php_path;
+				continue;
+			}
+		}
+	}
+
 
 	/**
 	 * Get default placements that exist for all sites.
