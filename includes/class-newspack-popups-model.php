@@ -367,18 +367,27 @@ final class Newspack_Popups_Model {
 	protected static function deprecate_test_never( $popup, $published_only ) {
 		$frequency = $popup['options']['frequency'];
 		$placement = $popup['options']['placement'];
-		if ( in_array( $frequency, [ 'never', 'test' ] ) ) {
+		if ( in_array( $frequency, [ 'never', 'test', 'manual' ] ) ) {
 			if ( in_array( $placement, [ 'inline', 'above_header' ] ) ) {
 				$popup['options']['frequency'] = 'always';
 			} else {
 				$popup['options']['frequency'] = 'daily';
 			}
 			update_post_meta( $popup['id'], 'frequency', $popup['options']['frequency'] );
-			$popup['status'] = 'draft';
 
 			$post = get_post( $popup['id'] );
 
-			$post->post_status = 'draft';
+			// Update 'manual' prompts to a default custom placement.
+			if ( 'manual' === $frequency ) {
+				$popup['options']['placement'] = 'custom1';
+			}
+
+			// Set 'never' and 'test' prompts to draft status.
+			if ( in_array( $frequency, [ 'never', 'test' ] ) ) {
+				$popup['status']   = 'draft';
+				$post->post_status = 'draft';
+			}
+
 			wp_update_post( $post );
 
 			if ( $published_only ) {
