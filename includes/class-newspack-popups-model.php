@@ -521,7 +521,10 @@ final class Newspack_Popups_Model {
 		if ( ! isset( $popup['options'], $popup['options']['placement'] ) ) {
 			return false;
 		}
-		return in_array( $popup['options']['placement'], self::$inline_placements );
+		return in_array(
+			$popup['options']['placement'],
+			array_merge( self::$inline_placements, Newspack_Popups_Custom_Placements::get_custom_placement_values() )
+		);
 	}
 
 	/**
