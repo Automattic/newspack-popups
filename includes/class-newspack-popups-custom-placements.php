@@ -167,7 +167,7 @@ final class Newspack_Popups_Custom_Placements {
 	 * @return array Array of prompt posts matching the custom placement.
 	 */
 	public static function get_prompts_for_custom_placement( $custom_placement_ids, $fields = 'all', $categories = false ) {
-		$args  = [
+		$args = [
 			'posts_per_page' => 100,
 			'post_status'    => 'publish',
 			'post_type'      => Newspack_Popups::NEWSPACK_POPUPS_CPT,

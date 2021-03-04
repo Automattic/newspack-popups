@@ -429,8 +429,8 @@ final class Newspack_Popups_Inserter {
 		);
 
 		// Get prompts for custom placements.
-		$custom_placement_ids      = self::get_custom_placement_ids( get_the_content() );
-		$custom_placement_popups   = array_reduce(
+		$custom_placement_ids    = self::get_custom_placement_ids( get_the_content() );
+		$custom_placement_popups = array_reduce(
 			Newspack_Popups_Custom_Placements::get_prompts_for_custom_placement( $custom_placement_ids ),
 			function ( $acc, $custom_placement_popup ) {
 				if ( $custom_placement_popup ) {
