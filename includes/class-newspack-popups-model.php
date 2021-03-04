@@ -346,7 +346,7 @@ final class Newspack_Popups_Model {
 					get_post( get_the_ID() ),
 					$include_categories
 				);
-				$popup = self::deprecate_test_never( $popup, 'publish' === $query->get( 'post_status', null ) );
+				$popup = self::deprecate_test_never_manual( $popup, 'publish' === $query->get( 'post_status', null ) );
 
 				if ( $popup ) {
 					$popups[] = $popup;
@@ -358,13 +358,13 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
-	 * Deprecate Test Mode and Never frequency.
+	 * Deprecate Test Mode and Never/Manual frequencies.
 	 *
 	 * @param object $popup The popup.
 	 * @param bool   $published_only Whether the result must be a published post.
 	 * @return object|null Popup object or null.
 	 */
-	protected static function deprecate_test_never( $popup, $published_only ) {
+	protected static function deprecate_test_never_manual( $popup, $published_only ) {
 		$frequency = $popup['options']['frequency'];
 		$placement = $popup['options']['placement'];
 		if ( in_array( $frequency, [ 'never', 'test', 'manual' ] ) ) {
@@ -390,7 +390,7 @@ final class Newspack_Popups_Model {
 
 			wp_update_post( $post );
 
-			if ( $published_only ) {
+			if ( $published_only && 'publish' !== $popup['status'] ) {
 				$popup = null;
 			}
 		}
