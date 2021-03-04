@@ -114,24 +114,8 @@ final class Newspack_Popups_Custom_Placements {
 				'methods'             => \WP_REST_Server::READABLE,
 				'callback'            => [ __CLASS__, 'api_get_prompts_for_custom_placement' ],
 				'permission_callback' => '__return_true',
-				'args'                => [
-					'custom_placement' => [
-						'validate_callback' => [ __CLASS__, 'validate_custom_placement' ],
-						'sanitize_callback' => 'esc_attr',
-					],
-				],
 			]
 		);
-	}
-
-	/**
-	 * Validate a custom placement slug.
-	 *
-	 * @param string $slug The slug of the custom placement to check.
-	 * @return boolean Whether the slug is a valid custom placement.
-	 */
-	public static function validate_custom_placement( $slug ) {
-		return in_array( $slug, self::get_custom_placement_values() );
 	}
 
 	/**
