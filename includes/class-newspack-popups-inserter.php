@@ -423,7 +423,7 @@ final class Newspack_Popups_Inserter {
 				$popup_post = get_post( $id );
 				if ( $popup_post ) {
 					$popup_object = Newspack_Popups_Model::create_popup_object( $popup_post );
-					if ( $popup_object ) {
+					if ( $popup_object && 'publish' === $popup_object['status'] ) {
 						$acc[] = $popup_object;
 					}
 				}
