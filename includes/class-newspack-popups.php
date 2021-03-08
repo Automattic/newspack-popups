@@ -403,6 +403,25 @@ final class Newspack_Popups {
 	}
 
 	/**
+	 * Site has no active prompts. Lets us skip client data logging when not needed.
+	 *
+	 * @return boolean True if the site has no active prompts.
+	 */
+	public static function is_empty() {
+		$active_prompts = new \WP_Query(
+			[
+				'post_type'      => self::NEWSPACK_POPUPS_CPT,
+				'post_status'    => 'publish',
+				'posts_per_page' => 1,
+				'no_found_rows'  => true,
+				'fields'         => 'ids',
+			]
+		);
+
+		return ! $active_prompts->have_posts();
+	}
+
+	/**
 	 * Is it a preview request – a single popup preview or using "view as" feature.
 	 *
 	 * @return boolean Whether it's a preview request.
