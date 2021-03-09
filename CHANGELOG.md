@@ -1,3 +1,12 @@
+## [1.26.1](https://github.com/Automattic/newspack-popups/compare/v1.26.0...v1.26.1) (2021-03-09)
+
+
+### Bug Fixes
+
+* inline positions computation ([32836f1](https://github.com/Automattic/newspack-popups/commit/32836f12b5e498898125c3d320c6cfcf183165c9))
+* no amp-access auth check for inactive prompts ([#474](https://github.com/Automattic/newspack-popups/issues/474)) ([95b7f63](https://github.com/Automattic/newspack-popups/commit/95b7f63d43e7e8db3bf0a6c6f6dbef8744d97ef5))
+* prevents segmentation-derived custom dimensions reporting in non-interaction mode ([#464](https://github.com/Automattic/newspack-popups/issues/464)) ([c241e58](https://github.com/Automattic/newspack-popups/commit/c241e58014e52528799d492ae2292e570bdef4c4))
+
 # [1.26.0](https://github.com/Automattic/newspack-popups/compare/v1.25.0...v1.26.0) (2021-03-03)
 
 
