@@ -160,7 +160,7 @@ final class Newspack_Popups_Segmentation {
 				'custom_dimensions'                 => wp_json_encode( $custom_dimensions ),
 				'custom_dimensions_existing_values' => wp_json_encode( $custom_dimensions_existing_values ),
 			],
-			plugins_url( '../api/segmentation/index.php', __FILE__ )
+			self::get_client_data_endpoint()
 		);
 
 		?>

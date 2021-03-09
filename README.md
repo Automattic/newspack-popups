@@ -4,7 +4,7 @@ AMP-compatible popup notifications.
 
 ## Config file
 
-Newspack Campaigns requires a custom config file to provide database credentials and other key data to the lightweight API. The file is named `newspack-popups-config.php` and should automatically be created at the root of the WordPress installation. If for any reason it is not created automatically, manually add this file using the following template:
+Newspack Campaigns requires a custom config file to provide database credentials and other key data to the lightweight API. The file (`wp-content/newspack-popups-config.php`) should automatically be created. If it is not, manually add this file using the following template:
 
 ```
 <?php
@@ -14,6 +14,7 @@ define( 'DB_NAME', 'local' );
 define( 'DB_HOST', 'localhost' );
 define( 'DB_CHARSET', 'utf8' );
 define( 'DB_PREFIX', 'wp_' );
+define( 'NEWSPACK_POPUPS_DEBUG', true ); // Optional, for debugging.
 ```
 
 ## Segmentation features
