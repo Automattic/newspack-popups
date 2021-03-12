@@ -225,7 +225,7 @@ final class Newspack_Popups_Inserter {
 		// not an accurate representation of the content length.
 		$total_length = 0;
 		foreach ( parse_blocks( $content ) as $block ) {
-			$block_content = render_block( $block );
+			$block_content = $block['innerHTML'];
 			$total_length += strlen( wp_strip_all_tags( $block_content ) );
 		}
 
