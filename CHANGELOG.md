@@ -1,3 +1,10 @@
+## [1.26.2-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.26.1...v1.26.2-alpha.1) (2021-03-12)
+
+
+### Bug Fixes
+
+* render_block causes Homepage Posts to render wrong post ([#484](https://github.com/Automattic/newspack-popups/issues/484)) ([239368f](https://github.com/Automattic/newspack-popups/commit/239368f64456676dee753febc4012cccf5f6c4f3))
+
 ## [1.26.1](https://github.com/Automattic/newspack-popups/compare/v1.26.0...v1.26.1) (2021-03-09)
 
 
