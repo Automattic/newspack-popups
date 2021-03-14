@@ -122,8 +122,12 @@ final class Newspack_Popups_Inserter {
 
 		add_filter(
 			'newspack_newsletters_assess_has_disabled_popups',
-			function () {
-				return get_post_meta( get_the_ID(), 'newspack_popups_has_disabled_popups', true );
+			function ( $disabled ) {
+				if ( get_post_meta( get_the_ID(), 'newspack_popups_has_disabled_popups', true ) ) {
+					return true;
+				}
+
+				return $disabled;
 			}
 		);
 
@@ -503,7 +507,7 @@ final class Newspack_Popups_Inserter {
 	 * @return bool True if popups should be disabled for current page.
 	 */
 	public static function assess_has_disabled_popups() {
-		return apply_filters( 'newspack_newsletters_assess_has_disabled_popups', [] );
+		return apply_filters( 'newspack_newsletters_assess_has_disabled_popups', false );
 	}
 
 	/**
