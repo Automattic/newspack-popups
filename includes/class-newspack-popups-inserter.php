@@ -121,7 +121,7 @@ final class Newspack_Popups_Inserter {
 		add_action( 'delete_widget', [ $this, 'remove_widgets_shortcoded_popup_ids' ] );
 
 		add_filter(
-			'newspack_newsletters_assess_has_disabled_popups',
+			'newspack_popups_assess_has_disabled_popups',
 			function ( $disabled ) {
 				if ( get_post_meta( get_the_ID(), 'newspack_popups_has_disabled_popups', true ) ) {
 					return true;
@@ -134,11 +134,24 @@ final class Newspack_Popups_Inserter {
 		// Suppress popups on product pages.
 		// Until the popups non-AMP refactoring happens, they will break Add to Cart buttons.
 		add_filter(
-			'newspack_newsletters_assess_has_disabled_popups',
+			'newspack_popups_assess_has_disabled_popups',
 			function( $disabled ) {
 				if ( function_exists( 'is_product' ) && is_product() ) {
 					return true;
 				}
+				return $disabled;
+			}
+		);
+
+		// The suppress filter used to be named 'newspack_newsletters_assess_has_disabled_popups'.
+		// Maintain that filter for backwards compatibility.
+		add_filter(
+			'newspack_popups_assess_has_disabled_popups',
+			function( $disabled ) {
+				if ( apply_filters( 'newspack_newsletters_assess_has_disabled_popups', false ) ) {
+					return true;
+				}
+
 				return $disabled;
 			}
 		);
@@ -507,7 +520,7 @@ final class Newspack_Popups_Inserter {
 	 * @return bool True if popups should be disabled for current page.
 	 */
 	public static function assess_has_disabled_popups() {
-		return apply_filters( 'newspack_newsletters_assess_has_disabled_popups', false );
+		return apply_filters( 'newspack_popups_assess_has_disabled_popups', false );
 	}
 
 	/**
