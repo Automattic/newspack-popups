@@ -221,12 +221,18 @@ final class Newspack_Popups_Inserter {
 			$content = scaip_maybe_insert_shortcode( $content );
 		}
 
-		// Dynamic blocks might render an arbitrary amount of content, so the length of the content string is
-		// not an accurate representation of the content length.
-		$total_length = 0;
-		foreach ( parse_blocks( $content ) as $block ) {
-			$block_content = $block['innerHTML'];
-			$total_length += strlen( wp_strip_all_tags( $block_content ) );
+		// For certain types of blocks, their innerHTML is not a good representation of the length of their content.
+		// For example, slideshows may have an arbitrary amount of slide content, but only show one slide at a time.
+		// Don't insert prompts adjacent to these.
+		$override_blocks = [ 'jetpack/slideshow', 'newspack-blocks/carousel' ];
+		$parsed_blocks   = parse_blocks( $content );
+		$total_length    = 0;
+
+		foreach ( $parsed_blocks as $block ) {
+			if ( ! in_array( $block['blockName'], $override_blocks ) ) {
+				$block_content = $block['innerHTML'];
+				$total_length += strlen( wp_strip_all_tags( $block_content ) );
+			}
 		}
 
 		// 1. Separate prompts into inline and overlay.
@@ -251,17 +257,23 @@ final class Newspack_Popups_Inserter {
 		// 2. Iterate over all blocks and insert inline prompts.
 		$pos    = 0;
 		$output = '';
-		foreach ( parse_blocks( $content ) as $block ) {
-			$block_content = render_block( $block );
-			$pos          += strlen( wp_strip_all_tags( $block_content ) );
-			foreach ( $inline_popups as &$inline_popup ) {
-				if ( ! $inline_popup['is_inserted'] && $pos > $inline_popup['precise_position'] ) {
-					$output .= '<!-- wp:shortcode -->[newspack-popup id="' . $inline_popup['id'] . '"]<!-- /wp:shortcode -->';
 
+		foreach ( $parsed_blocks as $block ) {
+			if ( ! in_array( $block['blockName'], $override_blocks ) ) {
+				$pos += strlen( wp_strip_all_tags( $block['innerHTML'] ) );
+			}
+			foreach ( $inline_popups as &$inline_popup ) {
+				if (
+					! in_array( $block['blockName'], $override_blocks ) &&
+					! $inline_popup['is_inserted'] &&
+					$pos > $inline_popup['precise_position']
+				) {
+					$output                     .= '<!-- wp:shortcode -->[newspack-popup id="' . $inline_popup['id'] . '"]<!-- /wp:shortcode -->';
 					$inline_popup['is_inserted'] = true;
 				}
 			}
-			$output .= $block_content;
+			$block_content = render_block( $block );
+			$output       .= $block_content;
 		}
 
 		// 3. Insert any remaining inline prompts at the end.
