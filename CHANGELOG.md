@@ -1,3 +1,10 @@
+## [1.26.3-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.26.2...v1.26.3-alpha.1) (2021-03-16)
+
+
+### Bug Fixes
+
+* process custom dimensions as strings ([7443e67](https://github.com/Automattic/newspack-popups/commit/7443e673c33303876a511f54a9b8d29c98592f3a)), closes [#461](https://github.com/Automattic/newspack-popups/issues/461)
+
 ## [1.26.2](https://github.com/Automattic/newspack-popups/compare/v1.26.1...v1.26.2) (2021-03-12)
 
 
