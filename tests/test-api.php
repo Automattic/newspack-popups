@@ -627,11 +627,9 @@ class APITest extends WP_UnitTestCase {
 		self::assertEquals(
 			$api->get_campaign_data( self::$client_id, 'foo' ),
 			[
-				'foo' => [
-					'count'            => 1,
-					'last_viewed'      => 0,
-					'suppress_forever' => true,
-				],
+				'count'            => 1,
+				'last_viewed'      => 0,
+				'suppress_forever' => true,
 			],
 			'Returns prompt data only.'
 		);
@@ -673,6 +671,8 @@ class APITest extends WP_UnitTestCase {
 			]
 		);
 
+		$prompt_data = $api->get_campaign_data( self::$client_id, Newspack_Popups_Model::canonize_popup_id( $test_popup_with_subscription_block['id'] ) );
+
 		self::assertEquals(
 			self::$report_campaign_data->get_client_data( self::$client_id ),
 			[
@@ -685,7 +685,7 @@ class APITest extends WP_UnitTestCase {
 					],
 				],
 				'user_id'                        => false,
-				'prompts'                        => [],
+				'prompts'                        => $prompt_data,
 			],
 			'The client data after a subscription contains the provided email address.'
 		);
