@@ -164,9 +164,8 @@ class Lightweight_API {
 		$table_name       = Segmentation::get_transients_table_name();
 		$name             = '_transient_' . $name;
 		$serialized_value = maybe_serialize( $value );
-		$autoload         = 'no';
 		wp_cache_set( $name, $serialized_value, 'newspack-popups' );
-		$result           = $wpdb->query( $wpdb->prepare( "INSERT INTO `$table_name` (`option_name`, `option_value`, `autoload`) VALUES (%s, %s, %s) ON DUPLICATE KEY UPDATE `option_name` = VALUES(`option_name`), `option_value` = VALUES(`option_value`), `autoload` = VALUES(`autoload`)", $name, $serialized_value, $autoload ) ); // phpcs:ignore
+		$result           = $wpdb->query( $wpdb->prepare( "INSERT INTO `$table_name` (`option_name`, `option_value`) VALUES (%s, %s) ON DUPLICATE KEY UPDATE `option_name` = VALUES(`option_name`), `option_value` = VALUES(`option_value`)", $name, $serialized_value ) ); // phpcs:ignore
 
 		$this->debug['write_query_count'] += 1;
 	}

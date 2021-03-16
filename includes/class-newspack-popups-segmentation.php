@@ -338,10 +338,8 @@ final class Newspack_Popups_Segmentation {
 				option_id bigint(20) unsigned NOT NULL auto_increment,
 				option_name varchar(191) NOT NULL default '',
 				option_value longtext NOT NULL,
-				autoload varchar(20) NOT NULL default 'yes',
 				PRIMARY KEY  (option_id),
-				UNIQUE KEY option_name (option_name),
-				KEY autoload (autoload)
+				UNIQUE KEY option_name (option_name)
 			) $charset_collate;";
 
 			require_once ABSPATH . 'wp-admin/includes/upgrade.php';
