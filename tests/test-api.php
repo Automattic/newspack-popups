@@ -661,18 +661,21 @@ class APITest extends WP_UnitTestCase {
 		);
 
 		$email_address = 'foo@bar.com';
+		$prompt_id     = Newspack_Popups_Model::canonize_popup_id( $test_popup_with_subscription_block['id'] );
+
 		// Report a subscription.
 		self::$report_campaign_data->report_campaign(
 			[
 				'cid'                 => self::$client_id,
-				'popup_id'            => Newspack_Popups_Model::canonize_popup_id( $test_popup_with_subscription_block['id'] ),
+				'popup_id'            => $prompt_id,
 				'mailing_list_status' => 'subscribed',
 				'email'               => $email_address,
 			]
 		);
 
-		$api         = new Lightweight_API();
-		$prompt_data = $api->get_campaign_data( self::$client_id, Newspack_Popups_Model::canonize_popup_id( $test_popup_with_subscription_block['id'] ) );
+		$api                       = new Lightweight_API();
+		$prompt_data               = [];
+		$prompt_data[ $prompt_id ] = $api->get_campaign_data( self::$client_id, $prompt_id );
 
 		self::assertEquals(
 			self::$report_campaign_data->get_client_data( self::$client_id ),
