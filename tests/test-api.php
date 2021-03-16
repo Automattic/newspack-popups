@@ -671,6 +671,7 @@ class APITest extends WP_UnitTestCase {
 			]
 		);
 
+		$api         = new Lightweight_API();
 		$prompt_data = $api->get_campaign_data( self::$client_id, Newspack_Popups_Model::canonize_popup_id( $test_popup_with_subscription_block['id'] ) );
 
 		self::assertEquals(
