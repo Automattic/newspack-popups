@@ -538,6 +538,7 @@ class APITest extends WP_UnitTestCase {
 				'email_subscriptions'            => [],
 				'donations'                      => [],
 				'user_id'                        => false,
+				'prompts'                        => [],
 			],
 			'Returns expected data blueprint in absence of saved data.'
 		);
@@ -564,6 +565,7 @@ class APITest extends WP_UnitTestCase {
 				'email_subscriptions'            => [],
 				'donations'                      => [],
 				'user_id'                        => false,
+				'prompts'                        => [],
 			],
 			'Returns data with saved post after an article reading was reported.'
 		);
@@ -584,8 +586,54 @@ class APITest extends WP_UnitTestCase {
 				'some_other_data'                => 42,
 				'donations'                      => [],
 				'user_id'                        => false,
+				'prompts'                        => [],
 			],
 			'Returns data without overwriting the existing data.'
+		);
+
+		$api->save_client_data(
+			self::$client_id,
+			[
+				'prompts' => [
+					'foo' => [
+						'count'            => 1,
+						'last_viewed'      => 0,
+						'suppress_forever' => true,
+					],
+				],
+			]
+		);
+
+		self::assertEquals(
+			$api->get_client_data( self::$client_id ),
+			[
+				'suppressed_newsletter_campaign' => false,
+				'posts_read'                     => $posts_read,
+				'email_subscriptions'            => [],
+				'some_other_data'                => 42,
+				'donations'                      => [],
+				'user_id'                        => false,
+				'prompts'                        => [
+					'foo' => [
+						'count'            => 1,
+						'last_viewed'      => 0,
+						'suppress_forever' => true,
+					],
+				],
+			],
+			'Returns data with prompt data after a prompt is reported.'
+		);
+
+		self::assertEquals(
+			$api->get_campaign_data( self::$client_id, 'foo' ),
+			[
+				'foo' => [
+					'count'            => 1,
+					'last_viewed'      => 0,
+					'suppress_forever' => true,
+				],
+			],
+			'Returns prompt data only.'
 		);
 	}
 
@@ -609,6 +657,7 @@ class APITest extends WP_UnitTestCase {
 				'email_subscriptions'            => [],
 				'donations'                      => [],
 				'user_id'                        => false,
+				'prompts'                        => [],
 			],
 			'The initial client data has expected shape.'
 		);
@@ -636,6 +685,7 @@ class APITest extends WP_UnitTestCase {
 					],
 				],
 				'user_id'                        => false,
+				'prompts'                        => [],
 			],
 			'The client data after a subscription contains the provided email address.'
 		);
