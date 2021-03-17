@@ -27,7 +27,7 @@ export const registerCustomPlacementBlock = () => {
 
 	registerBlockType( name, {
 		title: __( 'Newspack Campaigns: Custom Placement', 'newspack-listing' ),
-		icon: <CallToActionIcon />,
+		icon: <CallToActionIcon style={ { color: '#36f' } } />,
 		category,
 		keywords: [
 			__( 'newspack', 'newspack-popups' ),

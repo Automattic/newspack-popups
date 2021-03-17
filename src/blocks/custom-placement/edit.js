@@ -63,8 +63,8 @@ export const CustomPlacementEditor = ( { attributes, setAttributes } ) => {
 	return (
 		<Placeholder
 			className="newspack-popups__custom-placement-placeholder"
-			label={ __( 'Newspack Campaigns: Custom Placement', 'newspack-popups' ) }
-			icon={ <CallToActionIcon /> }
+			label={ __( 'Custom Placement', 'newspack-popups' ) }
+			icon={ <CallToActionIcon style={ { color: '#36f' } } /> }
 		>
 			<SelectControl
 				id="newspack-popups__custom-placement-select"
