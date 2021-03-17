@@ -3,9 +3,17 @@
 		margin-top: 1rem;
 		width: 100%;
 
+		.components-external-link svg {
+			display: none;
+		}
+
 		.components-notice {
 			margin-left: 0;
 			margin-right: 0;
+		}
+
+		.editor-styles-wrapper & h4 {
+			margin-bottom: 0;
 		}
 
 		.editor-styles-wrapper & p {

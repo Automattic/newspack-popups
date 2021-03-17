@@ -141,17 +141,47 @@ final class Newspack_Popups_Custom_Placements {
 		$prompts = self::get_prompts_for_custom_placement( [ $custom_placement_id ] );
 
 		if ( ! empty( $prompts ) ) {
-			return new \WP_REST_Response(
-				array_map(
-					function( $post ) {
-						return [
-							'id'    => $post->ID,
-							'title' => $post->post_title,
-						];
-					},
-					$prompts
-				)
+			$sorted_prompts = array_map(
+				function( $post ) {
+					$segment_ids = get_post_meta( $post->ID, 'selected_segment_id', true );
+					$segments    = [
+						[
+							'name'     => 'Everyone else',
+							'priority' => PHP_INT_MAX,
+						],
+					];
+
+					if ( $segment_ids ) {
+						$segment_ids = explode( ',', $segment_ids );
+						$segments    = array_map(
+							function( $segment_id ) {
+								return Newspack_Popups_Segmentation::get_segment( $segment_id );
+							},
+							$segment_ids
+						);
+					}
+
+					return [
+						'id'       => $post->ID,
+						'title'    => $post->post_title,
+						'segments' => $segments,
+					];
+				},
+				$prompts
 			);
+
+			// Sort by segment priority.
+			usort(
+				$sorted_prompts,
+				function( $a, $b ) {
+					$priority_b = intval( $b['segments'][0]['priority'] );
+					$priority_a = intval( $a['segments'][0]['priority'] );
+
+					return $priority_a - $priority_b;
+				}
+			);
+
+			return new \WP_REST_Response( $sorted_prompts );
 		}
 
 		return [];
