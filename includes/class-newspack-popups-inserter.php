@@ -84,14 +84,6 @@ final class Newspack_Popups_Inserter {
 			);
 		}
 
-		// 5. Remove manual placement prompts.
-		$popups_to_maybe_display = array_filter(
-			$popups_to_maybe_display,
-			function( $popup ) {
-				return ! Newspack_Popups_Custom_Placements::is_custom_placement( $popup );
-			}
-		);
-
 		return array_filter(
 			$popups_to_maybe_display,
 			[ __CLASS__, 'should_display' ]
