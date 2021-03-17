@@ -130,16 +130,17 @@ class Lightweight_API {
 	 */
 	public function get_transient( $name ) {
 		global $wpdb;
-		$name = '_transient_' . $name;
-
-		$value = wp_cache_get( $name, 'newspack-popups' );
+		$name       = '_transient_' . $name;
+		$table_name = Segmentation::get_transients_table_name();
+		$value      = wp_cache_get( $name, 'newspack-popups' );
 		if ( -1 === $value ) {
 			$this->debug['read_empty_transients'] += 1;
 			$this->debug['cache_count']           += 1;
 			return null;
 		} elseif ( false === $value ) {
 			$this->debug['read_query_count'] += 1;
-			$value                            = $this->get_option( $name );
+
+			$value = $wpdb->get_var( $wpdb->prepare( "SELECT option_value FROM `$table_name` WHERE option_name = %s LIMIT 1", $name ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			if ( $value ) {
 				wp_cache_set( $name, $value, 'newspack-popups' );
 			} else {
@@ -160,11 +161,11 @@ class Lightweight_API {
 	 */
 	public function set_transient( $name, $value ) {
 		global $wpdb;
+		$table_name       = Segmentation::get_transients_table_name();
 		$name             = '_transient_' . $name;
 		$serialized_value = maybe_serialize( $value );
-		$autoload         = 'no';
 		wp_cache_set( $name, $serialized_value, 'newspack-popups' );
-		$result           = $wpdb->query( $wpdb->prepare( "INSERT INTO `$wpdb->options` (`option_name`, `option_value`, `autoload`) VALUES (%s, %s, %s) ON DUPLICATE KEY UPDATE `option_name` = VALUES(`option_name`), `option_value` = VALUES(`option_value`), `autoload` = VALUES(`autoload`)", $name, $serialized_value, $autoload ) ); // phpcs:ignore
+		$result           = $wpdb->query( $wpdb->prepare( "INSERT INTO `$table_name` (`option_name`, `option_value`) VALUES (%s, %s) ON DUPLICATE KEY UPDATE `option_name` = VALUES(`option_name`), `option_value` = VALUES(`option_value`)", $name, $serialized_value ) ); // phpcs:ignore
 
 		$this->debug['write_query_count'] += 1;
 	}
