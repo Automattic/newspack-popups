@@ -318,7 +318,7 @@ class Lightweight_API {
 	 * @param string $client_data_update Client data.
 	 */
 	public function save_client_data( $client_id, $client_data_update ) {
-		$existing_client_data                       = $this->get_client_data( $client_id, true );
+		$existing_client_data = $this->get_client_data( $client_id, true );
 
 		// Update prompts data: new data should replace existing data.
 		if ( isset( $client_data_update['prompts'] ) && ! empty( $existing_client_data['prompts'] ) ) {
