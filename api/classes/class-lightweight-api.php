@@ -285,7 +285,7 @@ class Lightweight_API {
 			$wpdb->prepare( "SELECT * FROM $events_table_name WHERE client_id = %s AND type = 'post_read'", $client_id ) // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		);
 
-		// If client hasn't read any posts yet, don't write any data.
+		// If there is no relevant client data in the events table, do not save any data.
 		if ( 0 === count( $client_post_read_events ) ) {
 			return $this->client_data_blueprint;
 		}
