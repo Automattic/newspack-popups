@@ -950,6 +950,7 @@ class APITest extends WP_UnitTestCase {
 				'posts_read' => [
 					self::create_read_post( 1 ),
 					self::create_read_post( 2 ),
+					self::create_read_post( 3 ),
 				],
 			]
 		);
@@ -964,7 +965,6 @@ class APITest extends WP_UnitTestCase {
 			self::$client_id,
 			[
 				'posts_read' => [
-					self::create_read_post( 3 ),
 					self::create_read_post( 4 ),
 					self::create_read_post( 5 ),
 					self::create_read_post( 6 ),
