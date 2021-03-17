@@ -590,48 +590,148 @@ class APITest extends WP_UnitTestCase {
 			],
 			'Returns data without overwriting the existing data.'
 		);
+	}
 
-		$api->save_client_data(
-			self::$client_id,
-			[
-				'prompts' => [
-					'foo' => [
-						'count'            => 1,
-						'last_viewed'      => 0,
-						'suppress_forever' => true,
-					],
-				],
-			]
-		);
+	/**
+	 * Client data rebuilding.
+	 */
+	public function test_client_data_rebuild() {
+		$api       = new Lightweight_API();
+		$client_id = 'client_' . uniqid();
+		global $wpdb;
+		$events_table_name = Segmentation::get_events_table_name();
+		$wpdb->query( $wpdb->prepare( "INSERT INTO `$events_table_name` (`type`, `client_id`, `post_id`) VALUES (%s, %s, %s)", 'post_read', $client_id, '42' ) ); // phpcs:ignore
 
 		self::assertEquals(
-			$api->get_client_data( self::$client_id ),
+			$api->get_client_data( $client_id ),
 			[
 				'suppressed_newsletter_campaign' => false,
-				'posts_read'                     => $posts_read,
-				'email_subscriptions'            => [],
-				'some_other_data'                => 42,
-				'donations'                      => [],
-				'user_id'                        => false,
-				'prompts'                        => [
-					'foo' => [
-						'count'            => 1,
-						'last_viewed'      => 0,
-						'suppress_forever' => true,
+				'posts_read'                     => [
+					[
+						'post_id'      => '42',
+						'category_ids' => null,
+						'created_at'   => '0000-00-00 00:00:00',
 					],
 				],
+				'email_subscriptions'            => [],
+				'donations'                      => [],
+				'user_id'                        => false,
+				'prompts'                        => [],
+			],
+			'Returns expected data blueprint in absence of saved data.'
+		);
+	}
+
+	/**
+	 * Updating prompts in client data.
+	 */
+	public function test_client_data_prompts() {
+		$api       = new Lightweight_API();
+		$client_id = 'client_' . uniqid();
+		$popup_id  = Newspack_Popups_Model::canonize_popup_id( uniqid() );
+
+		// Report a prompt view.
+		self::$report_campaign_data->report_campaign(
+			[
+				'cid'      => $client_id,
+				'popup_id' => $popup_id,
+			]
+		);
+		$expected_popup_data = [
+			'count'            => 1,
+			'last_viewed'      => time(),
+			'suppress_forever' => false,
+		];
+		self::assertEquals(
+			$api->get_client_data( $client_id )['prompts'],
+			[
+				"$popup_id" => $expected_popup_data,
 			],
 			'Returns data with prompt data after a prompt is reported.'
 		);
+		self::assertEquals(
+			$api->get_campaign_data( $client_id, $popup_id ),
+			$expected_popup_data,
+			'Returns prompt data only.'
+		);
+
+		// Report another view of the same prompt.
+		self::$report_campaign_data->report_campaign(
+			[
+				'cid'      => $client_id,
+				'popup_id' => $popup_id,
+			]
+		);
+		$expected_popup_data = [
+			'count'            => 2,
+			'last_viewed'      => time(),
+			'suppress_forever' => false,
+		];
+		self::assertEquals(
+			$api->get_client_data( $client_id )['prompts'],
+			[
+				"$popup_id" => $expected_popup_data,
+			],
+			'Returns data with prompt data after a prompt is reported.'
+		);
+		self::assertEquals(
+			$api->get_campaign_data( $client_id, $popup_id ),
+			$expected_popup_data,
+			'Returns prompt data only.'
+		);
 
 		self::assertEquals(
-			$api->get_campaign_data( self::$client_id, 'foo' ),
+			$api->get_client_data( $client_id ),
 			[
-				'count'            => 1,
-				'last_viewed'      => 0,
-				'suppress_forever' => true,
+				'suppressed_newsletter_campaign' => false,
+				'posts_read'                     => [],
+				'email_subscriptions'            => [],
+				'donations'                      => [],
+				'user_id'                        => false,
+				'prompts'                        => [
+					"$popup_id" => $expected_popup_data,
+				],
 			],
-			'Returns prompt data only.'
+			'Returns data in expected shape.'
+		);
+	}
+
+	/**
+	 * Client data saving - a single donation.
+	 */
+	public function test_client_data_donations() {
+		$api       = new Lightweight_API();
+		$client_id = 'test_' . uniqid();
+
+		// Report a donation.
+		$donation = [
+			'order_id' => '120',
+			'date'     => '2020-10-28',
+			'amount'   => '180.00',
+		];
+		self::$report_client_data->report_client_data(
+			[
+				'client_id' => $client_id,
+				'donation'  => $donation,
+			]
+		);
+		self::assertEquals(
+			$api->get_client_data( $client_id )['donations'],
+			[ $donation ],
+			'Returns data with donation data after a donation is reported.'
+		);
+
+		self::assertEquals(
+			$api->get_client_data( $client_id ),
+			[
+				'suppressed_newsletter_campaign' => false,
+				'posts_read'                     => [],
+				'email_subscriptions'            => [],
+				'donations'                      => [ $donation ],
+				'user_id'                        => false,
+				'prompts'                        => [],
+			],
+			'Returns data in expected shape.'
 		);
 	}
 
