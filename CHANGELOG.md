@@ -1,3 +1,15 @@
+# [1.27.0](https://github.com/Automattic/newspack-popups/compare/v1.26.2...v1.27.0) (2021-03-17)
+
+
+### Bug Fixes
+
+* process custom dimensions as strings ([7443e67](https://github.com/Automattic/newspack-popups/commit/7443e673c33303876a511f54a9b8d29c98592f3a)), closes [#461](https://github.com/Automattic/newspack-popups/issues/461)
+
+
+### Features
+
+* add timestamp column to custom transients table ([fd2bc0b](https://github.com/Automattic/newspack-popups/commit/fd2bc0b6790105ce1d186f515aa8fca6b8aaf042))
+
 ## [1.26.2](https://github.com/Automattic/newspack-popups/compare/v1.26.1...v1.26.2) (2021-03-12)
 
 
