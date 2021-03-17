@@ -110,7 +110,7 @@ export const CustomPlacementEditor = ( { attributes, setAttributes } ) => {
 				<div className="newspack-popups__custom-placement-prompts">
 					{ 0 === prompts.length && (
 						<Notice status="warning" isDismissible={ false }>
-							{ __( 'No prompts found for this custom placement.', 'newspack-popups' ) }
+							{ __( 'No active prompts found for this custom placement.', 'newspack-popups' ) }
 						</Notice>
 					) }
 					{ 0 < prompts.length && (
@@ -118,9 +118,10 @@ export const CustomPlacementEditor = ( { attributes, setAttributes } ) => {
 							<p>
 								{ sprintf(
 									__(
-										'This custom placement will display at most one of the following active prompt%s, depending on the reader’s top-priority segment:',
+										'This custom placement will display at most %sthe following active prompt%s, depending on the reader’s top-priority segment:',
 										'newspack-popups'
 									),
+									1 < prompts.length ? 'one of ' : '',
 									1 < prompts.length ? 's' : ''
 								) }
 							</p>
@@ -133,19 +134,18 @@ export const CustomPlacementEditor = ( { attributes, setAttributes } ) => {
 													segments[ segmentName ].id
 												}` }
 											>
-												{ sprintf(
-													__( '%s%s', 'newspack-popup' ),
-													'Everyone else' !== segmentName ? 'Segment: ' : '',
-													segmentName
-												) }
+												{ sprintf( __( 'Segment: %s', 'newspack-popup' ), segmentName ) }
 											</ExternalLink>
 										) }
 										{ ! segments[ segmentName ].id && (
 											<>
 												{ sprintf(
-													__( '%s%s', 'newspack-popup' ),
-													'Everyone else' !== segmentName ? 'Segment: ' : '',
-													segmentName
+													__( '%s%s%s', 'newspack-popup' ),
+													'Everyone' !== segmentName ? 'Segment: ' : '',
+													segmentName,
+													'Everyone' === segmentName && 1 < Object.keys( segments ).length
+														? __( ' else', 'newspack-popups' )
+														: ''
 												) }
 											</>
 										) }

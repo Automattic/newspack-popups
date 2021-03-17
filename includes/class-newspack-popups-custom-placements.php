@@ -146,7 +146,7 @@ final class Newspack_Popups_Custom_Placements {
 					$segment_ids = get_post_meta( $post->ID, 'selected_segment_id', true );
 					$segments    = [
 						[
-							'name'     => 'Everyone else',
+							'name'     => 'Everyone',
 							'priority' => PHP_INT_MAX,
 						],
 					];
