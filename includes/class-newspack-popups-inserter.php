@@ -223,7 +223,7 @@ final class Newspack_Popups_Inserter {
 
 		// For certain types of blocks, their innerHTML is not a good representation of the length of their content.
 		// For example, slideshows may have an arbitrary amount of slide content, but only show one slide at a time.
-		// Don't insert prompts adjacent to these.
+		// For these blocks, let's ignore their length for purposes of inserting prompts.
 		$blacklisted_blocks = [ 'jetpack/slideshow', 'newspack-blocks/carousel' ];
 		$parsed_blocks      = parse_blocks( $content );
 		$total_length       = 0;
