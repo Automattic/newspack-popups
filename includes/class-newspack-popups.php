@@ -649,7 +649,7 @@ final class Newspack_Popups {
 	 * @param bool   $post Post.
 	 */
 	public static function remove_default_category( $new_status, $old_status, $post ) {
-		if ( self::NEWSPACK_POPUPS_CPT === $post->post_type && 'publish' === $new_status ) {
+		if ( self::NEWSPACK_POPUPS_CPT === $post->post_type && 'publish' !== $old_status && 'publish' === $new_status ) {
 			$default_category_id = (int) get_option( 'default_category', false );
 			$popup_has_category  = has_category( $default_category_id, $post->ID );
 			if ( $popup_has_category ) {
