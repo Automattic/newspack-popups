@@ -1,3 +1,10 @@
+# [1.27.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.26.3-alpha.1...v1.27.0-alpha.1) (2021-03-17)
+
+
+### Features
+
+* add timestamp column to custom transients table ([fd2bc0b](https://github.com/Automattic/newspack-popups/commit/fd2bc0b6790105ce1d186f515aa8fca6b8aaf042))
+
 ## [1.26.3-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.26.2...v1.26.3-alpha.1) (2021-03-16)
 
 
