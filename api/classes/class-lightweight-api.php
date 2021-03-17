@@ -198,14 +198,7 @@ class Lightweight_API {
 	 * @return object Prompt data.
 	 */
 	public function get_campaign_data_legacy( $client_id, $campaign_id ) {
-		$data = $this->get_transient( $this->get_transient_name_legacy( $client_id, $campaign_id ) );
-		return [
-			'count'            => ! empty( $data['count'] ) ? (int) $data['count'] : 0,
-			'last_viewed'      => ! empty( $data['last_viewed'] ) ? (int) $data['last_viewed'] : 0,
-			// Primarily caused by permanent dismissal, but also by email signup
-			// (on a newsletter prompt) or a UTM param suppression.
-			'suppress_forever' => ! empty( $data['suppress_forever'] ) ? (int) $data['suppress_forever'] : false,
-		];
+		return $this->get_transient( $this->get_transient_name_legacy( $client_id, $campaign_id ) );
 	}
 
 	/**
@@ -292,21 +285,18 @@ class Lightweight_API {
 
 		$this->save_client_data(
 			$client_id,
-			array_merge(
-				$this->client_data_blueprint,
-				[
-					'posts_read' => array_map(
-						function ( $item ) {
-							return [
-								'post_id'      => $item->post_id,
-								'category_ids' => $item->category_ids,
-								'created_at'   => $item->created_at,
-							];
-						},
-						$client_post_read_events
-					),
-				]
-			)
+			[
+				'posts_read' => array_map(
+					function ( $item ) {
+						return [
+							'post_id'      => $item->post_id,
+							'category_ids' => $item->category_ids,
+							'created_at'   => $item->created_at,
+						];
+					},
+					$client_post_read_events
+				),
+			]
 		);
 
 		return $this->get_transient( $client_id );
