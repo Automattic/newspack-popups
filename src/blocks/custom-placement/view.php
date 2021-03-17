@@ -11,7 +11,7 @@ namespace Newspack_Popups\Custom_Placement_Block;
  * Dynamic block registration.
  */
 function register_block() {
-	// Listings block attributes.
+	// Custom Placement block attributes.
 	$block_json = json_decode(
 		file_get_contents( __DIR__ . '/block.json' ), // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
 		true
