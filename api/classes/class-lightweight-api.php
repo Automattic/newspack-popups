@@ -231,20 +231,6 @@ class Lightweight_API {
 	}
 
 	/**
-	 * Save prompt data.
-	 *
-	 * @param string $client_id Client ID.
-	 * @param string $campaign_id Prompt ID.
-	 * @param string $campaign_data Prompt data.
-	 */
-	public function save_campaign_data( $client_id, $campaign_id, $campaign_data ) {
-		$client_data                            = $this->get_client_data( $client_id, true );
-		$client_data['prompts'][ $campaign_id ] = $campaign_data;
-
-		return $this->set_transient( $client_id, $client_data );
-	}
-
-	/**
 	 * Retrieve client data.
 	 *
 	 * @param string $client_id Client ID.
@@ -333,7 +319,7 @@ class Lightweight_API {
 	 */
 	public function save_client_data( $client_id, $client_data_update ) {
 		$existing_client_data                       = $this->get_client_data( $client_id, true );
-		$updated_client_data                        = array_merge_recursive(
+		$updated_client_data                        = array_replace_recursive(
 			$existing_client_data,
 			$client_data_update
 		);

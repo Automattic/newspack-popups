@@ -299,7 +299,12 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		// Handle frequency.
 		$frequency = $campaign->f;
 		if ( ! empty( array_diff( $init_campaign_data, $campaign_data ) ) ) {
-			$this->save_campaign_data( $client_id, $campaign->id, $campaign_data );
+			$updated_campaign_data = [
+				'prompts' => [
+					"$campaign->id" => $campaign_data,
+				],
+			];
+			$this->save_client_data( $client_id, $updated_campaign_data );
 		}
 		if ( 'once' === $frequency && $campaign_data['count'] >= 1 ) {
 			$should_display = false;
