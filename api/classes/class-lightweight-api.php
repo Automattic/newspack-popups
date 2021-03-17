@@ -319,7 +319,18 @@ class Lightweight_API {
 	 */
 	public function save_client_data( $client_id, $client_data_update ) {
 		$existing_client_data                       = $this->get_client_data( $client_id, true );
-		$updated_client_data                        = array_replace_recursive(
+
+		// Update prompts data: new data should replace existing data.
+		if ( isset( $client_data_update['prompts'] ) && ! empty( $existing_client_data['prompts'] ) ) {
+			$client_data_update['prompts']   = array_replace_recursive(
+				$existing_client_data['prompts'],
+				$client_data_update['prompts']
+			);
+			$existing_client_data['prompts'] = []; // Unset old client data to avoid data duplication on array_merge_recursive below.
+		}
+
+		// Update client data: merge data so we don't lose historical read, subscription, or donation data.
+		$updated_client_data                        = array_merge_recursive(
 			$existing_client_data,
 			$client_data_update
 		);

@@ -149,7 +149,6 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		}
 
 		$client_data              = $this->get_client_data( $client_id );
-		$this->debug[ $client_id ] = $client_data;
 		$best_segment_priority    = PHP_INT_MAX;
 		$best_priority_segment_id = null;
 

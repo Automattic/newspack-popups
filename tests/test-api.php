@@ -930,7 +930,6 @@ class APITest extends WP_UnitTestCase {
 	 * Suppression caused by a read count segment.
 	 */
 	public function test_segment_read_count_range() {
-		$api                     = new Lightweight_API();
 		$test_popup_with_segment = self::create_test_popup(
 			[
 				'placement'           => 'inline',
@@ -945,13 +944,12 @@ class APITest extends WP_UnitTestCase {
 		);
 
 		// Report 2 articles read.
-		$api->save_client_data(
+		self::$maybe_show_campaign->save_client_data(
 			self::$client_id,
 			[
 				'posts_read' => [
 					self::create_read_post( 1 ),
 					self::create_read_post( 2 ),
-					self::create_read_post( 3 ),
 				],
 			]
 		);
@@ -962,10 +960,11 @@ class APITest extends WP_UnitTestCase {
 		);
 
 		// Report more than 5 articles read.
-		$api->save_client_data(
+		self::$maybe_show_campaign->save_client_data(
 			self::$client_id,
 			[
 				'posts_read' => [
+					self::create_read_post( 3 ),
 					self::create_read_post( 4 ),
 					self::create_read_post( 5 ),
 					self::create_read_post( 6 ),
@@ -983,7 +982,6 @@ class APITest extends WP_UnitTestCase {
 	 * Suppression caused by a read count segment, with a 'once' frequency cap.
 	 */
 	public function test_segment_read_count_range_with_once_frequency() {
-		$api                     = new Lightweight_API();
 		$test_popup_with_segment = self::create_test_popup(
 			[
 				'placement'           => 'inline',
@@ -998,13 +996,12 @@ class APITest extends WP_UnitTestCase {
 		);
 
 		// Report 2 articles read.
-		$api->save_client_data(
+		self::$maybe_show_campaign->save_client_data(
 			self::$client_id,
 			[
 				'posts_read' => [
 					self::create_read_post( 1 ),
 					self::create_read_post( 2 ),
-					self::create_read_post( 3 ),
 				],
 			]
 		);
@@ -1079,7 +1076,6 @@ class APITest extends WP_UnitTestCase {
 	 * Suppression caused by a session read count segment.
 	 */
 	public function test_segment_session_read_count() {
-		$api                     = new Lightweight_API();
 		$test_popup_with_segment = self::create_test_popup(
 			[
 				'placement'           => 'inline',
@@ -1094,7 +1090,7 @@ class APITest extends WP_UnitTestCase {
 		);
 
 		// Ensure legacy post read data format is handled gracefully.
-		$api->save_client_data(
+		self::$maybe_show_campaign->save_client_data(
 			self::$client_id,
 			[
 				'posts_read' => [
@@ -1107,7 +1103,7 @@ class APITest extends WP_UnitTestCase {
 		);
 
 		// Report 2 articles read before current session.
-		$api->save_client_data(
+		self::$maybe_show_campaign->save_client_data(
 			self::$client_id,
 			[
 				'posts_read' => [
@@ -1123,13 +1119,12 @@ class APITest extends WP_UnitTestCase {
 		);
 
 		// Report 2 articles read in the session.
-		$api->save_client_data(
+		self::$maybe_show_campaign->save_client_data(
 			self::$client_id,
 			[
 				'posts_read' => [
 					self::create_read_post( 1 ),
 					self::create_read_post( 2 ),
-					self::create_read_post( 3 ),
 				],
 			]
 		);
@@ -1140,10 +1135,11 @@ class APITest extends WP_UnitTestCase {
 		);
 
 		// Report more than 5 articles read in the session.
-		$api->save_client_data(
+		self::$maybe_show_campaign->save_client_data(
 			self::$client_id,
 			[
 				'posts_read' => [
+					self::create_read_post( 3 ),
 					self::create_read_post( 4 ),
 					self::create_read_post( 5 ),
 					self::create_read_post( 6 ),
