@@ -652,7 +652,7 @@ class APITest extends WP_UnitTestCase {
 		self::assertEquals(
 			$api->get_campaign_data( $client_id, $popup_id ),
 			$expected_popup_data,
-			'Returns prompt data only.'
+			'Returns prompt data.'
 		);
 
 		// Report another view of the same prompt.
@@ -668,18 +668,10 @@ class APITest extends WP_UnitTestCase {
 			'suppress_forever' => false,
 		];
 		self::assertEquals(
-			$api->get_client_data( $client_id )['prompts'],
-			[
-				"$popup_id" => $expected_popup_data,
-			],
-			'Returns data with prompt data after a prompt is reported.'
-		);
-		self::assertEquals(
 			$api->get_campaign_data( $client_id, $popup_id ),
 			$expected_popup_data,
-			'Returns prompt data only.'
+			'Returns prompt data.'
 		);
-
 		self::assertEquals(
 			$api->get_client_data( $client_id ),
 			[
@@ -690,6 +682,40 @@ class APITest extends WP_UnitTestCase {
 				'user_id'                        => false,
 				'prompts'                        => [
 					"$popup_id" => $expected_popup_data,
+				],
+			],
+			'Returns data in expected shape.'
+		);
+
+		// Report another view of a diffrent prompt.
+		$new_popup_id            = Newspack_Popups_Model::canonize_popup_id( uniqid() );
+		$expected_new_popup_data = [
+			'count'            => 1,
+			'last_viewed'      => time(),
+			'suppress_forever' => false,
+		];
+		self::$report_campaign_data->report_campaign(
+			[
+				'cid'      => $client_id,
+				'popup_id' => $new_popup_id,
+			]
+		);
+		self::assertEquals(
+			$api->get_campaign_data( $client_id, $new_popup_id ),
+			$expected_new_popup_data,
+			'Returns prompt data.'
+		);
+		self::assertEquals(
+			$api->get_client_data( $client_id ),
+			[
+				'suppressed_newsletter_campaign' => false,
+				'posts_read'                     => [],
+				'email_subscriptions'            => [],
+				'donations'                      => [],
+				'user_id'                        => false,
+				'prompts'                        => [
+					"$popup_id"     => $expected_popup_data,
+					"$new_popup_id" => $expected_new_popup_data,
 				],
 			],
 			'Returns data in expected shape.'
