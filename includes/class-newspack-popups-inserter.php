@@ -381,7 +381,7 @@ final class Newspack_Popups_Inserter {
 			$type = 'a';
 		}
 
-		return [
+		$popup_payload = [
 			'id'  => $popup_id_string,
 			'f'   => $frequency,
 			'utm' => $popup['options']['utm_suppression'],
@@ -390,6 +390,12 @@ final class Newspack_Popups_Inserter {
 			'd'   => \Newspack_Popups_Model::has_donation_block( $popup ),
 			't'   => $type,
 		];
+
+		if ( Newspack_Popups_Custom_Placements::is_custom_placement( $popup ) ) {
+			$popup_payload['c'] = $popup['options']['placement'];
+		}
+
+		return $popup_payload;
 	}
 
 	/**

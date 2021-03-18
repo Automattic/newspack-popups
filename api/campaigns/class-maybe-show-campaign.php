@@ -78,6 +78,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		$all_segments                  = isset( $settings->all_segments ) ? $settings->all_segments : [];
 		$overlay_to_maybe_display      = null;
 		$above_header_to_maybe_display = null;
+		$custom_placements_displayed   = [];
 
 		if ( $settings ) {
 			$settings->best_priority_segment_id = $this->get_best_priority_segment_id( $all_segments, $client_id, $referer_url, $page_referer_url, $view_as_spec );
@@ -121,6 +122,16 @@ class Maybe_Show_Campaign extends Lightweight_API {
 					$response[ $above_header_to_maybe_display->id ] = $above_header_to_maybe_display->id === $higher_priority_item->id;
 					$campaign_should_be_shown                       = $campaign->id === $higher_priority_item->id;
 					$above_header_to_maybe_display                  = $higher_priority_item;
+				}
+			}
+
+			// Handle custom placements: Only one prompt should be shown per placement block.
+			// "Everyone" prompts should only be shown if the reader doesn't match any segments.
+			if ( ! empty( $campaign->c ) ) {
+				if ( $campaign_should_be_shown && ! isset( $custom_placements_displayed[ $campaign->c ] ) ) {
+					$custom_placements_displayed[ $campaign->c ] = $campaign->id;
+				} else {
+					$campaign_should_be_shown = false;
 				}
 			}
 
