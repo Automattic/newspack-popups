@@ -55,7 +55,9 @@ function render_block( $attributes ) {
 	}
 
 	if ( ! empty( $prompts ) ) {
-		$content .= '<!-- start custom placement: ' . $custom_placement_id . '-->';
+		if ( defined( 'WP_NEWSPACK_DEBUG' ) && WP_NEWSPACK_DEBUG ) {
+			$content .= '<!-- Newspack Campaigns: Start custom placement ' . $custom_placement_id . '-->';
+		}
 		$segments = [];
 		foreach ( $prompts as $prompt_id ) {
 			$segment_ids = explode( ',', get_post_meta( $prompt_id, 'selected_segment_id', true ) );
@@ -67,7 +69,9 @@ function render_block( $attributes ) {
 			}
 		}
 
-		$content .= '<!-- end custom placement: ' . $custom_placement_id . '-->';
+		if ( defined( 'WP_NEWSPACK_DEBUG' ) && WP_NEWSPACK_DEBUG ) {
+			$content .= '<!-- Newspack Campaigns: End custom placement ' . $custom_placement_id . '-->';
+		}
 	}
 
 	return $content;
