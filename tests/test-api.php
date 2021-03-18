@@ -618,7 +618,7 @@ class APITest extends WP_UnitTestCase {
 				'user_id'                        => false,
 				'prompts'                        => [],
 			],
-			'Returns expected data blueprint in absence of saved data.'
+			'Returns expected data based on events table.'
 		);
 	}
 
@@ -715,11 +715,6 @@ class APITest extends WP_UnitTestCase {
 				'donation'  => $donation,
 			]
 		);
-		self::assertEquals(
-			$api->get_client_data( $client_id )['donations'],
-			[ $donation ],
-			'Returns data with donation data after a donation is reported.'
-		);
 
 		self::assertEquals(
 			$api->get_client_data( $client_id ),
@@ -731,7 +726,7 @@ class APITest extends WP_UnitTestCase {
 				'user_id'                        => false,
 				'prompts'                        => [],
 			],
-			'Returns data in expected shape.'
+			'Returns data with donation data after a donation is reported.'
 		);
 	}
 
