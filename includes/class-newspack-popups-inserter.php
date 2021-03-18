@@ -609,14 +609,6 @@ final class Newspack_Popups_Inserter {
 		$post_categories  = get_the_category();
 		$popup_categories = get_the_category( $popup['id'] );
 
-		// Filter out "Uncategorized" category which is automatically added to uncategorized posts on publish.
-		$popup_categories = array_filter(
-			$popup_categories,
-			function( $popup_category ) {
-				return 'uncategorized' !== $popup_category->slug;
-			}
-		);
-
 		if ( $post_categories && count( $post_categories ) && $popup_categories && count( $popup_categories ) ) {
 			return array_intersect(
 				array_column( $post_categories, 'term_id' ),
