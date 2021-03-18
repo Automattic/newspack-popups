@@ -153,11 +153,19 @@ final class Newspack_Popups_Custom_Placements {
 
 					if ( $segment_ids ) {
 						$segment_ids = explode( ',', $segment_ids );
-						$segments    = array_map(
-							function( $segment_id ) {
-								return Newspack_Popups_Segmentation::get_segment( $segment_id );
+						$segments    = array_reduce(
+							$segment_ids,
+							function( $acc, $segment_id ) {
+								$segment = Newspack_Popups_Segmentation::get_segment( $segment_id );
+
+								// Only return segments that exist (result can be null if a segment has been deleted).
+								if ( $segment ) {
+									$acc[] = $segment;
+								}
+
+								return $acc;
 							},
-							$segment_ids
+							[]
 						);
 					}
 
