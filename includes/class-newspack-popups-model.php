@@ -659,20 +659,54 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
+	 * Get a unique id.
+	 *
+	 * @return string Unique id.
+	 */
+	private static function get_uniqid() {
+		return 'c' . substr( uniqid(), 10 );
+	}
+
+	/**
+	 * Encode event name to be sent to GA.
+	 *
+	 * @param string $popup_id The popup ID.
+	 * @param int    $event_code The event code.
+	 * @return string Encoded event name.
+	 */
+	private static function encode_event_name( $popup_id, $event_code ) {
+		return $popup_id . $event_code;
+	}
+
+	/**
+	 * Get a shortest possible CSS class name for a form element.
+	 *
+	 * @param string $type Type of the form.
+	 * @param string $element_id The ID of the enclosing element.
+	 */
+	private static function get_form_class( $type, $element_id ) {
+		if ( 'action' === $type ) {
+			return $element_id; // Just use the id, since this class will be shared.
+		}
+		$types      = [ 'dismiss', 'not-interested' ];
+		$type_index = array_search( $type, $types );
+		return $element_id . $type_index; // Use a unique class name.
+	}
+
+	/**
 	 * Add tracked analytics events to use in Newspack Plugin's newspack_analytics_events filter.
 	 *
 	 * @param object $popup The popup object.
 	 * @param string $body Post body.
 	 * @param string $element_id The id of the popup element.
 	 */
-	protected static function get_analytics_events( $popup, $body, $element_id ) {
+	private static function get_analytics_events( $popup, $body, $element_id ) {
 		if ( Newspack_Popups::is_preview_request() ) {
 			return [];
 		}
 
 		$popup_id       = $popup['id'];
-		$event_category = 'Newspack Announcement';
-		$event_label    = 'Newspack Announcement: ' . $popup['title'] . ' (' . $popup_id . ')';
+		$event_category = 'NC';
 
 		$has_link                = preg_match( '/<a\s/', $body ) !== 0;
 		$has_form                = preg_match( '/<form\s/', $body ) !== 0;
@@ -681,20 +715,18 @@ final class Newspack_Popups_Model {
 
 		$analytics_events = [
 			[
-				'id'              => 'popupPageLoaded-' . $popup_id,
+				'id'              => self::get_uniqid(),
 				'on'              => 'ini-load',
 				'element'         => '#' . esc_attr( $element_id ),
-				'event_name'      => esc_html__( 'Load', 'newspack-popups' ),
-				'event_label'     => esc_attr( $event_label ),
+				'event_name'      => self::encode_event_name( $popup_id, 0 ), // Load.
 				'event_category'  => esc_attr( $event_category ),
 				'non_interaction' => true,
 			],
 			[
-				'id'              => 'popupSeen-' . $popup_id,
+				'id'              => self::get_uniqid(),
 				'on'              => 'visible',
 				'element'         => '#' . esc_attr( $element_id ),
-				'event_name'      => esc_html__( 'Seen', 'newspack-popups' ),
-				'event_label'     => esc_attr( $event_label ),
+				'event_name'      => self::encode_event_name( $popup_id, 1 ), // Seen.
 				'event_category'  => esc_attr( $event_category ),
 				'non_interaction' => true,
 				'visibilitySpec'  => [
@@ -705,47 +737,43 @@ final class Newspack_Popups_Model {
 
 		if ( $has_link ) {
 			$analytics_events[] = [
-				'id'             => 'popupAnchorClicks-' . $popup_id,
+				'id'             => self::get_uniqid(),
 				'on'             => 'click',
 				'element'        => '#' . esc_attr( $element_id ) . ' a',
 				'amp_element'    => '#' . esc_attr( $element_id ) . ' a',
-				'event_name'     => esc_html__( 'Link Click', 'newspack-popups' ),
-				'event_label'    => esc_attr( $event_label ),
+				'event_name'     => self::encode_event_name( $popup_id, 2 ), // Link Click.
 				'event_category' => esc_attr( $event_category ),
 			];
 		}
 
 		if ( $has_form ) {
 			$analytics_events[] = [
-				'id'             => 'popupFormSubmitSuccess-' . $popup_id,
+				'id'             => self::get_uniqid(),
 				'amp_on'         => 'amp-form-submit-success',
 				'on'             => 'submit',
-				'element'        => '#' . esc_attr( $element_id ) . ' form:not(.popup-action-form)',
-				'event_name'     => esc_html__( 'Form Submission', 'newspack-popups' ),
-				'event_label'    => esc_attr( $event_label ),
+				'element'        => 'form:not(.' . self::get_form_class( 'action', $element_id ) . ')',
+				'event_name'     => self::encode_event_name( $popup_id, 3 ), // Form Submission.
 				'event_category' => esc_attr( $event_category ),
 			];
 		}
 		if ( $has_dismiss_form ) {
 			$analytics_events[] = [
-				'id'              => 'popupDismissed-' . $popup_id,
+				'id'              => self::get_uniqid(),
 				'amp_on'          => 'amp-form-submit-success',
 				'on'              => 'submit',
-				'element'         => '#' . esc_attr( $element_id ) . ' form.popup-dismiss-form',
-				'event_name'      => esc_html__( 'Dismissal', 'newspack-popups' ),
-				'event_label'     => esc_attr( $event_label ),
+				'element'         => '.' . self::get_form_class( 'dismiss', $element_id ),
+				'event_name'      => self::encode_event_name( $popup_id, 4 ), // Dismissal.
 				'event_category'  => esc_attr( $event_category ),
 				'non_interaction' => true,
 			];
 		}
 		if ( $has_not_interested_form ) {
 			$analytics_events[] = [
-				'id'              => 'popupNotInterested-' . $popup_id,
+				'id'              => self::get_uniqid(),
 				'amp_on'          => 'amp-form-submit-success',
 				'on'              => 'submit',
-				'element'         => '#' . esc_attr( $element_id ) . ' form.popup-not-interested-form',
-				'event_name'      => esc_html__( 'Permanent Dismissal', 'newspack-popups' ),
-				'event_label'     => esc_attr( $event_label ),
+				'element'         => '.' . self::get_form_class( 'not-interested', $element_id ),
+				'event_name'      => self::encode_event_name( $popup_id, 5 ), // Permanent Dismissal.
 				'event_category'  => esc_attr( $event_category ),
 				'non_interaction' => true,
 			];
@@ -779,6 +807,36 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
+	 * Get permanent dismissal form markup.
+	 *
+	 * @param string $element_id Element ID.
+	 * @param object $popup Popup.
+	 */
+	private static function render_permanent_dismissal_form( $element_id, $popup ) {
+		$dismiss_text = self::get_dismiss_text( $popup );
+		if ( ! $dismiss_text ) {
+			return '';
+		}
+		$endpoint               = self::get_reader_endpoint();
+		$hidden_fields          = self::get_hidden_fields( $popup );
+		$dismiss_text_alignment = self::get_dismiss_text_alignment( $popup );
+		?>
+			<form class="popup-not-interested-form <?php echo esc_attr( self::get_form_class( 'not-interested', $element_id ) ); ?> popup-action-form <?php echo esc_attr( self::get_form_class( 'action', $element_id ) ); ?> align-<?php echo esc_attr( $dismiss_text_alignment ); ?>"
+				method="POST"
+				action-xhr="<?php echo esc_url( $endpoint ); ?>"
+				target="_top">
+					<?php echo $hidden_fields; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+				<input
+					name="suppress_forever"
+					type="hidden"
+					value="1"
+				/>
+				<button on="tap:<?php echo esc_attr( $element_id ); ?>.hide" aria-label="<?php esc_attr( $dismiss_text ); ?>" style="<?php echo esc_attr( self::container_style( $popup ) ); ?>"><?php echo esc_attr( $dismiss_text ); ?></button>
+			</form>
+		<?php
+	}
+
+	/**
 	 * Get data-popup-status attribute for use in previews, if viewing as an admin.
 	 *
 	 * @param object $popup Popup.
@@ -792,7 +850,7 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
-	 * Generate markup inline popup.
+	 * Generate markup for an inline popup.
 	 *
 	 * @param string $popup The popup object.
 	 * @return string The generated markup.
@@ -808,7 +866,7 @@ final class Newspack_Popups_Model {
 		}
 		do_action( 'newspack_campaigns_after_campaign_render', $popup );
 
-		$element_id             = 'lightbox' . rand(); // phpcs:ignore WordPress.WP.AlternativeFunctions.rand_rand
+		$element_id             = self::get_uniqid();
 		$endpoint               = self::get_reader_endpoint();
 		$display_title          = $popup['options']['display_title'];
 		$hidden_fields          = self::get_hidden_fields( $popup );
@@ -844,23 +902,12 @@ final class Newspack_Popups_Model {
 				style="<?php echo esc_attr( self::container_style( $popup ) ); ?>"
 				id="<?php echo esc_attr( $element_id ); ?>"
 			>
-						<?php if ( ! empty( $popup['title'] ) && $display_title ) : ?>
+				<?php if ( ! empty( $popup['title'] ) && $display_title ) : ?>
 					<h1 class="newspack-popup-title"><?php echo esc_html( $popup['title'] ); ?></h1>
 				<?php endif; ?>
-						<?php echo ( $body ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-						<?php if ( $dismiss_text && ! Newspack_Popups_Settings::is_non_interactive() ) : ?>
-					<form class="popup-not-interested-form popup-action-form align-<?php echo esc_attr( $dismiss_text_alignment ); ?>"
-						method="POST"
-						action-xhr="<?php echo esc_url( $endpoint ); ?>"
-						target="_top">
-							<?php echo $hidden_fields; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-						<input
-							name="suppress_forever"
-							type="hidden"
-							value="1"
-						/>
-						<button on="tap:<?php echo esc_attr( $element_id ); ?>.hide" aria-label="<?php esc_attr( $dismiss_text ); ?>" style="<?php echo esc_attr( self::container_style( $popup ) ); ?>"><?php echo esc_attr( $dismiss_text ); ?></button>
-					</form>
+				<?php echo ( $body ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+				<?php if ( ! Newspack_Popups_Settings::is_non_interactive() ) : ?>
+					<?php echo self::render_permanent_dismissal_form( $element_id, $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				<?php endif; ?>
 			</amp-layout>
 		<?php
@@ -868,7 +915,7 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
-	 * Generate markup and styles for popup.
+	 * Generate markup and styles for an overlay popup.
 	 *
 	 * @param string $popup The popup object.
 	 * @return string The generated markup.
@@ -886,7 +933,7 @@ final class Newspack_Popups_Model {
 		}
 		do_action( 'newspack_campaigns_after_campaign_render', $popup );
 
-		$element_id             = 'lightbox' . rand(); // phpcs:ignore WordPress.WP.AlternativeFunctions.rand_rand
+		$element_id             = self::get_uniqid();
 		$endpoint               = self::get_reader_endpoint();
 		$dismiss_text           = self::get_dismiss_text( $popup );
 		$dismiss_text_alignment = self::get_dismiss_text_alignment( $popup );
@@ -925,21 +972,8 @@ final class Newspack_Popups_Model {
 						<h1 class="newspack-popup-title"><?php echo esc_html( $popup['title'] ); ?></h1>
 					<?php endif; ?>
 					<?php echo ( $body ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-					<?php if ( $dismiss_text ) : ?>
-					<form class="popup-not-interested-form popup-action-form align-<?php echo esc_attr( $dismiss_text_alignment ); ?>"
-						method="POST"
-						action-xhr="<?php echo esc_url( $endpoint ); ?>"
-						target="_top">
-							<?php echo $hidden_fields; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-						<input
-							name="suppress_forever"
-							type="hidden"
-							value="1"
-						/>
-						<button on="tap:<?php echo esc_attr( $element_id ); ?>.hide" aria-label="<?php esc_attr( $dismiss_text ); ?>" style="<?php echo esc_attr( self::container_style( $popup ) ); ?>"><?php echo esc_attr( $dismiss_text ); ?></button>
-					</form>
-					<?php endif; ?>
-					<form class="popup-dismiss-form popup-action-form align-<?php echo esc_attr( $dismiss_text_alignment ); ?>"
+					<?php echo self::render_permanent_dismissal_form( $element_id, $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					<form class="popup-dismiss-form <?php echo esc_attr( self::get_form_class( 'dismiss', $element_id ) ); ?> popup-action-form <?php echo esc_attr( self::get_form_class( 'action', $element_id ) ); ?> align-<?php echo esc_attr( $dismiss_text_alignment ); ?>"
 						method="POST"
 						action-xhr="<?php echo esc_url( $endpoint ); ?>"
 						target="_top">
@@ -950,7 +984,7 @@ final class Newspack_Popups_Model {
 					</form>
 				</div>
 			</div>
-			<form class="popup-dismiss-form popup-action-form"
+			<form class="popup-dismiss-form <?php echo esc_attr( self::get_form_class( 'dismiss', $element_id ) ); ?> popup-action-form <?php echo esc_attr( self::get_form_class( 'action', $element_id ) ); ?>"
 				method="POST"
 				action-xhr="<?php echo esc_url( $endpoint ); ?>"
 				target="_top">
