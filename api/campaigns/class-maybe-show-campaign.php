@@ -127,11 +127,17 @@ class Maybe_Show_Campaign extends Lightweight_API {
 
 			// Handle custom placements: Only one prompt should be shown per placement block.
 			// "Everyone" prompts should only be shown if the reader doesn't match any segments.
-			if ( ! empty( $campaign->c ) ) {
-				if ( $campaign_should_be_shown && ! isset( $custom_placements_displayed[ $campaign->c ] ) ) {
-					$custom_placements_displayed[ $campaign->c ] = $campaign->id;
+			if ( $campaign_should_be_shown && ! empty( $campaign->c ) ) {
+				if ( ! isset( $custom_placements_displayed[ $campaign->c ] ) ) {
+					$custom_placements_displayed[ $campaign->c ] = $campaign;
 				} else {
-					$campaign_should_be_shown = false;
+					$previous_item        = $custom_placements_displayed[ $campaign->c ];
+					$higher_priority_item = self::get_higher_priority_item( $previous_item, $campaign, $all_segments );
+
+					// If the previous prompt in this custom placement already has a higher priority, only show that one. Otherwise, show this one instead.
+					$response[ $previous_item->id ]              = $previous_item->id === $higher_priority_item->id;
+					$campaign_should_be_shown                    = $campaign->id === $higher_priority_item->id;
+					$custom_placements_displayed[ $campaign->c ] = $higher_priority_item;
 				}
 			}
 
