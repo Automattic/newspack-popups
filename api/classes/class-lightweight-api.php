@@ -178,11 +178,12 @@ class Lightweight_API {
 	 */
 	public function delete_transient( $name ) {
 		global $wpdb;
-		$name = '_transient_' . $name;
+		$name       = '_transient_' . $name;
+		$table_name = Segmentation::get_transients_table_name();
 
 		wp_cache_delete( $name );
 		$wpdb->delete( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-			$wpdb->options,
+			$table_name,
 			[ 'option_name' => $name ]
 		);
 
