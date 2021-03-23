@@ -538,6 +538,7 @@ class APITest extends WP_UnitTestCase {
 				'email_subscriptions'            => [],
 				'donations'                      => [],
 				'user_id'                        => false,
+				'prompts'                        => [],
 			],
 			'Returns expected data blueprint in absence of saved data.'
 		);
@@ -564,6 +565,7 @@ class APITest extends WP_UnitTestCase {
 				'email_subscriptions'            => [],
 				'donations'                      => [],
 				'user_id'                        => false,
+				'prompts'                        => [],
 			],
 			'Returns data with saved post after an article reading was reported.'
 		);
@@ -584,8 +586,173 @@ class APITest extends WP_UnitTestCase {
 				'some_other_data'                => 42,
 				'donations'                      => [],
 				'user_id'                        => false,
+				'prompts'                        => [],
 			],
 			'Returns data without overwriting the existing data.'
+		);
+	}
+
+	/**
+	 * Client data rebuilding.
+	 */
+	public function test_client_data_rebuild() {
+		$api       = new Lightweight_API();
+		$client_id = 'client_' . uniqid();
+		global $wpdb;
+		$events_table_name = Segmentation::get_events_table_name();
+		$wpdb->query( $wpdb->prepare( "INSERT INTO `$events_table_name` (`type`, `client_id`, `post_id`) VALUES (%s, %s, %s)", 'post_read', $client_id, '42' ) ); // phpcs:ignore
+
+		self::assertEquals(
+			$api->get_client_data( $client_id ),
+			[
+				'suppressed_newsletter_campaign' => false,
+				'posts_read'                     => [
+					[
+						'post_id'      => '42',
+						'category_ids' => null,
+						'created_at'   => '0000-00-00 00:00:00',
+					],
+				],
+				'email_subscriptions'            => [],
+				'donations'                      => [],
+				'user_id'                        => false,
+				'prompts'                        => [],
+			],
+			'Returns expected data based on events table.'
+		);
+	}
+
+	/**
+	 * Updating prompts in client data.
+	 */
+	public function test_client_data_prompts() {
+		$api       = new Lightweight_API();
+		$client_id = 'client_' . uniqid();
+		$popup_id  = Newspack_Popups_Model::canonize_popup_id( uniqid() );
+
+		// Report a prompt view.
+		self::$report_campaign_data->report_campaign(
+			[
+				'cid'      => $client_id,
+				'popup_id' => $popup_id,
+			]
+		);
+		$expected_popup_data = [
+			'count'            => 1,
+			'last_viewed'      => time(),
+			'suppress_forever' => false,
+		];
+		self::assertEquals(
+			$api->get_client_data( $client_id )['prompts'],
+			[
+				"$popup_id" => $expected_popup_data,
+			],
+			'Returns data with prompt data after a prompt is reported.'
+		);
+		self::assertEquals(
+			$api->get_campaign_data( $client_id, $popup_id ),
+			$expected_popup_data,
+			'Returns prompt data.'
+		);
+
+		// Report another view of the same prompt.
+		self::$report_campaign_data->report_campaign(
+			[
+				'cid'      => $client_id,
+				'popup_id' => $popup_id,
+			]
+		);
+		$expected_popup_data = [
+			'count'            => 2,
+			'last_viewed'      => time(),
+			'suppress_forever' => false,
+		];
+		self::assertEquals(
+			$api->get_campaign_data( $client_id, $popup_id ),
+			$expected_popup_data,
+			'Returns prompt data.'
+		);
+		self::assertEquals(
+			$api->get_client_data( $client_id ),
+			[
+				'suppressed_newsletter_campaign' => false,
+				'posts_read'                     => [],
+				'email_subscriptions'            => [],
+				'donations'                      => [],
+				'user_id'                        => false,
+				'prompts'                        => [
+					"$popup_id" => $expected_popup_data,
+				],
+			],
+			'Returns data in expected shape.'
+		);
+
+		// Report another view of a diffrent prompt.
+		$new_popup_id            = Newspack_Popups_Model::canonize_popup_id( uniqid() );
+		$expected_new_popup_data = [
+			'count'            => 1,
+			'last_viewed'      => time(),
+			'suppress_forever' => false,
+		];
+		self::$report_campaign_data->report_campaign(
+			[
+				'cid'      => $client_id,
+				'popup_id' => $new_popup_id,
+			]
+		);
+		self::assertEquals(
+			$api->get_campaign_data( $client_id, $new_popup_id ),
+			$expected_new_popup_data,
+			'Returns prompt data.'
+		);
+		self::assertEquals(
+			$api->get_client_data( $client_id ),
+			[
+				'suppressed_newsletter_campaign' => false,
+				'posts_read'                     => [],
+				'email_subscriptions'            => [],
+				'donations'                      => [],
+				'user_id'                        => false,
+				'prompts'                        => [
+					"$popup_id"     => $expected_popup_data,
+					"$new_popup_id" => $expected_new_popup_data,
+				],
+			],
+			'Returns data in expected shape.'
+		);
+	}
+
+	/**
+	 * Client data saving - a single donation.
+	 */
+	public function test_client_data_donations() {
+		$api       = new Lightweight_API();
+		$client_id = 'test_' . uniqid();
+
+		// Report a donation.
+		$donation = [
+			'order_id' => '120',
+			'date'     => '2020-10-28',
+			'amount'   => '180.00',
+		];
+		self::$report_client_data->report_client_data(
+			[
+				'client_id' => $client_id,
+				'donation'  => $donation,
+			]
+		);
+
+		self::assertEquals(
+			$api->get_client_data( $client_id ),
+			[
+				'suppressed_newsletter_campaign' => false,
+				'posts_read'                     => [],
+				'email_subscriptions'            => [],
+				'donations'                      => [ $donation ],
+				'user_id'                        => false,
+				'prompts'                        => [],
+			],
+			'Returns data with donation data after a donation is reported.'
 		);
 	}
 
@@ -609,20 +776,27 @@ class APITest extends WP_UnitTestCase {
 				'email_subscriptions'            => [],
 				'donations'                      => [],
 				'user_id'                        => false,
+				'prompts'                        => [],
 			],
 			'The initial client data has expected shape.'
 		);
 
 		$email_address = 'foo@bar.com';
+		$prompt_id     = Newspack_Popups_Model::canonize_popup_id( $test_popup_with_subscription_block['id'] );
+
 		// Report a subscription.
 		self::$report_campaign_data->report_campaign(
 			[
 				'cid'                 => self::$client_id,
-				'popup_id'            => Newspack_Popups_Model::canonize_popup_id( $test_popup_with_subscription_block['id'] ),
+				'popup_id'            => $prompt_id,
 				'mailing_list_status' => 'subscribed',
 				'email'               => $email_address,
 			]
 		);
+
+		$api                       = new Lightweight_API();
+		$prompt_data               = [];
+		$prompt_data[ $prompt_id ] = $api->get_campaign_data( self::$client_id, $prompt_id );
 
 		self::assertEquals(
 			self::$report_campaign_data->get_client_data( self::$client_id ),
@@ -636,6 +810,7 @@ class APITest extends WP_UnitTestCase {
 					],
 				],
 				'user_id'                        => false,
+				'prompts'                        => $prompt_data,
 			],
 			'The client data after a subscription contains the provided email address.'
 		);
