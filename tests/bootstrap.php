@@ -26,6 +26,7 @@ function _manually_load_plugin() {
 	$_SERVER['HTTP_REFERER'] = 'https://' . $_SERVER['HTTP_HOST']; // phpcs:ignore
 
 	require dirname( dirname( __FILE__ ) ) . '/newspack-popups.php';
+	require dirname( dirname( __FILE__ ) ) . '/src/blocks/custom-placement/view.php';
 	require dirname( dirname( __FILE__ ) ) . '/api/campaigns/class-maybe-show-campaign.php';
 	require dirname( dirname( __FILE__ ) ) . '/api/campaigns/class-report-campaign-data.php';
 	require dirname( dirname( __FILE__ ) ) . '/api/segmentation/class-segmentation-client-data.php';

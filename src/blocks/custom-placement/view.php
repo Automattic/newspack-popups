@@ -58,17 +58,9 @@ function render_block( $attributes ) {
 		if ( defined( 'WP_NEWSPACK_DEBUG' ) && WP_NEWSPACK_DEBUG ) {
 			$content .= '<!-- Newspack Campaigns: Start custom placement ' . $custom_placement_id . '-->';
 		}
-		$segments = [];
 		foreach ( $prompts as $prompt_id ) {
-			$segment_ids = explode( ',', get_post_meta( $prompt_id, 'selected_segment_id', true ) );
-
-			// Only render one prompt per segment and category for each custom placement.
-			if ( 0 === count( array_intersect( $segments, $segment_ids ) ) ) {
-				$segments = array_unique( array_merge( $segments, $segment_ids ) );
-				$content .= '<!-- wp:shortcode -->[newspack-popup id="' . $prompt_id . '"]<!-- /wp:shortcode -->';
-			}
+			$content .= '<!-- wp:shortcode -->[newspack-popup id="' . $prompt_id . '"]<!-- /wp:shortcode -->';
 		}
-
 		if ( defined( 'WP_NEWSPACK_DEBUG' ) && WP_NEWSPACK_DEBUG ) {
 			$content .= '<!-- Newspack Campaigns: End custom placement ' . $custom_placement_id . '-->';
 		}
