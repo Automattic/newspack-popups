@@ -22,7 +22,7 @@ const DismissSidebar = ( { dismiss_text, dismiss_text_alignment, onMetaFieldChan
 				onChange={ value => onMetaFieldChange( 'dismiss_text', value ) }
 			/>
 			<SelectControl
-				label={ __( 'Alignment', 'newspack-listings' ) }
+				label={ __( 'Alignment', 'newspack-popups' ) }
 				id="newspack-popups-dimiss-button-alignment"
 				onChange={ value => onMetaFieldChange( 'dismiss_text_alignment', value ) }
 				value={ dismiss_text_alignment }
