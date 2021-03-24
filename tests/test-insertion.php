@@ -47,9 +47,10 @@ class InsertionTest extends WP_UnitTestCase {
 	/**
 	 * Trigger post rendering with popups in it.
 	 *
-	 * @param string $url_query Query to append to URL.
+	 * @param string      $url_query Query to append to URL.
+	 * @param null|string $content Raw string to render as post content.
 	 */
-	public function render_post( $url_query = '' ) {
+	public function render_post( $url_query = '', $content = null ) {
 		// Navigate to post.
 		self::go_to( get_permalink( self::$post_id ) . '&' . $url_query );
 		global $wp_query, $post;
@@ -59,7 +60,11 @@ class InsertionTest extends WP_UnitTestCase {
 		// Reset internal duplicate-prevention.
 		Newspack_Popups_Inserter::$the_content_has_rendered = false;
 
-		self::$post_content = apply_filters( 'the_content', get_post( self::$post_id )->post_content );
+		if ( ! $content ) {
+			$content = get_post( self::$post_id )->post_content;
+		}
+
+		self::$post_content = apply_filters( 'the_content', $content );
 		$dom                = new DomDocument();
 		@$dom->loadHTML( self::$post_content ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
 		self::$dom_xpath = new DOMXpath( $dom );
@@ -175,5 +180,32 @@ class InsertionTest extends WP_UnitTestCase {
 			'Does not include the dismissal text.'
 		);
 		update_option( 'newspack_popups_non_interative_mode', false );
+	}
+
+	/**
+	 * Test custom placement campaigns.
+	 */
+	public function test_custom_placement_prompt() {
+		Newspack_Popups_Model::set_popup_options(
+			self::$popup_id,
+			[
+				'placement' => 'custom1',
+				'frequency' => 'always',
+			]
+		);
+
+		self::render_post();
+		self::assertNotContains(
+			self::$popup_content,
+			self::$post_content,
+			'Does not include the popup content, since it is a custom placement campaign.'
+		);
+
+		self::render_post( '', '<!-- wp:newspack-popups/custom-placement {"customPlacement":"custom1"} /-->' );
+		self::assertContains(
+			self::$popup_content,
+			self::$post_content,
+			'Includes the popup content when the custom placement is present in post content.'
+		);
 	}
 }

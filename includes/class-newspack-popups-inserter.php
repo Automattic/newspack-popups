@@ -84,14 +84,6 @@ final class Newspack_Popups_Inserter {
 			);
 		}
 
-		// 5. Remove manual placement prompts.
-		$popups_to_maybe_display = array_filter(
-			$popups_to_maybe_display,
-			function( $popup ) {
-				return 'manual' !== $popup['options']['frequency'];
-			}
-		);
-
 		return array_filter(
 			$popups_to_maybe_display,
 			[ __CLASS__, 'should_display' ]
@@ -387,7 +379,7 @@ final class Newspack_Popups_Inserter {
 			! $found_popup ||
 			// Bail if it's a non-preview popup which should not be displayed.
 			( ! self::should_display( $found_popup, true ) && ! Newspack_Popups::previewed_popup_id() ) ||
-			// Only inline popups can be inserted via the  shortcode.
+			// Only inline popups can be inserted via the shortcode.
 			! Newspack_Popups_Model::is_inline( $found_popup )
 		) {
 			return;
@@ -422,7 +414,7 @@ final class Newspack_Popups_Inserter {
 			$type = 'a';
 		}
 
-		return [
+		$popup_payload = [
 			'id'  => $popup_id_string,
 			'f'   => $frequency,
 			'utm' => $popup['options']['utm_suppression'],
@@ -431,6 +423,12 @@ final class Newspack_Popups_Inserter {
 			'd'   => \Newspack_Popups_Model::has_donation_block( $popup ),
 			't'   => $type,
 		];
+
+		if ( Newspack_Popups_Custom_Placements::is_custom_placement( $popup ) ) {
+			$popup_payload['c'] = $popup['options']['placement'];
+		}
+
+		return $popup_payload;
 	}
 
 	/**
@@ -450,7 +448,9 @@ final class Newspack_Popups_Inserter {
 				self::get_all_widget_shortcoded_popups_ids()
 			)
 		);
-		$shortcoded_popups    = array_reduce(
+
+		// Get shortcoded prompts.
+		$shortcoded_popups = array_reduce(
 			$shortcoded_popup_ids,
 			function ( $acc, $id ) {
 				$popup_post = get_post( $id );
@@ -465,9 +465,27 @@ final class Newspack_Popups_Inserter {
 			[]
 		);
 
+		// Get prompts for custom placements.
+		$custom_placement_ids    = self::get_custom_placement_ids( get_the_content() );
+		$custom_placement_popups = array_reduce(
+			Newspack_Popups_Custom_Placements::get_prompts_for_custom_placement( $custom_placement_ids ),
+			function ( $acc, $custom_placement_popup ) {
+				if ( $custom_placement_popup ) {
+					$popup_object = Newspack_Popups_Model::create_popup_object( $custom_placement_popup );
+
+					if ( $popup_object ) {
+						$acc[] = $popup_object;
+					}
+				}
+				return $acc;
+			},
+			[]
+		);
+
 		$popups = array_merge(
 			self::popups_for_post(),
-			$shortcoded_popups
+			$shortcoded_popups,
+			$custom_placement_popups
 		);
 
 		// "Escape hatch" if there's a need to block adding amp-access for pages that have no prompts.
@@ -601,6 +619,35 @@ final class Newspack_Popups_Inserter {
 	}
 
 	/**
+	 * Get custom placement IDs from a string.
+	 *
+	 * @param string $string String to assess.
+	 * @return array Found custom placement IDs.
+	 */
+	public static function get_custom_placement_ids( $string ) {
+		preg_match_all( '/<!-- wp:newspack-popups\/custom-placement {"customPlacement":".*"} \/-->/', $string, $custom_placement_ids );
+		if ( empty( $custom_placement_ids ) ) {
+			return [];
+		} else {
+			return array_unique(
+				array_map(
+					function ( $item ) {
+						preg_match( '/"customPlacement":"(.*)"/', $item, $matches );
+						if ( empty( $matches ) ) {
+							return null;
+						} else {
+							return $matches[1];
+						}
+					},
+					$custom_placement_ids[0]
+				)
+			);
+		}
+
+		return [];
+	}
+
+	/**
 	 * Some popups can only appear on Posts.
 	 *
 	 * @param object $popup The popup to assess.
@@ -661,7 +708,7 @@ final class Newspack_Popups_Inserter {
 	 * @return bool Should popup be shown.
 	 */
 	public static function should_display( $popup, $skip_context_checks = false ) {
-		if ( 'manual' === $popup['options']['frequency'] ) {
+		if ( Newspack_Popups_Custom_Placements::is_custom_placement( $popup ) ) {
 			return true;
 		}
 

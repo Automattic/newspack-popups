@@ -26,6 +26,7 @@ const Sidebar = ( {
 			onMetaFieldChange( 'frequency', 'once' );
 		}
 	};
+	const customPlacements = window.newspack_popups_data?.custom_placements || {};
 
 	return (
 		<Fragment>
@@ -53,7 +54,12 @@ const Sidebar = ( {
 						: [
 								{ value: 'inline', label: __( 'In article content' ) },
 								{ value: 'above_header', label: __( 'Above site header' ) },
-						  ]
+						  ].concat(
+								Object.keys( customPlacements ).map( key => ( {
+									value: key,
+									label: customPlacements[ key ],
+								} ) )
+						  )
 				}
 			/>
 			{ isOverlay && (

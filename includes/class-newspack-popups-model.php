@@ -101,7 +101,7 @@ final class Newspack_Popups_Model {
 		foreach ( $options as $key => $value ) {
 			switch ( $key ) {
 				case 'frequency':
-					if ( ! in_array( $value, [ 'once', 'daily', 'always', 'manual' ] ) ) {
+					if ( ! in_array( $value, [ 'once', 'daily', 'always' ] ) ) {
 						return new \WP_Error(
 							'newspack_popups_invalid_option_value',
 							esc_html__( 'Invalid frequency value.', 'newspack-popups' ),
@@ -114,7 +114,12 @@ final class Newspack_Popups_Model {
 					update_post_meta( $id, $key, $value );
 					break;
 				case 'placement':
-					if ( ! in_array( $value, array_merge( self::$overlay_placements, self::$inline_placements ) ) ) {
+					$valid_placements = array_merge(
+						self::$overlay_placements,
+						self::$inline_placements,
+						Newspack_Popups_Custom_Placements::get_custom_placement_values()
+					);
+					if ( ! in_array( $value, $valid_placements ) ) {
 						return new \WP_Error(
 							'newspack_popups_invalid_option_value',
 							esc_html__( 'Invalid placement value.', 'newspack-popups' ),
@@ -341,7 +346,7 @@ final class Newspack_Popups_Model {
 					get_post( get_the_ID() ),
 					$include_categories
 				);
-				$popup = self::deprecate_test_never( $popup, 'publish' === $query->get( 'post_status', null ) );
+				$popup = self::deprecate_test_never_manual( $popup, 'publish' === $query->get( 'post_status', null ) );
 
 				if ( $popup ) {
 					$popups[] = $popup;
@@ -353,30 +358,40 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
-	 * Deprecate Test Mode and Never frequency.
+	 * Deprecate Test Mode and Never/Manual frequencies.
 	 *
 	 * @param object $popup The popup.
 	 * @param bool   $published_only Whether the result must be a published post.
 	 * @return object|null Popup object or null.
 	 */
-	protected static function deprecate_test_never( $popup, $published_only ) {
+	protected static function deprecate_test_never_manual( $popup, $published_only ) {
 		$frequency = $popup['options']['frequency'];
 		$placement = $popup['options']['placement'];
-		if ( in_array( $frequency, [ 'never', 'test' ] ) ) {
+		if ( in_array( $frequency, [ 'never', 'test', 'manual' ] ) ) {
 			if ( in_array( $placement, [ 'inline', 'above_header' ] ) ) {
 				$popup['options']['frequency'] = 'always';
 			} else {
 				$popup['options']['frequency'] = 'daily';
 			}
 			update_post_meta( $popup['id'], 'frequency', $popup['options']['frequency'] );
-			$popup['status'] = 'draft';
 
 			$post = get_post( $popup['id'] );
 
-			$post->post_status = 'draft';
+			// Update 'manual' prompts to a default custom placement.
+			if ( 'manual' === $frequency ) {
+				$popup['options']['placement'] = 'custom1';
+				update_post_meta( $popup['id'], 'placement', $popup['options']['placement'] );
+			}
+
+			// Set 'never' and 'test' prompts to draft status.
+			if ( in_array( $frequency, [ 'never', 'test' ] ) ) {
+				$popup['status']   = 'draft';
+				$post->post_status = 'draft';
+			}
+
 			wp_update_post( $post );
 
-			if ( $published_only ) {
+			if ( $published_only && 'publish' !== $popup['status'] ) {
 				$popup = null;
 			}
 		}
@@ -506,7 +521,10 @@ final class Newspack_Popups_Model {
 		if ( ! isset( $popup['options'], $popup['options']['placement'] ) ) {
 			return false;
 		}
-		return in_array( $popup['options']['placement'], self::$inline_placements );
+		return in_array(
+			$popup['options']['placement'],
+			array_merge( self::$inline_placements, Newspack_Popups_Custom_Placements::get_custom_placement_values() )
+		);
 	}
 
 	/**
@@ -875,7 +893,7 @@ final class Newspack_Popups_Model {
 		$is_newsletter_prompt   = self::has_newsletter_prompt( $popup );
 		$classes                = [];
 		$classes[]              = 'above_header' === $popup['options']['placement'] ? 'newspack-above-header-popup' : null;
-		$classes[]              = 'inline' === $popup['options']['placement'] ? 'newspack-inline-popup' : null;
+		$classes[]              = ! self::is_above_header( $popup ) ? 'newspack-inline-popup' : null;
 		$classes[]              = 'publish' !== $popup['status'] ? 'newspack-inactive-popup-status' : null;
 		$classes[]              = ( ! empty( $popup['title'] ) && $display_title ) ? 'newspack-lightbox-has-title' : null;
 		$classes[]              = $is_newsletter_prompt ? 'newspack-newsletter-prompt-inline' : null;

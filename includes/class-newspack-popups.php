@@ -62,6 +62,7 @@ final class Newspack_Popups {
 		include_once dirname( __FILE__ ) . '/class-newspack-popups-api.php';
 		include_once dirname( __FILE__ ) . '/class-newspack-popups-settings.php';
 		include_once dirname( __FILE__ ) . '/class-newspack-popups-segmentation.php';
+		include_once dirname( __FILE__ ) . '/class-newspack-popups-custom-placements.php';
 		include_once dirname( __FILE__ ) . '/class-newspack-popups-parse-logs.php';
 		include_once dirname( __FILE__ ) . '/class-newspack-popups-donations.php';
 		include_once dirname( __FILE__ ) . '/class-newspack-popups-view-as.php';
@@ -357,9 +358,11 @@ final class Newspack_Popups {
 			'newspack-popups',
 			'newspack_popups_data',
 			[
-				'preview_post' => self::preview_post_permalink(),
-				'segments'     => Newspack_Popups_Segmentation::get_segments(),
-				'taxonomy'     => self::NEWSPACK_POPUPS_TAXONOMY,
+				'preview_post'      => self::preview_post_permalink(),
+				'segments'          => Newspack_Popups_Segmentation::get_segments(),
+				'custom_placements' => Newspack_Popups_Custom_Placements::get_custom_placements(),
+				'taxonomy'          => self::NEWSPACK_POPUPS_TAXONOMY,
+				'is_prompt'         => self::NEWSPACK_POPUPS_CPT == get_post_type(),
 			]
 		);
 		\wp_enqueue_style(
@@ -460,9 +463,9 @@ final class Newspack_Popups {
 				$placement = 'above_header';
 				$frequency = 'always';
 				break;
-			case 'manual':
-				$placement = 'inline';
-				$frequency = 'manual';
+			case 'custom':
+				$placement = 'custom1';
+				$frequency = 'always';
 				break;
 			default:
 				$placement = 'inline';
@@ -478,7 +481,7 @@ final class Newspack_Popups {
 				$trigger_type = 'time';
 				break;
 			case 'above-header':
-			case 'manual':
+			case 'custom':
 			default:
 				$dismiss_text = null;
 				$trigger_type = 'scroll';
