@@ -1,3 +1,10 @@
+# [1.29.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.28.0...v1.29.0-alpha.1) (2021-03-30)
+
+
+### Features
+
+* use RadioControls for prompt type selection ([#501](https://github.com/Automattic/newspack-popups/issues/501)) ([ebb6776](https://github.com/Automattic/newspack-popups/commit/ebb6776788d0a9cda4bad92349d28fe9cbeefb4f))
+
 # [1.28.0](https://github.com/Automattic/newspack-popups/compare/v1.27.0...v1.28.0) (2021-03-24)
 
 
