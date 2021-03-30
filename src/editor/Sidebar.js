@@ -7,7 +7,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Fragment } from '@wordpress/element';
-import { RangeControl, SelectControl, ToggleControl } from '@wordpress/components';
+import { RadioControl, RangeControl, SelectControl, ToggleControl } from '@wordpress/components';
 
 const Sidebar = ( {
 	display_title,
@@ -30,10 +30,15 @@ const Sidebar = ( {
 
 	return (
 		<Fragment>
-			<ToggleControl
-				label={ __( 'Inline Prompt', 'newspack-popups' ) }
-				checked={ ! isOverlay }
-				onChange={ value => updatePlacement( value ? 'inline' : 'center' ) }
+			<RadioControl
+				className="newspack-popups__prompt-type-control"
+				label={ __( 'Prompt type', 'newspack-popups' ) }
+				selected={ isOverlay ? 'center' : 'inline' }
+				options={ [
+					{ label: __( 'Inline', 'newspack-popups' ), value: 'inline' },
+					{ label: __( 'Overlay', 'newspack-popups' ), value: 'center' },
+				] }
+				onChange={ value => updatePlacement( value ) }
 			/>
 			<SelectControl
 				label={ __( 'Placement' ) }
