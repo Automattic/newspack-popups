@@ -35,6 +35,32 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 	}
 
 	/**
+	 * Shortcode handling.
+	 */
+	public function test_shortcode() {
+		$post_with_shortcode = '[newspack-popups id="' . self::$popup_id . '"]';
+		self::renderPost( '', $post_with_shortcode );
+		$popup_text_content = self::$dom_xpath->query( '//amp-layout' )->item( 0 )->textContent;
+
+		self::assertContains(
+			self::$popup_content,
+			$popup_text_content,
+			'Shortcode inserts the popup content.'
+		);
+		$amp_access_query = self::getAMPAccessQuery();
+		self::assertEquals(
+			count( $amp_access_query['popups'] ),
+			1,
+			'AMP access has one popup in the query.'
+		);
+		self::assertEquals(
+			$amp_access_query['popups'][0]->id,
+			'id_' . self::$popup_id,
+			'The popup id in the query matches the shortcoded popup id.'
+		);
+	}
+
+	/**
 	 * Tracking.
 	 */
 	public function test_insertion_analytics() {

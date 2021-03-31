@@ -80,4 +80,18 @@ class WP_UnitTestCase_PageWithPopups extends WP_UnitTestCase {
 		@$post_head_dom->loadHTML( self::$post_head ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
 		self::$post_head_dom_xpath = new DOMXpath( $post_head_dom );
 	}
+
+	/**
+	 * Get the amp-access query.
+	 *
+	 * @return object amp-access query.
+	 */
+	protected function getAMPAccessQuery() {
+		$amp_access_content = json_decode( self::$post_head_dom_xpath->query( '//*[@id="amp-access"]' )->item( 0 )->textContent );
+		parse_str( wp_parse_url( $amp_access_content->authorization )['query'], $amp_access_query );
+		$amp_access_query['popups']   = json_decode( $amp_access_query['popups'] );
+		$amp_access_query['settings'] = json_decode( $amp_access_query['settings'] );
+		$amp_access_query['visit']    = json_decode( $amp_access_query['visit'] );
+		return $amp_access_query;
+	}
 }
