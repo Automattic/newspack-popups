@@ -1483,7 +1483,7 @@ class APITest extends WP_UnitTestCase {
 			[
 				'placement'           => 'inline',
 				'frequency'           => 'always',
-				'selected_segment_id' => '',
+				'selected_segment_id' => 'garbagio',
 			]
 		);
 
@@ -1494,6 +1494,35 @@ class APITest extends WP_UnitTestCase {
 		self::assertTrue(
 			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', '', [ 'segment' => 'not-a-segment' ] ),
 			'Assert visible, a non-existent segment is disregarded.'
+		);
+	}
+
+	/**
+	 * View as a segment - "everyone" segment.
+	 */
+	public function test_view_as_segment_everyone() {
+		$test_popup_with_segment = self::create_test_popup(
+			[
+				'placement'           => 'inline',
+				'frequency'           => 'always',
+				'selected_segment_id' => self::$segment_ids['segmentFavCategory42'], // any segment.
+			]
+		);
+		$test_popup_everyone     = self::create_test_popup(
+			[
+				'placement'           => 'inline',
+				'frequency'           => 'always',
+				'selected_segment_id' => '',
+			]
+		);
+
+		self::assertFalse(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings, '', '', [ 'segment' => 'everyone' ] ),
+			'Assert prompt with a segment is not visible when previewing "everyone" segment.'
+		);
+		self::assertTrue(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_everyone['payload'], self::$settings, '', '', [ 'segment' => 'everyone' ] ),
+			'Assert prompt with no segment is visible when previewing "everyone" segment.'
 		);
 	}
 
