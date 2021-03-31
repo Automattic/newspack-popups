@@ -37,3 +37,4 @@ define( 'IS_TEST_ENV', 1 );
 
 // Start up the WP testing environment.
 require $_tests_dir . '/includes/bootstrap.php';
+require dirname( dirname( __FILE__ ) ) . '/tests/wp-unittestcase-pagewithpopups.php';

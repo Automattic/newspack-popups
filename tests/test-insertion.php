@@ -1,4 +1,4 @@
-<?php
+<?php // phpcs:ignore WordPress.Files.FileName.InvalidClassFileName
 /**
  * Class Insertion Test
  *
@@ -8,73 +8,12 @@
 /**
  * Insertion test case.
  */
-class InsertionTest extends WP_UnitTestCase {
-	private static $post_id          = false; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
-	private static $popup_content    = 'The popup content.'; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
-	private static $popup_id         = false; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
-	private static $raw_post_content = 'The post content.'; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
-	private static $post_content     = false; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
-	private static $dom_xpath        = false; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
-
-	public function setUp() { // phpcs:ignore Squiz.Commenting.FunctionComment.Missing
-		// Remove any popups (from previous tests).
-		foreach ( Newspack_Popups_Model::retrieve_popups() as $popup ) {
-			wp_delete_post( $popup['id'] );
-		}
-
-		self::$post_id  = self::factory()->post->create(
-			[
-				'post_content' => self::$raw_post_content,
-			]
-		);
-		self::$popup_id = self::factory()->post->create(
-			[
-				'post_type'    => Newspack_Popups::NEWSPACK_POPUPS_CPT,
-				'post_title'   => 'Popup title',
-				'post_content' => self::$popup_content,
-			]
-		);
-
-		Newspack_Popups_Model::set_popup_options(
-			self::$popup_id,
-			[
-				'frequency'    => 'daily',
-				'dismiss_text' => Newspack_Popups::get_default_dismiss_text(),
-			]
-		);
-	}
-
-	/**
-	 * Trigger post rendering with popups in it.
-	 *
-	 * @param string      $url_query Query to append to URL.
-	 * @param null|string $content Raw string to render as post content.
-	 */
-	public function render_post( $url_query = '', $content = null ) {
-		// Navigate to post.
-		self::go_to( get_permalink( self::$post_id ) . '&' . $url_query );
-		global $wp_query, $post;
-		$wp_query->in_the_loop = true;
-		setup_postdata( $post );
-
-		// Reset internal duplicate-prevention.
-		Newspack_Popups_Inserter::$the_content_has_rendered = false;
-
-		if ( ! $content ) {
-			$content = get_post( self::$post_id )->post_content;
-		}
-
-		self::$post_content = apply_filters( 'the_content', $content );
-		$dom                = new DomDocument();
-		@$dom->loadHTML( self::$post_content ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
-		self::$dom_xpath = new DOMXpath( $dom );
-	}
-
+class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 	/**
 	 * Test popup insertion into a post.
 	 */
 	public function test_insertion() {
-		self::render_post();
+		self::renderPost();
 		$amp_layout_elements = self::$dom_xpath->query( '//amp-layout' );
 		$popup_text_content  = $amp_layout_elements->item( 0 )->textContent;
 
@@ -99,7 +38,7 @@ class InsertionTest extends WP_UnitTestCase {
 	 * Tracking.
 	 */
 	public function test_insertion_analytics() {
-		self::render_post();
+		self::renderPost();
 		$amp_analytics_elements = self::$dom_xpath->query( '//amp-analytics' );
 
 		self::assertEquals(
@@ -111,7 +50,7 @@ class InsertionTest extends WP_UnitTestCase {
 		$user_id = $this->factory->user->create( [ 'role' => 'administrator' ] );
 		wp_set_current_user( $user_id );
 
-		self::render_post( 'view_as=all' );
+		self::renderPost( 'view_as=all' );
 		self::assertEquals(
 			self::$dom_xpath->query( '//amp-analytics' )->length,
 			0,
@@ -123,7 +62,7 @@ class InsertionTest extends WP_UnitTestCase {
 	 * With view-as feature.
 	 */
 	public function test_insertion_view_as() {
-		self::render_post( 'view_as=all' );
+		self::renderPost( 'view_as=all' );
 		self::assertEquals(
 			self::$dom_xpath->query( '//amp-analytics' )->length,
 			1,
@@ -133,7 +72,7 @@ class InsertionTest extends WP_UnitTestCase {
 		$user_id = $this->factory->user->create( [ 'role' => 'administrator' ] );
 		wp_set_current_user( $user_id );
 
-		self::render_post( 'view_as=all' );
+		self::renderPost( 'view_as=all' );
 		self::assertEquals(
 			self::$dom_xpath->query( '//amp-analytics' )->length,
 			0,
@@ -154,7 +93,7 @@ class InsertionTest extends WP_UnitTestCase {
 		);
 
 		update_option( 'newspack_popups_non_interative_mode', true );
-		self::render_post();
+		self::renderPost();
 		self::assertNotContains(
 			self::$popup_content,
 			self::$post_content,
@@ -168,7 +107,7 @@ class InsertionTest extends WP_UnitTestCase {
 	 */
 	public function test_non_interactive_inline() {
 		update_option( 'newspack_popups_non_interative_mode', true );
-		self::render_post();
+		self::renderPost();
 		self::assertContains(
 			self::$popup_content,
 			self::$post_content,
@@ -194,14 +133,14 @@ class InsertionTest extends WP_UnitTestCase {
 			]
 		);
 
-		self::render_post();
+		self::renderPost();
 		self::assertNotContains(
 			self::$popup_content,
 			self::$post_content,
 			'Does not include the popup content, since it is a custom placement campaign.'
 		);
 
-		self::render_post( '', '<!-- wp:newspack-popups/custom-placement {"customPlacement":"custom1"} /-->' );
+		self::renderPost( '', '<!-- wp:newspack-popups/custom-placement {"customPlacement":"custom1"} /-->' );
 		self::assertContains(
 			self::$popup_content,
 			self::$post_content,
