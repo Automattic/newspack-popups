@@ -61,7 +61,7 @@ final class Newspack_Popups_Model {
 				]
 			);
 		}
-		if ( ! in_array( $taxonomy, [ 'category', Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY ] ) ) {
+		if ( ! in_array( $taxonomy, [ 'category', 'post_tag', Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY ] ) ) {
 			return new \WP_Error(
 				'newspack_popups_invalid_taxonomy',
 				esc_html__( 'Invalid taxonomy.', 'newspack-popups' ),
