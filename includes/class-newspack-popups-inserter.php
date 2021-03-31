@@ -1,6 +1,6 @@
 <?php
 /**
- * Newspack Popups Inserters
+ * Newspack Popups Inserter
  *
  * @package Newspack
  */
@@ -369,11 +369,8 @@ final class Newspack_Popups_Inserter {
 	 * @return HTML
 	 */
 	public static function popup_shortcode( $atts = array() ) {
-		$previewed_popup_id = Newspack_Popups::previewed_popup_id();
-		if ( $previewed_popup_id ) {
-			$found_popup = Newspack_Popups_Model::retrieve_preview_popup( $previewed_popup_id );
-		} elseif ( isset( $atts['id'] ) ) {
-			$found_popup = Newspack_Popups_Model::retrieve_popup_by_id( $atts['id'], ! empty( Newspack_Popups_View_As::viewing_as_spec() ) );
+		if ( isset( $atts['id'] ) ) {
+			$found_popup = Newspack_Popups_Model::retrieve_popup_by_id( $atts['id'] );
 		}
 		if (
 			! $found_popup ||
