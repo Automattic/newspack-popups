@@ -107,7 +107,7 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 	}
 
 	/**
-	 * Test non-interactive setting for overlay campaigns.
+	 * Test non-interactive setting for overlay popup.
 	 */
 	public function test_non_interactive_overlay() {
 		Newspack_Popups_Model::set_popup_options(
@@ -123,13 +123,13 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 		self::assertNotContains(
 			self::$popup_content,
 			self::$post_content,
-			'Does not include the popup content, since it is an overlay campaign.'
+			'Does not include the popup content, since it is an overlay popup.'
 		);
 		update_option( 'newspack_popups_non_interative_mode', false );
 	}
 
 	/**
-	 * Test non-interactive setting for inline campaigns.
+	 * Test non-interactive setting for inline popups.
 	 */
 	public function test_non_interactive_inline() {
 		update_option( 'newspack_popups_non_interative_mode', true );
@@ -148,7 +148,7 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 	}
 
 	/**
-	 * Test custom placement campaigns.
+	 * Test custom placement popups.
 	 */
 	public function test_custom_placement_prompt() {
 		Newspack_Popups_Model::set_popup_options(
@@ -163,7 +163,7 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 		self::assertNotContains(
 			self::$popup_content,
 			self::$post_content,
-			'Does not include the popup content, since it is a custom placement campaign.'
+			'Does not include the popup content, since it is a custom placement popup.'
 		);
 
 		self::renderPost( '', '<!-- wp:newspack-popups/custom-placement {"customPlacement":"custom1"} /-->' );
@@ -171,6 +171,62 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 			self::$popup_content,
 			self::$post_content,
 			'Includes the popup content when the custom placement is present in post content.'
+		);
+	}
+
+	/**
+	 * Category criterion.
+	 */
+	public function test_category_criterion() {
+		$category_id = $this->factory->term->create(
+			[
+				'name'     => 'Events',
+				'taxonomy' => 'category',
+				'slug'     => 'events',
+			]
+		);
+		wp_set_post_terms( self::$popup_id, [ $category_id ], 'category' );
+
+		self::renderPost();
+		self::assertNotContains(
+			self::$popup_content,
+			self::$post_content,
+			'Does not include the popup content, since the post category does not match.'
+		);
+
+		self::renderPost( '', null, [ $category_id ] );
+		self::assertContains(
+			self::$popup_content,
+			self::$post_content,
+			'Includes the popup content when the categories match.'
+		);
+	}
+
+	/**
+	 * Tag criterion.
+	 */
+	public function test_tag_criterion() {
+		$tag_id = $this->factory->term->create(
+			[
+				'name'     => 'Featured',
+				'taxonomy' => 'post_tag',
+				'slug'     => 'featured',
+			]
+		);
+		wp_set_post_terms( self::$popup_id, [ $tag_id ], 'post_tag' );
+
+		self::renderPost();
+		self::assertNotContains(
+			self::$popup_content,
+			self::$post_content,
+			'Does not include the popup content, since the post tag does not match.'
+		);
+
+		self::renderPost( '', null, [], [ $tag_id ] );
+		self::assertContains(
+			self::$popup_content,
+			self::$post_content,
+			'Includes the popup content when the tags match.'
 		);
 	}
 }

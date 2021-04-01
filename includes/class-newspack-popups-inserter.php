@@ -59,30 +59,12 @@ final class Newspack_Popups_Inserter {
 			return [];
 		}
 
-		$view_as_spec             = Segmentation::parse_view_as( Newspack_Popups_View_As::viewing_as_spec() );
-		$view_as_spec_campaign    = isset( $view_as_spec['campaign'] ) ? $view_as_spec['campaign'] : false;
-		$view_as_spec_unpublished = isset( $view_as_spec['show_unpublished'] ) && 'true' === $view_as_spec['show_unpublished'] ? true : false;
+		$view_as_spec        = Segmentation::parse_view_as( Newspack_Popups_View_As::viewing_as_spec() );
+		$campaign_id         = isset( $view_as_spec['campaign'] ) ? $view_as_spec['campaign'] : false;
+		$include_unpublished = isset( $view_as_spec['show_unpublished'] ) && 'true' === $view_as_spec['show_unpublished'] ? true : false;
 
 		// Retrieve all prompts eligible for display.
-
-		// 1. Get all inline popups.
-		$popups_to_maybe_display = Newspack_Popups_Model::retrieve_inline_popups( $view_as_spec_unpublished, $view_as_spec_campaign );
-
-		// 2. Check if there are any overlay popups with matching category.
-		$category_overlay_popups = Newspack_Popups_Model::retrieve_category_overlay_popups( $view_as_spec_unpublished, $view_as_spec_campaign );
-
-		// 3. If there are matching category overlays, use those. Otherwise, get all valid overlay popups.
-		$overlay_popups = ! empty( $category_overlay_popups ) ?
-			$category_overlay_popups :
-			Newspack_Popups_Model::retrieve_overlay_popups( $view_as_spec_unpublished, $view_as_spec_campaign );
-
-		// 4. Add overlay popups to array.
-		if ( ! empty( $overlay_popups ) ) {
-			$popups_to_maybe_display = array_merge(
-				$popups_to_maybe_display,
-				$overlay_popups
-			);
-		}
+		$popups_to_maybe_display = Newspack_Popups_Model::retrieve_eligible_popups( $include_unpublished, $campaign_id );
 
 		return array_filter(
 			$popups_to_maybe_display,
@@ -686,9 +668,15 @@ final class Newspack_Popups_Inserter {
 	 * @return bool Should popup be shown based on tags it has.
 	 */
 	public static function assess_tags_filter( $popup ) {
-		$post_tags  = get_the_tags();
+		$post_tags = get_the_tags();
+		if ( false === $post_tags ) {
+			$post_tags = [];
+		}
 		$popup_tags = get_the_tags( $popup['id'] );
-		if ( $post_tags && count( $post_tags ) && $popup_tags && count( $popup_tags ) ) {
+		if ( false === $popup_tags ) {
+			$popup_tags = [];
+		}
+		if ( count( $post_tags ) || count( $popup_tags ) ) {
 			return array_intersect(
 				array_column( $post_tags, 'term_id' ),
 				array_column( $popup_tags, 'term_id' )
@@ -709,26 +697,25 @@ final class Newspack_Popups_Inserter {
 			return true;
 		}
 
-		$general_conditions = self::assess_is_post( $popup ) &&
-			self::assess_categories_filter( $popup ) &&
-			self::assess_tags_filter( $popup );
-
-		// When using "view as" feature, discard test mode popups.
+		// When using "view as" feature, disregard most conditions.
 		if ( Newspack_Popups_View_As::viewing_as_spec() ) {
-			return $skip_context_checks ? true : $general_conditions;
+			return $skip_context_checks ? true : self::assess_is_post( $popup );
 		}
-		// Hide prompts for logged-in users.
+		// Hide prompts for admin users.
 		if ( Newspack_Popups::is_user_admin() ) {
 			return false;
 		}
-		// Hide overlay prompts in non-interactive mode, for non-logged-in users.
+		// Hide overlay prompts in non-interactive mode, for non-admin users.
 		if ( ! Newspack_Popups::is_user_admin() && Newspack_Popups_Settings::is_non_interactive() && ! Newspack_Popups_Model::is_inline( $popup ) ) {
 			return false;
 		}
+
 		if ( $skip_context_checks ) {
 			return true;
 		}
-		return $general_conditions;
+		return self::assess_is_post( $popup ) &&
+			self::assess_categories_filter( $popup ) &&
+			self::assess_tags_filter( $popup );
 	}
 
 	/**

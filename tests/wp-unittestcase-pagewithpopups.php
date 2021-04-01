@@ -24,11 +24,6 @@ class WP_UnitTestCase_PageWithPopups extends WP_UnitTestCase {
 			wp_delete_post( $popup['id'] );
 		}
 
-		self::$post_id  = self::factory()->post->create(
-			[
-				'post_content' => self::$raw_post_content,
-			]
-		);
 		self::$popup_id = self::factory()->post->create(
 			[
 				'post_type'    => Newspack_Popups::NEWSPACK_POPUPS_CPT,
@@ -51,10 +46,25 @@ class WP_UnitTestCase_PageWithPopups extends WP_UnitTestCase {
 	 *
 	 * @param string      $url_query Query to append to URL.
 	 * @param null|string $content Raw string to render as post content.
+	 * @param array       $category_ids Ids of categories of the post.
+	 * @param array       $tag_ids Ids of tags of the post.
 	 */
-	protected function renderPost( $url_query = '', $content = null ) {
+	protected function renderPost( $url_query = '', $content = null, $category_ids = [], $tag_ids = [] ) {
+		$post_id = self::factory()->post->create(
+			[
+				'post_content' => self::$raw_post_content,
+			]
+		);
+
+		if ( ! empty( $category_ids ) ) {
+			wp_set_post_terms( $post_id, $category_ids, 'category' );
+		}
+		if ( ! empty( $tag_ids ) ) {
+			wp_set_post_terms( $post_id, $tag_ids, 'post_tag' );
+		}
+
 		// Navigate to post.
-		self::go_to( get_permalink( self::$post_id ) . '&' . $url_query );
+		self::go_to( get_permalink( $post_id ) . '&' . $url_query );
 		global $wp_query, $post;
 		$wp_query->in_the_loop = true;
 		setup_postdata( $post );
@@ -63,10 +73,9 @@ class WP_UnitTestCase_PageWithPopups extends WP_UnitTestCase {
 		Newspack_Popups_Inserter::$the_content_has_rendered = false;
 
 		if ( ! $content ) {
-			$content = get_post( self::$post_id )->post_content;
+			$content = get_post( $post_id )->post_content;
 		}
 
-		// Save post content.
 		self::$post_content = apply_filters( 'the_content', $content );
 		$dom                = new DomDocument();
 		@$dom->loadHTML( self::$post_content ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
