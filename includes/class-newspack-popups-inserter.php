@@ -671,9 +671,15 @@ final class Newspack_Popups_Inserter {
 	 * @return bool Should popup be shown based on tags it has.
 	 */
 	public static function assess_tags_filter( $popup ) {
-		$post_tags  = get_the_tags();
+		$post_tags = get_the_tags();
+		if ( false === $post_tags ) {
+			$post_tags = [];
+		}
 		$popup_tags = get_the_tags( $popup['id'] );
-		if ( $post_tags && count( $post_tags ) && $popup_tags && count( $popup_tags ) ) {
+		if ( false === $popup_tags ) {
+			$popup_tags = [];
+		}
+		if ( count( $post_tags ) || count( $popup_tags ) ) {
 			return array_intersect(
 				array_column( $post_tags, 'term_id' ),
 				array_column( $popup_tags, 'term_id' )

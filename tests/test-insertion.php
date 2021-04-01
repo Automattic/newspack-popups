@@ -22,11 +22,6 @@ class InsertionTest extends WP_UnitTestCase {
 			wp_delete_post( $popup['id'] );
 		}
 
-		self::$post_id  = self::factory()->post->create(
-			[
-				'post_content' => self::$raw_post_content,
-			]
-		);
 		self::$popup_id = self::factory()->post->create(
 			[
 				'post_type'    => Newspack_Popups::NEWSPACK_POPUPS_CPT,
@@ -49,10 +44,25 @@ class InsertionTest extends WP_UnitTestCase {
 	 *
 	 * @param string      $url_query Query to append to URL.
 	 * @param null|string $content Raw string to render as post content.
+	 * @param array       $category_ids Ids of categories of the post.
+	 * @param array       $tag_ids Ids of tags of the post.
 	 */
-	public function render_post( $url_query = '', $content = null ) {
+	public function render_post( $url_query = '', $content = null, $category_ids = [], $tag_ids = [] ) {
+		$post_id = self::factory()->post->create(
+			[
+				'post_content' => self::$raw_post_content,
+			]
+		);
+
+		if ( ! empty( $category_ids ) ) {
+			wp_set_post_terms( $post_id, $category_ids, 'category' );
+		}
+		if ( ! empty( $tag_ids ) ) {
+			wp_set_post_terms( $post_id, $tag_ids, 'post_tag' );
+		}
+
 		// Navigate to post.
-		self::go_to( get_permalink( self::$post_id ) . '&' . $url_query );
+		self::go_to( get_permalink( $post_id ) . '&' . $url_query );
 		global $wp_query, $post;
 		$wp_query->in_the_loop = true;
 		setup_postdata( $post );
@@ -61,7 +71,7 @@ class InsertionTest extends WP_UnitTestCase {
 		Newspack_Popups_Inserter::$the_content_has_rendered = false;
 
 		if ( ! $content ) {
-			$content = get_post( self::$post_id )->post_content;
+			$content = get_post( $post_id )->post_content;
 		}
 
 		self::$post_content = apply_filters( 'the_content', $content );
@@ -142,7 +152,7 @@ class InsertionTest extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Test non-interactive setting for overlay campaigns.
+	 * Test non-interactive setting for overlay popup.
 	 */
 	public function test_non_interactive_overlay() {
 		Newspack_Popups_Model::set_popup_options(
@@ -158,13 +168,13 @@ class InsertionTest extends WP_UnitTestCase {
 		self::assertNotContains(
 			self::$popup_content,
 			self::$post_content,
-			'Does not include the popup content, since it is an overlay campaign.'
+			'Does not include the popup content, since it is an overlay popup.'
 		);
 		update_option( 'newspack_popups_non_interative_mode', false );
 	}
 
 	/**
-	 * Test non-interactive setting for inline campaigns.
+	 * Test non-interactive setting for inline popups.
 	 */
 	public function test_non_interactive_inline() {
 		update_option( 'newspack_popups_non_interative_mode', true );
@@ -183,7 +193,7 @@ class InsertionTest extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Test custom placement campaigns.
+	 * Test custom placement popups.
 	 */
 	public function test_custom_placement_prompt() {
 		Newspack_Popups_Model::set_popup_options(
@@ -198,7 +208,7 @@ class InsertionTest extends WP_UnitTestCase {
 		self::assertNotContains(
 			self::$popup_content,
 			self::$post_content,
-			'Does not include the popup content, since it is a custom placement campaign.'
+			'Does not include the popup content, since it is a custom placement popup.'
 		);
 
 		self::render_post( '', '<!-- wp:newspack-popups/custom-placement {"customPlacement":"custom1"} /-->' );
@@ -206,6 +216,62 @@ class InsertionTest extends WP_UnitTestCase {
 			self::$popup_content,
 			self::$post_content,
 			'Includes the popup content when the custom placement is present in post content.'
+		);
+	}
+
+	/**
+	 * Category criterion.
+	 */
+	public function test_category_criterion() {
+		$category_id = $this->factory->term->create(
+			[
+				'name'     => 'Events',
+				'taxonomy' => 'category',
+				'slug'     => 'events',
+			]
+		);
+		wp_set_post_terms( self::$popup_id, [ $category_id ], 'category' );
+
+		self::render_post();
+		self::assertNotContains(
+			self::$popup_content,
+			self::$post_content,
+			'Does not include the popup content, since the post category does not match.'
+		);
+
+		self::render_post( '', null, [ $category_id ] );
+		self::assertContains(
+			self::$popup_content,
+			self::$post_content,
+			'Includes the popup content when the categories match.'
+		);
+	}
+
+	/**
+	 * Tag criterion.
+	 */
+	public function test_tag_criterion() {
+		$tag_id = $this->factory->term->create(
+			[
+				'name'     => 'Featured',
+				'taxonomy' => 'post_tag',
+				'slug'     => 'featured',
+			]
+		);
+		wp_set_post_terms( self::$popup_id, [ $tag_id ], 'post_tag' );
+
+		self::render_post();
+		self::assertNotContains(
+			self::$popup_content,
+			self::$post_content,
+			'Does not include the popup content, since the post tag does not match.'
+		);
+
+		self::render_post( '', null, [], [ $tag_id ] );
+		self::assertContains(
+			self::$popup_content,
+			self::$post_content,
+			'Includes the popup content when the tags match.'
 		);
 	}
 }

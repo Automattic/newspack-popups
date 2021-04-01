@@ -61,7 +61,7 @@ final class Newspack_Popups_Model {
 				]
 			);
 		}
-		if ( ! in_array( $taxonomy, [ 'category', Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY ] ) ) {
+		if ( ! in_array( $taxonomy, [ 'category', 'post_tag', Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY ] ) ) {
 			return new \WP_Error(
 				'newspack_popups_invalid_taxonomy',
 				esc_html__( 'Invalid taxonomy.', 'newspack-popups' ),
@@ -247,17 +247,17 @@ final class Newspack_Popups_Model {
 	 * Retrieve popup CPT posts.
 	 *
 	 * @param WP_Query $query The query to use.
-	 * @param boolean  $include_categories If true, returned objects will include assigned categories.
+	 * @param boolean  $include_taxonomies If true, returned objects will include assigned categories and tags.
 	 * @return array Popup objects array
 	 */
-	protected static function retrieve_popups_with_query( WP_Query $query, $include_categories = false ) {
+	protected static function retrieve_popups_with_query( WP_Query $query, $include_taxonomies = false ) {
 		$popups = [];
 		if ( $query->have_posts() ) {
 			while ( $query->have_posts() ) {
 				$query->the_post();
 				$popup = self::create_popup_object(
 					get_post( get_the_ID() ),
-					$include_categories
+					$include_taxonomies
 				);
 				$popup = self::deprecate_test_never_manual( $popup, 'publish' === $query->get( 'post_status', null ) );
 
@@ -315,11 +315,11 @@ final class Newspack_Popups_Model {
 	 * Create the popup object.
 	 *
 	 * @param WP_Post $campaign_post The prompt post object.
-	 * @param boolean $include_categories If true, returned objects will include assigned categories.
+	 * @param boolean $include_taxonomies If true, returned objects will include assigned categories and tags.
 	 * @param object  $options Popup options to use instead of the options retrieved from the post. Used for popup previews.
 	 * @return object Popup object
 	 */
-	public static function create_popup_object( $campaign_post, $include_categories = false, $options = null ) {
+	public static function create_popup_object( $campaign_post, $include_taxonomies = false, $options = null ) {
 		$id = $campaign_post->ID;
 
 		$post_options = isset( $options ) ? $options : [
@@ -367,8 +367,9 @@ final class Newspack_Popups_Model {
 		if ( $popup['options']['selected_segment_id'] && 0 === count( array_intersect( $assigned_segments, Newspack_Popups_Segmentation::get_segment_ids() ) ) ) {
 			$popup['options']['selected_segment_id'] = null;
 		}
-		if ( $include_categories ) {
+		if ( $include_taxonomies ) {
 			$popup['categories']      = get_the_category( $id );
+			$popup['tags']            = get_the_tags( $id );
 			$popup['campaign_groups'] = get_the_terms( $id, Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY );
 		}
 
