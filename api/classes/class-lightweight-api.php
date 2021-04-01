@@ -166,7 +166,7 @@ class Lightweight_API {
 		$name             = '_transient_' . $name;
 		$serialized_value = maybe_serialize( $value );
 		wp_cache_set( $name, $serialized_value, 'newspack-popups' );
-		$result           = $wpdb->query( $wpdb->prepare( "INSERT INTO `$table_name` (`option_name`, `option_value`) VALUES (%s, %s) ON DUPLICATE KEY UPDATE `option_name` = VALUES(`option_name`), `option_value` = VALUES(`option_value`)", $name, $serialized_value ) ); // phpcs:ignore
+		$result           = $wpdb->query( $wpdb->prepare( "INSERT INTO `$table_name` (`option_name`, `option_value`, `date`) VALUES (%s, %s, current_timestamp()) ON DUPLICATE KEY UPDATE `option_name` = VALUES(`option_name`), `option_value` = VALUES(`option_value`), `date` = VALUES(`date`)", $name, $serialized_value ) ); // phpcs:ignore
 
 		$this->debug['write_query_count'] += 1;
 	}
