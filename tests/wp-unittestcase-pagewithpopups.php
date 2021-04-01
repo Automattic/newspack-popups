@@ -9,7 +9,6 @@
  * WP_UnitTestCase which renders a page with popups.
  */
 class WP_UnitTestCase_PageWithPopups extends WP_UnitTestCase {
-	protected static $post_id             = false; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
 	protected static $popup_content       = 'The popup content.'; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
 	protected static $popup_id            = false; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
 	protected static $raw_post_content    = 'The post content.'; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
