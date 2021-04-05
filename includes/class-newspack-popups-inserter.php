@@ -87,14 +87,6 @@ final class Newspack_Popups_Inserter {
 		add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
 
 		add_filter(
-			'widget_update_callback',
-			[ $this, 'save_widgets_shortcoded_popup_ids' ],
-			1,
-			4
-		);
-		add_action( 'delete_widget', [ $this, 'remove_widgets_shortcoded_popup_ids' ] );
-
-		add_filter(
 			'newspack_popups_assess_has_disabled_popups',
 			function ( $disabled ) {
 				if ( get_post_meta( get_the_ID(), 'newspack_popups_has_disabled_popups', true ) ) {
@@ -719,47 +711,25 @@ final class Newspack_Popups_Inserter {
 	}
 
 	/**
-	 * When a Text widget is saved and it contains popups shortcode(s), save their IDs as an option.
-	 *
-	 * @param object $instance Widget instance.
-	 * @param object $new_instance New widget instance.
-	 * @param object $old_instance Old widget instance.
-	 * @param object $widget Widget object.
-	 * @return object Widget instance.
-	 */
-	public static function save_widgets_shortcoded_popup_ids( $instance, $new_instance, $old_instance, $widget ) {
-		if ( 'widget_text' === $widget->option_name ) {
-			$value                = get_option( 'newspack_popups_widget_shortcode_popups_ids', [] );
-			$value[ $widget->id ] = self::get_shortcoded_popups_ids( $new_instance['text'] );
-			update_option( 'newspack_popups_widget_shortcode_popups_ids', $value );
-		}
-		return $instance;
-	}
-
-	/**
 	 * Get all widget shortcoded popups IDs.
 	 *
 	 * @return array IDs of popups shortcoded in widgets.
 	 */
 	public static function get_all_widget_shortcoded_popups_ids() {
+		$text_widget_option = get_option( 'widget_text' );
 		return array_reduce(
-			array_values( get_option( 'newspack_popups_widget_shortcode_popups_ids', [] ) ),
-			function ( $acc, $item ) {
-				return array_merge( $acc, $item );
+			$text_widget_option,
+			function ( $acc, $text_widget ) {
+				if ( isset( $text_widget['text'] ) ) {
+					$popup_ids = self::get_shortcoded_popups_ids( $text_widget['text'] );
+					if ( ! empty( $popup_ids ) ) {
+						$acc = array_merge( $acc, $popup_ids );
+					}
+				}
+				return $acc;
 			},
 			[]
 		);
-	}
-
-	/**
-	 * Remove widgets shortcoded popup IDs.
-	 *
-	 * @param string $widget_id IDs of a widget.
-	 */
-	public static function remove_widgets_shortcoded_popup_ids( $widget_id ) {
-		$value = get_option( 'newspack_popups_widget_shortcode_popups_ids', [] );
-		unset( $value[ $widget_id ] );
-		update_option( 'newspack_popups_widget_shortcode_popups_ids', $value );
 	}
 }
 $newspack_popups_inserter = new Newspack_Popups_Inserter();
