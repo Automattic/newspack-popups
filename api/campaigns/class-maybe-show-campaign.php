@@ -277,7 +277,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 				}
 
 				// Show prompts if the view_as segment doesn't exist.
-				if ( ! property_exists( $settings->all_segments, $view_as_spec['segment'] ) ) {
+				if ( 'everyone' !== $view_as_spec['segment'] && ! property_exists( $settings->all_segments, $view_as_spec['segment'] ) ) {
 					$should_display = true;
 				}
 			}
