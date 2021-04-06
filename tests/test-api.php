@@ -1557,4 +1557,21 @@ class APITest extends WP_UnitTestCase {
 			'Returns null if segment is missing.'
 		);
 	}
+
+	/**
+	 * Discarding bot traffic.
+	 */
+	public function test_discard_bot_traffic() {
+		$api = new Lightweight_API();
+
+		self::assertFalse(
+			$api->is_a_web_crawler(),
+			'Returns false if the user agent is not of a web crawler.'
+		);
+		$_SERVER['HTTP_USER_AGENT'] = 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'; // phpcs:ignore
+		self::assertTrue(
+			$api->is_a_web_crawler(),
+			'Return true if the user agent is of a web crawler.'
+		);
+	}
 }
