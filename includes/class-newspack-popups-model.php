@@ -208,6 +208,7 @@ final class Newspack_Popups_Model {
 			[
 				'background_color'        => filter_input( INPUT_GET, 'background_color', FILTER_SANITIZE_STRING ),
 				'display_title'           => filter_input( INPUT_GET, 'display_title', FILTER_VALIDATE_BOOLEAN ),
+				'display_border'          => filter_input( INPUT_GET, 'display_border', FILTER_VALIDATE_BOOLEAN ),
 				'dismiss_text'            => filter_input( INPUT_GET, 'dismiss_text', FILTER_SANITIZE_STRING ),
 				'dismiss_text_alignment'  => filter_input( INPUT_GET, 'dismiss_text_alignment', FILTER_SANITIZE_STRING ),
 				'frequency'               => filter_input( INPUT_GET, 'frequency', FILTER_SANITIZE_STRING ),
@@ -327,6 +328,7 @@ final class Newspack_Popups_Model {
 			'dismiss_text'            => get_post_meta( $id, 'dismiss_text', true ),
 			'dismiss_text_alignment'  => get_post_meta( $id, 'dismiss_text_alignment', true ),
 			'display_title'           => get_post_meta( $id, 'display_title', true ),
+			'display_border'          => get_post_meta( $id, 'display_border', true ),
 			'frequency'               => get_post_meta( $id, 'frequency', true ),
 			'overlay_color'           => get_post_meta( $id, 'overlay_color', true ),
 			'overlay_opacity'         => get_post_meta( $id, 'overlay_opacity', true ),
@@ -344,10 +346,11 @@ final class Newspack_Popups_Model {
 			'title'   => $campaign_post->post_title,
 			'content' => $campaign_post->post_content,
 			'options' => wp_parse_args(
-				array_filter( $post_options ),
+				$post_options,
 				[
 					'background_color'        => '#FFFFFF',
 					'display_title'           => false,
+					'display_border'          => true,
 					'dismiss_text'            => '',
 					'dismiss_text_alignment'  => 'center',
 					'frequency'               => 'always',
@@ -801,6 +804,7 @@ final class Newspack_Popups_Model {
 		$element_id             = self::get_uniqid();
 		$endpoint               = self::get_reader_endpoint();
 		$display_title          = $popup['options']['display_title'];
+		$display_border         = $popup['options']['display_border'];
 		$hidden_fields          = self::get_hidden_fields( $popup );
 		$dismiss_text           = self::get_dismiss_text( $popup );
 		$dismiss_text_alignment = self::get_dismiss_text_alignment( $popup );
@@ -810,6 +814,7 @@ final class Newspack_Popups_Model {
 		$classes[]              = ! self::is_above_header( $popup ) ? 'newspack-inline-popup' : null;
 		$classes[]              = 'publish' !== $popup['status'] ? 'newspack-inactive-popup-status' : null;
 		$classes[]              = ( ! empty( $popup['title'] ) && $display_title ) ? 'newspack-lightbox-has-title' : null;
+		$classes[]              = ! $display_border ? 'newspack-lightbox-no-border' : null;
 		$classes[]              = $is_newsletter_prompt ? 'newspack-newsletter-prompt-inline' : null;
 
 		$analytics_events = self::get_analytics_events( $popup, $body, $element_id );
@@ -870,12 +875,14 @@ final class Newspack_Popups_Model {
 		$dismiss_text           = self::get_dismiss_text( $popup );
 		$dismiss_text_alignment = self::get_dismiss_text_alignment( $popup );
 		$display_title          = $popup['options']['display_title'];
+		$display_border         = $popup['options']['display_border'];
 		$overlay_opacity        = absint( $popup['options']['overlay_opacity'] ) / 100;
 		$overlay_color          = $popup['options']['overlay_color'];
 		$hidden_fields          = self::get_hidden_fields( $popup );
 		$is_newsletter_prompt   = self::has_newsletter_prompt( $popup );
 		$classes                = array( 'newspack-lightbox', 'newspack-lightbox-placement-' . $popup['options']['placement'] );
 		$classes[]              = ( ! empty( $popup['title'] ) && $display_title ) ? 'newspack-lightbox-has-title' : null;
+		$classes[]              = ! $display_border ? 'newspack-lightbox-no-border' : null;
 		$classes[]              = $is_newsletter_prompt ? 'newspack-newsletter-prompt-overlay' : null;
 		$wrapper_classes        = [ 'newspack-popup-wrapper' ];
 		$wrapper_classes[]      = 'publish' !== $popup['status'] ? 'newspack-inactive-popup-status' : null;

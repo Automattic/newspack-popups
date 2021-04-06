@@ -11,6 +11,7 @@ import { RadioControl, RangeControl, SelectControl, ToggleControl } from '@wordp
 
 const Sidebar = ( {
 	display_title,
+	display_border,
 	frequency,
 	onMetaFieldChange,
 	placement,
@@ -112,6 +113,11 @@ const Sidebar = ( {
 				label={ __( 'Display Prompt Title', 'newspack-popups' ) }
 				checked={ display_title }
 				onChange={ value => onMetaFieldChange( 'display_title', value ) }
+			/>
+			<ToggleControl
+				label={ __( 'Display Prompt Border', 'newspack-popups' ) }
+				checked={ display_border }
+				onChange={ value => onMetaFieldChange( 'display_border', value ) }
 			/>
 		</Fragment>
 	);
