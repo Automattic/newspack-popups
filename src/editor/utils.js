@@ -106,3 +106,14 @@ export const updateEditorColors = backgroundColor => {
 		);
 	}
 };
+
+/**
+ * Is the given placement value a custom placement?
+ *
+ * @param {string} placementValue Placement of the prompt.
+ * @return {boolean} Whether or not the prompt has a custom placement.
+ */
+export const isCustomPlacement = placementValue => {
+	const customPlacements = window.newspack_popups_data?.custom_placements || {};
+	return -1 < Object.keys( customPlacements ).indexOf( placementValue );
+};
