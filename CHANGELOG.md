@@ -1,3 +1,20 @@
+# [1.30.0](https://github.com/Automattic/newspack-popups/compare/v1.29.0...v1.30.0) (2021-04-06)
+
+
+### Bug Fixes
+
+* shortcode, amp-access fixes ([#505](https://github.com/Automattic/newspack-popups/issues/505)) ([b17cb94](https://github.com/Automattic/newspack-popups/commit/b17cb94e9b312d473601817c56282e4c20547a46))
+* tag filtering ([#506](https://github.com/Automattic/newspack-popups/issues/506)) ([e88e7c7](https://github.com/Automattic/newspack-popups/commit/e88e7c750c74e05985a6d65729e4c2ab7ae3d8f3))
+* when previewing "everyone" segment, show only prompts with no segments ([#507](https://github.com/Automattic/newspack-popups/issues/507)) ([8c800d8](https://github.com/Automattic/newspack-popups/commit/8c800d8151b1615e0a8e9a1b79845a356633a39c))
+
+
+### Features
+
+* **api:** ignore web crawler traffic ([#509](https://github.com/Automattic/newspack-popups/issues/509)) ([95ada9d](https://github.com/Automattic/newspack-popups/commit/95ada9d205bad1224a914979a35d571e4aa09743))
+* remove preview sessions data from DB daily; save last update date ([f0dea91](https://github.com/Automattic/newspack-popups/commit/f0dea918163b440bb9212f3144471ff35d349f03))
+* retrieve widget popups ids from options ([ba0ad47](https://github.com/Automattic/newspack-popups/commit/ba0ad47261e92895eab746f7c4c55e4eb7d680cd)), closes [#470](https://github.com/Automattic/newspack-popups/issues/470)
+* simplify retrieval ([b3299b2](https://github.com/Automattic/newspack-popups/commit/b3299b2f57f0f5adc7463df55d1496494becd612)), closes [#416](https://github.com/Automattic/newspack-popups/issues/416)
+
 # [1.29.0](https://github.com/Automattic/newspack-popups/compare/v1.28.0...v1.29.0) (2021-03-30)
 
 
