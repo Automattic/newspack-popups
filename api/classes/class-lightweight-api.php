@@ -45,6 +45,9 @@ class Lightweight_API {
 	 * @codeCoverageIgnore
 	 */
 	public function __construct() {
+		if ( $this->is_a_web_crawler() ) {
+			$this->error( 'invalid_referer' );
+		}
 		if ( ! $this->verify_referer() ) {
 			$this->error( 'invalid_referer' );
 		}
@@ -59,6 +62,33 @@ class Lightweight_API {
 			'end_time'               => null,
 			'duration'               => null,
 		];
+	}
+
+	/**
+	 * Is the request coming from a common web crawler?
+	 */
+	public function is_a_web_crawler() {
+		if ( ! isset( $_SERVER['HTTP_USER_AGENT'] ) ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPressVIPMinimum.Variables.RestrictedVariables.cache_constraints___SERVER__HTTP_USER_AGENT__
+			return false;
+		}
+		$user_agent = $_SERVER['HTTP_USER_AGENT']; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPressVIPMinimum.Variables.RestrictedVariables.cache_constraints___SERVER__HTTP_USER_AGENT__
+		// https://www.keycdn.com/blog/web-crawlers.
+		$common_web_crawlers_user_agents = [
+			'Googlebot',
+			'Bingbot',
+			'Slurp',
+			'DuckDuckBot',
+			'Baiduspider',
+			'YandexBot',
+			'facebot',
+			'ia_archiver',
+		];
+		foreach ( $common_web_crawlers_user_agents as $crawler_agent ) {
+			if ( stristr( $user_agent, $crawler_agent ) ) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -166,7 +196,7 @@ class Lightweight_API {
 		$name             = '_transient_' . $name;
 		$serialized_value = maybe_serialize( $value );
 		wp_cache_set( $name, $serialized_value, 'newspack-popups' );
-		$result           = $wpdb->query( $wpdb->prepare( "INSERT INTO `$table_name` (`option_name`, `option_value`) VALUES (%s, %s) ON DUPLICATE KEY UPDATE `option_name` = VALUES(`option_name`), `option_value` = VALUES(`option_value`)", $name, $serialized_value ) ); // phpcs:ignore
+		$result           = $wpdb->query( $wpdb->prepare( "INSERT INTO `$table_name` (`option_name`, `option_value`, `date`) VALUES (%s, %s, current_timestamp()) ON DUPLICATE KEY UPDATE `option_name` = VALUES(`option_name`), `option_value` = VALUES(`option_value`), `date` = VALUES(`date`)", $name, $serialized_value ) ); // phpcs:ignore
 
 		$this->debug['write_query_count'] += 1;
 	}

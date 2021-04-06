@@ -61,7 +61,7 @@ final class Newspack_Popups_Model {
 				]
 			);
 		}
-		if ( ! in_array( $taxonomy, [ 'category', Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY ] ) ) {
+		if ( ! in_array( $taxonomy, [ 'category', 'post_tag', Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY ] ) ) {
 			return new \WP_Error(
 				'newspack_popups_invalid_taxonomy',
 				esc_html__( 'Invalid taxonomy.', 'newspack-popups' ),
@@ -158,61 +158,18 @@ final class Newspack_Popups_Model {
 	 * @param  int|boolean $campaign_id Campaign term ID, or false to ignore campaign.
 	 * @return array Overlay popup objects.
 	 */
-	public static function retrieve_overlay_popups( $include_unpublished = false, $campaign_id = false ) {
-		$args = [
-			'post_type'      => Newspack_Popups::NEWSPACK_POPUPS_CPT,
-			'post_status'    => $include_unpublished ? [ 'draft', 'pending', 'future', 'publish' ] : 'publish',
-			'meta_key'       => 'placement',
+	public static function retrieve_eligible_popups( $include_unpublished = false, $campaign_id = false ) {
+		$valid_placements = array_merge(
+			self::$overlay_placements,
+			self::$inline_placements
+		);
+		$args             = [
+			'post_type'    => Newspack_Popups::NEWSPACK_POPUPS_CPT,
+			'post_status'  => $include_unpublished ? [ 'draft', 'pending', 'future', 'publish' ] : 'publish',
+			'meta_key'     => 'placement',
 			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-			'meta_value'     => self::$overlay_placements,
-			'meta_compare'   => 'IN',
-			'posts_per_page' => 100,
-		];
-
-		$tax_query = [
-			'taxonomy' => 'category',
-			'operator' => 'NOT EXISTS',
-		];
-
-		$args['tax_query'] = [ $tax_query ]; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
-
-		// If previewing specific campaign.
-		if ( ! empty( $campaign_id ) ) {
-			$campaign_tax_query = [ 'taxonomy' => Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY ];
-
-			if ( -1 === (int) $campaign_id ) {
-				$campaign_tax_query['operator'] = 'NOT EXISTS';
-			} else {
-				$campaign_tax_query['field'] = 'term_id';
-				$campaign_tax_query['terms'] = [ $campaign_id ];
-			}
-
-			$args['tax_query'][] = $campaign_tax_query;
-		}
-
-		if ( ! empty( $campaign_id ) ) {
-			$args['tax_query']['relation'] = 'AND';
-		}
-
-		return self::retrieve_popups_with_query( new WP_Query( $args ) );
-	}
-
-	/**
-	 * Retrieve all inline prompts.
-	 *
-	 * @param  boolean     $include_unpublished Whether to include unpublished prompts.
-	 * @param  int|boolean $campaign_id Campaign term ID, or false to ignore campaign.
-	 * @return array Inline popup objects.
-	 */
-	public static function retrieve_inline_popups( $include_unpublished = false, $campaign_id = false ) {
-		$args = [
-			'post_type'      => Newspack_Popups::NEWSPACK_POPUPS_CPT,
-			'post_status'    => $include_unpublished ? [ 'draft', 'pending', 'future', 'publish' ] : 'publish',
-			'meta_key'       => 'placement',
-			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-			'meta_value'     => self::$inline_placements,
-			'meta_compare'   => 'IN',
-			'posts_per_page' => 100,
+			'meta_value'   => $valid_placements,
+			'meta_compare' => 'IN',
 		];
 
 		// If previewing specific campaign.
@@ -230,50 +187,6 @@ final class Newspack_Popups_Model {
 		}
 
 		return self::retrieve_popups_with_query( new WP_Query( $args ) );
-	}
-
-	/**
-	 * Retrieve overlay popups matching post categories.
-	 *
-	 * @param  boolean     $include_unpublished Whether to include unpublished prompts.
-	 * @param  int|boolean $campaign_id Campaign term ID, or false to ignore campaign.
-	 * @return array|null Array of popup objects.
-	 */
-	public static function retrieve_category_overlay_popups( $include_unpublished = false, $campaign_id = false ) {
-		$post_categories = get_the_category();
-
-		if ( empty( $post_categories ) ) {
-			return null;
-		}
-
-		$args = [
-			'post_type'      => Newspack_Popups::NEWSPACK_POPUPS_CPT,
-			'posts_per_page' => 1,
-			'post_status'    => $include_unpublished ? [ 'draft', 'pending', 'future', 'publish' ] : 'publish',
-			'category__in'   => array_column( $post_categories, 'term_id' ),
-			'meta_key'       => 'placement',
-			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-			'meta_value'     => self::$overlay_placements,
-			'meta_compare'   => 'IN',
-			'posts_per_page' => 100,
-		];
-
-		// If previewing specific campaign.
-		if ( ! empty( $campaign_id ) ) {
-			$tax_query = [ 'taxonomy' => Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY ];
-
-			if ( -1 === (int) $campaign_id ) {
-				$tax_query['operator'] = 'NOT EXISTS';
-			} else {
-				$tax_query['field'] = 'term_id';
-				$tax_query['terms'] = [ $campaign_id ];
-			}
-
-			$args['tax_query'] = [ $tax_query ]; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
-		}
-
-		$popups = self::retrieve_popups_with_query( new WP_Query( $args ) );
-		return count( $popups ) > 0 ? $popups : null;
 	}
 
 	/**
@@ -334,17 +247,17 @@ final class Newspack_Popups_Model {
 	 * Retrieve popup CPT posts.
 	 *
 	 * @param WP_Query $query The query to use.
-	 * @param boolean  $include_categories If true, returned objects will include assigned categories.
+	 * @param boolean  $include_taxonomies If true, returned objects will include assigned categories and tags.
 	 * @return array Popup objects array
 	 */
-	protected static function retrieve_popups_with_query( WP_Query $query, $include_categories = false ) {
+	protected static function retrieve_popups_with_query( WP_Query $query, $include_taxonomies = false ) {
 		$popups = [];
 		if ( $query->have_posts() ) {
 			while ( $query->have_posts() ) {
 				$query->the_post();
 				$popup = self::create_popup_object(
 					get_post( get_the_ID() ),
-					$include_categories
+					$include_taxonomies
 				);
 				$popup = self::deprecate_test_never_manual( $popup, 'publish' === $query->get( 'post_status', null ) );
 
@@ -402,11 +315,11 @@ final class Newspack_Popups_Model {
 	 * Create the popup object.
 	 *
 	 * @param WP_Post $campaign_post The prompt post object.
-	 * @param boolean $include_categories If true, returned objects will include assigned categories.
+	 * @param boolean $include_taxonomies If true, returned objects will include assigned categories and tags.
 	 * @param object  $options Popup options to use instead of the options retrieved from the post. Used for popup previews.
 	 * @return object Popup object
 	 */
-	public static function create_popup_object( $campaign_post, $include_categories = false, $options = null ) {
+	public static function create_popup_object( $campaign_post, $include_taxonomies = false, $options = null ) {
 		$id = $campaign_post->ID;
 
 		$post_options = isset( $options ) ? $options : [
@@ -454,8 +367,9 @@ final class Newspack_Popups_Model {
 		if ( $popup['options']['selected_segment_id'] && 0 === count( array_intersect( $assigned_segments, Newspack_Popups_Segmentation::get_segment_ids() ) ) ) {
 			$popup['options']['selected_segment_id'] = null;
 		}
-		if ( $include_categories ) {
+		if ( $include_taxonomies ) {
 			$popup['categories']      = get_the_category( $id );
+			$popup['tags']            = get_the_tags( $id );
 			$popup['campaign_groups'] = get_the_terms( $id, Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY );
 		}
 
