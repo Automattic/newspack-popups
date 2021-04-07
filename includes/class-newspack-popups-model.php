@@ -781,6 +781,7 @@ final class Newspack_Popups_Model {
 			return '';
 		}
 		$status = 'future' === $popup['status'] ? __( 'scheduled', 'newspack-popups' ) : $popup['status'];
+		$status = 'inherit' === $popup['status'] ? __( 'draft', 'newspack-popups' ) : $popup['status']; // Avoid "inherit" status when previewing a single prompt.
 		return 'data-popup-status="' . esc_attr( $status ) . '" ';
 	}
 
@@ -858,6 +859,11 @@ final class Newspack_Popups_Model {
 	 * @return string The generated markup.
 	 */
 	public static function generate_popup( $popup ) {
+		// If previewing a single prompt, override saved settings with preview settings.
+		if ( Newspack_Popups::previewed_popup_id() ) {
+			$popup = self::retrieve_preview_popup( Newspack_Popups::previewed_popup_id() );
+		}
+
 		if ( ! self::is_overlay( $popup ) ) {
 			return self::generate_inline_popup( $popup );
 		}
