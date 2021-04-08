@@ -345,25 +345,7 @@ final class Newspack_Popups_Model {
 			'status'  => $campaign_post->post_status,
 			'title'   => $campaign_post->post_title,
 			'content' => $campaign_post->post_content,
-			'options' => wp_parse_args(
-				$post_options,
-				[
-					'background_color'        => '#FFFFFF',
-					'display_title'           => false,
-					'display_border'          => true,
-					'dismiss_text'            => '',
-					'dismiss_text_alignment'  => 'center',
-					'frequency'               => 'always',
-					'overlay_color'           => '#000000',
-					'overlay_opacity'         => 30,
-					'placement'               => 'inline',
-					'trigger_type'            => 'time',
-					'trigger_delay'           => 0,
-					'trigger_scroll_progress' => 0,
-					'utm_suppression'         => null,
-					'selected_segment_id'     => '',
-				]
-			),
+			'options' => $post_options,
 		];
 
 		$assigned_segments = explode( ',', $popup['options']['selected_segment_id'] );
@@ -396,26 +378,6 @@ final class Newspack_Popups_Model {
 		}
 
 		return $popup;
-	}
-
-	/**
-	 * Get the popup dismissal text.
-	 *
-	 * @param object $popup The popup object.
-	 * @return string|null Dismiss popup text.
-	 */
-	protected static function get_dismiss_text( $popup ) {
-		return ! empty( $popup['options']['dismiss_text'] ) && strlen( trim( $popup['options']['dismiss_text'] ) ) > 0 ? $popup['options']['dismiss_text'] : null;
-	}
-
-	/**
-	 * Get the popup dismiss button alignment. Default/empty === center alignment.
-	 *
-	 * @param object $popup The popup object.
-	 * @return string|null Dismiss button alignment.
-	 */
-	protected static function get_dismiss_text_alignment( $popup ) {
-		return ! empty( $popup['options']['dismiss_text_alignment'] ) ? $popup['options']['dismiss_text_alignment'] : 'center';
 	}
 
 	/**
@@ -646,7 +608,7 @@ final class Newspack_Popups_Model {
 		$has_link                = preg_match( '/<a\s/', $body ) !== 0;
 		$has_form                = preg_match( '/<form\s/', $body ) !== 0;
 		$has_dismiss_form        = self::is_overlay( $popup );
-		$has_not_interested_form = self::get_dismiss_text( $popup );
+		$has_not_interested_form = $popup['options']['dismiss_text'];
 
 		$analytics_events = [
 			[
@@ -748,13 +710,10 @@ final class Newspack_Popups_Model {
 	 * @param object $popup Popup.
 	 */
 	private static function render_permanent_dismissal_form( $element_id, $popup ) {
-		$dismiss_text = self::get_dismiss_text( $popup );
-		if ( ! $dismiss_text ) {
-			return '';
-		}
+		$dismiss_text           = $popup['options']['dismiss_text'];
 		$endpoint               = self::get_reader_endpoint();
 		$hidden_fields          = self::get_hidden_fields( $popup );
-		$dismiss_text_alignment = self::get_dismiss_text_alignment( $popup );
+		$dismiss_text_alignment = $popup['options']['dismiss_text_alignment'];
 		?>
 			<form class="popup-not-interested-form <?php echo esc_attr( self::get_form_class( 'not-interested', $element_id ) ); ?> popup-action-form <?php echo esc_attr( self::get_form_class( 'action', $element_id ) ); ?> align-<?php echo esc_attr( $dismiss_text_alignment ); ?>"
 				method="POST"
@@ -807,8 +766,8 @@ final class Newspack_Popups_Model {
 		$display_title          = $popup['options']['display_title'];
 		$display_border         = $popup['options']['display_border'];
 		$hidden_fields          = self::get_hidden_fields( $popup );
-		$dismiss_text           = self::get_dismiss_text( $popup );
-		$dismiss_text_alignment = self::get_dismiss_text_alignment( $popup );
+		$dismiss_text           = $popup['options']['dismiss_text'];
+		$dismiss_text_alignment = $popup['options']['dismiss_text_alignment'];
 		$is_newsletter_prompt   = self::has_newsletter_prompt( $popup );
 		$classes                = [];
 		$classes[]              = 'above_header' === $popup['options']['placement'] ? 'newspack-above-header-popup' : null;
@@ -878,8 +837,8 @@ final class Newspack_Popups_Model {
 
 		$element_id             = self::get_uniqid();
 		$endpoint               = self::get_reader_endpoint();
-		$dismiss_text           = self::get_dismiss_text( $popup );
-		$dismiss_text_alignment = self::get_dismiss_text_alignment( $popup );
+		$dismiss_text           = $popup['options']['dismiss_text'];
+		$dismiss_text_alignment = $popup['options']['dismiss_text_alignment'];
 		$display_title          = $popup['options']['display_title'];
 		$display_border         = $popup['options']['display_border'];
 		$overlay_opacity        = absint( $popup['options']['overlay_opacity'] ) / 100;
