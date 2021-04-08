@@ -113,7 +113,6 @@ final class Newspack_Popups {
 				'show_in_rest'   => true,
 				'type'           => 'string',
 				'single'         => true,
-				'default'        => 'time',
 				'auth_callback'  => '__return_true',
 			]
 		);
@@ -125,7 +124,6 @@ final class Newspack_Popups {
 				'show_in_rest'   => true,
 				'type'           => 'integer',
 				'single'         => true,
-				'default'        => 0,
 				'auth_callback'  => '__return_true',
 			]
 		);
@@ -137,7 +135,6 @@ final class Newspack_Popups {
 				'show_in_rest'   => true,
 				'type'           => 'integer',
 				'single'         => true,
-				'default'        => 0,
 				'auth_callback'  => '__return_true',
 			]
 		);
@@ -150,7 +147,6 @@ final class Newspack_Popups {
 				'show_in_rest'   => true,
 				'type'           => 'string',
 				'single'         => true,
-				'default'        => 'always',
 				'auth_callback'  => '__return_true',
 			]
 		);
@@ -163,7 +159,6 @@ final class Newspack_Popups {
 				'show_in_rest'   => true,
 				'type'           => 'string',
 				'single'         => true,
-				'default'        => 'inline',
 				'auth_callback'  => '__return_true',
 			]
 		);
@@ -176,7 +171,6 @@ final class Newspack_Popups {
 				'show_in_rest'   => true,
 				'type'           => 'string',
 				'single'         => true,
-				'default'        => '',
 				'auth_callback'  => '__return_true',
 			]
 		);
@@ -189,7 +183,6 @@ final class Newspack_Popups {
 				'show_in_rest'   => true,
 				'type'           => 'string',
 				'single'         => true,
-				'default'        => '#FFFFFF',
 				'auth_callback'  => '__return_true',
 			]
 		);
@@ -202,7 +195,6 @@ final class Newspack_Popups {
 				'show_in_rest'   => true,
 				'type'           => 'string',
 				'single'         => true,
-				'default'        => '#000000',
 				'auth_callback'  => '__return_true',
 			]
 		);
@@ -215,7 +207,6 @@ final class Newspack_Popups {
 				'show_in_rest'   => true,
 				'type'           => 'integer',
 				'single'         => true,
-				'default'        => 30,
 				'auth_callback'  => '__return_true',
 			]
 		);
@@ -228,7 +219,6 @@ final class Newspack_Popups {
 				'show_in_rest'   => true,
 				'type'           => 'string',
 				'single'         => true,
-				'default'        => '',
 				'auth_callback'  => '__return_true',
 			]
 		);
@@ -241,7 +231,6 @@ final class Newspack_Popups {
 				'show_in_rest'   => true,
 				'type'           => 'string',
 				'single'         => true,
-				'default'        => 'center',
 				'auth_callback'  => '__return_true',
 			]
 		);
@@ -254,20 +243,18 @@ final class Newspack_Popups {
 				'show_in_rest'   => true,
 				'type'           => 'boolean',
 				'single'         => true,
-				'default'        => false,
 				'auth_callback'  => '__return_true',
 			]
 		);
 
 		\register_meta(
 			'post',
-			'display_border',
+			'hide_border',
 			[
 				'object_subtype' => self::NEWSPACK_POPUPS_CPT,
 				'show_in_rest'   => true,
 				'type'           => 'boolean',
 				'single'         => true,
-				'default'        => true,
 				'auth_callback'  => '__return_true',
 			]
 		);
@@ -280,7 +267,6 @@ final class Newspack_Popups {
 				'show_in_rest'   => true,
 				'type'           => 'string',
 				'single'         => true,
-				'default'        => '',
 				'auth_callback'  => '__return_true',
 			]
 		);
@@ -293,7 +279,6 @@ final class Newspack_Popups {
 				'show_in_rest'  => true,
 				'type'          => 'boolean',
 				'single'        => true,
-				'default'       => false,
 				'auth_callback' => '__return_true',
 			]
 		);
@@ -517,7 +502,7 @@ final class Newspack_Popups {
 
 		update_post_meta( $post_id, 'background_color', '#FFFFFF' );
 		update_post_meta( $post_id, 'display_title', false );
-		update_post_meta( $post_id, 'display_border', true );
+		update_post_meta( $post_id, 'hide_border', false );
 		update_post_meta( $post_id, 'dismiss_text', $dismiss_text );
 		update_post_meta( $post_id, 'frequency', $frequency );
 		update_post_meta( $post_id, 'overlay_color', '#000000' );

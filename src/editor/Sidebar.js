@@ -16,7 +16,7 @@ import { isCustomPlacement } from '../editor/utils';
 
 const Sidebar = ( {
 	display_title,
-	display_border,
+	hide_border,
 	frequency,
 	onMetaFieldChange,
 	placement,
@@ -121,9 +121,9 @@ const Sidebar = ( {
 			/>
 			{ ( placement === 'inline' || isCustomPlacement( placement ) ) && (
 				<ToggleControl
-					label={ __( 'Display Prompt Border', 'newspack-popups' ) }
-					checked={ display_border }
-					onChange={ value => onMetaFieldChange( 'display_border', value ) }
+					label={ __( 'Hide Prompt Border', 'newspack-popups' ) }
+					checked={ hide_border }
+					onChange={ value => onMetaFieldChange( 'hide_border', value ) }
 				/>
 			) }
 		</Fragment>
