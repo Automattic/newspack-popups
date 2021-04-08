@@ -23,19 +23,28 @@ class WP_UnitTestCase_PageWithPopups extends WP_UnitTestCase {
 			wp_delete_post( $popup['id'] );
 		}
 
-		self::$popup_id = self::factory()->post->create(
-			[
-				'post_type'    => Newspack_Popups::NEWSPACK_POPUPS_CPT,
-				'post_title'   => 'Popup title',
-				'post_content' => self::$popup_content,
-			]
-		);
+		self::$popup_id = self::createPopup();
 
 		Newspack_Popups_Model::set_popup_options(
 			self::$popup_id,
 			[
 				'frequency'    => 'daily',
 				'dismiss_text' => Newspack_Popups::get_default_dismiss_text(),
+			]
+		);
+	}
+
+	/**
+	 * Create a popup in the database.
+	 *
+	 * @return int Popup ID.
+	 */
+	protected function createPopup() {
+		return self::factory()->post->create(
+			[
+				'post_type'    => Newspack_Popups::NEWSPACK_POPUPS_CPT,
+				'post_title'   => 'Popup title',
+				'post_content' => self::$popup_content,
 			]
 		);
 	}

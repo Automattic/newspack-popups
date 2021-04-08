@@ -459,6 +459,19 @@ final class Newspack_Popups_Inserter {
 			$shortcoded_popups,
 			$custom_placement_popups
 		);
+		// Sort the array, so the segmented popups come first. This is necessary for proper
+		// prioritisation of single-popup placements (e.g. above header).
+		uasort(
+			$popups,
+			function( $popup_a, $popup_b ) {
+				$a_has_segments = ! empty( $popup_a['options']['selected_segment_id'] );
+				$b_has_segments = ! empty( $popup_b['options']['selected_segment_id'] );
+				if ( $a_has_segments && $b_has_segments ) {
+					return 0;
+				}
+				return $a_has_segments && false === $b_has_segments ? -1 : 1;
+			}
+		);
 
 		// "Escape hatch" if there's a need to block adding amp-access for pages that have no prompts.
 		if ( apply_filters( 'newspack_popups_suppress_insert_amp_access', false, $popups ) ) {
