@@ -265,4 +265,39 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 			'Includes the popup content when the tags match.'
 		);
 	}
+
+	/**
+	 * Shortcode handling.
+	 */
+	public function test_amp_access_ordering() {
+		$segments           = Newspack_Popups_Segmentation::create_segment(
+			[
+				'name'          => 'Some Segment',
+				'configuration' => [],
+			]
+		);
+		$segmented_popup_id = self::createPopup();
+		Newspack_Popups_Model::set_popup_options(
+			$segmented_popup_id,
+			[
+				'selected_segment_id' => $segments[0]['id'],
+			]
+		);
+		sleep( 1 ); // Ensure the another popup has the most newest date.
+		$another_popup_id = self::createPopup();
+
+		self::renderPost();
+		$amp_access_query  = self::getAMPAccessQuery();
+		$popup_ids_ordered = array_map(
+			function( $item ) {
+				return $item->id;
+			}, 
+			$amp_access_query['popups']
+		);
+		self::assertEquals(
+			$popup_ids_ordered,
+			[ 'id_' . $segmented_popup_id, 'id_' . self::$popup_id, 'id_' . $another_popup_id ],
+			'The popup with the segment comes first in the array.'
+		);
+	}
 }
