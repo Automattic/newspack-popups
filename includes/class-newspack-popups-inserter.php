@@ -653,8 +653,6 @@ final class Newspack_Popups_Inserter {
 			array_column( $post_terms ? $post_terms : [], 'term_id' ),
 			array_column( $popup_terms, 'term_id' )
 		);
-
-		return true;
 	}
 
 	/**
