@@ -644,15 +644,15 @@ final class Newspack_Popups_Inserter {
 	 * @return bool Whether the prompt should be shown based on matching terms.
 	 */
 	public static function assess_taxonomy_filter( $popup, $taxonomy = 'category' ) {
-		$post_terms  = get_the_terms( get_the_ID(), $taxonomy );
 		$popup_terms = get_the_terms( $popup['id'], $taxonomy );
-
-		if ( $post_terms && count( $post_terms ) && $popup_terms && count( $popup_terms ) ) {
-			return array_intersect(
-				array_column( $post_terms, 'term_id' ),
-				array_column( $popup_terms, 'term_id' )
-			);
+		if ( false === $popup_terms ) {
+			return true; // No terms on the popup, no need to compare.
 		}
+		$post_terms = get_the_terms( get_the_ID(), $taxonomy );
+		return array_intersect(
+			array_column( $post_terms ? $post_terms : [], 'term_id' ),
+			array_column( $popup_terms, 'term_id' )
+		);
 
 		return true;
 	}
