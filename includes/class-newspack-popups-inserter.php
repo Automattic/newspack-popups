@@ -635,7 +635,7 @@ final class Newspack_Popups_Inserter {
 	}
 
 	/**
-	 * If a prompt is assigned the given term, it should only be shown on posts/pages with at least one matching term.
+	 * If a prompt is assigned the given taxonomy, it should only be shown on posts/pages with at least one matching term.
 	 * If the prompt has no terms, it should be shown regardless of the post's terms.
 	 *
 	 * @param object $popup The prompt to assess.
