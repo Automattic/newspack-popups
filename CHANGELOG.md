@@ -1,3 +1,10 @@
+## [1.30.1](https://github.com/Automattic/newspack-popups/compare/v1.30.0...v1.30.1) (2021-04-09)
+
+
+### Bug Fixes
+
+* tags criterion for displaying popups ([#515](https://github.com/Automattic/newspack-popups/issues/515)) ([13d2be7](https://github.com/Automattic/newspack-popups/commit/13d2be7e4de7ae2c49a39e7d96c3d9faf7d24505))
+
 # [1.30.0](https://github.com/Automattic/newspack-popups/compare/v1.29.0...v1.30.0) (2021-04-06)
 
 
