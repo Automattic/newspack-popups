@@ -178,6 +178,13 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 	 * Category criterion.
 	 */
 	public function test_category_criterion() {
+		self::renderPost();
+		self::assertContains(
+			self::$popup_content,
+			self::$post_content,
+			'Does include the popup content if neither post nor popup have a category.'
+		);
+
 		$category_id = $this->factory->term->create(
 			[
 				'name'     => 'Events',
@@ -206,23 +213,52 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 	 * Tag criterion.
 	 */
 	public function test_tag_criterion() {
-		$tag_id = $this->factory->term->create(
+		self::renderPost();
+		self::assertContains(
+			self::$popup_content,
+			self::$post_content,
+			'Does include the popup content if neither post nor popup have tags.'
+		);
+
+		$tag_1_id = $this->factory->term->create(
 			[
 				'name'     => 'Featured',
 				'taxonomy' => 'post_tag',
 				'slug'     => 'featured',
 			]
 		);
-		wp_set_post_terms( self::$popup_id, [ $tag_id ], 'post_tag' );
+		self::renderPost( '', null, [], [ $tag_1_id ] );
+		self::assertContains(
+			self::$popup_content,
+			self::$post_content,
+			'Includes the popup content when popup does not have tags, but post has.'
+		);
+
+		// Set tag on the popup.
+		wp_set_post_terms( self::$popup_id, [ $tag_1_id ], 'post_tag' );
 
 		self::renderPost();
 		self::assertNotContains(
 			self::$popup_content,
 			self::$post_content,
-			'Does not include the popup content, since the post tag does not match.'
+			'Does not include the popup content when the post has no tags, but popup has.'
 		);
 
-		self::renderPost( '', null, [], [ $tag_id ] );
+		$tag_2_id = $this->factory->term->create(
+			[
+				'name'     => 'Events',
+				'taxonomy' => 'post_tag',
+				'slug'     => 'events',
+			]
+		);
+		self::renderPost( '', null, [], [ $tag_2_id ] );
+		self::assertNotContains(
+			self::$popup_content,
+			self::$post_content,
+			'Does not include the popup content when the post tag has a different tag than the popup.'
+		);
+
+		self::renderPost( '', null, [], [ $tag_1_id ] );
 		self::assertContains(
 			self::$popup_content,
 			self::$post_content,
