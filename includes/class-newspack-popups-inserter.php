@@ -644,7 +644,7 @@ final class Newspack_Popups_Inserter {
 	 * @return bool Whether the prompt should be shown based on matching terms.
 	 */
 	public static function assess_taxonomy_filter( $popup, $taxonomy = 'category' ) {
-		$post_terms  = get_the_terms( $post_id, $taxonomy );
+		$post_terms  = get_the_terms( get_the_ID(), $taxonomy );
 		$popup_terms = get_the_terms( $popup['id'], $taxonomy );
 
 		if ( $post_terms && count( $post_terms ) && $popup_terms && count( $popup_terms ) ) {
