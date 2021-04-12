@@ -728,7 +728,12 @@ final class Newspack_Popups_Model {
 	 * @param object $popup Popup.
 	 */
 	private static function render_permanent_dismissal_form( $element_id, $popup ) {
-		$dismiss_text           = $popup['options']['dismiss_text'];
+		$dismiss_text = $popup['options']['dismiss_text'];
+
+		if ( empty( $dismiss_text ) ) {
+			return '';
+		}
+
 		$endpoint               = self::get_reader_endpoint();
 		$hidden_fields          = self::get_hidden_fields( $popup );
 		$dismiss_text_alignment = $popup['options']['dismiss_text_alignment'];
