@@ -213,8 +213,9 @@ final class Newspack_Popups_Inserter {
 
 		foreach ( $parsed_blocks as $block ) {
 			if ( ! in_array( $block['blockName'], $blacklisted_blocks ) ) {
-				$block_content = $block['innerHTML'];
-				$total_length += strlen( wp_strip_all_tags( $block_content ) );
+				$is_classic_block = null === $block['blockName']; // Classic block doesn't have a block name.
+				$block_content    = $is_classic_block ? force_balance_tags( wpautop( $block['innerHTML'] ) ) : $block['innerHTML'];
+				$total_length    += strlen( wp_strip_all_tags( $block_content ) );
 			} else {
 				// Give blacklisted blocks a length so that prompts at 0% can still be inserted before them.
 				$total_length++;
@@ -245,6 +246,64 @@ final class Newspack_Popups_Inserter {
 		$output = '';
 
 		foreach ( $parsed_blocks as $block ) {
+			$is_classic_block = null === $block['blockName']; // Classic block doesn't have a block name.
+
+			// Classic block content: insert prompts between block-level HTML elements.
+			if ( $is_classic_block ) {
+				$classic_content = force_balance_tags( wpautop( $block['innerHTML'] ) ); // Ensure we have paragraph tags and valid HTML.
+				$positions       = [];
+				$last_position   = -1;
+				$block_endings   = [ // Block-level elements eligble for prompt insertion.
+					'</p>',
+					'</ol>',
+					'</ul>',
+					'</h1>',
+					'</h2>',
+					'</h3>',
+					'</h4>',
+					'</h5>',
+					'</h6>',
+					'</div>',
+					'</figure>',
+					'</aside>',
+					'</dl>',
+					'</pre>',
+					'</section>',
+					'</table>',
+				];
+
+				// Parse the classic content string by block endings.
+				foreach ( $block_endings as $block_ending ) {
+					$last_position = -1;
+					while ( stripos( $classic_content, $block_ending, $last_position + 1 ) ) {
+						// Get the position of the end of the next $block_ending.
+						$last_position = stripos( $classic_content, $block_ending, $last_position + 1 ) + strlen( $block_ending );
+						$positions[]   = $last_position;
+					}
+				}
+
+				sort( $positions, SORT_NUMERIC );
+				$last_position = 0;
+
+				// Insert prompts between block-level elements.
+				foreach ( $positions as $position ) {
+					foreach ( $inline_popups as &$inline_popup ) {
+						if (
+							! $inline_popup['is_inserted'] &&
+							$position > $inline_popup['precise_position']
+						) {
+							$output                     .= '<!-- wp:shortcode -->[newspack-popup id="' . $inline_popup['id'] . '"]<!-- /wp:shortcode -->';
+							$inline_popup['is_inserted'] = true;
+						}
+					}
+					$output       .= substr( $classic_content, $last_position, $position - $last_position );
+					$last_position = $position;
+				}
+
+				continue;
+			}
+
+			// Regular block content: insert prompts between blocks.
 			if ( ! in_array( $block['blockName'], $blacklisted_blocks ) ) {
 				$pos += strlen( wp_strip_all_tags( $block['innerHTML'] ) );
 			} else {
