@@ -300,6 +300,7 @@ final class Newspack_Popups_Inserter {
 					$last_position = $position;
 				}
 
+				$pos += strlen( $classic_content );
 				continue;
 			}
 
