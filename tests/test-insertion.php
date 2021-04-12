@@ -177,7 +177,7 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 	/**
 	 * Category criterion.
 	 */
-	public function test_category_criterion() {
+	public function test_criterion_category() {
 		self::renderPost();
 		self::assertContains(
 			self::$popup_content,
@@ -185,34 +185,56 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 			'Does include the popup content if neither post nor popup have a category.'
 		);
 
-		$category_id = $this->factory->term->create(
+		$category_1_id = $this->factory->term->create(
 			[
 				'name'     => 'Events',
 				'taxonomy' => 'category',
 				'slug'     => 'events',
 			]
 		);
-		wp_set_post_terms( self::$popup_id, [ $category_id ], 'category' );
+
+		self::renderPost( '', null, [ $category_1_id ] );
+		self::assertContains(
+			self::$popup_content,
+			self::$post_content,
+			'Includes the popup content when the popup does not have a category, but post has.'
+		);
+
+		wp_set_post_terms( self::$popup_id, [ $category_1_id ], 'category' );
 
 		self::renderPost();
 		self::assertNotContains(
 			self::$popup_content,
 			self::$post_content,
-			'Does not include the popup content, since the post category does not match.'
+			'Does not include the popup content when popup does have a category, but post does not.'
 		);
 
-		self::renderPost( '', null, [ $category_id ] );
+		self::renderPost( '', null, [ $category_1_id ] );
 		self::assertContains(
 			self::$popup_content,
 			self::$post_content,
 			'Includes the popup content when the categories match.'
+		);
+
+		$category_2_id = $this->factory->term->create(
+			[
+				'name'     => 'Health',
+				'taxonomy' => 'category',
+				'slug'     => 'health',
+			]
+		);
+		self::renderPost( '', null, [ $category_2_id ] );
+		self::assertNotContains(
+			self::$popup_content,
+			self::$post_content,
+			'Does not include the popup content when popup and post have different categories.'
 		);
 	}
 
 	/**
 	 * Tag criterion.
 	 */
-	public function test_tag_criterion() {
+	public function test_criterion_tag() {
 		self::renderPost();
 		self::assertContains(
 			self::$popup_content,

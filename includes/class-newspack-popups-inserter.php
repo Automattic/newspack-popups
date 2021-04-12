@@ -649,39 +649,23 @@ final class Newspack_Popups_Inserter {
 	}
 
 	/**
-	 * If Pop-up has categories, it should only be shown on posts/pages with those.
+	 * If a prompt is assigned the given taxonomy, it should only be shown on posts/pages with at least one matching term.
+	 * If the prompt has no terms, it should be shown regardless of the post's terms.
 	 *
-	 * @param object $popup The popup to assess.
-	 * @return bool Should popup be shown based on categories it has.
-	 */
-	public static function assess_categories_filter( $popup ) {
-		$post_categories  = get_the_category();
-		$popup_categories = get_the_category( $popup['id'] );
-
-		if ( $post_categories && count( $post_categories ) && $popup_categories && count( $popup_categories ) ) {
-			return array_intersect(
-				array_column( $post_categories, 'term_id' ),
-				array_column( $popup_categories, 'term_id' )
-			);
-		}
-		return true;
-	}
-
-	/**
-	 * If Pop-up has tags, it should only be shown on posts/pages with those.
+	 * @param object $popup The prompt to assess.
+	 * @param string $taxonomy The type of taxonomy to match.
 	 *
-	 * @param object $popup The popup to assess.
-	 * @return bool Should popup be shown based on tags it has.
+	 * @return bool Whether the prompt should be shown based on matching terms.
 	 */
-	public static function assess_tags_filter( $popup ) {
-		$popup_tags = get_the_tags( $popup['id'] );
-		if ( false === $popup_tags ) {
-			return true; // No tags on the popup, no need to compare.
+	public static function assess_taxonomy_filter( $popup, $taxonomy = 'category' ) {
+		$popup_terms = get_the_terms( $popup['id'], $taxonomy );
+		if ( false === $popup_terms ) {
+			return true; // No terms on the popup, no need to compare.
 		}
-		$post_tags = get_the_tags();
+		$post_terms = get_the_terms( get_the_ID(), $taxonomy );
 		return array_intersect(
-			array_column( $post_tags ? $post_tags : [], 'term_id' ),
-			array_column( $popup_tags, 'term_id' )
+			array_column( $post_terms ? $post_terms : [], 'term_id' ),
+			array_column( $popup_terms, 'term_id' )
 		);
 	}
 
@@ -714,8 +698,8 @@ final class Newspack_Popups_Inserter {
 			return true;
 		}
 		return self::assess_is_post( $popup ) &&
-			self::assess_categories_filter( $popup ) &&
-			self::assess_tags_filter( $popup );
+			self::assess_taxonomy_filter( $popup, 'category' ) &&
+			self::assess_taxonomy_filter( $popup, 'post_tag' );
 	}
 
 	/**

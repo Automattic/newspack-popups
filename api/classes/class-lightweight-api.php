@@ -150,6 +150,11 @@ class Lightweight_API {
 	 * @param string $code The error code.
 	 */
 	public function error( $code ) {
+		// Exiting in test env would report the test as passed.
+		if ( defined( 'IS_TEST_ENV' ) && IS_TEST_ENV ) {
+			return;
+		}
+
 		http_response_code( 400 );
 		print json_encode( [ 'error' => $code ] ); // phpcs:ignore
 		exit;
