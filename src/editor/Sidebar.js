@@ -9,8 +9,14 @@ import { __ } from '@wordpress/i18n';
 import { Fragment } from '@wordpress/element';
 import { RadioControl, RangeControl, SelectControl, ToggleControl } from '@wordpress/components';
 
+/**
+ * Internal dependencies
+ */
+import { isCustomPlacement } from '../editor/utils';
+
 const Sidebar = ( {
 	display_title,
+	hide_border,
 	frequency,
 	onMetaFieldChange,
 	placement,
@@ -113,6 +119,13 @@ const Sidebar = ( {
 				checked={ display_title }
 				onChange={ value => onMetaFieldChange( 'display_title', value ) }
 			/>
+			{ ( placement === 'inline' || isCustomPlacement( placement ) ) && (
+				<ToggleControl
+					label={ __( 'Hide Prompt Border', 'newspack-popups' ) }
+					checked={ hide_border }
+					onChange={ value => onMetaFieldChange( 'hide_border', value ) }
+				/>
+			) }
 		</Fragment>
 	);
 };
