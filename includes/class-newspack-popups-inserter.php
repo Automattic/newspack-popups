@@ -213,8 +213,9 @@ final class Newspack_Popups_Inserter {
 
 		foreach ( $parsed_blocks as $block ) {
 			if ( ! in_array( $block['blockName'], $blacklisted_blocks ) ) {
-				$block_content = $block['innerHTML'];
-				$total_length += strlen( wp_strip_all_tags( $block_content ) );
+				$is_classic_block = null === $block['blockName']; // Classic block doesn't have a block name.
+				$block_content    = $is_classic_block ? force_balance_tags( wpautop( $block['innerHTML'] ) ) : $block['innerHTML'];
+				$total_length    += strlen( wp_strip_all_tags( $block_content ) );
 			} else {
 				// Give blacklisted blocks a length so that prompts at 0% can still be inserted before them.
 				$total_length++;
@@ -245,6 +246,65 @@ final class Newspack_Popups_Inserter {
 		$output = '';
 
 		foreach ( $parsed_blocks as $block ) {
+			$is_classic_block = null === $block['blockName']; // Classic block doesn't have a block name.
+
+			// Classic block content: insert prompts between block-level HTML elements.
+			if ( $is_classic_block ) {
+				$classic_content = force_balance_tags( wpautop( $block['innerHTML'] ) ); // Ensure we have paragraph tags and valid HTML.
+				$positions       = [];
+				$last_position   = -1;
+				$block_endings   = [ // Block-level elements eligble for prompt insertion.
+					'</p>',
+					'</ol>',
+					'</ul>',
+					'</h1>',
+					'</h2>',
+					'</h3>',
+					'</h4>',
+					'</h5>',
+					'</h6>',
+					'</div>',
+					'</figure>',
+					'</aside>',
+					'</dl>',
+					'</pre>',
+					'</section>',
+					'</table>',
+				];
+
+				// Parse the classic content string by block endings.
+				foreach ( $block_endings as $block_ending ) {
+					$last_position = -1;
+					while ( stripos( $classic_content, $block_ending, $last_position + 1 ) ) {
+						// Get the position of the end of the next $block_ending.
+						$last_position = stripos( $classic_content, $block_ending, $last_position + 1 ) + strlen( $block_ending );
+						$positions[]   = $last_position;
+					}
+				}
+
+				sort( $positions, SORT_NUMERIC );
+				$last_position = 0;
+
+				// Insert prompts between block-level elements.
+				foreach ( $positions as $position ) {
+					foreach ( $inline_popups as &$inline_popup ) {
+						if (
+							! $inline_popup['is_inserted'] &&
+							$position > $inline_popup['precise_position']
+						) {
+							$output                     .= '<!-- wp:shortcode -->[newspack-popup id="' . $inline_popup['id'] . '"]<!-- /wp:shortcode -->';
+							$inline_popup['is_inserted'] = true;
+						}
+					}
+					$output       .= substr( $classic_content, $last_position, $position - $last_position );
+					$last_position = $position;
+				}
+
+				$pos += strlen( $classic_content );
+				continue;
+			}
+
+			// Regular block content: insert prompts between blocks.
 			if ( ! in_array( $block['blockName'], $blacklisted_blocks ) ) {
 				$pos += strlen( wp_strip_all_tags( $block['innerHTML'] ) );
 			} else {
@@ -344,7 +404,8 @@ final class Newspack_Popups_Inserter {
 	 */
 	public static function popup_shortcode( $atts = array() ) {
 		if ( isset( $atts['id'] ) ) {
-			$found_popup = Newspack_Popups_Model::retrieve_popup_by_id( $atts['id'] );
+			$include_unpublished = Newspack_Popups::is_preview_request();
+			$found_popup         = Newspack_Popups_Model::retrieve_popup_by_id( $atts['id'], $include_unpublished );
 		}
 		if (
 			! $found_popup ||
@@ -457,6 +518,19 @@ final class Newspack_Popups_Inserter {
 			self::popups_for_post(),
 			$shortcoded_popups,
 			$custom_placement_popups
+		);
+		// Sort the array, so the segmented popups come first. This is necessary for proper
+		// prioritisation of single-popup placements (e.g. above header).
+		uasort(
+			$popups,
+			function( $popup_a, $popup_b ) {
+				$a_has_segments = ! empty( $popup_a['options']['selected_segment_id'] );
+				$b_has_segments = ! empty( $popup_b['options']['selected_segment_id'] );
+				if ( $a_has_segments && $b_has_segments ) {
+					return 0;
+				}
+				return $a_has_segments && false === $b_has_segments ? -1 : 1;
+			}
 		);
 
 		// "Escape hatch" if there's a need to block adding amp-access for pages that have no prompts.
@@ -635,39 +709,23 @@ final class Newspack_Popups_Inserter {
 	}
 
 	/**
-	 * If Pop-up has categories, it should only be shown on posts/pages with those.
+	 * If a prompt is assigned the given taxonomy, it should only be shown on posts/pages with at least one matching term.
+	 * If the prompt has no terms, it should be shown regardless of the post's terms.
 	 *
-	 * @param object $popup The popup to assess.
-	 * @return bool Should popup be shown based on categories it has.
-	 */
-	public static function assess_categories_filter( $popup ) {
-		$post_categories  = get_the_category();
-		$popup_categories = get_the_category( $popup['id'] );
-
-		if ( $post_categories && count( $post_categories ) && $popup_categories && count( $popup_categories ) ) {
-			return array_intersect(
-				array_column( $post_categories, 'term_id' ),
-				array_column( $popup_categories, 'term_id' )
-			);
-		}
-		return true;
-	}
-
-	/**
-	 * If Pop-up has tags, it should only be shown on posts/pages with those.
+	 * @param object $popup The prompt to assess.
+	 * @param string $taxonomy The type of taxonomy to match.
 	 *
-	 * @param object $popup The popup to assess.
-	 * @return bool Should popup be shown based on tags it has.
+	 * @return bool Whether the prompt should be shown based on matching terms.
 	 */
-	public static function assess_tags_filter( $popup ) {
-		$popup_tags = get_the_tags( $popup['id'] );
-		if ( false === $popup_tags ) {
-			return true; // No tags on the popup, no need to compare.
+	public static function assess_taxonomy_filter( $popup, $taxonomy = 'category' ) {
+		$popup_terms = get_the_terms( $popup['id'], $taxonomy );
+		if ( false === $popup_terms ) {
+			return true; // No terms on the popup, no need to compare.
 		}
-		$post_tags = get_the_tags();
+		$post_terms = get_the_terms( get_the_ID(), $taxonomy );
 		return array_intersect(
-			array_column( $post_tags ? $post_tags : [], 'term_id' ),
-			array_column( $popup_tags, 'term_id' )
+			array_column( $post_terms ? $post_terms : [], 'term_id' ),
+			array_column( $popup_terms, 'term_id' )
 		);
 	}
 
@@ -700,8 +758,8 @@ final class Newspack_Popups_Inserter {
 			return true;
 		}
 		return self::assess_is_post( $popup ) &&
-			self::assess_categories_filter( $popup ) &&
-			self::assess_tags_filter( $popup );
+			self::assess_taxonomy_filter( $popup, 'category' ) &&
+			self::assess_taxonomy_filter( $popup, 'post_tag' );
 	}
 
 	/**
