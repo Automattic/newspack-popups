@@ -1,3 +1,17 @@
+# [1.31.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.30.1...v1.31.0-alpha.1) (2021-04-13)
+
+
+### Bug Fixes
+
+* previewing drafts ([3673e20](https://github.com/Automattic/newspack-popups/commit/3673e20715f25ac57f378fdefb32e33d962fe0fe))
+* single-prompt placement logic ([2690ed3](https://github.com/Automattic/newspack-popups/commit/2690ed34f47b492b95e6ae5745cc87ff333c60ce))
+
+
+### Features
+
+* handle classic content for inline prompt insertion ([#521](https://github.com/Automattic/newspack-popups/issues/521)) ([d361d5c](https://github.com/Automattic/newspack-popups/commit/d361d5c4e078ee9d4e6d4a5882fb476998e2aa48))
+* new option to show border for inline prompts ([#513](https://github.com/Automattic/newspack-popups/issues/513)) ([78647ca](https://github.com/Automattic/newspack-popups/commit/78647ca8b5b65c2a040a8b3f72b398052449e0a8))
+
 ## [1.30.1](https://github.com/Automattic/newspack-popups/compare/v1.30.0...v1.30.1) (2021-04-09)
 
 
