@@ -177,7 +177,7 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 	/**
 	 * Category criterion.
 	 */
-	public function test_category_criterion() {
+	public function test_criterion_category() {
 		self::renderPost();
 		self::assertContains(
 			self::$popup_content,
@@ -185,34 +185,56 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 			'Does include the popup content if neither post nor popup have a category.'
 		);
 
-		$category_id = $this->factory->term->create(
+		$category_1_id = $this->factory->term->create(
 			[
 				'name'     => 'Events',
 				'taxonomy' => 'category',
 				'slug'     => 'events',
 			]
 		);
-		wp_set_post_terms( self::$popup_id, [ $category_id ], 'category' );
+
+		self::renderPost( '', null, [ $category_1_id ] );
+		self::assertContains(
+			self::$popup_content,
+			self::$post_content,
+			'Includes the popup content when the popup does not have a category, but post has.'
+		);
+
+		wp_set_post_terms( self::$popup_id, [ $category_1_id ], 'category' );
 
 		self::renderPost();
 		self::assertNotContains(
 			self::$popup_content,
 			self::$post_content,
-			'Does not include the popup content, since the post category does not match.'
+			'Does not include the popup content when popup does have a category, but post does not.'
 		);
 
-		self::renderPost( '', null, [ $category_id ] );
+		self::renderPost( '', null, [ $category_1_id ] );
 		self::assertContains(
 			self::$popup_content,
 			self::$post_content,
 			'Includes the popup content when the categories match.'
+		);
+
+		$category_2_id = $this->factory->term->create(
+			[
+				'name'     => 'Health',
+				'taxonomy' => 'category',
+				'slug'     => 'health',
+			]
+		);
+		self::renderPost( '', null, [ $category_2_id ] );
+		self::assertNotContains(
+			self::$popup_content,
+			self::$post_content,
+			'Does not include the popup content when popup and post have different categories.'
 		);
 	}
 
 	/**
 	 * Tag criterion.
 	 */
-	public function test_tag_criterion() {
+	public function test_criterion_tag() {
 		self::renderPost();
 		self::assertContains(
 			self::$popup_content,
@@ -263,6 +285,41 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 			self::$popup_content,
 			self::$post_content,
 			'Includes the popup content when the tags match.'
+		);
+	}
+
+	/**
+	 * Shortcode handling.
+	 */
+	public function test_amp_access_ordering() {
+		$segments           = Newspack_Popups_Segmentation::create_segment(
+			[
+				'name'          => 'Some Segment',
+				'configuration' => [],
+			]
+		);
+		$segmented_popup_id = self::createPopup();
+		Newspack_Popups_Model::set_popup_options(
+			$segmented_popup_id,
+			[
+				'selected_segment_id' => $segments[0]['id'],
+			]
+		);
+		sleep( 1 ); // Ensure the another popup has the most newest date.
+		$another_popup_id = self::createPopup();
+
+		self::renderPost();
+		$amp_access_query  = self::getAMPAccessQuery();
+		$popup_ids_ordered = array_map(
+			function( $item ) {
+				return $item->id;
+			}, 
+			$amp_access_query['popups']
+		);
+		self::assertEquals(
+			$popup_ids_ordered,
+			[ 'id_' . $segmented_popup_id, 'id_' . self::$popup_id, 'id_' . $another_popup_id ],
+			'The popup with the segment comes first in the array.'
 		);
 	}
 }

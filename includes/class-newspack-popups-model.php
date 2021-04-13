@@ -208,6 +208,7 @@ final class Newspack_Popups_Model {
 			[
 				'background_color'        => filter_input( INPUT_GET, 'background_color', FILTER_SANITIZE_STRING ),
 				'display_title'           => filter_input( INPUT_GET, 'display_title', FILTER_VALIDATE_BOOLEAN ),
+				'hide_border'             => filter_input( INPUT_GET, 'hide_border', FILTER_VALIDATE_BOOLEAN ),
 				'dismiss_text'            => filter_input( INPUT_GET, 'dismiss_text', FILTER_SANITIZE_STRING ),
 				'dismiss_text_alignment'  => filter_input( INPUT_GET, 'dismiss_text_alignment', FILTER_SANITIZE_STRING ),
 				'frequency'               => filter_input( INPUT_GET, 'frequency', FILTER_SANITIZE_STRING ),
@@ -327,6 +328,7 @@ final class Newspack_Popups_Model {
 			'dismiss_text'            => get_post_meta( $id, 'dismiss_text', true ),
 			'dismiss_text_alignment'  => get_post_meta( $id, 'dismiss_text_alignment', true ),
 			'display_title'           => get_post_meta( $id, 'display_title', true ),
+			'hide_border'             => get_post_meta( $id, 'hide_border', true ),
 			'frequency'               => get_post_meta( $id, 'frequency', true ),
 			'overlay_color'           => get_post_meta( $id, 'overlay_color', true ),
 			'overlay_opacity'         => get_post_meta( $id, 'overlay_opacity', true ),
@@ -348,6 +350,7 @@ final class Newspack_Popups_Model {
 				[
 					'background_color'        => '#FFFFFF',
 					'display_title'           => false,
+					'hide_border'             => false,
 					'dismiss_text'            => '',
 					'dismiss_text_alignment'  => 'center',
 					'frequency'               => 'always',
@@ -393,26 +396,6 @@ final class Newspack_Popups_Model {
 		}
 
 		return $popup;
-	}
-
-	/**
-	 * Get the popup dismissal text.
-	 *
-	 * @param object $popup The popup object.
-	 * @return string|null Dismiss popup text.
-	 */
-	protected static function get_dismiss_text( $popup ) {
-		return ! empty( $popup['options']['dismiss_text'] ) && strlen( trim( $popup['options']['dismiss_text'] ) ) > 0 ? $popup['options']['dismiss_text'] : null;
-	}
-
-	/**
-	 * Get the popup dismiss button alignment. Default/empty === center alignment.
-	 *
-	 * @param object $popup The popup object.
-	 * @return string|null Dismiss button alignment.
-	 */
-	protected static function get_dismiss_text_alignment( $popup ) {
-		return ! empty( $popup['options']['dismiss_text_alignment'] ) ? $popup['options']['dismiss_text_alignment'] : 'center';
 	}
 
 	/**
@@ -643,7 +626,7 @@ final class Newspack_Popups_Model {
 		$has_link                = preg_match( '/<a\s/', $body ) !== 0;
 		$has_form                = preg_match( '/<form\s/', $body ) !== 0;
 		$has_dismiss_form        = self::is_overlay( $popup );
-		$has_not_interested_form = self::get_dismiss_text( $popup );
+		$has_not_interested_form = $popup['options']['dismiss_text'];
 
 		$analytics_events = [
 			[
@@ -745,13 +728,15 @@ final class Newspack_Popups_Model {
 	 * @param object $popup Popup.
 	 */
 	private static function render_permanent_dismissal_form( $element_id, $popup ) {
-		$dismiss_text = self::get_dismiss_text( $popup );
-		if ( ! $dismiss_text ) {
+		$dismiss_text = $popup['options']['dismiss_text'];
+
+		if ( empty( $dismiss_text ) ) {
 			return '';
 		}
+
 		$endpoint               = self::get_reader_endpoint();
 		$hidden_fields          = self::get_hidden_fields( $popup );
-		$dismiss_text_alignment = self::get_dismiss_text_alignment( $popup );
+		$dismiss_text_alignment = $popup['options']['dismiss_text_alignment'];
 		?>
 			<form class="popup-not-interested-form <?php echo esc_attr( self::get_form_class( 'not-interested', $element_id ) ); ?> popup-action-form <?php echo esc_attr( self::get_form_class( 'action', $element_id ) ); ?> align-<?php echo esc_attr( $dismiss_text_alignment ); ?>"
 				method="POST"
@@ -778,6 +763,7 @@ final class Newspack_Popups_Model {
 			return '';
 		}
 		$status = 'future' === $popup['status'] ? __( 'scheduled', 'newspack-popups' ) : $popup['status'];
+		$status = 'inherit' === $popup['status'] ? __( 'draft', 'newspack-popups' ) : $popup['status']; // Avoid "inherit" status when previewing a single prompt.
 		return 'data-popup-status="' . esc_attr( $status ) . '" ';
 	}
 
@@ -801,15 +787,17 @@ final class Newspack_Popups_Model {
 		$element_id             = self::get_uniqid();
 		$endpoint               = self::get_reader_endpoint();
 		$display_title          = $popup['options']['display_title'];
+		$hide_border            = $popup['options']['hide_border'];
 		$hidden_fields          = self::get_hidden_fields( $popup );
-		$dismiss_text           = self::get_dismiss_text( $popup );
-		$dismiss_text_alignment = self::get_dismiss_text_alignment( $popup );
+		$dismiss_text           = $popup['options']['dismiss_text'];
+		$dismiss_text_alignment = $popup['options']['dismiss_text_alignment'];
 		$is_newsletter_prompt   = self::has_newsletter_prompt( $popup );
 		$classes                = [];
 		$classes[]              = 'above_header' === $popup['options']['placement'] ? 'newspack-above-header-popup' : null;
 		$classes[]              = ! self::is_above_header( $popup ) ? 'newspack-inline-popup' : null;
 		$classes[]              = 'publish' !== $popup['status'] ? 'newspack-inactive-popup-status' : null;
 		$classes[]              = ( ! empty( $popup['title'] ) && $display_title ) ? 'newspack-lightbox-has-title' : null;
+		$classes[]              = $hide_border ? 'newspack-lightbox-no-border' : null;
 		$classes[]              = $is_newsletter_prompt ? 'newspack-newsletter-prompt-inline' : null;
 
 		$analytics_events = self::get_analytics_events( $popup, $body, $element_id );
@@ -853,6 +841,11 @@ final class Newspack_Popups_Model {
 	 * @return string The generated markup.
 	 */
 	public static function generate_popup( $popup ) {
+		// If previewing a single prompt, override saved settings with preview settings.
+		if ( Newspack_Popups::previewed_popup_id() ) {
+			$popup = self::retrieve_preview_popup( Newspack_Popups::previewed_popup_id() );
+		}
+
 		if ( ! self::is_overlay( $popup ) ) {
 			return self::generate_inline_popup( $popup );
 		}
@@ -867,15 +860,17 @@ final class Newspack_Popups_Model {
 
 		$element_id             = self::get_uniqid();
 		$endpoint               = self::get_reader_endpoint();
-		$dismiss_text           = self::get_dismiss_text( $popup );
-		$dismiss_text_alignment = self::get_dismiss_text_alignment( $popup );
+		$dismiss_text           = $popup['options']['dismiss_text'];
+		$dismiss_text_alignment = $popup['options']['dismiss_text_alignment'];
 		$display_title          = $popup['options']['display_title'];
+		$hide_border            = $popup['options']['hide_border'];
 		$overlay_opacity        = absint( $popup['options']['overlay_opacity'] ) / 100;
 		$overlay_color          = $popup['options']['overlay_color'];
 		$hidden_fields          = self::get_hidden_fields( $popup );
 		$is_newsletter_prompt   = self::has_newsletter_prompt( $popup );
 		$classes                = array( 'newspack-lightbox', 'newspack-lightbox-placement-' . $popup['options']['placement'] );
 		$classes[]              = ( ! empty( $popup['title'] ) && $display_title ) ? 'newspack-lightbox-has-title' : null;
+		$classes[]              = $hide_border ? 'newspack-lightbox-no-border' : null;
 		$classes[]              = $is_newsletter_prompt ? 'newspack-newsletter-prompt-overlay' : null;
 		$wrapper_classes        = [ 'newspack-popup-wrapper' ];
 		$wrapper_classes[]      = 'publish' !== $popup['status'] ? 'newspack-inactive-popup-status' : null;
