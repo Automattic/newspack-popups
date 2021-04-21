@@ -213,7 +213,7 @@ final class Newspack_Popups_Inserter {
 
 		foreach ( $parsed_blocks as $block ) {
 			if ( ! in_array( $block['blockName'], $blacklisted_blocks ) ) {
-				$is_classic_block = null === $block['blockName']; // Classic block doesn't have a block name.
+				$is_classic_block = null === $block['blockName'] || 'core/freeform' === $block['blockName']; // Classic block doesn't have a block name.
 				$block_content    = $is_classic_block ? force_balance_tags( wpautop( $block['innerHTML'] ) ) : $block['innerHTML'];
 				$total_length    += strlen( wp_strip_all_tags( $block_content ) );
 			} else {
