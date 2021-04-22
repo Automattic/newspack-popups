@@ -522,6 +522,19 @@ final class Newspack_Popups_Inserter {
 			$shortcoded_popups,
 			$custom_placement_popups
 		);
+		// Prevent duplicates - a popup might be duplicated in a shortcode.
+		$unique_ids = [];
+		$popups     = array_filter(
+			$popups,
+			function ( $item ) use ( &$unique_ids ) {
+				$id = $item['id'];
+				if ( in_array( $id, $unique_ids ) ) {
+					return false;
+				}
+				$unique_ids[] = $id;
+				return true;
+			}
+		);
 		// Sort the array, so the segmented popups come first. This is necessary for proper
 		// prioritisation of single-popup placements (e.g. above header).
 		uasort(
