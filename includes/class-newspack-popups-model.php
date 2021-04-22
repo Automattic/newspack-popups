@@ -883,6 +883,8 @@ final class Newspack_Popups_Model {
 			}
 		);
 
+		$animation_id = 'a_' . $element_id;
+
 		ob_start();
 		?>
 		<amp-layout
@@ -921,9 +923,14 @@ final class Newspack_Popups_Model {
 		</amp-layout>
 		<?php if ( $is_scroll_triggered ) : ?>
 			<div id="page-position-marker" style="position: absolute; top: <?php echo esc_attr( $popup['options']['trigger_scroll_progress'] ); ?>%"></div>
-			<amp-position-observer target="page-position-marker" on="enter:showAnim.start;" once layout="nodisplay"></amp-position-observer>
+			<amp-position-observer
+				target="page-position-marker"
+				on="enter:<?php echo esc_attr( $animation_id ); ?>.start;"
+				once
+				layout="nodisplay"
+			></amp-position-observer>
 		<?php endif; ?>
-		<amp-animation id="showAnim" layout="nodisplay" <?php echo $is_scroll_triggered ? '' : 'trigger="visibility"'; ?>>
+		<amp-animation id="<?php echo esc_attr( $animation_id ); ?>" layout="nodisplay" <?php echo $is_scroll_triggered ? '' : 'trigger="visibility"'; ?>>
 			<script type="application/json">
 				{
 					"duration": "125ms",
@@ -932,7 +939,7 @@ final class Newspack_Popups_Model {
 					"direction": "alternate",
 					"animations": [
 						{
-							"selector": ".newspack-lightbox",
+							"selector": "#<?php echo esc_attr( $element_id ); ?>",
 							"delay": "<?php echo esc_html( self::get_delay( $popup ) ); ?>",
 							"keyframes": {
 								"opacity": ["0", "1"],
@@ -940,14 +947,14 @@ final class Newspack_Popups_Model {
 							}
 						},
 						{
-							"selector": ".newspack-lightbox",
+							"selector": "#<?php echo esc_attr( $element_id ); ?>",
 							"delay": "<?php echo esc_html( self::get_delay( $popup ) - 500 ); ?>",
 							"keyframes": {
 								"transform": ["translateY(100vh)", "translateY(0vh)"]
 							}
 						},
 						{
-								"selector": ".newspack-popup-wrapper",
+								"selector": "#<?php echo esc_attr( $element_id ); ?> .newspack-popup-wrapper",
 								"delay": "<?php echo intval( $popup['options']['trigger_delay'] ) * 1000 + 625; ?>",
 								"keyframes": {
 									<?php if ( 'top' === $popup['options']['placement'] ) : ?>
