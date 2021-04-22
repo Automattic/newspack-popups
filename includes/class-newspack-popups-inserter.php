@@ -213,7 +213,7 @@ final class Newspack_Popups_Inserter {
 
 		foreach ( $parsed_blocks as $block ) {
 			if ( ! in_array( $block['blockName'], $blacklisted_blocks ) ) {
-				$is_classic_block = null === $block['blockName']; // Classic block doesn't have a block name.
+				$is_classic_block = null === $block['blockName'] || 'core/freeform' === $block['blockName']; // Classic block doesn't have a block name.
 				$block_content    = $is_classic_block ? force_balance_tags( wpautop( $block['innerHTML'] ) ) : $block['innerHTML'];
 				$total_length    += strlen( wp_strip_all_tags( $block_content ) );
 			} else {
@@ -251,9 +251,12 @@ final class Newspack_Popups_Inserter {
 			// Classic block content: insert prompts between block-level HTML elements.
 			if ( $is_classic_block ) {
 				$classic_content = force_balance_tags( wpautop( $block['innerHTML'] ) ); // Ensure we have paragraph tags and valid HTML.
-				$positions       = [];
-				$last_position   = -1;
-				$block_endings   = [ // Block-level elements eligble for prompt insertion.
+				if ( 0 === strlen( wp_strip_all_tags( $classic_content ) ) ) {
+					continue;
+				}
+				$positions     = [];
+				$last_position = -1;
+				$block_endings = [ // Block-level elements eligble for prompt insertion.
 					'</p>',
 					'</ol>',
 					'</ul>',
