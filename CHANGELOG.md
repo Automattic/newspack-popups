@@ -1,3 +1,14 @@
+## [1.31.1-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.31.0...v1.31.1-alpha.1) (2021-04-27)
+
+
+### Bug Fixes
+
+* **segments:** filter out non-existing categories ([#529](https://github.com/Automattic/newspack-popups/issues/529)) ([d0160ef](https://github.com/Automattic/newspack-popups/commit/d0160eff6718d763910d27d1a941e1121796299f)), closes [#491](https://github.com/Automattic/newspack-popups/issues/491)
+* deduplicate popups for amp-access ([9aaf006](https://github.com/Automattic/newspack-popups/commit/9aaf0063792b3ac3b71fd9e41522c465db304cd4))
+* empty blocks handling ([#524](https://github.com/Automattic/newspack-popups/issues/524)) ([fba0154](https://github.com/Automattic/newspack-popups/commit/fba0154ed9878aae60da77a7cf2bacc1d4eabd3d))
+* hide WC client ID field even if not on Newspack theme ([4c1ebe6](https://github.com/Automattic/newspack-popups/commit/4c1ebe65af6ff2716c506319e9c01df2e72ed225))
+* prevent overlay prompts animation conflicts ([a8af34b](https://github.com/Automattic/newspack-popups/commit/a8af34b40228ad29945658514556935c8f583db9)), closes [#526](https://github.com/Automattic/newspack-popups/issues/526)
+
 # [1.31.0](https://github.com/Automattic/newspack-popups/compare/v1.30.1...v1.31.0) (2021-04-13)
 
 
