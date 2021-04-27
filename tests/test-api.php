@@ -15,13 +15,29 @@ class APITest extends WP_UnitTestCase {
 	private static $report_client_data   = null; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
 	private static $client_id            = 'abc-123'; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
 	private static $segment_ids          = []; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
+	private static $category_ids         = []; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
 
 	public static function wpSetUpBeforeClass() { // phpcs:ignore Squiz.Commenting.FunctionComment.Missing
 		self::$maybe_show_campaign  = new Maybe_Show_Campaign();
 		self::$report_campaign_data = new Report_Campaign_Data();
 		self::$report_client_data   = new Segmentation_Client_Data();
 
-		$test_segments = [
+		$category_1_id      = self::factory()->term->create(
+			[
+				'name'     => 'Events',
+				'taxonomy' => 'category',
+				'slug'     => 'events',
+			]
+		);
+		$category_2_id      = self::factory()->term->create(
+			[
+				'name'     => 'Health',
+				'taxonomy' => 'category',
+				'slug'     => 'health',
+			]
+		);
+		self::$category_ids = [ $category_1_id, $category_2_id ];
+		$test_segments      = [
 			'defaultSegment'                      => [],
 			'segmentBetween3And5'                 => [
 				'min_posts' => 2,
@@ -54,7 +70,7 @@ class APITest extends WP_UnitTestCase {
 				'priority'      => 6,
 			],
 			'segmentFavCategory42'                => [
-				'favorite_categories' => [ 42 ],
+				'favorite_categories' => [ $category_1_id ],
 				'priority'            => 7,
 			],
 		];
@@ -1281,8 +1297,8 @@ class APITest extends WP_UnitTestCase {
 			self::$client_id,
 			[
 				'posts_read' => [
-					self::create_read_post( 2, false, '42' ),
-					self::create_read_post( 3, false, '42,140' ),
+					self::create_read_post( 2, false, self::$category_ids[0] ),
+					self::create_read_post( 3, false, implode( ',', self::$category_ids ) ),
 				],
 			]
 		);
