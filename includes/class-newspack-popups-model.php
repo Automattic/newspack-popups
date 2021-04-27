@@ -792,7 +792,7 @@ final class Newspack_Popups_Model {
 		$dismiss_text           = $popup['options']['dismiss_text'];
 		$dismiss_text_alignment = $popup['options']['dismiss_text_alignment'];
 		$is_newsletter_prompt   = self::has_newsletter_prompt( $popup );
-		$classes                = [];
+		$classes                = [ 'newspack-popup' ];
 		$classes[]              = 'above_header' === $popup['options']['placement'] ? 'newspack-above-header-popup' : null;
 		$classes[]              = ! self::is_above_header( $popup ) ? 'newspack-inline-popup' : null;
 		$classes[]              = 'publish' !== $popup['status'] ? 'newspack-inactive-popup-status' : null;
@@ -868,7 +868,7 @@ final class Newspack_Popups_Model {
 		$overlay_color          = $popup['options']['overlay_color'];
 		$hidden_fields          = self::get_hidden_fields( $popup );
 		$is_newsletter_prompt   = self::has_newsletter_prompt( $popup );
-		$classes                = array( 'newspack-lightbox', 'newspack-lightbox-placement-' . $popup['options']['placement'] );
+		$classes                = array( 'newspack-lightbox', 'newspack-popup', 'newspack-lightbox-placement-' . $popup['options']['placement'] );
 		$classes[]              = ( ! empty( $popup['title'] ) && $display_title ) ? 'newspack-lightbox-has-title' : null;
 		$classes[]              = $hide_border ? 'newspack-lightbox-no-border' : null;
 		$classes[]              = $is_newsletter_prompt ? 'newspack-newsletter-prompt-overlay' : null;
