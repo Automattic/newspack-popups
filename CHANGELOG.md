@@ -1,3 +1,10 @@
+## [1.31.1-alpha.2](https://github.com/Automattic/newspack-popups/compare/v1.31.1-alpha.1...v1.31.1-alpha.2) (2021-04-27)
+
+
+### Bug Fixes
+
+* interaction of above-header prompts in non-AMP mode ([0c3a7c5](https://github.com/Automattic/newspack-popups/commit/0c3a7c5ba1411b6f02f7b36e4a5193b03d476d7d))
+
 ## [1.31.1-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.31.0...v1.31.1-alpha.1) (2021-04-27)
 
 
