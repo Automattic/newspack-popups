@@ -792,7 +792,7 @@ final class Newspack_Popups_Model {
 		$dismiss_text           = $popup['options']['dismiss_text'];
 		$dismiss_text_alignment = $popup['options']['dismiss_text_alignment'];
 		$is_newsletter_prompt   = self::has_newsletter_prompt( $popup );
-		$classes                = [];
+		$classes                = [ 'newspack-popup' ];
 		$classes[]              = 'above_header' === $popup['options']['placement'] ? 'newspack-above-header-popup' : null;
 		$classes[]              = ! self::is_above_header( $popup ) ? 'newspack-inline-popup' : null;
 		$classes[]              = 'publish' !== $popup['status'] ? 'newspack-inactive-popup-status' : null;
@@ -868,7 +868,7 @@ final class Newspack_Popups_Model {
 		$overlay_color          = $popup['options']['overlay_color'];
 		$hidden_fields          = self::get_hidden_fields( $popup );
 		$is_newsletter_prompt   = self::has_newsletter_prompt( $popup );
-		$classes                = array( 'newspack-lightbox', 'newspack-lightbox-placement-' . $popup['options']['placement'] );
+		$classes                = array( 'newspack-lightbox', 'newspack-popup', 'newspack-lightbox-placement-' . $popup['options']['placement'] );
 		$classes[]              = ( ! empty( $popup['title'] ) && $display_title ) ? 'newspack-lightbox-has-title' : null;
 		$classes[]              = $hide_border ? 'newspack-lightbox-no-border' : null;
 		$classes[]              = $is_newsletter_prompt ? 'newspack-newsletter-prompt-overlay' : null;
@@ -882,6 +882,8 @@ final class Newspack_Popups_Model {
 				return array_merge( $evts, self::get_analytics_events( $popup, $body, $element_id ) );
 			}
 		);
+
+		$animation_id = 'a_' . $element_id;
 
 		ob_start();
 		?>
@@ -921,9 +923,14 @@ final class Newspack_Popups_Model {
 		</amp-layout>
 		<?php if ( $is_scroll_triggered ) : ?>
 			<div id="page-position-marker" style="position: absolute; top: <?php echo esc_attr( $popup['options']['trigger_scroll_progress'] ); ?>%"></div>
-			<amp-position-observer target="page-position-marker" on="enter:showAnim.start;" once layout="nodisplay"></amp-position-observer>
+			<amp-position-observer
+				target="page-position-marker"
+				on="enter:<?php echo esc_attr( $animation_id ); ?>.start;"
+				once
+				layout="nodisplay"
+			></amp-position-observer>
 		<?php endif; ?>
-		<amp-animation id="showAnim" layout="nodisplay" <?php echo $is_scroll_triggered ? '' : 'trigger="visibility"'; ?>>
+		<amp-animation id="<?php echo esc_attr( $animation_id ); ?>" layout="nodisplay" <?php echo $is_scroll_triggered ? '' : 'trigger="visibility"'; ?>>
 			<script type="application/json">
 				{
 					"duration": "125ms",
@@ -932,7 +939,7 @@ final class Newspack_Popups_Model {
 					"direction": "alternate",
 					"animations": [
 						{
-							"selector": ".newspack-lightbox",
+							"selector": "#<?php echo esc_attr( $element_id ); ?>",
 							"delay": "<?php echo esc_html( self::get_delay( $popup ) ); ?>",
 							"keyframes": {
 								"opacity": ["0", "1"],
@@ -940,14 +947,14 @@ final class Newspack_Popups_Model {
 							}
 						},
 						{
-							"selector": ".newspack-lightbox",
+							"selector": "#<?php echo esc_attr( $element_id ); ?>",
 							"delay": "<?php echo esc_html( self::get_delay( $popup ) - 500 ); ?>",
 							"keyframes": {
 								"transform": ["translateY(100vh)", "translateY(0vh)"]
 							}
 						},
 						{
-								"selector": ".newspack-popup-wrapper",
+								"selector": "#<?php echo esc_attr( $element_id ); ?> .newspack-popup-wrapper",
 								"delay": "<?php echo intval( $popup['options']['trigger_delay'] ) * 1000 + 625; ?>",
 								"keyframes": {
 									<?php if ( 'top' === $popup['options']['placement'] ) : ?>
