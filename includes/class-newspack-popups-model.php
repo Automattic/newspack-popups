@@ -152,11 +152,11 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
-	 * Retrieve all overlay popups.
+	 * Retrieve all popups eligible to be programmatically inserted (not shortcoded or custom placement).
 	 *
 	 * @param  boolean     $include_unpublished Whether to include unpublished prompts.
 	 * @param  int|boolean $campaign_id Campaign term ID, or false to ignore campaign.
-	 * @return array Overlay popup objects.
+	 * @return array Eligible popup objects.
 	 */
 	public static function retrieve_eligible_popups( $include_unpublished = false, $campaign_id = false ) {
 		$valid_placements = array_merge(
@@ -164,12 +164,13 @@ final class Newspack_Popups_Model {
 			self::$inline_placements
 		);
 		$args             = [
-			'post_type'    => Newspack_Popups::NEWSPACK_POPUPS_CPT,
-			'post_status'  => $include_unpublished ? [ 'draft', 'pending', 'future', 'publish' ] : 'publish',
-			'meta_key'     => 'placement',
+			'post_type'      => Newspack_Popups::NEWSPACK_POPUPS_CPT,
+			'post_status'    => $include_unpublished ? [ 'draft', 'pending', 'future', 'publish' ] : 'publish',
+			'posts_per_page' => 100,
+			'meta_key'       => 'placement',
 			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-			'meta_value'   => $valid_placements,
-			'meta_compare' => 'IN',
+			'meta_value'     => $valid_placements,
+			'meta_compare'   => 'IN',
 		];
 
 		// If previewing specific campaign.
