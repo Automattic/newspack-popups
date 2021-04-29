@@ -609,9 +609,10 @@ final class Newspack_Popups_Model {
 			return [];
 		}
 
-		$popup_id       = $popup['id'];
-		$event_category = 'Newspack Announcement';
-		$event_label    = $popup['title'] . ' [' . $popup['options']['placement'] . '] (' . $popup_id . ')';
+		$popup_id            = $popup['id'];
+		$event_category      = 'Newspack Announcement';
+		$formatted_placement = ucwords( str_replace( '_', ' ', $popup['options']['placement'] ) );
+		$event_label         = $formatted_placement . ': ' . $popup['title'] . ' (' . $popup_id . ')';
 
 		$has_link                = preg_match( '/<a\s/', $body ) !== 0;
 		$has_form                = preg_match( '/<form\s/', $body ) !== 0;
