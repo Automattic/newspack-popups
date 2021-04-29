@@ -152,11 +152,11 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
-	 * Retrieve all overlay popups.
+	 * Retrieve all popups eligible to be programmatically inserted (not shortcoded or custom placement).
 	 *
 	 * @param  boolean     $include_unpublished Whether to include unpublished prompts.
 	 * @param  int|boolean $campaign_id Campaign term ID, or false to ignore campaign.
-	 * @return array Overlay popup objects.
+	 * @return array Eligible popup objects.
 	 */
 	public static function retrieve_eligible_popups( $include_unpublished = false, $campaign_id = false ) {
 		$valid_placements = array_merge(
