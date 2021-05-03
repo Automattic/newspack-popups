@@ -170,8 +170,14 @@ final class Newspack_Popups_Inserter {
 			return $content;
 		}
 
-		// If the current post is a popup, ignore.
-		if ( Newspack_Popups::NEWSPACK_POPUPS_CPT == get_post_type() ) {
+		// If the current post isn't an allowed post type, ignore.
+		if ( ! in_array(
+			get_post_type(),
+			apply_filters(
+				'newspack_campaigns_post_types_for_campaigns',
+				[ 'post', 'page' ]
+			)
+		) ) {
 			return $content;
 		}
 
