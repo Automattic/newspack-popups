@@ -602,6 +602,10 @@ final class Newspack_Popups_Inserter {
 		if ( $view_as_spec ) {
 			$popups_access_provider['authorization'] .= '&view_as=' . wp_json_encode( $view_as_spec );
 		}
+		if ( isset( $_GET['newspack-campaigns-debug'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			$popups_access_provider['authorization'] .= '&debug';
+		}
+
 		?>
 		<script id="amp-access" type="application/json">
 			<?php echo wp_json_encode( $popups_access_provider ); ?>
