@@ -416,8 +416,16 @@ final class Newspack_Popups_Inserter {
 			$include_unpublished = Newspack_Popups::is_preview_request();
 			$found_popup         = Newspack_Popups_Model::retrieve_popup_by_id( $atts['id'], $include_unpublished );
 		}
+		if ( ! $found_popup ) {
+			return;
+		}
+		$is_overlay = Newspack_Popups_Model::is_overlay( $found_popup );
+		if ( $is_overlay ) {
+			// Only inline popups may be placed using shortcodes.
+			return;
+		}
+
 		if (
-			! $found_popup ||
 			// Bail if it's a non-preview popup which should not be displayed.
 			( ! self::should_display( $found_popup, true ) && ! Newspack_Popups::previewed_popup_id() ) ||
 			// Only inline popups can be inserted via the shortcode.
@@ -497,7 +505,10 @@ final class Newspack_Popups_Inserter {
 				$popup_post = get_post( $id );
 				if ( $popup_post ) {
 					$popup_object = Newspack_Popups_Model::create_popup_object( $popup_post );
-					if ( $popup_object && 'publish' === $popup_object['status'] ) {
+					// Shortcoded overlay popups will not be rendered on the page, but still the shortcode might be present.
+					// This condition is just to remove the unnecessary part of the payload in such a case.
+					$is_overlay = Newspack_Popups_Model::is_overlay( $popup_object );
+					if ( $popup_object && ! $is_overlay && 'publish' === $popup_object['status'] ) {
 						$acc[] = $popup_object;
 					}
 				}
@@ -608,6 +619,10 @@ final class Newspack_Popups_Inserter {
 		if ( $view_as_spec ) {
 			$popups_access_provider['authorization'] .= '&view_as=' . wp_json_encode( $view_as_spec );
 		}
+		if ( isset( $_GET['newspack-campaigns-debug'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			$popups_access_provider['authorization'] .= '&debug';
+		}
+
 		?>
 		<script id="amp-access" type="application/json">
 			<?php echo wp_json_encode( $popups_access_provider ); ?>

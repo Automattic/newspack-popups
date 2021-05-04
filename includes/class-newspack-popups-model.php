@@ -458,7 +458,7 @@ final class Newspack_Popups_Model {
 	 * @return boolean True if it is an overlay popup.
 	 */
 	public static function is_overlay( $popup ) {
-		if ( ! isset( $popup['options'], $popup['options']['placement'] ) ) {
+		if ( ! $popup || ! isset( $popup['options'], $popup['options']['placement'] ) ) {
 			return false;
 		}
 		return in_array( $popup['options']['placement'], self::$overlay_placements, true );
