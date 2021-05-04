@@ -1,3 +1,17 @@
+# [1.32.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.31.1...v1.32.0-alpha.1) (2021-05-04)
+
+
+### Bug Fixes
+
+* bump query limit up to 100 for eligible prompts ([#536](https://github.com/Automattic/newspack-popups/issues/536)) ([bebf6ec](https://github.com/Automattic/newspack-popups/commit/bebf6ec3a6f1066c124af9313f2abca9eaeebac2))
+* use filter to decide which post types to insert ads into content ([#537](https://github.com/Automattic/newspack-popups/issues/537)) ([dafa550](https://github.com/Automattic/newspack-popups/commit/dafa550b4381e5790863fd4f21ad81ca8777dadd))
+
+
+### Features
+
+* **analytics:** revert event encoding ([#535](https://github.com/Automattic/newspack-popups/issues/535)) ([f54a872](https://github.com/Automattic/newspack-popups/commit/f54a8721247c4e3809ed1983b3c0d0ffbc24dfb0)), closes [#479](https://github.com/Automattic/newspack-popups/issues/479)
+* **api:** debugging parameter ([#539](https://github.com/Automattic/newspack-popups/issues/539)) ([e8fd529](https://github.com/Automattic/newspack-popups/commit/e8fd529b296b850ff0707af4d93dc9dae1511c0b))
+
 ## [1.31.1](https://github.com/Automattic/newspack-popups/compare/v1.31.0...v1.31.1) (2021-04-28)
 
 
