@@ -61,6 +61,7 @@ class Lightweight_API {
 			'start_time'             => microtime( true ),
 			'end_time'               => null,
 			'duration'               => null,
+			'suppression'            => [],
 		];
 	}
 
@@ -133,7 +134,7 @@ class Lightweight_API {
 		}
 		$this->debug['end_time'] = microtime( true );
 		$this->debug['duration'] = $this->debug['end_time'] - $this->debug['start_time'];
-		if ( defined( 'NEWSPACK_POPUPS_DEBUG' ) && NEWSPACK_POPUPS_DEBUG ) {
+		if ( isset( $_REQUEST['debug'] ) || ( defined( 'NEWSPACK_POPUPS_DEBUG' ) && NEWSPACK_POPUPS_DEBUG ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$this->response['debug'] = $this->debug;
 		}
 		header( 'Access-Control-Allow-Origin: https://' . parse_url( $_SERVER['HTTP_REFERER'] )['host'], false ); // phpcs:ignore

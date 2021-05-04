@@ -152,11 +152,11 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
-	 * Retrieve all overlay popups.
+	 * Retrieve all popups eligible to be programmatically inserted (not shortcoded or custom placement).
 	 *
 	 * @param  boolean     $include_unpublished Whether to include unpublished prompts.
 	 * @param  int|boolean $campaign_id Campaign term ID, or false to ignore campaign.
-	 * @return array Overlay popup objects.
+	 * @return array Eligible popup objects.
 	 */
 	public static function retrieve_eligible_popups( $include_unpublished = false, $campaign_id = false ) {
 		$valid_placements = array_merge(
@@ -164,12 +164,13 @@ final class Newspack_Popups_Model {
 			self::$inline_placements
 		);
 		$args             = [
-			'post_type'    => Newspack_Popups::NEWSPACK_POPUPS_CPT,
-			'post_status'  => $include_unpublished ? [ 'draft', 'pending', 'future', 'publish' ] : 'publish',
-			'meta_key'     => 'placement',
+			'post_type'      => Newspack_Popups::NEWSPACK_POPUPS_CPT,
+			'post_status'    => $include_unpublished ? [ 'draft', 'pending', 'future', 'publish' ] : 'publish',
+			'posts_per_page' => 100,
+			'meta_key'       => 'placement',
 			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-			'meta_value'   => $valid_placements,
-			'meta_compare' => 'IN',
+			'meta_value'     => $valid_placements,
+			'meta_compare'   => 'IN',
 		];
 
 		// If previewing specific campaign.
@@ -457,7 +458,7 @@ final class Newspack_Popups_Model {
 	 * @return boolean True if it is an overlay popup.
 	 */
 	public static function is_overlay( $popup ) {
-		if ( ! isset( $popup['options'], $popup['options']['placement'] ) ) {
+		if ( ! $popup || ! isset( $popup['options'], $popup['options']['placement'] ) ) {
 			return false;
 		}
 		return in_array( $popup['options']['placement'], self::$overlay_placements, true );
@@ -583,17 +584,6 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
-	 * Encode event name to be sent to GA.
-	 *
-	 * @param string $popup_id The popup ID.
-	 * @param int    $event_code The event code.
-	 * @return string Encoded event name.
-	 */
-	private static function encode_event_name( $popup_id, $event_code ) {
-		return $popup_id . $event_code;
-	}
-
-	/**
 	 * Get a shortest possible CSS class name for a form element.
 	 *
 	 * @param string $type Type of the form.
@@ -620,8 +610,10 @@ final class Newspack_Popups_Model {
 			return [];
 		}
 
-		$popup_id       = $popup['id'];
-		$event_category = 'NC';
+		$popup_id            = $popup['id'];
+		$event_category      = 'Newspack Announcement';
+		$formatted_placement = ucwords( str_replace( '_', ' ', $popup['options']['placement'] ) );
+		$event_label         = $formatted_placement . ': ' . $popup['title'] . ' (' . $popup_id . ')';
 
 		$has_link                = preg_match( '/<a\s/', $body ) !== 0;
 		$has_form                = preg_match( '/<form\s/', $body ) !== 0;
@@ -630,19 +622,15 @@ final class Newspack_Popups_Model {
 
 		$analytics_events = [
 			[
-				'id'              => self::get_uniqid(),
 				'on'              => 'ini-load',
 				'element'         => '#' . esc_attr( $element_id ),
-				'event_name'      => self::encode_event_name( $popup_id, 0 ), // Load.
-				'event_category'  => esc_attr( $event_category ),
+				'event_name'      => __( 'Load', 'newspack-popups' ),
 				'non_interaction' => true,
 			],
 			[
-				'id'              => self::get_uniqid(),
 				'on'              => 'visible',
 				'element'         => '#' . esc_attr( $element_id ),
-				'event_name'      => self::encode_event_name( $popup_id, 1 ), // Seen.
-				'event_category'  => esc_attr( $event_category ),
+				'event_name'      => __( 'Seen', 'newspack-popups' ),
 				'non_interaction' => true,
 				'visibilitySpec'  => [
 					'totalTimeMin' => 500,
@@ -652,46 +640,44 @@ final class Newspack_Popups_Model {
 
 		if ( $has_link ) {
 			$analytics_events[] = [
-				'id'             => self::get_uniqid(),
-				'on'             => 'click',
-				'element'        => '#' . esc_attr( $element_id ) . ' a',
-				'amp_element'    => '#' . esc_attr( $element_id ) . ' a',
-				'event_name'     => self::encode_event_name( $popup_id, 2 ), // Link Click.
-				'event_category' => esc_attr( $event_category ),
+				'on'          => 'click',
+				'element'     => '#' . esc_attr( $element_id ) . ' a',
+				'amp_element' => '#' . esc_attr( $element_id ) . ' a',
+				'event_name'  => __( 'Link Click', 'newspack-popups' ),
 			];
 		}
 
 		if ( $has_form ) {
 			$analytics_events[] = [
-				'id'             => self::get_uniqid(),
-				'amp_on'         => 'amp-form-submit-success',
-				'on'             => 'submit',
-				'element'        => 'form:not(.' . self::get_form_class( 'action', $element_id ) . ')',
-				'event_name'     => self::encode_event_name( $popup_id, 3 ), // Form Submission.
-				'event_category' => esc_attr( $event_category ),
+				'amp_on'     => 'amp-form-submit-success',
+				'on'         => 'submit',
+				'element'    => 'form:not(.' . self::get_form_class( 'action', $element_id ) . ')',
+				'event_name' => __( 'Form Submission', 'newspack-popups' ),
 			];
 		}
 		if ( $has_dismiss_form ) {
 			$analytics_events[] = [
-				'id'              => self::get_uniqid(),
 				'amp_on'          => 'amp-form-submit-success',
 				'on'              => 'submit',
 				'element'         => '.' . self::get_form_class( 'dismiss', $element_id ),
-				'event_name'      => self::encode_event_name( $popup_id, 4 ), // Dismissal.
-				'event_category'  => esc_attr( $event_category ),
+				'event_name'      => __( 'Dismissal', 'newspack-popups' ),
 				'non_interaction' => true,
 			];
 		}
 		if ( $has_not_interested_form ) {
 			$analytics_events[] = [
-				'id'              => self::get_uniqid(),
 				'amp_on'          => 'amp-form-submit-success',
 				'on'              => 'submit',
 				'element'         => '.' . self::get_form_class( 'not-interested', $element_id ),
-				'event_name'      => self::encode_event_name( $popup_id, 5 ), // Permanent Dismissal.
-				'event_category'  => esc_attr( $event_category ),
+				'event_name'      => __( 'Permanent Dismissal', 'newspack-popups' ),
 				'non_interaction' => true,
 			];
+		}
+
+		foreach ( $analytics_events as &$event ) {
+			$event['id']             = self::get_uniqid();
+			$event['event_category'] = esc_attr( $event_category );
+			$event['event_label']    = esc_attr( $event_label );
 		}
 
 		return $analytics_events;
