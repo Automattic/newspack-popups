@@ -1619,4 +1619,29 @@ class APITest extends WP_UnitTestCase {
 			'Return true if the user agent is of a web crawler.'
 		);
 	}
+
+	/**
+	 * Test prompt retrieval with a lot of prompts.
+	 */
+	public function test_many_prompts() {
+		$number_of_prompts_to_display = 100;
+		$current_index                = 0;
+		$test_popups                  = [];
+
+		while ( $current_index < $number_of_prompts_to_display ) {
+			$test_popups[] = self::create_test_popup(
+				[
+					'placement' => 'inline',
+					'frequency' => 'always',
+				]
+			);
+
+			$current_index ++;
+		}
+
+		self::assertTrue(
+			count( Newspack_Popups_Model::retrieve_eligible_popups() ) === $number_of_prompts_to_display,
+			'Can retrieve up to 100 prompts at once.'
+		);
+	}
 }
