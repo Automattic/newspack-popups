@@ -19,7 +19,7 @@ export const SinglePromptEditor = ( { attributes, setAttributes } ) => {
 	const [ prompt, setPrompt ] = useState( null );
 	const [ error, setError ] = useState( null );
 	const { promptId } = attributes;
-	const { endpoint } = window?.newspack_popups_blocks_data;
+	const { endpoint, post_type: postType } = window?.newspack_popups_blocks_data;
 
 	const getPrompt = async () => {
 		setError( null );
@@ -27,10 +27,9 @@ export const SinglePromptEditor = ( { attributes, setAttributes } ) => {
 
 		try {
 			const response = await apiFetch( {
-				path: addQueryArgs( '/wp/v2/' + endpoint, {
+				path: addQueryArgs( endpoint, {
 					per_page: 1,
 					include: promptId,
-					_fields: 'meta,title,content',
 				} ),
 			} );
 
@@ -58,14 +57,14 @@ export const SinglePromptEditor = ( { attributes, setAttributes } ) => {
 		return (
 			<div className="newspack-popups__single-prompt">
 				<h4 className="newspack-popups__single-prompt-title">
-					{ prompt.title?.rendered || __( '(no title)', 'newspack-popups' ) }{' '}
+					{ prompt.title || __( '(no title)', 'newspack-popups' ) }{' '}
 					<ExternalLink href={ `/wp-admin/post.php?post=${ promptId }&action=edit` }>
 						{ __( 'edit', 'newspack-popups' ) }
 					</ExternalLink>
 				</h4>
 				<div
 					className="newspack-popup newspack-inline-popup"
-					dangerouslySetInnerHTML={ { __html: prompt.content?.rendered } }
+					dangerouslySetInnerHTML={ { __html: prompt.content } }
 				/>
 				<Button
 					isSecondary
@@ -83,32 +82,34 @@ export const SinglePromptEditor = ( { attributes, setAttributes } ) => {
 	return (
 		<Placeholder
 			className="newspack-popups__single-prompt-placeholder"
-			label={ __( 'Prompt', 'newspack-popups' ) }
+			label={ __( 'Single Prompt', 'newspack-popups' ) }
 			icon={ <CallToActionIcon style={ { color: '#36f' } } /> }
 		>
-			{ loading && <Spinner /> }
+			{ loading && (
+				<p>
+					{ sprintf( __( 'Loading prompt with ID %s...', 'newspack-popups' ), promptId ) }
+					<Spinner />
+				</p>
+			) }
 
 			{ error && (
-				<div className="newspack-popups__single-prompt">
-					<Notice status="error" isDismissible={ false }>
-						{ error }
-					</Notice>
-				</div>
+				<Notice status="error" isDismissible={ false }>
+					{ error }
+				</Notice>
 			) }
 
 			{ ! error && ! loading && ! promptId && (
 				<AutocompleteWithSuggestions
-					label={ __( 'Search for a prompt', 'newspack' ) }
+					label={ __( 'Search for an inline prompt:', 'newspack' ) }
 					help={ __(
 						'Begin typing prompt title, click autocomplete result to select.',
 						'newspack'
 					) }
 					fetchSavedPosts={ async postIDs => {
 						const posts = await apiFetch( {
-							path: addQueryArgs( '/wp/v2/' + endpoint, {
+							path: addQueryArgs( endpoint, {
 								per_page: 100,
 								include: postIDs.join( ',' ),
-								_fields: 'id,title',
 							} ),
 						} );
 
@@ -119,10 +120,9 @@ export const SinglePromptEditor = ( { attributes, setAttributes } ) => {
 					} }
 					fetchSuggestions={ async search => {
 						const posts = await apiFetch( {
-							path: addQueryArgs( '/wp/v2/' + endpoint, {
+							path: addQueryArgs( endpoint, {
 								search,
 								per_page: 10,
-								_fields: 'id,title',
 							} ),
 						} );
 
@@ -130,14 +130,14 @@ export const SinglePromptEditor = ( { attributes, setAttributes } ) => {
 						const result = posts.reduce( ( acc, post ) => {
 							acc.push( {
 								value: post.id,
-								label: decodeEntities( post.title.rendered ) || __( '(no title)', 'newspack' ),
+								label: decodeEntities( post.title ) || __( '(no title)', 'newspack' ),
 							} );
 
 							return acc;
 						}, [] );
 						return result;
 					} }
-					postType={ endpoint }
+					postType={ postType }
 					postTypeLabel={ 'prompt' }
 					maxLength={ 1 }
 					onChange={ _value => setAttributes( { promptId: parseInt( _value ) } ) }

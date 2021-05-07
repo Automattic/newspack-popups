@@ -26,7 +26,7 @@ export const registerSinglePromptBlock = () => {
 	}
 
 	registerBlockType( name, {
-		title: __( 'Newspack Campaigns: Prompt', 'newspack-listing' ),
+		title: __( 'Newspack Campaigns: Single Prompt', 'newspack-listing' ),
 		icon: <CallToActionIcon style={ { color: '#36f' } } />,
 		category,
 		keywords: [
