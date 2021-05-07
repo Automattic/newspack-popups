@@ -34,9 +34,31 @@ class BlocksTest extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Basic Block rendering.
+	 * Basic Block rendering - Single Prompt block.
 	 */
-	public function test_block_rendering() {
+	public function test_prompt_block_rendering() {
+		$inline_popup_id       = self::create_popup( [ 'placement' => 'inline' ] );
+		$overlay_popup_id      = self::create_popup( [ 'placement' => 'center' ] );
+		$inline_block_content  = Newspack_Popups\Prompt_Block\render_block( [ 'promptId' => $inline_popup_id ] );
+		$overlay_block_content = Newspack_Popups\Prompt_Block\render_block( [ 'promptId' => $overlay_popup_id ] );
+
+		self::assertEquals(
+			$inline_block_content,
+			'<!-- wp:shortcode -->[newspack-popup id="' . $inline_popup_id . '"]<!-- /wp:shortcode -->',
+			'Includes inline popup shortcode.'
+		);
+
+		self::assertEquals(
+			$overlay_block_content,
+			'',
+			'Overlay prompt not rendered by the Single Prompt block.'
+		);
+	}
+
+	/**
+	 * Basic Block rendering - Custom Placement block.
+	 */
+	public function test_custom_placement_block_rendering() {
 		$custom_placement_id = 'custom1';
 		$popup_id            = self::create_popup( [ 'placement' => $custom_placement_id ] );
 		$block_content       = Newspack_Popups\Custom_Placement_Block\render_block( [ 'customPlacement' => $custom_placement_id ] );
