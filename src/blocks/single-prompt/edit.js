@@ -12,7 +12,7 @@ import { addQueryArgs } from '@wordpress/url';
  * External dependencies.
  */
 import CallToActionIcon from '@material-ui/icons/CallToAction';
-import { AutocompleteWithSuggestions } from 'newspack-components';
+import { AutocompleteWithSuggestions } from 'newspack-components'; // TODO: update newspack-components package once this component lands
 
 export const SinglePromptEditor = ( { attributes, setAttributes } ) => {
 	const [ loading, setLoading ] = useState( false );

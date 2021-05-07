@@ -10,18 +10,11 @@
 	}
 
 	&__single-prompt-title {
+		margin-top: 0.5rem !important;
+
 		a {
-			color: #0073aa;
 			font-size: 13px;
 			font-weight: normal;
-		}
-
-		&:active,
-		&:focus,
-		&:hover {
-			a {
-				color: #0096dd;
-			}
 		}
 	}
 }
