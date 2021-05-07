@@ -62,6 +62,7 @@ final class Newspack_Popups_Custom_Placements {
 			'newspack_popups_blocks_data',
 			[
 				'custom_placements' => self::get_custom_placements(),
+				'endpoint'          => Newspack_Popups::NEWSPACK_POPUPS_CPT,
 			]
 		);
 
