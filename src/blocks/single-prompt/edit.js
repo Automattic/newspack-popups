@@ -100,7 +100,7 @@ export const SinglePromptEditor = ( { attributes, setAttributes } ) => {
 
 			{ ! error && ! loading && ! promptId && (
 				<AutocompleteWithSuggestions
-					label={ __( 'Search for an inline prompt:', 'newspack' ) }
+					label={ __( 'Search for an inline or manual-only prompt:', 'newspack' ) }
 					help={ __(
 						'Begin typing prompt title, click autocomplete result to select.',
 						'newspack'
