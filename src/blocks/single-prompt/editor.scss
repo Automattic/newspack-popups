@@ -9,6 +9,15 @@
 		}
 	}
 
+	&__single-prompt-placeholder {
+		.components-notice {
+			margin-bottom: 2rem;
+			margin-left: 0;
+			margin-right: 0;
+			width: 100%;
+		}
+	}
+
 	&__single-prompt-title {
 		margin-top: 0.5rem !important;
 

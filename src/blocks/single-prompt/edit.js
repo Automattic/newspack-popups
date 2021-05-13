@@ -33,8 +33,21 @@ export const SinglePromptEditor = ( { attributes, setAttributes } ) => {
 				} ),
 			} );
 
-			setPrompt( response.shift() );
-			setLoading( false );
+			if ( 0 === response.length ) {
+				setError(
+					sprintf(
+						__(
+							'No active prompts found with ID %s. Try choosing another prompt.',
+							'newspack-popups'
+						),
+						promptId
+					)
+				);
+				setLoading( false );
+			} else {
+				setPrompt( response.shift() );
+				setLoading( false );
+			}
 		} catch ( e ) {
 			setError(
 				e.message ||
@@ -98,7 +111,7 @@ export const SinglePromptEditor = ( { attributes, setAttributes } ) => {
 				</Notice>
 			) }
 
-			{ ! error && ! loading && ! promptId && (
+			{ ! prompt && ! loading && (
 				<AutocompleteWithSuggestions
 					label={ __( 'Search for an inline or manual-only prompt:', 'newspack' ) }
 					help={ __(
