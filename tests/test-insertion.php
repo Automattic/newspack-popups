@@ -175,6 +175,33 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 	}
 
 	/**
+	 * Test manual placement popups and single prompt block.
+	 */
+	public function test_prompt_block() {
+		Newspack_Popups_Model::set_popup_options(
+			self::$popup_id,
+			[
+				'placement' => 'manual',
+				'frequency' => 'always',
+			]
+		);
+
+		self::renderPost();
+		self::assertNotContains(
+			self::$popup_content,
+			self::$post_content,
+			'Does not include the popup content, since it is a manual-only placement popup.'
+		);
+
+		self::renderPost( '', '<!-- wp:newspack-popups/single-prompt {"promptId":' . self::$popup_id . '} /-->' );
+		self::assertContains(
+			self::$popup_content,
+			self::$post_content,
+			'Includes the popup content when the prompt is placed in post content via the Single Prompt block.'
+		);
+	}
+
+	/**
 	 * Category criterion.
 	 */
 	public function test_criterion_category() {
@@ -313,7 +340,7 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 		$popup_ids_ordered = array_map(
 			function( $item ) {
 				return $item->id;
-			}, 
+			},
 			$amp_access_query['popups']
 		);
 		self::assertEquals(
