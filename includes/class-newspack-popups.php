@@ -359,6 +359,7 @@ final class Newspack_Popups {
 				'custom_placements' => Newspack_Popups_Custom_Placements::get_custom_placements(),
 				'endpoint'          => '/newspack-popups/v1/prompts',
 				'post_type'         => self::NEWSPACK_POPUPS_CPT,
+				'is_prompt'         => self::NEWSPACK_POPUPS_CPT == get_post_type(),
 			]
 		);
 
