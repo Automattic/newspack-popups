@@ -42,8 +42,8 @@ function render_block( $attributes ) {
 	// Get the prompt by id.
 	$prompt = \Newspack_Popups_Model::retrieve_popup_by_id( intval( $prompt_id ) );
 
-	// Only show inline prompts (should only be selectable in editor, but verify just in case).
-	if ( ! empty( $prompt ) && \Newspack_Popups_Model::is_inline( $prompt ) ) {
+	// Only show inline or manual-only prompts (should only be selectable in editor, but verify just in case).
+	if ( ! empty( $prompt ) && ( \Newspack_Popups_Model::is_inline( $prompt ) || \Newspack_Popups_Model::is_manual_only( $prompt ) ) ) {
 		if ( defined( 'WP_NEWSPACK_DEBUG' ) && WP_NEWSPACK_DEBUG ) {
 			$content .= '<!-- Newspack Campaigns: Start Prompt ' . $prompt_id . '-->';
 		}

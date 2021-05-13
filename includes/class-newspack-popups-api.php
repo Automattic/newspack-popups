@@ -47,7 +47,7 @@ final class Newspack_Popups_API {
 			'prompts',
 			[
 				'methods'             => \WP_REST_Server::READABLE,
-				'callback'            => [ $this, 'get_inline_prompts' ],
+				'callback'            => [ $this, 'get_inline_and_manual_prompts' ],
 				'permission_callback' => [ $this, 'permission_callback' ],
 				'args'                => [
 					'search'   => [
@@ -123,7 +123,7 @@ final class Newspack_Popups_API {
 	 *
 	 * @param WP_REST_Request $request Request object.
 	 */
-	public static function get_inline_prompts( $request ) {
+	public static function get_inline_and_manual_prompts( $request ) {
 		$params   = $request->get_params();
 		$search   = ! empty( $params['search'] ) ? $params['search'] : null;
 		$include  = ! empty( $params['include'] ) ? explode( ',', $params['include'] ) : null;
@@ -135,8 +135,9 @@ final class Newspack_Popups_API {
 			'post_status'    => 'publish',
 			'posts_per_page' => $per_page,
 			'meta_key'       => 'placement',
+			'meta_compare'   => 'IN',
 			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-			'meta_value'     => 'inline',
+			'meta_value'     => [ 'inline', 'manual' ],
 		];
 
 		// Look up by title only if provided with a search term and not post IDs.
