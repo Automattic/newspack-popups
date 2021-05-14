@@ -153,7 +153,7 @@ export const SinglePromptEditor = ( { attributes, setAttributes } ) => {
 					postType={ postType }
 					postTypeLabel={ 'prompt' }
 					maxLength={ 1 }
-					onChange={ _value => setAttributes( { promptId: parseInt( _value ) } ) }
+					onChange={ items => setAttributes( { promptId: parseInt( items.pop().value ) } ) }
 					selectedPost={ null }
 				/>
 			) }
