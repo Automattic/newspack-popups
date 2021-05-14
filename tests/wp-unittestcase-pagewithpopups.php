@@ -52,15 +52,15 @@ class WP_UnitTestCase_PageWithPopups extends WP_UnitTestCase {
 	/**
 	 * Trigger post rendering with popups in it.
 	 *
-	 * @param string      $url_query Query to append to URL.
-	 * @param null|string $content Raw string to render as post content.
-	 * @param array       $category_ids Ids of categories of the post.
-	 * @param array       $tag_ids Ids of tags of the post.
+	 * @param string $url_query Query to append to URL.
+	 * @param string $post_content_override String to render as post content.
+	 * @param array  $category_ids Ids of categories of the post.
+	 * @param array  $tag_ids Ids of tags of the post.
 	 */
-	protected function renderPost( $url_query = '', $content = null, $category_ids = [], $tag_ids = [] ) {
+	protected function renderPost( $url_query = '', $post_content_override = null, $category_ids = [], $tag_ids = [] ) {
 		$post_id = self::factory()->post->create(
 			[
-				'post_content' => self::$raw_post_content,
+				'post_content' => $post_content_override ? $post_content_override : self::$raw_post_content,
 			]
 		);
 
@@ -80,9 +80,7 @@ class WP_UnitTestCase_PageWithPopups extends WP_UnitTestCase {
 		// Reset internal duplicate-prevention.
 		Newspack_Popups_Inserter::$the_content_has_rendered = false;
 
-		if ( ! $content ) {
-			$content = get_post( $post_id )->post_content;
-		}
+		$content = get_post( $post_id )->post_content;
 
 		self::$post_content = apply_filters( 'the_content', $content );
 		$dom                = new DomDocument();
