@@ -428,8 +428,8 @@ final class Newspack_Popups_Inserter {
 		if (
 			// Bail if it's a non-preview popup which should not be displayed.
 			( ! self::should_display( $found_popup, true ) && ! Newspack_Popups::previewed_popup_id() ) ||
-			// Only inline popups can be inserted via the shortcode.
-			! Newspack_Popups_Model::is_inline( $found_popup )
+			// Only inline or manual-only popups can be inserted via the shortcode.
+			( ! Newspack_Popups_Model::is_inline( $found_popup ) && ! Newspack_Popups_Model::is_manual_only( $found_popup ) )
 		) {
 			return;
 		}
