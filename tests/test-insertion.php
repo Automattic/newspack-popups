@@ -47,16 +47,16 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 			$popup_text_content,
 			'Shortcode inserts the popup content.'
 		);
-		$amp_access_query = self::getAMPAccessQuery();
+		$amp_access_config = self::getAMPAccessConfig();
 		self::assertEquals(
-			count( $amp_access_query['popups'] ),
+			count( $amp_access_config['popups'] ),
 			1,
-			'AMP access has one popup in the query.'
+			'AMP access has one popup in the config.'
 		);
 		self::assertEquals(
-			$amp_access_query['popups'][0]->id,
-			'id_' . self::$popup_id,
-			'The popup id in the query matches the shortcoded popup id.'
+			$amp_access_config['popups'][0]->id,
+			'id_' . $shortcoded_popup_id,
+			'The popup id in the config matches the shortcoded popup id.'
 		);
 	}
 
@@ -309,12 +309,12 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 		$another_popup_id = self::createPopup();
 
 		self::renderPost();
-		$amp_access_query  = self::getAMPAccessQuery();
+		$amp_access_config  = self::getAMPAccessConfig();
 		$popup_ids_ordered = array_map(
 			function( $item ) {
 				return $item->id;
-			}, 
-			$amp_access_query['popups']
+			},
+			$amp_access_config['popups']
 		);
 		self::assertEquals(
 			$popup_ids_ordered,

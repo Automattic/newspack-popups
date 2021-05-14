@@ -99,16 +99,16 @@ class WP_UnitTestCase_PageWithPopups extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Get the amp-access query.
+	 * Get the amp-access config.
 	 *
-	 * @return object amp-access query.
+	 * @return object amp-access config.
 	 */
-	protected function getAMPAccessQuery() {
+	protected function getAMPAccessConfig() {
 		$amp_access_content = json_decode( self::$post_head_dom_xpath->query( '//*[@id="amp-access"]' )->item( 0 )->textContent );
-		parse_str( wp_parse_url( $amp_access_content->authorization )['query'], $amp_access_query );
-		$amp_access_query['popups']   = json_decode( $amp_access_query['popups'] );
-		$amp_access_query['settings'] = json_decode( $amp_access_query['settings'] );
-		$amp_access_query['visit']    = json_decode( $amp_access_query['visit'] );
-		return $amp_access_query;
+		parse_str( wp_parse_url( $amp_access_content->authorization )['query'], $amp_access_config );
+		$amp_access_config['popups']   = json_decode( $amp_access_config['popups'] );
+		$amp_access_config['settings'] = json_decode( $amp_access_config['settings'] );
+		$amp_access_config['visit']    = json_decode( $amp_access_config['visit'] );
+		return $amp_access_config;
 	}
 }
