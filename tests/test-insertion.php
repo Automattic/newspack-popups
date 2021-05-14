@@ -38,12 +38,17 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 	 * Shortcode handling.
 	 */
 	public function test_shortcode() {
-		$post_with_shortcode = '[newspack-popups id="' . self::$popup_id . '"]';
+		// Remove the default popup that would be programmatically inserted.
+		wp_delete_post( self::$popup_id );
+
+		$popup_content       = 'Hello, world';
+		$popup_id            = self::createPopup( $popup_content );
+		$post_with_shortcode = '[newspack-popups id="' . $popup_id . '"]';
 		self::renderPost( '', $post_with_shortcode );
 		$popup_text_content = self::$dom_xpath->query( '//amp-layout' )->item( 0 )->textContent;
 
 		self::assertContains(
-			self::$popup_content,
+			$popup_content,
 			$popup_text_content,
 			'Shortcode inserts the popup content.'
 		);
@@ -55,8 +60,36 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 		);
 		self::assertEquals(
 			$amp_access_config['popups'][0]->id,
-			'id_' . $shortcoded_popup_id,
+			'id_' . $popup_id,
 			'The popup id in the config matches the shortcoded popup id.'
+		);
+	}
+
+	/**
+	 * Shortcode along with programmatically placed popups handling.
+	 */
+	public function test_shortcode_and_programmatic() {
+		$shortcode_popup_content = 'Hello, world';
+		$shortcoded_popup_id     = self::createPopup( $shortcode_popup_content );
+
+		self::renderPost( '', '[newspack-popups id="' . $shortcoded_popup_id . '"]' );
+
+		self::assertContains(
+			self::$popup_content,
+			self::$post_content,
+			'Post contains the programatically inserted popup content.'
+		);
+		self::assertContains(
+			$shortcode_popup_content,
+			self::$post_content,
+			'Post contains the shortcode-inserted popup content.'
+		);
+
+		$amp_access_config = self::getAMPAccessConfig();
+		self::assertEquals(
+			count( $amp_access_config['popups'] ),
+			2,
+			'AMP access has both popups in the config.'
 		);
 	}
 
@@ -309,7 +342,7 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 		$another_popup_id = self::createPopup();
 
 		self::renderPost();
-		$amp_access_config  = self::getAMPAccessConfig();
+		$amp_access_config = self::getAMPAccessConfig();
 		$popup_ids_ordered = array_map(
 			function( $item ) {
 				return $item->id;
