@@ -18,6 +18,15 @@ class WP_UnitTestCase_PageWithPopups extends WP_UnitTestCase {
 	protected static $post_head_dom_xpath = false; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
 
 	public function setUp() { // phpcs:ignore Squiz.Commenting.FunctionComment.Missing
+		// Reset segments.
+		update_option( Newspack_Popups_Segmentation::SEGMENTS_OPTION_NAME, [] );
+		Newspack_Popups_Segmentation::create_segment(
+			[
+				'name'          => 'segment1',
+				'configuration' => [],
+			]
+		);
+
 		// Remove any popups (from previous tests).
 		foreach ( Newspack_Popups_Model::retrieve_popups() as $popup ) {
 			wp_delete_post( $popup['id'] );
@@ -37,16 +46,25 @@ class WP_UnitTestCase_PageWithPopups extends WP_UnitTestCase {
 	/**
 	 * Create a popup in the database.
 	 *
+	 * @param string $popup_content String to render as popup content.
+	 * @param object $options Options for the popup.
 	 * @return int Popup ID.
 	 */
-	protected function createPopup() {
-		return self::factory()->post->create(
+	protected function createPopup( $popup_content = null, $options = null ) {
+		if ( null === $popup_content ) {
+			$popup_content = self::$popup_content;
+		}
+		$popup_id = self::factory()->post->create(
 			[
 				'post_type'    => Newspack_Popups::NEWSPACK_POPUPS_CPT,
 				'post_title'   => 'Popup title',
-				'post_content' => self::$popup_content,
+				'post_content' => $popup_content,
 			]
 		);
+		if ( null !== $options ) {
+			Newspack_Popups_Model::set_popup_options( $popup_id, $options );
+		}
+		return $popup_id;
 	}
 
 	/**
@@ -99,14 +117,29 @@ class WP_UnitTestCase_PageWithPopups extends WP_UnitTestCase {
 	/**
 	 * Get the amp-access config.
 	 *
+	 * @param bool $decode If true, response will be JSON-decoded.
 	 * @return object amp-access config.
 	 */
-	protected function getAMPAccessConfig() {
+	protected function getAMPAccessConfig( $decode = true ) {
 		$amp_access_content = json_decode( self::$post_head_dom_xpath->query( '//*[@id="amp-access"]' )->item( 0 )->textContent );
 		parse_str( wp_parse_url( $amp_access_content->authorization )['query'], $amp_access_config );
-		$amp_access_config['popups']   = json_decode( $amp_access_config['popups'] );
-		$amp_access_config['settings'] = json_decode( $amp_access_config['settings'] );
-		$amp_access_config['visit']    = json_decode( $amp_access_config['visit'] );
+		if ( $decode ) {
+			$amp_access_config['popups']   = json_decode( $amp_access_config['popups'] );
+			$amp_access_config['settings'] = json_decode( $amp_access_config['settings'] );
+			$amp_access_config['visit']    = json_decode( $amp_access_config['visit'] );
+		}
 		return $amp_access_config;
+	}
+
+	/**
+	 * Get the API response.
+	 *
+	 * @return object API response.
+	 */
+	protected function getAPIResponse() {
+		$amp_access_config   = self::getAMPAccessConfig( false );
+		$_REQUEST            = $amp_access_config;
+		$maybe_show_campaign = new Maybe_Show_Campaign();
+		return $maybe_show_campaign->response;
 	}
 }
