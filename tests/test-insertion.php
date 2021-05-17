@@ -91,6 +91,16 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 			2,
 			'AMP access has both popups in the config.'
 		);
+		self::assertEquals(
+			$amp_access_config['popups'][0]->id,
+			'id_' . $shortcoded_popup_id,
+			'AMP access has correct popup id.'
+		);
+		self::assertEquals(
+			$amp_access_config['popups'][1]->id,
+			'id_' . self::$popup_id,
+			'AMP access has correct popup id.'
+		);
 	}
 
 	/**
