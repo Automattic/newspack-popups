@@ -45,7 +45,7 @@ class E2ETest extends WP_UnitTestCase_PageWithPopups {
 				null,
 				[
 					'placement'           => 'center',
-					'selected_segment_id' => 'segment1',
+					'selected_segment_id' => self::$segments[0]['id'],
 				]
 			),
 			// Above-header.
@@ -54,7 +54,7 @@ class E2ETest extends WP_UnitTestCase_PageWithPopups {
 				null,
 				[
 					'placement'           => 'above_header',
-					'selected_segment_id' => 'segment1',
+					'selected_segment_id' => self::$segments[0]['id'],
 				]
 			),
 			// Custom Placement 1.
@@ -63,7 +63,7 @@ class E2ETest extends WP_UnitTestCase_PageWithPopups {
 				null,
 				[
 					'placement'           => 'custom1',
-					'selected_segment_id' => 'segment1',
+					'selected_segment_id' => self::$segments[0]['id'],
 				]
 			),
 		];
