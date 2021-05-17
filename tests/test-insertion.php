@@ -38,25 +38,74 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 	 * Shortcode handling.
 	 */
 	public function test_shortcode() {
-		$post_with_shortcode = '[newspack-popups id="' . self::$popup_id . '"]';
+		// Remove the default popup that would be programmatically inserted.
+		wp_delete_post( self::$popup_id );
+
+		$popup_content       = 'Hello, world';
+		$popup_id            = self::createPopup( $popup_content );
+		$post_with_shortcode = '[newspack-popups id="' . $popup_id . '"]';
 		self::renderPost( '', $post_with_shortcode );
 		$popup_text_content = self::$dom_xpath->query( '//amp-layout' )->item( 0 )->textContent;
 
 		self::assertContains(
-			self::$popup_content,
+			$popup_content,
 			$popup_text_content,
 			'Shortcode inserts the popup content.'
 		);
-		$amp_access_query = self::getAMPAccessQuery();
+		$amp_access_config = self::getAMPAccessConfig();
 		self::assertEquals(
-			count( $amp_access_query['popups'] ),
+			count( $amp_access_config['popups'] ),
 			1,
-			'AMP access has one popup in the query.'
+			'AMP access has one popup in the config.'
 		);
 		self::assertEquals(
-			$amp_access_query['popups'][0]->id,
+			$amp_access_config['popups'][0]->id,
+			'id_' . $popup_id,
+			'The popup id in the config matches the shortcoded popup id.'
+		);
+	}
+
+	/**
+	 * Shortcode along with programmatically placed popups handling.
+	 */
+	public function test_shortcode_and_programmatic() {
+		$shortcode_popup_content = 'Hello, world';
+		$shortcoded_popup_id     = self::createPopup( $shortcode_popup_content );
+
+		self::renderPost( '', '[newspack-popups id="' . $shortcoded_popup_id . '"]' );
+
+		self::assertContains(
+			self::$popup_content,
+			self::$post_content,
+			'Post contains the programatically inserted popup content.'
+		);
+		self::assertContains(
+			$shortcode_popup_content,
+			self::$post_content,
+			'Post contains the shortcode-inserted popup content.'
+		);
+
+		$amp_access_config = self::getAMPAccessConfig();
+		$amp_access_ids    = array_map(
+			function( $popup ) {
+				return $popup->id;
+			},
+			$amp_access_config['popups']
+		);
+		self::assertEquals(
+			count( $amp_access_config['popups'] ),
+			2,
+			'AMP access has both popups in the config.'
+		);
+		self::assertContains(
+			'id_' . $shortcoded_popup_id,
+			$amp_access_ids,
+			'AMP access has correct popup id.'
+		);
+		self::assertContains(
 			'id_' . self::$popup_id,
-			'The popup id in the query matches the shortcoded popup id.'
+			$amp_access_ids,
+			'AMP access has correct popup id.'
 		);
 	}
 
@@ -336,12 +385,12 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 		$another_popup_id = self::createPopup();
 
 		self::renderPost();
-		$amp_access_query  = self::getAMPAccessQuery();
+		$amp_access_config = self::getAMPAccessConfig();
 		$popup_ids_ordered = array_map(
 			function( $item ) {
 				return $item->id;
 			},
-			$amp_access_query['popups']
+			$amp_access_config['popups']
 		);
 		self::assertEquals(
 			$popup_ids_ordered,
