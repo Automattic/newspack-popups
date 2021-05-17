@@ -252,7 +252,7 @@ final class Newspack_Popups_Model {
 	 * @param boolean  $include_taxonomies If true, returned objects will include assigned categories and tags.
 	 * @return array Popup objects array
 	 */
-	public static function retrieve_popups_with_query( WP_Query $query, $include_taxonomies = false ) {
+	protected static function retrieve_popups_with_query( WP_Query $query, $include_taxonomies = false ) {
 		$popups = [];
 		if ( $query->have_posts() ) {
 			while ( $query->have_posts() ) {
