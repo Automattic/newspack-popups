@@ -15,9 +15,9 @@ import CallToActionIcon from '@material-ui/icons/CallToAction';
 import './editor.scss';
 import metadata from './block.json';
 const { attributes, category, name } = metadata;
-import { CustomPlacementEditor } from './edit';
+import { SinglePromptEditor } from './edit';
 
-export const registerCustomPlacementBlock = () => {
+export const registerSinglePromptBlock = () => {
 	const isPrompt = Boolean( window.newspack_popups_blocks_data?.is_prompt );
 
 	// No prompts inside prompts.
@@ -26,21 +26,20 @@ export const registerCustomPlacementBlock = () => {
 	}
 
 	registerBlockType( name, {
-		title: __( 'Newspack Campaigns: Custom Placement', 'newspack-listing' ),
+		title: __( 'Newspack Campaigns: Single Prompt', 'newspack-listing' ),
 		icon: <CallToActionIcon style={ { color: '#36f' } } />,
 		category,
 		keywords: [
 			__( 'newspack', 'newspack-popups' ),
 			__( 'campaigns', 'newspack-popups' ),
 			__( 'campaign', 'newspack-popups' ),
+			__( 'single', 'newspack-popups' ),
 			__( 'prompt', 'newspack-popups' ),
-			__( 'custom', 'newspack-popups' ),
-			__( 'placement', 'newspack-popups' ),
 		],
 
 		attributes,
 
-		edit: CustomPlacementEditor,
+		edit: SinglePromptEditor,
 		save: () => null, // uses view.php
 	} );
 };
