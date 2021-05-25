@@ -86,19 +86,25 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 		);
 
 		$amp_access_config = self::getAMPAccessConfig();
+		$amp_access_ids    = array_map(
+			function( $popup ) {
+				return $popup->id;
+			},
+			$amp_access_config['popups']
+		);
 		self::assertEquals(
 			count( $amp_access_config['popups'] ),
 			2,
 			'AMP access has both popups in the config.'
 		);
-		self::assertEquals(
-			$amp_access_config['popups'][0]->id,
+		self::assertContains(
 			'id_' . $shortcoded_popup_id,
+			$amp_access_ids,
 			'AMP access has correct popup id.'
 		);
-		self::assertEquals(
-			$amp_access_config['popups'][1]->id,
+		self::assertContains(
 			'id_' . self::$popup_id,
+			$amp_access_ids,
 			'AMP access has correct popup id.'
 		);
 	}
@@ -214,6 +220,33 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 			self::$popup_content,
 			self::$post_content,
 			'Includes the popup content when the custom placement is present in post content.'
+		);
+	}
+
+	/**
+	 * Test manual placement popups and single prompt block.
+	 */
+	public function test_prompt_block() {
+		Newspack_Popups_Model::set_popup_options(
+			self::$popup_id,
+			[
+				'placement' => 'manual',
+				'frequency' => 'always',
+			]
+		);
+
+		self::renderPost();
+		self::assertNotContains(
+			self::$popup_content,
+			self::$post_content,
+			'Does not include the popup content, since it is a manual-only placement popup.'
+		);
+
+		self::renderPost( '', '<!-- wp:newspack-popups/single-prompt {"promptId":' . self::$popup_id . '} /-->' );
+		self::assertContains(
+			self::$popup_content,
+			self::$post_content,
+			'Includes the popup content when the prompt is placed in post content via the Single Prompt block.'
 		);
 	}
 
