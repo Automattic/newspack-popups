@@ -102,13 +102,15 @@ class SegmentationTest extends WP_UnitTestCase {
 		// And a duplicate.
 		$maybe_show_campaign = new Maybe_Show_Campaign();
 
+		$date = gmdate( 'Y-m-d', strtotime( '+1 week' ) );
+
 		// Duplicate article read, but on a different date.
 		$_REQUEST            = self::$request;
 		$_REQUEST['visit']   = wp_json_encode(
 			array_merge(
 				(array) json_decode( self::$request['visit'] ),
 				[
-					'date' => gmdate( 'Y-m-d', strtotime( '+1 week' ) ),
+					'date' => $date,
 				]
 			)
 		);
@@ -139,7 +141,7 @@ class SegmentationTest extends WP_UnitTestCase {
 				(array) json_decode( self::$request['visit'] ),
 				[
 					'post_id' => '23',
-					'date'    => gmdate( 'Y-m-d', strtotime( '+1 week' ) ),
+					'date'    => $date,
 				]
 			)
 		);
