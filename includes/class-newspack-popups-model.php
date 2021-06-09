@@ -826,7 +826,7 @@ final class Newspack_Popups_Model {
 				<?php if ( ! empty( $popup['title'] ) && $display_title ) : ?>
 					<h1 class="newspack-popup-title"><?php echo esc_html( $popup['title'] ); ?></h1>
 				<?php endif; ?>
-				<?php echo apply_filters( 'the_content', $body ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+				<?php echo do_shortcode( $body ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				<?php if ( ! Newspack_Popups_Settings::is_non_interactive() ) : ?>
 					<?php echo self::render_permanent_dismissal_form( $element_id, $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				<?php endif; ?>
@@ -901,7 +901,7 @@ final class Newspack_Popups_Model {
 					<?php if ( ! empty( $popup['title'] ) && $display_title ) : ?>
 						<h1 class="newspack-popup-title"><?php echo esc_html( $popup['title'] ); ?></h1>
 					<?php endif; ?>
-					<?php echo apply_filters( 'the_content', $body ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					<?php echo do_shortcode( $body ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					<?php echo self::render_permanent_dismissal_form( $element_id, $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					<form class="popup-dismiss-form <?php echo esc_attr( self::get_form_class( 'dismiss', $element_id ) ); ?> popup-action-form <?php echo esc_attr( self::get_form_class( 'action', $element_id ) ); ?> align-<?php echo esc_attr( $dismiss_text_alignment ); ?>"
 						method="POST"
