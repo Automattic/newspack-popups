@@ -21,6 +21,7 @@ import SegmentationSidebar from './SegmentationSidebar';
 import DismissSidebar from './DismissSidebar';
 import ColorsSidebar from './ColorsSidebar';
 import Preview from './Preview';
+import Duplicate from './Duplicate';
 import EditorAdditions from './EditorAdditions';
 import './style.scss';
 
@@ -118,6 +119,7 @@ registerPlugin( 'newspack-popups-editor', {
 const PluginPostStatusInfoTest = () => (
 	<PluginPostStatusInfo>
 		<Preview />
+		<Duplicate />
 	</PluginPostStatusInfo>
 );
 registerPlugin( 'newspack-popups-preview', { render: PluginPostStatusInfoTest } );

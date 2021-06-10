@@ -725,5 +725,51 @@ final class Newspack_Popups {
 		);
 		return $groups;
 	}
+
+	/**
+	 * Duplicate a prompt. Duplicates are created with all the same content and options
+	 * as the source prompt, but are always set to draft status at first.
+	 *
+	 * @param int $id Prompt ID.
+	 * @return int|boolean|WP_Error The copy's post ID, false if the ID to copy isn't a valid prompt, or WP_Error if the operation failed.
+	 */
+	public static function duplicate_popup( $id ) {
+		$old_popup    = get_post( $id );
+		$new_popup_id = false;
+
+		if ( is_a( $old_popup, 'WP_Post' ) && self::NEWSPACK_POPUPS_CPT === $old_popup->post_type ) {
+			$new_popup = [
+				'post_type'     => self::NEWSPACK_POPUPS_CPT,
+				'post_status'   => 'draft',
+				/* translators: %s: Duplicate prompt title */
+				'post_title'    => sprintf( __( 'Copy of %s', 'newspack-popups' ), $old_popup->post_title ),
+				'post_author'   => $old_popup->post_author,
+				'post_content'  => $old_popup->post_content,
+				'post_excerpt'  => $old_popup->post_excerpt,
+				'post_category' => wp_get_post_categories( $id, [ 'fields' => 'ids' ] ),
+				'tags_input'    => wp_get_post_tags( $id, [ 'fields' => 'ids' ] ),
+			];
+
+			// Apply campaign taxonomy.
+			$new_popup['tax_input'][ self::NEWSPACK_POPUPS_TAXONOMY ] = wp_get_post_terms(
+				$id,
+				self::NEWSPACK_POPUPS_TAXONOMY,
+				[ 'fields' => 'ids' ]
+			);
+
+			// Create the copy.
+			$new_popup_id = wp_insert_post( $new_popup );
+
+			// Set prompt options to match old prompt.
+			$old_popup_options = Newspack_Popups_Model::get_popup_options( $id );
+			foreach ( $old_popup_options as $key => $value ) {
+				if ( ! empty( $value ) ) {
+					update_post_meta( $new_popup_id, $key, $value );
+				}
+			}
+		}
+
+		return $new_popup_id;
+	}
 }
 Newspack_Popups::instance();
