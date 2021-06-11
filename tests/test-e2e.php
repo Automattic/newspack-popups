@@ -83,4 +83,51 @@ class E2ETest extends WP_UnitTestCase_PageWithPopups {
 			'Only one popup (the one with segment assigned) of each mutually-excluding pair is displayed.'
 		);
 	}
+
+	/**
+	 * Test duplication feature.
+	 * Duplicated prompts should have the same content, taxonomy terms, and prompt options as the original.
+	 * Duplicated prompt title should have "Copy of" appended to the original prompt's title.
+	 */
+	public function test_e2e_duplicate_prompt() {
+		$original_popup_id = self::createPopup(
+			'Hello world',
+			[
+				'placement'           => 'center',
+				'selected_segment_id' => self::$segments[0]['id'],
+			]
+		);
+
+		$duplicate_popup_id = Newspack_Popups::duplicate_popup( $original_popup_id );
+		$original_popup     = get_post( $original_popup_id );
+		$duplicate_popup    = get_post( $duplicate_popup_id );
+
+		self::assertEquals(
+			$duplicate_popup->post_title,
+			'Copy of Popup title',
+			'Duplicated prompt appends "Copy of" to original post title.'
+		);
+
+		self::assertEquals(
+			$duplicate_popup->post_content,
+			$original_popup->post_content,
+			'Duplicated prompt has same content as original prompt.'
+		);
+
+		self::assertEmpty(
+			array_diff(
+				wp_get_post_terms( $original_popup_id, [ 'category', 'post_tag', Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY ] ),
+				wp_get_post_terms( $duplicate_popup_id, [ 'category', 'post_tag', Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY ] )
+			),
+			'Duplicated prompt has the same categories, tags, and campaign terms as original prompt.'
+		);
+
+		self::assertEmpty(
+			array_diff(
+				Newspack_Popups_Model::get_popup_options( $original_popup_id ),
+				Newspack_Popups_Model::get_popup_options( $duplicate_popup_id )
+			),
+			'Duplicated prompt has the prompt options as the original prompt.'
+		);
+	}
 }
