@@ -117,7 +117,7 @@ registerPlugin( 'newspack-popups-editor', {
 
 // Add a button in post status section
 const PluginPostStatusInfoTest = () => (
-	<PluginPostStatusInfo>
+	<PluginPostStatusInfo className="newspack-popups__status-options">
 		<Preview />
 		<Duplicate />
 	</PluginPostStatusInfo>
