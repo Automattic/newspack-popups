@@ -153,7 +153,7 @@ class E2ETest extends WP_UnitTestCase_PageWithPopups {
 				Newspack_Popups_Model::get_popup_options( $original_popup_id ),
 				Newspack_Popups_Model::get_popup_options( $duplicate_popup_id )
 			),
-			'Duplicated prompt has the prompt options as the original prompt.'
+			'Duplicated prompt has the same prompt options as the original prompt.'
 		);
 	}
 }
