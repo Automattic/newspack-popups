@@ -192,7 +192,7 @@ final class Newspack_Popups_API {
 
 
 	/**
-	 * Duplicate a Pop-up.
+	 * Duplicate a prompt.
 	 *
 	 * @param WP_REST_Request $request Full details about the request.
 	 * @return WP_REST_Response with complete info to render the Engagement Wizard.

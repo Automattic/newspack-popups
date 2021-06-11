@@ -763,9 +763,7 @@ final class Newspack_Popups {
 			// Set prompt options to match old prompt.
 			$old_popup_options = Newspack_Popups_Model::get_popup_options( $id );
 			foreach ( $old_popup_options as $key => $value ) {
-				if ( ! empty( $value ) ) {
-					update_post_meta( $new_popup_id, $key, $value );
-				}
+				update_post_meta( $new_popup_id, $key, $value );
 			}
 		}
 
