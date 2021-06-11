@@ -98,6 +98,32 @@ class E2ETest extends WP_UnitTestCase_PageWithPopups {
 			]
 		);
 
+		// Set up some taxonomy terms to apply to the prompt.
+		$category_id = $this->factory->term->create(
+			[
+				'name'     => 'Featured',
+				'taxonomy' => 'category',
+				'slug'     => 'featured',
+			]
+		);
+		$tag_id      = $this->factory->term->create(
+			[
+				'name'     => 'Best of',
+				'taxonomy' => 'post_tag',
+				'slug'     => 'best-of',
+			]
+		);
+		$campaign_id = $this->factory->term->create(
+			[
+				'name'     => 'Everyday',
+				'taxonomy' => Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY,
+				'slug'     => 'everyday',
+			]
+		);
+		wp_set_post_terms( $original_popup_id, [ $category_id ], 'category' );
+		wp_set_post_terms( $original_popup_id, [ $tag_id ], 'post_tag' );
+		wp_set_post_terms( $original_popup_id, [ $campaign_id ], Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY );
+
 		$duplicate_popup_id = Newspack_Popups::duplicate_popup( $original_popup_id );
 		$original_popup     = get_post( $original_popup_id );
 		$duplicate_popup    = get_post( $duplicate_popup_id );
@@ -116,8 +142,8 @@ class E2ETest extends WP_UnitTestCase_PageWithPopups {
 
 		self::assertEmpty(
 			array_diff(
-				wp_get_post_terms( $original_popup_id, [ 'category', 'post_tag', Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY ] ),
-				wp_get_post_terms( $duplicate_popup_id, [ 'category', 'post_tag', Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY ] )
+				wp_get_post_terms( $original_popup_id, [ 'category', 'post_tag', Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY ], [ 'fields' => 'ids' ] ),
+				wp_get_post_terms( $duplicate_popup_id, [ 'category', 'post_tag', Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY ], [ 'fields' => 'ids' ] )
 			),
 			'Duplicated prompt has the same categories, tags, and campaign terms as original prompt.'
 		);

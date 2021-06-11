@@ -749,16 +749,16 @@ final class Newspack_Popups {
 				'post_category' => wp_get_post_categories( $id, [ 'fields' => 'ids' ] ),
 				'tags_input'    => wp_get_post_tags( $id, [ 'fields' => 'ids' ] ),
 			];
+			// Create the copy.
+			$new_popup_id = wp_insert_post( $new_popup );
 
 			// Apply campaign taxonomy.
-			$new_popup['tax_input'][ self::NEWSPACK_POPUPS_TAXONOMY ] = wp_get_post_terms(
+			$old_campaigns = wp_get_post_terms(
 				$id,
 				self::NEWSPACK_POPUPS_TAXONOMY,
 				[ 'fields' => 'ids' ]
 			);
-
-			// Create the copy.
-			$new_popup_id = wp_insert_post( $new_popup );
+			wp_set_post_terms( $new_popup_id, $old_campaigns, self::NEWSPACK_POPUPS_TAXONOMY );
 
 			// Set prompt options to match old prompt.
 			$old_popup_options = Newspack_Popups_Model::get_popup_options( $id );
