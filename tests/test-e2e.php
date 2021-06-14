@@ -87,7 +87,7 @@ class E2ETest extends WP_UnitTestCase_PageWithPopups {
 	/**
 	 * Test duplication feature.
 	 * Duplicated prompts should have the same content, taxonomy terms, and prompt options as the original.
-	 * Duplicated prompt title should have "Copy of" appended to the original prompt's title.
+	 * Duplicated prompt title should have "copy" appended to the original prompt's title.
 	 */
 	public function test_e2e_duplicate_prompt() {
 		$original_popup_id = self::createPopup(
@@ -124,14 +124,22 @@ class E2ETest extends WP_UnitTestCase_PageWithPopups {
 		wp_set_post_terms( $original_popup_id, [ $tag_id ], 'post_tag' );
 		wp_set_post_terms( $original_popup_id, [ $campaign_id ], Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY );
 
-		$duplicate_popup_id = Newspack_Popups::duplicate_popup( $original_popup_id );
-		$original_popup     = get_post( $original_popup_id );
-		$duplicate_popup    = get_post( $duplicate_popup_id );
+		$duplicate_popup_id  = Newspack_Popups::duplicate_popup( $original_popup_id );
+		$second_duplicate_id = Newspack_Popups::duplicate_popup( $duplicate_popup_id );
+		$original_popup      = get_post( $original_popup_id );
+		$duplicate_popup     = get_post( $duplicate_popup_id );
+		$second_duplicate    = get_post( $second_duplicate_id );
 
 		self::assertEquals(
 			$duplicate_popup->post_title,
-			'Copy of Popup title',
-			'Duplicated prompt appends "Copy of" to original post title.'
+			'Popup title copy',
+			'Duplicated prompt appends "copy" to original post title.'
+		);
+
+		self::assertEquals(
+			$second_duplicate->post_title,
+			'Popup title copy 2',
+			'Subsequent duplicates are iterated based on the original’s title.'
 		);
 
 		self::assertEquals(
