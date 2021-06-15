@@ -83,4 +83,85 @@ class E2ETest extends WP_UnitTestCase_PageWithPopups {
 			'Only one popup (the one with segment assigned) of each mutually-excluding pair is displayed.'
 		);
 	}
+
+	/**
+	 * Test duplication feature.
+	 * Duplicated prompts should have the same content, taxonomy terms, and prompt options as the original.
+	 * Duplicated prompt title should have "copy" appended to the original prompt's title.
+	 */
+	public function test_e2e_duplicate_prompt() {
+		$original_popup_id = self::createPopup(
+			'Hello world',
+			[
+				'placement'           => 'center',
+				'selected_segment_id' => self::$segments[0]['id'],
+			]
+		);
+
+		// Set up some taxonomy terms to apply to the prompt.
+		$category_id = $this->factory->term->create(
+			[
+				'name'     => 'Featured',
+				'taxonomy' => 'category',
+				'slug'     => 'featured',
+			]
+		);
+		$tag_id      = $this->factory->term->create(
+			[
+				'name'     => 'Best of',
+				'taxonomy' => 'post_tag',
+				'slug'     => 'best-of',
+			]
+		);
+		$campaign_id = $this->factory->term->create(
+			[
+				'name'     => 'Everyday',
+				'taxonomy' => Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY,
+				'slug'     => 'everyday',
+			]
+		);
+		wp_set_post_terms( $original_popup_id, [ $category_id ], 'category' );
+		wp_set_post_terms( $original_popup_id, [ $tag_id ], 'post_tag' );
+		wp_set_post_terms( $original_popup_id, [ $campaign_id ], Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY );
+
+		$duplicate_popup_id  = Newspack_Popups::duplicate_popup( $original_popup_id );
+		$second_duplicate_id = Newspack_Popups::duplicate_popup( $duplicate_popup_id );
+		$original_popup      = get_post( $original_popup_id );
+		$duplicate_popup     = get_post( $duplicate_popup_id );
+		$second_duplicate    = get_post( $second_duplicate_id );
+
+		self::assertEquals(
+			$duplicate_popup->post_title,
+			'Popup title copy',
+			'Duplicated prompt appends "copy" to original post title.'
+		);
+
+		self::assertEquals(
+			$second_duplicate->post_title,
+			'Popup title copy 2',
+			'Subsequent duplicates are iterated based on the original’s title.'
+		);
+
+		self::assertEquals(
+			$duplicate_popup->post_content,
+			$original_popup->post_content,
+			'Duplicated prompt has same content as original prompt.'
+		);
+
+		self::assertEmpty(
+			array_diff(
+				wp_get_post_terms( $original_popup_id, [ 'category', 'post_tag', Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY ], [ 'fields' => 'ids' ] ),
+				wp_get_post_terms( $duplicate_popup_id, [ 'category', 'post_tag', Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY ], [ 'fields' => 'ids' ] )
+			),
+			'Duplicated prompt has the same categories, tags, and campaign terms as original prompt.'
+		);
+
+		self::assertEmpty(
+			array_diff(
+				Newspack_Popups_Model::get_popup_options( $original_popup_id ),
+				Newspack_Popups_Model::get_popup_options( $duplicate_popup_id )
+			),
+			'Duplicated prompt has the same prompt options as the original prompt.'
+		);
+	}
 }
