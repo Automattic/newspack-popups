@@ -398,4 +398,27 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 			'The popup with the segment comes first in the array.'
 		);
 	}
+
+	/**
+	 * Account related page handling.
+	 */
+	public function test_account_related_posts() {
+		$woo_commerce_account_shortcode = 'woocommerce_my_account';
+		$post_with_account_details      = "<!-- wp:shortcode -->[$woo_commerce_account_shortcode]<!-- /wp:shortcode -->";
+
+		// Register WooCommerce shortcode.
+		add_shortcode(
+			$woo_commerce_account_shortcode,
+			function() use ( $post_with_account_details ) {
+				return $post_with_account_details;
+			} 
+		);
+		self::renderPost( '', $post_with_account_details );
+
+		self::assertStringNotContainsString(
+			self::$popup_content,
+			self::$post_content,
+			'Popup content not rendered in account related posts.'
+		);
+	}
 }
