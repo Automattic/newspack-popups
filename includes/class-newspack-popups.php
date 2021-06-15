@@ -605,6 +605,15 @@ final class Newspack_Popups {
 	}
 
 	/**
+	 * Is the post related to the user account.
+	 * 
+	 * @param WP_Post $post The prompt post object.
+	 */
+	public static function is_account_related_post( $post ) {
+		return has_shortcode( $post->post_content, 'woocommerce_my_account' );
+	}
+
+	/**
 	 * Create campaign.
 	 *
 	 * @param string $name New campaign name.
