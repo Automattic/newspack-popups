@@ -415,10 +415,6 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 		);
 		self::renderPost( '', $post_with_account_details );
 
-		self::assertStringNotContainsString(
-			self::$popup_content,
-			self::$post_content,
-			'Popup content not rendered in account related posts.'
-		);
+		self::assertFalse( strpos( self::$post_content, self::$popup_content ), 'Popup content not rendered in account-related posts.' );
 	}
 }
