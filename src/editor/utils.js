@@ -106,6 +106,10 @@ export const updateEditorColors = backgroundColor => {
 			'--newspack-popups-editor-placeholder-color',
 			`${ foregroundColor }80`
 		);
+		editorPostTitleEl.style.setProperty(
+			'--newspack-popups-editor-background-color',
+			`${ foregroundColor }20`
+		);
 	}
 };
 

@@ -43,4 +43,22 @@
 			display: none;
 		}
 	}
+
+	&__duplicate-modal {
+		min-width: 500px;
+
+		.components-notice {
+			margin: 0 0 1rem 0;
+		}
+
+		.components-text-control__input[disabled] {
+			background-color: #f0f0f0;
+		}
+
+		.newspack-buttons-card {
+			.components-button.is-secondary {
+				margin-left: 0.5rem;
+			}
+		}
+	}
 }
