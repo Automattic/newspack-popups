@@ -2,7 +2,7 @@
  * WordPress dependencies
  */
 import apiFetch from '@wordpress/api-fetch';
-import { Button, Modal, Notice, TextControl } from '@wordpress/components';
+import { Button, Flex, Modal, Notice, TextControl } from '@wordpress/components';
 import { compose } from '@wordpress/compose';
 import { withSelect, withDispatch } from '@wordpress/data';
 import { useEffect, useState } from '@wordpress/element';
@@ -90,25 +90,25 @@ const DuplicateButton = ( {
 					) }
 					{ duplicated ? (
 						<>
+							<Notice status="success" isDismissible={ false }>
+								{ sprintf(
+									__( 'Duplicate of “%s” created as a draft.', 'newspack-popups' ),
+									title
+								) }
+							</Notice>
 							{ ( ! campaignGroups || 0 === campaignGroups.length ) && (
 								<Notice status="warning" isDismissible={ false }>
 									{ __( 'The prompt is currently unassigned.', 'newspack-popups' ) }
 								</Notice>
 							) }
-							<p>
-								{ sprintf(
-									__( 'Duplicate of “%s” created as a draft.', 'newspack-popups' ),
-									title
-								) }
-							</p>
-							<div className="newspack-buttons-card">
+							<Flex justify="flex-end">
 								<Button isSecondary onClick={ () => setModalVisible( false ) }>
 									{ __( 'Close', 'newspack-popups' ) }
 								</Button>
 								<Button isPrimary href={ `/wp-admin/post.php?post=${ duplicated }&action=edit` }>
 									{ __( 'Edit', 'newspack-popups' ) }
 								</Button>
-							</div>
+							</Flex>
 						</>
 					) : (
 						<>
@@ -119,11 +119,11 @@ const DuplicateButton = ( {
 							) }
 							<TextControl
 								disabled={ isSavingPost || null === duplicateTitle }
-								label={ __( 'New Title', 'newspack-popups' ) }
+								label={ __( 'Title', 'newspack-popups' ) }
 								value={ duplicateTitle }
 								onChange={ value => setDuplicateTitle( value ) }
 							/>
-							<div className="newspack-buttons-card">
+							<Flex justify="flex-end">
 								<Button
 									isBusy={ isSavingPost }
 									isSecondary
@@ -145,7 +145,7 @@ const DuplicateButton = ( {
 								>
 									{ __( 'Duplicate', 'newspack-popups' ) }
 								</Button>
-							</div>
+							</Flex>
 						</>
 					) }
 				</Modal>
