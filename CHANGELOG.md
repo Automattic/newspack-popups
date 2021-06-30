@@ -1,3 +1,10 @@
+# [1.35.0](https://github.com/Automattic/newspack-popups/compare/v1.34.0...v1.35.0) (2021-06-30)
+
+
+### Features
+
+* improved duplication UI via modal ([#564](https://github.com/Automattic/newspack-popups/issues/564)) ([8e12b2e](https://github.com/Automattic/newspack-popups/commit/8e12b2efcc98d5cce5332cc2770791b7ba0a1af1))
+
 # [1.34.0](https://github.com/Automattic/newspack-popups/compare/v1.33.0...v1.34.0) (2021-06-15)
 
 
