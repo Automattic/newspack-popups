@@ -389,6 +389,12 @@ final class Newspack_Popups_Model {
 			$popup['campaign_groups'] = get_the_terms( $id, Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY );
 		}
 
+		$duplicate_of = get_post_meta( $id, 'duplicate_of', true );
+
+		if ( $duplicate_of ) {
+			$popup['duplicate_of'] = $duplicate_of;
+		}
+
 		if ( self::is_inline( $popup ) ) {
 			return $popup;
 		}

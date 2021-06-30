@@ -43,4 +43,22 @@
 			display: none;
 		}
 	}
+
+	&__duplicate-modal {
+		@media only screen and ( min-width: 600px ) {
+			min-width: 560px;
+		}
+
+		.components-notice {
+			margin: 0 0 24px 0;
+		}
+
+		.components-text-control__input[disabled] {
+			background-color: #f0f0f0;
+		}
+
+		.components-flex {
+			margin-top: 24px;
+		}
+	}
 }
