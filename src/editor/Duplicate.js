@@ -98,7 +98,10 @@ const DuplicateButton = ( {
 							</Notice>
 							{ ( ! campaignGroups || 0 === campaignGroups.length ) && (
 								<Notice status="warning" isDismissible={ false }>
-									{ __( 'This prompt is currently not assigned to any campaign.', 'newspack-popups' ) }
+									{ __(
+										'This prompt is currently not assigned to any campaign.',
+										'newspack-popups'
+									) }
 								</Notice>
 							) }
 							<Flex justify="flex-end">

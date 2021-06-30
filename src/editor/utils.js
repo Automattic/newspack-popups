@@ -124,8 +124,8 @@ export const isCustomPlacement = placementValue => {
  * Given a placement value, construct a context-sensitive help message to display in the editor sidebar.
  *
  * @param {string} placementValue Placement of the prompt.
- * @param {int|string} triggerPercentage Insertion percentage, for inline prompts.
- * @returns
+ * @param {number|string} triggerPercentage Insertion percentage, for inline prompts.
+ * @return {string} An appropriate help message.
  */
 export const getPlacementHelpMessage = ( placementValue, triggerPercentage = 0 ) => {
 	if ( isCustomPlacement( placementValue ) ) {
