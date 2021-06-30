@@ -114,7 +114,7 @@ const DuplicateButton = ( {
 						<>
 							{ ( ! campaignGroups || 0 === campaignGroups.length ) && (
 								<Notice status="warning" isDismissible={ false }>
-									{ __( 'This prompt will be unassigned.', 'newspack-popups' ) }
+									{ __( 'This prompt will not be assigned to any campaign.', 'newspack-popups' ) }
 								</Notice>
 							) }
 							<TextControl
