@@ -619,7 +619,7 @@ final class Newspack_Popups {
 
 	/**
 	 * Is the post related to the user account.
-	 * 
+	 *
 	 * @param WP_Post $post The prompt post object.
 	 */
 	public static function is_account_related_post( $post ) {
@@ -781,10 +781,11 @@ final class Newspack_Popups {
 	 * Duplicate a prompt. Duplicates are created with all the same content and options
 	 * as the source prompt, but are always set to draft status at first.
 	 *
-	 * @param int $id Prompt ID.
+	 * @param int    $id Prompt ID to duplicate.
+	 * @param string $title Title to give to the duplicate.
 	 * @return int|boolean|WP_Error The copy's post ID, false if the ID to copy isn't a valid prompt, or WP_Error if the operation failed.
 	 */
-	public static function duplicate_popup( $id ) {
+	public static function duplicate_popup( $id, $title = '' ) {
 		$old_popup    = get_post( $id );
 		$new_popup_id = false;
 
@@ -794,7 +795,7 @@ final class Newspack_Popups {
 			$new_popup    = [
 				'post_type'     => self::NEWSPACK_POPUPS_CPT,
 				'post_status'   => 'draft',
-				'post_title'    => self::get_duplicate_title( $original_id ),
+				'post_title'    => ! empty( $title ) ? $title : self::get_duplicate_title( $original_id ),
 				'post_author'   => $old_popup->post_author,
 				'post_content'  => $old_popup->post_content,
 				'post_excerpt'  => $old_popup->post_excerpt,

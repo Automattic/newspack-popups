@@ -72,12 +72,30 @@ final class Newspack_Popups_API {
 			'newspack-popups/v1',
 			'/(?P<id>\d+)/duplicate',
 			[
-				'methods'             => \WP_REST_Server::EDITABLE,
-				'callback'            => [ $this, 'api_duplicate_popup' ],
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => [ $this, 'api_get_duplicate_title' ],
 				'permission_callback' => [ $this, 'permission_callback' ],
 				'args'                => [
 					'id' => [
 						'sanitize_callback' => 'absint',
+					],
+				],
+			]
+		);
+
+		\register_rest_route(
+			'newspack-popups/v1',
+			'/(?P<id>\d+)/duplicate',
+			[
+				'methods'             => \WP_REST_Server::EDITABLE,
+				'callback'            => [ $this, 'api_duplicate_popup' ],
+				'permission_callback' => [ $this, 'permission_callback' ],
+				'args'                => [
+					'id'    => [
+						'sanitize_callback' => 'absint',
+					],
+					'title' => [
+						'sanitize_callback' => 'sanitize_text_field',
 					],
 				],
 			]
@@ -190,6 +208,16 @@ final class Newspack_Popups_API {
 		return new \WP_REST_Response( [] );
 	}
 
+	/**
+	 * Get default title for a duplicated prompt.
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return WP_REST_Response with complete info to render the Engagement Wizard.
+	 */
+	public function api_get_duplicate_title( $request ) {
+		$response = Newspack_Popups::get_duplicate_title( $request['id'] );
+		return rest_ensure_response( $response );
+	}
 
 	/**
 	 * Duplicate a prompt.
@@ -198,7 +226,7 @@ final class Newspack_Popups_API {
 	 * @return WP_REST_Response with complete info to render the Engagement Wizard.
 	 */
 	public function api_duplicate_popup( $request ) {
-		$response = Newspack_Popups::duplicate_popup( $request['id'] );
+		$response = Newspack_Popups::duplicate_popup( $request['id'], $request['title'] );
 		return rest_ensure_response( $response );
 	}
 }
