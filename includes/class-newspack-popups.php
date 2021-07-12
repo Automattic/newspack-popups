@@ -386,7 +386,7 @@ final class Newspack_Popups {
 		wp_enqueue_style( 'newspack-popups-blocks' );
 
 		// Don't enqueue Prompt editor files if we don't have a valid post type or ID (e.g. on the Widget Blocks screen).
-		if ( empty( $screen->post_type ) || empty( get_post_ID() ) ) {
+		if ( empty( $screen->post_type ) || empty( get_the_ID() ) ) {
 			return;
 		}
 
