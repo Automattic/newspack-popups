@@ -385,6 +385,11 @@ final class Newspack_Popups {
 		wp_style_add_data( 'newspack-popups-blocks', 'rtl', 'replace' );
 		wp_enqueue_style( 'newspack-popups-blocks' );
 
+		// Don't enqueue Prompt editor files if we don't have a valid post type or ID (e.g. on the Widget Blocks screen).
+		if ( empty( $screen->post_type ) || empty( get_post_ID() ) ) {
+			return;
+		}
+
 		if ( self::NEWSPACK_POPUPS_CPT !== $screen->post_type ) {
 			if ( 'page' !== $screen->post_type || 'post' !== $screen->post_type ) {
 				// Script for global settings.
