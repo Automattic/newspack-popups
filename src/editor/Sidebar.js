@@ -116,7 +116,7 @@ const Sidebar = ( {
 				checked={ display_title }
 				onChange={ value => onMetaFieldChange( 'display_title', value ) }
 			/>
-			{ ( placement === 'inline' || isCustomPlacement( placement ) ) && (
+			{ ( placement === 'inline' || placement === 'manual' || isCustomPlacement( placement ) ) && (
 				<ToggleControl
 					label={ __( 'Hide Prompt Border', 'newspack-popups' ) }
 					checked={ hide_border }
