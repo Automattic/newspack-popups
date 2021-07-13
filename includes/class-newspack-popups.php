@@ -391,8 +391,9 @@ final class Newspack_Popups {
 		}
 
 		if ( self::NEWSPACK_POPUPS_CPT !== $screen->post_type ) {
-			if ( 'page' !== $screen->post_type || 'post' !== $screen->post_type ) {
-				// Script for global settings.
+			// It's not a popup CPT.
+			if ( 'page' === $screen->post_type || 'post' === $screen->post_type ) {
+				// But it's a page or post.
 				\wp_enqueue_script(
 					'newspack-popups',
 					plugins_url( '../dist/documentSettings.js', __FILE__ ),
