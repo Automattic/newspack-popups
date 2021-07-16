@@ -1054,7 +1054,7 @@ final class Newspack_Popups_Model {
 	 * @return string Endpoint URL.
 	 */
 	public static function get_reader_endpoint() {
-		return plugins_url( '../api/campaigns/index.php', __FILE__ );
+		return str_replace( 'http:', 'https:', plugins_url( '../api/campaigns/index.php', __FILE__ ) );
 	}
 
 	/**
