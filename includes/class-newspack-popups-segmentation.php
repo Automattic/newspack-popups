@@ -372,9 +372,9 @@ final class Newspack_Popups_Segmentation {
 		// Filter out non-existing categories.
 		$existing_categories_ids = get_categories(
 			[
-				'hide_empty' => false, 
+				'hide_empty' => false,
 				'fields'     => 'ids',
-			] 
+			]
 		);
 		foreach ( $segments as &$segment ) {
 			if ( ! isset( $segment['configuration']['favorite_categories'] ) ) {
