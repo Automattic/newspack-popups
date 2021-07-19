@@ -29,14 +29,18 @@ final class Newspack_Popups_Model {
 	 * Retrieve all Popups (first 100).
 	 *
 	 * @param  boolean $include_unpublished Whether to include unpublished posts.
+	 * @param  boolean $include_trash Whether to include trashed posts.
 	 * @return array Array of Popup objects.
 	 */
-	public static function retrieve_popups( $include_unpublished = false ) {
+	public static function retrieve_popups( $include_unpublished = false, $include_trash = false ) {
 		$args = [
 			'post_type'      => Newspack_Popups::NEWSPACK_POPUPS_CPT,
-			'post_status'    => $include_unpublished ? [ 'draft', 'pending', 'future', 'publish' ] : 'publish',
+			'post_status'    => $include_unpublished ? [ 'draft', 'pending', 'future', 'publish' ] : [ 'publish' ],
 			'posts_per_page' => 100,
 		];
+		if ( $include_trash ) {
+			$args['post_status'][] = 'trash';
+		}
 
 		$popups = self::retrieve_popups_with_query( new WP_Query( $args ), true );
 		return $popups;
