@@ -518,7 +518,7 @@ final class Newspack_Popups_Inserter {
 		);
 
 		// Get prompts for custom placements.
-		$custom_placement_ids    = self::get_custom_placement_ids( get_the_content() );
+		$custom_placement_ids    = Newspack_Popups_Custom_Placements::get_custom_placement_values();
 		$custom_placement_popups = array_reduce(
 			Newspack_Popups_Custom_Placements::get_prompts_for_custom_placement( $custom_placement_ids ),
 			function ( $acc, $custom_placement_popup ) {
@@ -534,11 +534,16 @@ final class Newspack_Popups_Inserter {
 			[]
 		);
 
+		// Get manual-only prompts, which might be placed as a Single Prompt block in a widget area (post-WP 5.8).
+		$manual_only_popups = Newspack_Popups_Model::retrieve_eligible_popups( false, false, [ 'manual' ] );
+
 		$popups = array_merge(
 			self::popups_for_post(),
 			$shortcoded_popups,
-			$custom_placement_popups
+			$custom_placement_popups,
+			$manual_only_popups
 		);
+
 		// Prevent duplicates - a popup might be duplicated in a shortcode.
 		$unique_ids = [];
 		$popups     = array_filter(
@@ -724,35 +729,6 @@ final class Newspack_Popups_Inserter {
 	}
 
 	/**
-	 * Get custom placement IDs from a string.
-	 *
-	 * @param string $string String to assess.
-	 * @return array Found custom placement IDs.
-	 */
-	public static function get_custom_placement_ids( $string ) {
-		preg_match_all( '/<!-- wp:newspack-popups\/custom-placement {"customPlacement":".*"} \/-->/', $string, $custom_placement_ids );
-		if ( empty( $custom_placement_ids ) ) {
-			return [];
-		} else {
-			return array_unique(
-				array_map(
-					function ( $item ) {
-						preg_match( '/"customPlacement":"(.*)"/', $item, $matches );
-						if ( empty( $matches ) ) {
-							return null;
-						} else {
-							return $matches[1];
-						}
-					},
-					$custom_placement_ids[0]
-				)
-			);
-		}
-
-		return [];
-	}
-
-	/**
 	 * Some popups can only appear on Posts.
 	 *
 	 * @param object $popup The popup to assess.
@@ -827,7 +803,8 @@ final class Newspack_Popups_Inserter {
 	}
 
 	/**
-	 * Get all widget shortcoded popups IDs.
+	 * Get all widget shortcoded popups IDs. This will get prompts placed via legacy widgets (pre-WP 5.8).
+	 * Post-WP 5.8, widget blocks must be retrieved separately.
 	 *
 	 * @return array IDs of popups shortcoded in widgets.
 	 */

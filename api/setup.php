@@ -60,11 +60,12 @@ if ( file_exists( WP_CONTENT_DIR . '/object-cache.php' ) ) {
 }
 
 global $wpdb;
+$db_prefix = defined('DB_PREFIX') ? DB_PREFIX : 'wp_';
 $wpdb = new wpdb( DB_USER, DB_PASSWORD, DB_NAME, DB_HOST );
-$wpdb->set_prefix( DB_PREFIX );
+$wpdb->set_prefix( $db_prefix );
 
 global $table_prefix;
-$table_prefix = DB_PREFIX;
+$table_prefix = $db_prefix;
 
 wp_cache_init();
 
