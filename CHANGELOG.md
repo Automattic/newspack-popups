@@ -1,3 +1,13 @@
+## [1.35.1-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.35.0...v1.35.1-alpha.1) (2021-07-19)
+
+
+### Bug Fixes
+
+* allow custom placement prompts to be displayed if in widget blocks ([#578](https://github.com/Automattic/newspack-popups/issues/578)) ([aaedc03](https://github.com/Automattic/newspack-popups/commit/aaedc0355e8efbbb2c4dd240cd4d67439506b9f0))
+* allow manual-only prompts to appear in widget blocks ([#574](https://github.com/Automattic/newspack-popups/issues/574)) ([a1c5f65](https://github.com/Automattic/newspack-popups/commit/a1c5f654968a308cf35fa4c72a350d5996cb63ec))
+* assume DB prefix; ensure https ([fee1cae](https://github.com/Automattic/newspack-popups/commit/fee1cae44d35310021867604c7c81321e0aaea75))
+* **wp-5.8:** avoid an editor crash due to missing data in widgets block editor ([#572](https://github.com/Automattic/newspack-popups/issues/572)) ([db47c64](https://github.com/Automattic/newspack-popups/commit/db47c6497f25f53612090231ee45448aef3ff839)), closes [#570](https://github.com/Automattic/newspack-popups/issues/570)
+
 # [1.35.0](https://github.com/Automattic/newspack-popups/compare/v1.34.0...v1.35.0) (2021-06-30)
 
 
