@@ -633,15 +633,20 @@ final class Newspack_Popups_Segmentation {
 
 		// Remove reader data if not containing donations nor subscriptions, and not updated in 30 days.
 		$removed_rows_count_transients = $wpdb->query( "DELETE FROM $transients_table_name WHERE `option_value` LIKE '%\"donations\";a:0%' AND `option_value` LIKE '%\"email_subscriptions\";a:0%' AND date < now() - interval 30 DAY" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
-		error_log( 'Newspack Campaigns: Data pruning – removed ' . $removed_rows_count_transients . ' rows from ' . $transients_table_name . ' table.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 
 		// Remove all preview sessions data.
 		$removed_rows_count_previews_transients = $wpdb->query( "DELETE FROM $transients_table_name WHERE option_name LIKE '%preview%'" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
-		error_log( 'Newspack Campaigns: Data pruning – removed ' . $removed_rows_count_previews_transients . ' preview session rows from ' . $transients_table_name . ' table.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 
 		// Events, like post read, don't need to stick around for more than 30 days.
 		$events_table_name         = Segmentation::get_events_table_name();
 		$removed_rows_count_events = $wpdb->query( $wpdb->prepare( "DELETE FROM $events_table_name WHERE type = %s AND created_at < now() - interval 30 DAY", 'post_read' ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
+
+		if ( defined( 'IS_TEST_ENV' ) && IS_TEST_ENV ) {
+			return;
+		}
+
+		error_log( 'Newspack Campaigns: Data pruning – removed ' . $removed_rows_count_transients . ' rows from ' . $transients_table_name . ' table.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+		error_log( 'Newspack Campaigns: Data pruning – removed ' . $removed_rows_count_previews_transients . ' preview session rows from ' . $transients_table_name . ' table.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 		error_log( 'Newspack Campaigns: Data pruning – removed ' . $removed_rows_count_events . ' rows from ' . $events_table_name . ' table.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 	}
 }
