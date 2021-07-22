@@ -54,12 +54,27 @@ function render_block( $attributes ) {
 		$prompts = \Newspack_Popups_Custom_Placements::get_prompts_for_custom_placement( [ $custom_placement_id ], 'ids', [] );
 	}
 
+	$index = 0;
+
 	if ( ! empty( $prompts ) ) {
+		$is_customizer = is_customize_preview();
+
 		if ( defined( 'WP_NEWSPACK_DEBUG' ) && WP_NEWSPACK_DEBUG ) {
 			$content .= '<!-- Newspack Campaigns: Start custom placement ' . $custom_placement_id . '-->';
 		}
+
 		foreach ( $prompts as $prompt_id ) {
-			$content .= '<!-- wp:shortcode -->[newspack-popup id="' . $prompt_id . '"]<!-- /wp:shortcode -->';
+			// If viewing the block in the Customizer preview, only show one prompt.
+			if ( $is_customizer && $index > 0 ) {
+				continue;
+			}
+
+			$content .= sprintf(
+				'<!-- wp:shortcode -->[newspack-popup id="%s"]<!-- /wp:shortcode -->',
+				$prompt_id
+			);
+
+			$index ++;
 		}
 		if ( defined( 'WP_NEWSPACK_DEBUG' ) && WP_NEWSPACK_DEBUG ) {
 			$content .= '<!-- Newspack Campaigns: End custom placement ' . $custom_placement_id . '-->';

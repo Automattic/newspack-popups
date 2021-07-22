@@ -733,9 +733,15 @@ final class Newspack_Popups_Model {
 	/**
 	 * Get amp-access attributes for a popup-enclosing amp-layout tag.
 	 *
-	 * @param object $popup Popup.
+	 * @param object  $popup Popup.
+	 * @param boolean $always_show If true, bypass AMP Access check and always show the prompt.
+	 *
+	 * @return string AMP access attribute string.
 	 */
-	public static function get_access_attrs( $popup ) {
+	public static function get_access_attrs( $popup, $always_show = false ) {
+		if ( $always_show ) {
+			return '';
+		}
 		if ( Newspack_Popups_Settings::is_non_interactive() ) {
 			return '';
 		}
@@ -794,10 +800,12 @@ final class Newspack_Popups_Model {
 	/**
 	 * Generate markup for an inline popup.
 	 *
-	 * @param string $popup The popup object.
+	 * @param string  $popup The popup object.
+	 * @param boolean $always_show If true, bypass AMP Access check and always show the prompt.
+	 *
 	 * @return string The generated markup.
 	 */
-	public static function generate_inline_popup( $popup ) {
+	public static function generate_inline_popup( $popup, $always_show = false ) {
 		global $wp;
 
 		do_action( 'newspack_campaigns_before_campaign_render', $popup );
@@ -838,7 +846,7 @@ final class Newspack_Popups_Model {
 		?>
 			<?php self::insert_event_tracking( $popup, $body, $element_id ); ?>
 			<amp-layout
-				<?php echo self::get_access_attrs( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+				<?php echo self::get_access_attrs( $popup, $always_show ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				<?php echo self::get_data_status_preview_attrs( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>"
 				role="button"
@@ -861,17 +869,19 @@ final class Newspack_Popups_Model {
 	/**
 	 * Generate markup and styles for an overlay popup.
 	 *
-	 * @param string $popup The popup object.
+	 * @param string  $popup The popup object.
+	 * @param boolean $always_show If true, bypass AMP Access check and always show the prompt.
+	 *
 	 * @return string The generated markup.
 	 */
-	public static function generate_popup( $popup ) {
+	public static function generate_popup( $popup, $always_show = false ) {
 		// If previewing a single prompt, override saved settings with preview settings.
 		if ( Newspack_Popups::previewed_popup_id() ) {
 			$popup = self::retrieve_preview_popup( Newspack_Popups::previewed_popup_id() );
 		}
 
 		if ( ! self::is_overlay( $popup ) ) {
-			return self::generate_inline_popup( $popup );
+			return self::generate_inline_popup( $popup, $always_show );
 		}
 
 		do_action( 'newspack_campaigns_before_campaign_render', $popup );

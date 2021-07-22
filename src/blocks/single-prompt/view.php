@@ -48,7 +48,10 @@ function render_block( $attributes ) {
 			$content .= '<!-- Newspack Campaigns: Start Prompt ' . $prompt_id . '-->';
 		}
 
-		$content .= '<!-- wp:shortcode -->[newspack-popup id="' . $prompt_id . '"]<!-- /wp:shortcode -->';
+		$content .= sprintf(
+			'<!-- wp:shortcode -->[newspack-popup id="%s"]<!-- /wp:shortcode -->',
+			$prompt_id
+		);
 
 		if ( defined( 'WP_NEWSPACK_DEBUG' ) && WP_NEWSPACK_DEBUG ) {
 			$content .= '<!-- Newspack Campaigns: End Prompt ' . $prompt_id . '-->';

@@ -86,6 +86,9 @@ final class Newspack_Popups_Inserter {
 		// Always enqueue scripts, since this plugin's scripts are handling pageview sending via GTAG.
 		add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
 
+		// Filter prompt shortcode if ti's being rendered as a widget block.
+		add_filter( 'widget_block_content', [ $this, 'render_prompt_inside_widget_block' ] );
+
 		add_filter(
 			'newspack_popups_assess_has_disabled_popups',
 			function ( $disabled ) {
@@ -412,6 +415,9 @@ final class Newspack_Popups_Inserter {
 	 * @return HTML
 	 */
 	public static function popup_shortcode( $atts = array() ) {
+		$is_widget_block = isset( $atts['is-widget-block'] ) && 'true' === $atts['is-widget-block'];
+		$always_show     = $is_widget_block && is_customize_preview(); // Show prompt content if being rendered as a widget block in the Customizer preview.
+
 		if ( isset( $atts['id'] ) ) {
 			$include_unpublished = Newspack_Popups::is_preview_request();
 			$found_popup         = Newspack_Popups_Model::retrieve_popup_by_id( $atts['id'], $include_unpublished );
@@ -436,7 +442,7 @@ final class Newspack_Popups_Inserter {
 
 		// Wrapping the inline popup in an aside element prevents the markup from being mangled
 		// if the shortcode is the first block.
-		return '<aside>' . Newspack_Popups_Model::generate_popup( $found_popup ) . '</aside>';
+		return '<aside>' . Newspack_Popups_Model::generate_popup( $found_popup, $always_show ) . '</aside>';
 	}
 
 	/**
@@ -773,6 +779,12 @@ final class Newspack_Popups_Inserter {
 	 * @return bool Should popup be shown.
 	 */
 	public static function should_display( $popup, $skip_context_checks = false ) {
+		// If previewing in Customizer.
+		if ( is_customize_preview() ) {
+			return true;
+		}
+
+		// Custom placements.
 		if ( Newspack_Popups_Custom_Placements::is_custom_placement( $popup ) ) {
 			return true;
 		}
@@ -822,6 +834,20 @@ final class Newspack_Popups_Inserter {
 				return $acc;
 			},
 			[]
+		);
+	}
+
+	/**
+	 *  Filters the content of the Block widget before output.
+	 *
+	 * @param string $content The widget content.
+	 * @return string The filtered widget content.
+	 */
+	public static function render_prompt_inside_widget_block( $content ) {
+		return str_replace(
+			'newspack-popup id=',
+			'newspack-popup is-widget-block="true" id=',
+			$content
 		);
 	}
 }
