@@ -75,10 +75,12 @@ class WP_UnitTestCase_PageWithPopups extends WP_UnitTestCase {
 	 * @param string $post_content_override String to render as post content.
 	 * @param array  $category_ids Ids of categories of the post.
 	 * @param array  $tag_ids Ids of tags of the post.
+	 * @param strine $post_type Type of the post.
 	 */
-	protected function renderPost( $url_query = '', $post_content_override = null, $category_ids = [], $tag_ids = [] ) {
+	protected function renderPost( $url_query = '', $post_content_override = null, $category_ids = [], $tag_ids = [], $post_type = 'post' ) {
 		$post_id = self::factory()->post->create(
 			[
+				'post_type'    => $post_type,
 				'post_content' => $post_content_override ? $post_content_override : self::$raw_post_content,
 			]
 		);

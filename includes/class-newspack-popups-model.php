@@ -47,6 +47,22 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
+	 * Retrieve all active popups.
+	 */
+	public static function retrieve_active_popups() {
+		return self::retrieve_popups_with_query(
+			new WP_Query(
+				[
+					'post_type'      => Newspack_Popups::NEWSPACK_POPUPS_CPT,
+					'post_status'    => 'publish',
+					'posts_per_page' => -1,
+				] 
+			),
+			true 
+		);
+	}
+
+	/**
 	 * Set terms for a Popup.
 	 *
 	 * @param integer $id ID of Popup.

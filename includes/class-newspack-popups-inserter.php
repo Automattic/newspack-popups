@@ -187,7 +187,7 @@ final class Newspack_Popups_Inserter {
 			return $content;
 		}
 
-		// If any popups are inserted using a shortcode, skip them.
+		// If any popups are inserted using a shortcode, skip them - no need to duplicate.
 		$shortcoded_popups_ids = self::get_shortcoded_popups_ids( get_the_content() );
 		$popups                = array_filter(
 			self::popups_for_post(),
@@ -351,14 +351,19 @@ final class Newspack_Popups_Inserter {
 	}
 
 	/**
-	 * Process popups and insert into archive pages if needed. Applies to Newspack Theme only.
+	 * Insert overlay prompts into archive pages if needed. Applies to Newspack Theme only.
 	 */
 	public static function insert_popups_after_header() {
 		/* Posts and pages are covered by the_content hook */
 		if ( is_singular() ) {
 			return;
 		}
-		$popups = array_filter( self::popups_for_post(), [ 'Newspack_Popups_Model', 'should_be_inserted_in_page_content' ] );
+		$popups = array_filter(
+			self::popups_for_post(),
+			function ( $popup ) {
+				return Newspack_Popups_Model::should_be_inserted_in_page_content( $popup ) && Newspack_Popups_Model::is_overlay( $popup );
+			}
+		);
 		foreach ( $popups as $popup ) {
 			echo Newspack_Popups_Model::generate_popup( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		}
@@ -419,15 +424,10 @@ final class Newspack_Popups_Inserter {
 		if ( ! $found_popup ) {
 			return;
 		}
-		$is_overlay = Newspack_Popups_Model::is_overlay( $found_popup );
-		if ( $is_overlay ) {
-			// Only inline popups may be placed using shortcodes.
-			return;
-		}
 
 		if (
-			// Bail if it's a non-preview popup which should not be displayed.
-			( ! self::should_display( $found_popup, true ) && ! Newspack_Popups::previewed_popup_id() ) ||
+			// Bail if it should not be displayed.
+			! self::should_display( $found_popup ) ||
 			// Only inline or manual-only popups can be inserted via the shortcode.
 			( ! Newspack_Popups_Model::is_inline( $found_popup ) && ! Newspack_Popups_Model::is_manual_only( $found_popup ) )
 		) {
@@ -473,7 +473,7 @@ final class Newspack_Popups_Inserter {
 			't'   => $type,
 		];
 
-		if ( Newspack_Popups_Custom_Placements::is_custom_placement( $popup ) ) {
+		if ( Newspack_Popups_Custom_Placements::is_custom_placement_or_manual( $popup ) ) {
 			$popup_payload['c'] = $popup['options']['placement'];
 		}
 
@@ -486,63 +486,16 @@ final class Newspack_Popups_Inserter {
 	 * The amp-access endpoint is also responsible for reporting visits, in order to minimise
 	 * the number of requests. For this reason it is placed on every page, not only those
 	 * with popups.
+	 * All active popups will be retrieved. This is because amp-access has to be inserted in the head,
+	 * and at this time it's yet unknown which popups will be on the page. Popups can be retrieved for
+	 * the rendered page (popups_for_post method), but they can also be placed in widgets, which
+	 * make reliable retrieval problematic.
 	 */
 	public static function insert_popups_amp_access() {
 		if ( ! Newspack_Popups_Segmentation::is_tracking() ) {
 			return;
 		}
-		$shortcoded_popup_ids = array_unique(
-			array_merge(
-				self::get_shortcoded_popups_ids( get_the_content() ),
-				self::get_all_widget_shortcoded_popups_ids()
-			)
-		);
-
-		// Get shortcoded prompts.
-		$shortcoded_popups = array_reduce(
-			$shortcoded_popup_ids,
-			function ( $acc, $id ) {
-				$popup_post = get_post( $id );
-				if ( $popup_post ) {
-					$popup_object = Newspack_Popups_Model::create_popup_object( $popup_post );
-					// Shortcoded overlay popups will not be rendered on the page, but still the shortcode might be present.
-					// This condition is just to remove the unnecessary part of the payload in such a case.
-					$is_overlay = Newspack_Popups_Model::is_overlay( $popup_object );
-					if ( $popup_object && ! $is_overlay && 'publish' === $popup_object['status'] ) {
-						$acc[] = $popup_object;
-					}
-				}
-				return $acc;
-			},
-			[]
-		);
-
-		// Get prompts for custom placements.
-		$custom_placement_ids    = Newspack_Popups_Custom_Placements::get_custom_placement_values();
-		$custom_placement_popups = array_reduce(
-			Newspack_Popups_Custom_Placements::get_prompts_for_custom_placement( $custom_placement_ids ),
-			function ( $acc, $custom_placement_popup ) {
-				if ( $custom_placement_popup ) {
-					$popup_object = Newspack_Popups_Model::create_popup_object( $custom_placement_popup );
-
-					if ( $popup_object ) {
-						$acc[] = $popup_object;
-					}
-				}
-				return $acc;
-			},
-			[]
-		);
-
-		// Get manual-only prompts, which might be placed as a Single Prompt block in a widget area (post-WP 5.8).
-		$manual_only_popups = Newspack_Popups_Model::retrieve_eligible_popups( false, false, [ 'manual' ] );
-
-		$popups = array_merge(
-			self::popups_for_post(),
-			$shortcoded_popups,
-			$custom_placement_popups,
-			$manual_only_popups
-		);
+		$popups = array_filter( Newspack_Popups_Model::retrieve_active_popups(), [ __CLASS__, 'should_display' ] );
 
 		// Prevent duplicates - a popup might be duplicated in a shortcode.
 		$unique_ids = [];
@@ -729,22 +682,6 @@ final class Newspack_Popups_Inserter {
 	}
 
 	/**
-	 * Some popups can only appear on Posts.
-	 *
-	 * @param object $popup The popup to assess.
-	 * @return bool Should popup be shown.
-	 */
-	public static function assess_is_post( $popup ) {
-		if (
-			// Inline Pop-ups can only appear in Posts.
-			'inline' === $popup['options']['placement']
-		) {
-			return is_single();
-		}
-		return true;
-	}
-
-	/**
 	 * If a prompt is assigned the given taxonomy, it should only be shown on posts/pages with at least one matching term.
 	 * If the prompt has no terms, it should be shown regardless of the post's terms.
 	 *
@@ -769,18 +706,14 @@ final class Newspack_Popups_Inserter {
 	 * Should Popup be rendered, based on universal conditions.
 	 *
 	 * @param object $popup The popup to assess.
-	 * @param bool   $skip_context_checks Skip checking context, like if the popup is rendered in a post, and if category/tags are matching.
 	 * @return bool Should popup be shown.
 	 */
-	public static function should_display( $popup, $skip_context_checks = false ) {
-		if ( Newspack_Popups_Custom_Placements::is_custom_placement( $popup ) ) {
+	public static function should_display( $popup ) {
+		// When previewing, disregard all conditions.
+		if ( Newspack_Popups::is_preview_request() ) {
 			return true;
 		}
 
-		// When using "view as" feature, disregard most conditions.
-		if ( Newspack_Popups_View_As::viewing_as_spec() ) {
-			return $skip_context_checks ? true : self::assess_is_post( $popup );
-		}
 		// Hide prompts for admin users.
 		if ( Newspack_Popups::is_user_admin() ) {
 			return false;
@@ -789,40 +722,21 @@ final class Newspack_Popups_Inserter {
 		if ( ! Newspack_Popups::is_user_admin() && Newspack_Popups_Settings::is_non_interactive() && ! Newspack_Popups_Model::is_inline( $popup ) ) {
 			return false;
 		}
-		// Hide prompts in account related posts.
+		// Hide prompts on account related pages (e.g. password reset page).
 		if ( Newspack_Popups::is_account_related_post( get_post() ) ) {
 			return false;
 		}
+		// Inline prompts may only be rendered on posts.
+		if ( Newspack_Popups_Model::is_inline( $popup ) && 'post' !== get_post_type() ) {
+			return false;
+		}
 
-		if ( $skip_context_checks ) {
+		// Custom and manual placements override context conditions.
+		if ( Newspack_Popups_Custom_Placements::is_custom_placement_or_manual( $popup ) ) {
 			return true;
 		}
-		return self::assess_is_post( $popup ) &&
-			self::assess_taxonomy_filter( $popup, 'category' ) &&
-			self::assess_taxonomy_filter( $popup, 'post_tag' );
-	}
-
-	/**
-	 * Get all widget shortcoded popups IDs. This will get prompts placed via legacy widgets (pre-WP 5.8).
-	 * Post-WP 5.8, widget blocks must be retrieved separately.
-	 *
-	 * @return array IDs of popups shortcoded in widgets.
-	 */
-	public static function get_all_widget_shortcoded_popups_ids() {
-		$text_widget_option = get_option( 'widget_text' );
-		return array_reduce(
-			$text_widget_option,
-			function ( $acc, $text_widget ) {
-				if ( isset( $text_widget['text'] ) ) {
-					$popup_ids = self::get_shortcoded_popups_ids( $text_widget['text'] );
-					if ( ! empty( $popup_ids ) ) {
-						$acc = array_merge( $acc, $popup_ids );
-					}
-				}
-				return $acc;
-			},
-			[]
-		);
+		// Perform context checks.
+		return self::assess_taxonomy_filter( $popup, 'category' ) && self::assess_taxonomy_filter( $popup, 'post_tag' );
 	}
 }
 $newspack_popups_inserter = new Newspack_Popups_Inserter();

@@ -12,7 +12,7 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 	/**
 	 * Test popup insertion into a post.
 	 */
-	public function test_insertion() {
+	public function test_insertion_on_post() {
 		self::renderPost();
 		$amp_layout_elements = self::$dom_xpath->query( '//amp-layout' );
 		$popup_text_content  = $amp_layout_elements->item( 0 )->textContent;
@@ -31,6 +31,37 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 			self::$raw_post_content,
 			self::$post_content,
 			'Includes the original post content.'
+		);
+	}
+
+	/**
+	 * Test popup insertion into a page.
+	 */
+	public function test_insertion_on_page() {
+		self::renderPost( '', null, [], [], 'page' );
+		$amp_layout_elements = self::$dom_xpath->query( '//amp-layout' );
+
+		self::assertEquals(
+			0,
+			$amp_layout_elements->length,
+			'There are no popups, since the only one available is an inline one, and this is a page.'
+		);
+		self::assertContains(
+			self::$raw_post_content,
+			self::$post_content,
+			'Includes the original post content.'
+		);
+
+		$overlay_content     = 'Hello, world';
+		$overlay_id          = self::createPopup( $overlay_content, [ 'placement' => 'center' ] );
+		$page_with_shortcode = '[newspack-popups id="' . $overlay_id . '"]';
+		self::renderPost( '', $page_with_shortcode, [], [], 'page' );
+		$overlay_text_content = self::$dom_xpath->query( '//amp-layout' )->item( 0 )->textContent;
+
+		self::assertContains(
+			$overlay_content,
+			$overlay_text_content,
+			'Inserts the popup content on a page, since this is an overlay prompt.'
 		);
 	}
 
@@ -152,6 +183,30 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 			self::$dom_xpath->query( '//amp-analytics' )->length,
 			0,
 			'Does not include tracking when a user is an admin.'
+		);
+	}
+
+	/**
+	 * As an admin.
+	 */
+	public function test_insertion_admin() {
+		self::renderPost();
+		$amp_layout_elements = self::$dom_xpath->query( '//amp-layout' );
+		self::assertContains(
+			self::$popup_content,
+			$amp_layout_elements->item( 0 )->textContent,
+			'Includes the popup content.'
+		);
+
+		$user_id = $this->factory->user->create( [ 'role' => 'administrator' ] );
+		wp_set_current_user( $user_id );
+
+		self::renderPost();
+		$amp_layout_elements = self::$dom_xpath->query( '//amp-layout' );
+		self::assertEquals(
+			0,
+			$amp_layout_elements->length,
+			'Does not include popups when the page is loaded by an admin.'
 		);
 	}
 
@@ -411,7 +466,7 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 			$woo_commerce_account_shortcode,
 			function() use ( $post_with_account_details ) {
 				return $post_with_account_details;
-			} 
+			}
 		);
 		self::renderPost( '', $post_with_account_details );
 
