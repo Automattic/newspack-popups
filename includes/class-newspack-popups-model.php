@@ -136,22 +136,8 @@ final class Newspack_Popups_Model {
 					}
 					update_post_meta( $id, $key, $value );
 					break;
-				case 'trigger_type':
-				case 'trigger_scroll_progress':
-				case 'utm_suppression':
-				case 'selected_segment_id':
-				case 'dismiss_text':
-					update_post_meta( $id, $key, esc_attr( $value ) );
-					break;
 				default:
-					return new \WP_Error(
-						'newspack_popups_invalid_option',
-						esc_html__( 'Invalid prompt option.', 'newspack-popups' ),
-						[
-							'status' => 400,
-							'level'  => 'fatal',
-						]
-					);
+					update_post_meta( $id, $key, esc_attr( $value ) );
 			}
 		}
 	}
