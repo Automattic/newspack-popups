@@ -1,3 +1,12 @@
+# [1.36.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.35.1...v1.36.0-alpha.1) (2021-07-27)
+
+
+### Features
+
+* sanitize utm suppression setting ([#585](https://github.com/Automattic/newspack-popups/issues/585)) ([95890c3](https://github.com/Automattic/newspack-popups/commit/95890c3b63ee7f0aa971f24fca1dc4992d82120c)), closes [#428](https://github.com/Automattic/newspack-popups/issues/428)
+* **api:** remove reader data if no updates in 30 days ([#584](https://github.com/Automattic/newspack-popups/issues/584)) ([e5db8de](https://github.com/Automattic/newspack-popups/commit/e5db8dec3ac0dcb57838baf470dfd1ce8a7c55cf)), closes [#583](https://github.com/Automattic/newspack-popups/issues/583)
+* enable retrieving prompts from trash ([736098f](https://github.com/Automattic/newspack-popups/commit/736098fc1945009c9c71feb1cdc44065ada38970))
+
 ## [1.35.1](https://github.com/Automattic/newspack-popups/compare/v1.35.0...v1.35.1) (2021-07-19)
 
 
