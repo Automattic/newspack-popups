@@ -167,11 +167,14 @@ final class Newspack_Popups {
 			'post',
 			'utm_suppression',
 			[
-				'object_subtype' => self::NEWSPACK_POPUPS_CPT,
-				'show_in_rest'   => true,
-				'type'           => 'string',
-				'single'         => true,
-				'auth_callback'  => '__return_true',
+				'object_subtype'    => self::NEWSPACK_POPUPS_CPT,
+				'show_in_rest'      => true,
+				'type'              => 'string',
+				'single'            => true,
+				'auth_callback'     => '__return_true',
+				'sanitize_callback' => function( $input ) {
+					return preg_replace( '~[^-\w0-9_\s]+~', '', $input );
+				},
 			]
 		);
 

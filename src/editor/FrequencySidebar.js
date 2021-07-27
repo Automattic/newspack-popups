@@ -32,6 +32,7 @@ const FrequencySidebar = ( { frequency, onMetaFieldChange, isOverlay, utm_suppre
 					'Readers arriving at the site via URLs with this utm_source parameter will never be shown the prompt.'
 				) }
 				value={ utm_suppression }
+				placeholder={ __( 'utm_campaign_name', 'newspack' ) }
 				onChange={ value => onMetaFieldChange( 'utm_suppression', value ) }
 			/>
 		</Fragment>
