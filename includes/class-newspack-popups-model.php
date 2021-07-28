@@ -56,9 +56,9 @@ final class Newspack_Popups_Model {
 					'post_type'      => Newspack_Popups::NEWSPACK_POPUPS_CPT,
 					'post_status'    => 'publish',
 					'posts_per_page' => -1,
-				] 
+				]
 			),
-			true 
+			true
 		);
 	}
 
@@ -758,7 +758,10 @@ final class Newspack_Popups_Model {
 		if ( Newspack_Popups::previewed_popup_id() && Newspack_Popups::is_user_admin() ) {
 			return '';
 		}
-		return 'amp-access="popups.' . esc_attr( self::canonize_popup_id( $popup['id'] ) ) . '" amp-access-hide ';
+		// The amp-access endpoint is queried only once (on page load), but after changing block settings,
+		// the block will be re-rendered. It has to be initially visible to be seen in the Customizer preview.
+		$is_hidden_initially = ! is_customize_preview();
+		return 'amp-access="popups.' . esc_attr( self::canonize_popup_id( $popup['id'] ) ) . '"' . ( $is_hidden_initially ? ' amp-access-hide ' : ' ' );
 	}
 
 	/**
