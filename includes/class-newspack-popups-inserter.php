@@ -709,7 +709,12 @@ final class Newspack_Popups_Inserter {
 	 * @return bool Should popup be shown.
 	 */
 	public static function should_display( $popup ) {
-		// When previewing, disregard all conditions.
+		// Inline prompts may only be rendered on posts.
+		if ( Newspack_Popups_Model::is_inline( $popup ) && 'post' !== get_post_type() ) {
+			return false;
+		}
+
+		// When previewing, disregard all remaining conditions.
 		if ( Newspack_Popups::is_preview_request() ) {
 			return true;
 		}
@@ -724,10 +729,6 @@ final class Newspack_Popups_Inserter {
 		}
 		// Hide prompts on account related pages (e.g. password reset page).
 		if ( Newspack_Popups::is_account_related_post( get_post() ) ) {
-			return false;
-		}
-		// Inline prompts may only be rendered on posts.
-		if ( Newspack_Popups_Model::is_inline( $popup ) && 'post' !== get_post_type() ) {
 			return false;
 		}
 
