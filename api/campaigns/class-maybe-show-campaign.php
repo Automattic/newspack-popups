@@ -325,14 +325,19 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			$campaign_segment = Campaign_Data_Utils::canonize_segment( $campaign_segment );
 
 			// Check whether client matches the prompt's segment.
-			$should_display = $is_best_priority && Campaign_Data_Utils::does_client_match_segment(
+			$segment_matches = Campaign_Data_Utils::does_client_match_segment(
 				$campaign_segment,
 				$client_data,
 				$referer_url,
 				$page_referer_url
 			);
+			$should_display  = $is_best_priority && $segment_matches;
 			if ( false === $should_display ) {
-				self::add_suppression_reason( $campaign->id, __( 'Segment does not match.', 'newspack-popups' ) );
+				if ( $segment_matches ) {
+					self::add_suppression_reason( $campaign->id, __( 'Segment matches, but another segment has higher priority.', 'newspack-popups' ) );
+				} else {
+					self::add_suppression_reason( $campaign->id, __( 'Segment does not match.', 'newspack-popups' ) );
+				}
 			}
 
 			if (

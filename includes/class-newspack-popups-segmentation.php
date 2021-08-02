@@ -182,7 +182,7 @@ final class Newspack_Popups_Segmentation {
 	 * Should tracking code be inserted?
 	 */
 	public static function is_tracking() {
-		if ( Newspack_Popups_View_As::viewing_as_spec() ) {
+		if ( Newspack_Popups::is_preview_request() ) {
 			return true;
 		}
 		if ( is_admin() || self::is_admin_user() || Newspack_Popups_Settings::is_non_interactive() ) {
