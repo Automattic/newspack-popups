@@ -49,7 +49,7 @@ final class Newspack_Popups_Inserter {
 			return self::$popups;
 		}
 
-		// Get the previewed popup and return early if there's one.
+		// Get the previewed popup and return early.
 		if ( Newspack_Popups::previewed_popup_id() ) {
 			return [ Newspack_Popups_Model::retrieve_preview_popup( Newspack_Popups::previewed_popup_id() ) ];
 		}
@@ -68,7 +68,9 @@ final class Newspack_Popups_Inserter {
 
 		return array_filter(
 			$popups_to_maybe_display,
-			[ __CLASS__, 'should_display' ]
+			function( $popup ) {
+				return self::should_display( $popup, true );
+			}
 		);
 	}
 
@@ -706,38 +708,37 @@ final class Newspack_Popups_Inserter {
 	 * Should Popup be rendered, based on universal conditions.
 	 *
 	 * @param object $popup The popup to assess.
+	 * @param bool   $check_if_is_post Should the post type of post be taken into account.
 	 * @return bool Should popup be shown.
 	 */
-	public static function should_display( $popup ) {
+	public static function should_display( $popup, $check_if_is_post = false ) {
 		// Inline prompts may only be rendered on posts.
-		if ( Newspack_Popups_Model::is_inline( $popup ) && 'post' !== get_post_type() ) {
+		if ( $check_if_is_post && Newspack_Popups_Model::is_inline( $popup ) && 'post' !== get_post_type() ) {
 			return false;
 		}
 
-		// When previewing, disregard all remaining conditions.
-		if ( Newspack_Popups::is_preview_request() ) {
-			return true;
+		// Unless it's a preview request, perform some additional checks.
+		if ( ! Newspack_Popups::is_preview_request() ) {
+			// Hide prompts for admin users.
+			if ( Newspack_Popups::is_user_admin() ) {
+				return false;
+			}
+			// Hide overlay prompts in non-interactive mode, for non-admin users.
+			if ( ! Newspack_Popups::is_user_admin() && Newspack_Popups_Settings::is_non_interactive() && ! Newspack_Popups_Model::is_inline( $popup ) ) {
+				return false;
+			}
 		}
 
-		// Hide prompts for admin users.
-		if ( Newspack_Popups::is_user_admin() ) {
-			return false;
-		}
-		// Hide overlay prompts in non-interactive mode, for non-admin users.
-		if ( ! Newspack_Popups::is_user_admin() && Newspack_Popups_Settings::is_non_interactive() && ! Newspack_Popups_Model::is_inline( $popup ) ) {
-			return false;
-		}
-		// Hide prompts on account related pages (e.g. password reset page).
-		if ( Newspack_Popups::is_account_related_post( get_post() ) ) {
-			return false;
-		}
+		// Context in which the popup appears - the taxonomy of the post.
+		$is_taxonomy_matching = self::assess_taxonomy_filter( $popup, 'category' ) && self::assess_taxonomy_filter( $popup, 'post_tag' );
+		// Custom and manual placements should override taxonomy conditions, since they are placed arbitrarily.
+		$is_arbitrarily_placed = Newspack_Popups_Custom_Placements::is_custom_placement_or_manual( $popup );
+		// Prompts should be hidden on account related pages (e.g. password reset page).
+		$is_on_account_related_page = Newspack_Popups::is_account_related_post( get_post() );
 
-		// Custom and manual placements override context conditions.
-		if ( Newspack_Popups_Custom_Placements::is_custom_placement_or_manual( $popup ) ) {
-			return true;
-		}
-		// Perform context checks.
-		return self::assess_taxonomy_filter( $popup, 'category' ) && self::assess_taxonomy_filter( $popup, 'post_tag' );
+		$should_be_displayed = ( $is_arbitrarily_placed || $is_taxonomy_matching ) && ! $is_on_account_related_page;
+
+		return $should_be_displayed;
 	}
 }
 $newspack_popups_inserter = new Newspack_Popups_Inserter();

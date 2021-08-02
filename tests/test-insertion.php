@@ -187,6 +187,41 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 	}
 
 	/**
+	 * Single popup preview.
+	 */
+	public function test_insertion_single_preview() {
+		// Remove the default popup that would be programmatically inserted.
+		wp_delete_post( self::$popup_id );
+
+		$popup_content = 'Hello, world';
+		$popup_id      = self::createPopup( $popup_content, [], [ 'post_status' => 'draft' ] );
+		$preview_param = 'newspack_popups_preview_id=' . $popup_id;
+
+		self::renderPost( $preview_param );
+		$amp_layout_elements = self::$dom_xpath->query( '//amp-layout' );
+
+		self::assertEquals(
+			0,
+			$amp_layout_elements->length,
+			'There are no popups, the previewed popup should only be displayed if user is admin.'
+		);
+
+		$user_id = $this->factory->user->create( [ 'role' => 'administrator' ] );
+		wp_set_current_user( $user_id );
+
+		self::renderPost( $preview_param );
+
+		$amp_layout_elements = self::$dom_xpath->query( '//amp-layout' );
+		$popup_text_content  = $amp_layout_elements->item( 0 )->textContent;
+
+		self::assertContains(
+			$popup_content,
+			$popup_text_content,
+			'Includes the previewed popup content for a logged-in user.'
+		);
+	}
+
+	/**
 	 * As an admin.
 	 */
 	public function test_insertion_admin() {

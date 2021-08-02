@@ -509,7 +509,11 @@ final class Newspack_Popups {
 	 * @return number|null Popup id, if found in the URL
 	 */
 	public static function previewed_popup_id() {
-		return filter_input( INPUT_GET, self::NEWSPACK_POPUP_PREVIEW_QUERY_PARAM, FILTER_SANITIZE_STRING );
+		// Not using filter_input since it's not playing well with phpunit.
+		if ( isset( $_GET[self::NEWSPACK_POPUP_PREVIEW_QUERY_PARAM] ) && $_GET[self::NEWSPACK_POPUP_PREVIEW_QUERY_PARAM] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			return sanitize_text_field( $_GET[self::NEWSPACK_POPUP_PREVIEW_QUERY_PARAM] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		}
+		return null;
 	}
 
 	/**

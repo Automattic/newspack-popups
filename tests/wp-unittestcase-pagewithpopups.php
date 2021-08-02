@@ -49,18 +49,22 @@ class WP_UnitTestCase_PageWithPopups extends WP_UnitTestCase {
 	 *
 	 * @param string $popup_content String to render as popup content.
 	 * @param object $options Options for the popup.
+	 * @param object $post_options Options for the post.
 	 * @return int Popup ID.
 	 */
-	protected function createPopup( $popup_content = null, $options = null ) {
+	protected function createPopup( $popup_content = null, $options = null, $post_options = [] ) {
 		if ( null === $popup_content ) {
 			$popup_content = self::$popup_content;
 		}
 		$popup_id = self::factory()->post->create(
-			[
-				'post_type'    => Newspack_Popups::NEWSPACK_POPUPS_CPT,
-				'post_title'   => 'Popup title',
-				'post_content' => $popup_content,
-			]
+			array_merge(
+				[
+					'post_type'    => Newspack_Popups::NEWSPACK_POPUPS_CPT,
+					'post_title'   => 'Popup title',
+					'post_content' => $popup_content,
+				],
+				$post_options
+			)
 		);
 		if ( null !== $options ) {
 			Newspack_Popups_Model::set_popup_options( $popup_id, $options );
