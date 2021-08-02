@@ -510,8 +510,8 @@ final class Newspack_Popups {
 	 */
 	public static function previewed_popup_id() {
 		// Not using filter_input since it's not playing well with phpunit.
-		if ( isset( $_GET[self::NEWSPACK_POPUP_PREVIEW_QUERY_PARAM] ) && $_GET[self::NEWSPACK_POPUP_PREVIEW_QUERY_PARAM] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-			return sanitize_text_field( $_GET[self::NEWSPACK_POPUP_PREVIEW_QUERY_PARAM] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( isset( $_GET[ self::NEWSPACK_POPUP_PREVIEW_QUERY_PARAM ] ) && $_GET[ self::NEWSPACK_POPUP_PREVIEW_QUERY_PARAM ] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			return sanitize_text_field( $_GET[ self::NEWSPACK_POPUP_PREVIEW_QUERY_PARAM ] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		}
 		return null;
 	}
