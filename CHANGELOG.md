@@ -1,3 +1,16 @@
+# [1.37.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.36.0...v1.37.0-alpha.1) (2021-08-03)
+
+
+### Bug Fixes
+
+* above-header popups on pages ([551e983](https://github.com/Automattic/newspack-popups/commit/551e983d00379e684c98c146487595bbc5fc0d64))
+* display prompts in the customizer ([#587](https://github.com/Automattic/newspack-popups/issues/587)) ([fa47c38](https://github.com/Automattic/newspack-popups/commit/fa47c38e109ed5e0c6c6f278f107dca01e442619)), closes [#577](https://github.com/Automattic/newspack-popups/issues/577)
+
+
+### Features
+
+* remove options whitelist ([3f08781](https://github.com/Automattic/newspack-popups/commit/3f08781c583133e4c49c3cb60addbcb45707c829))
+
 # [1.36.0](https://github.com/Automattic/newspack-popups/compare/v1.35.1...v1.36.0) (2021-07-27)
 
 
