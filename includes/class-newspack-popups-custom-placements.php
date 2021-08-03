@@ -256,7 +256,7 @@ final class Newspack_Popups_Custom_Placements {
 	 * @param object $prompt The prompt to assess.
 	 * @return boolean Whether or not the prompt has a custom placement.
 	 */
-	public static function is_custom_placement( $prompt ) {
+	public static function is_custom_placement_or_manual( $prompt ) {
 		return (
 			'manual' === $prompt['options']['frequency'] ||
 			in_array( $prompt['options']['placement'], self::get_custom_placement_values() )
