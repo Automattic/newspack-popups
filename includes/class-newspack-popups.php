@@ -51,6 +51,7 @@ final class Newspack_Popups {
 		add_action( 'init', [ __CLASS__, 'register_meta' ] );
 		add_action( 'init', [ __CLASS__, 'register_taxonomy' ] );
 		add_action( 'enqueue_block_editor_assets', [ __CLASS__, 'enqueue_block_editor_assets' ] );
+		add_action( 'customize_controls_enqueue_scripts', [ __CLASS__, 'enqueue_customizer_assets' ] );
 		add_filter( 'display_post_states', [ __CLASS__, 'display_post_states' ], 10, 2 );
 		add_action( 'save_post_' . self::NEWSPACK_POPUPS_CPT, [ __CLASS__, 'popup_default_fields' ], 10, 3 );
 		add_action( 'transition_post_status', [ __CLASS__, 'remove_default_category' ], 10, 3 );
@@ -354,7 +355,7 @@ final class Newspack_Popups {
 	}
 
 	/**
-	 * Load up common JS/CSS for wizards.
+	 * Load up common JS/CSS for the editor.
 	 */
 	public static function enqueue_block_editor_assets() {
 		$screen = get_current_screen();
@@ -437,6 +438,27 @@ final class Newspack_Popups {
 	}
 
 	/**
+	 * Load up common JS/CSS for the Customizer.
+	 */
+	public static function enqueue_customizer_assets() {
+		\wp_enqueue_script(
+			'newspack-popups-customizer',
+			plugins_url( '../dist/customizer.js', __FILE__ ),
+			[],
+			filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/customizer.js' ),
+			true
+		);
+
+		\wp_localize_script(
+			'newspack-popups-customizer',
+			'newspack_popups_customizer_data',
+			[
+				'cookie_name' => \Newspack_Popups_Segmentation::NEWSPACK_SEGMENTATION_CID_NAME,
+			]
+		);
+	}
+
+	/**
 	 * Display popup states by the pop-ups.
 	 *
 	 * @param array   $post_states An array of post display states.
@@ -475,8 +497,10 @@ final class Newspack_Popups {
 	 * @return boolean Whether it's a preview request.
 	 */
 	public static function is_preview_request() {
-		$view_as_spec = Newspack_Popups_View_As::viewing_as_spec();
-		return self::previewed_popup_id() || false != $view_as_spec;
+		$is_customizer_preview = is_customize_preview();
+		// Used by the Newspack Plugin's Campaigns Wizard.
+		$is_view_as_preview = false != Newspack_Popups_View_As::viewing_as_spec();
+		return self::previewed_popup_id() || $is_view_as_preview || $is_customizer_preview;
 	}
 
 	/**
@@ -485,7 +509,11 @@ final class Newspack_Popups {
 	 * @return number|null Popup id, if found in the URL
 	 */
 	public static function previewed_popup_id() {
-		return filter_input( INPUT_GET, self::NEWSPACK_POPUP_PREVIEW_QUERY_PARAM, FILTER_SANITIZE_STRING );
+		// Not using filter_input since it's not playing well with phpunit.
+		if ( isset( $_GET[ self::NEWSPACK_POPUP_PREVIEW_QUERY_PARAM ] ) && $_GET[ self::NEWSPACK_POPUP_PREVIEW_QUERY_PARAM ] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			return sanitize_text_field( $_GET[ self::NEWSPACK_POPUP_PREVIEW_QUERY_PARAM ] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		}
+		return null;
 	}
 
 	/**

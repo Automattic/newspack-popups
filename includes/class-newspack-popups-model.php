@@ -47,6 +47,22 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
+	 * Retrieve all active popups.
+	 */
+	public static function retrieve_active_popups() {
+		return self::retrieve_popups_with_query(
+			new WP_Query(
+				[
+					'post_type'      => Newspack_Popups::NEWSPACK_POPUPS_CPT,
+					'post_status'    => 'publish',
+					'posts_per_page' => -1,
+				]
+			),
+			true
+		);
+	}
+
+	/**
 	 * Set terms for a Popup.
 	 *
 	 * @param integer $id ID of Popup.
@@ -136,22 +152,8 @@ final class Newspack_Popups_Model {
 					}
 					update_post_meta( $id, $key, $value );
 					break;
-				case 'trigger_type':
-				case 'trigger_scroll_progress':
-				case 'utm_suppression':
-				case 'selected_segment_id':
-				case 'dismiss_text':
-					update_post_meta( $id, $key, esc_attr( $value ) );
-					break;
 				default:
-					return new \WP_Error(
-						'newspack_popups_invalid_option',
-						esc_html__( 'Invalid prompt option.', 'newspack-popups' ),
-						[
-							'status' => 400,
-							'level'  => 'fatal',
-						]
-					);
+					update_post_meta( $id, $key, esc_attr( $value ) );
 			}
 		}
 	}
@@ -742,7 +744,10 @@ final class Newspack_Popups_Model {
 		if ( Newspack_Popups::previewed_popup_id() && Newspack_Popups::is_user_admin() ) {
 			return '';
 		}
-		return 'amp-access="popups.' . esc_attr( self::canonize_popup_id( $popup['id'] ) ) . '" amp-access-hide ';
+		// The amp-access endpoint is queried only once (on page load), but after changing block settings,
+		// the block will be re-rendered. It has to be initially visible to be seen in the Customizer preview.
+		$is_hidden_initially = ! is_customize_preview();
+		return 'amp-access="popups.' . esc_attr( self::canonize_popup_id( $popup['id'] ) ) . '"' . ( $is_hidden_initially ? ' amp-access-hide ' : ' ' );
 	}
 
 	/**
