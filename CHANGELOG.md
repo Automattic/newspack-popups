@@ -1,3 +1,11 @@
+## [1.37.1](https://github.com/Automattic/newspack-popups/compare/v1.37.0...v1.37.1) (2021-08-10)
+
+
+### Bug Fixes
+
+* email substitution in newsletter forms ([73bd4cf](https://github.com/Automattic/newspack-popups/commit/73bd4cfcfcd7f40161c2837138ea189ee7b5ec91))
+* **donations:** update WC webhook if needed ([7a3e61d](https://github.com/Automattic/newspack-popups/commit/7a3e61de8ca32e63ee5e2cb6a008fd722cb1b245))
+
 # [1.37.0](https://github.com/Automattic/newspack-popups/compare/v1.36.0...v1.37.0) (2021-08-03)
 
 
