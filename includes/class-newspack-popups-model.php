@@ -600,7 +600,7 @@ final class Newspack_Popups_Model {
 					'popup_id'            => esc_attr( self::canonize_popup_id( $popup['id'] ) ),
 					'cid'                 => 'CLIENT_ID(' . esc_attr( Newspack_Popups_Segmentation::NEWSPACK_SEGMENTATION_CID_NAME ) . ')',
 					'mailing_list_status' => 'subscribed',
-					'email'               => '$[formFields[' . esc_attr( $email_form_field_name ) . ']}',
+					'email'               => '${formFields[' . esc_attr( $email_form_field_name ) . ']}',
 				],
 			];
 		}
