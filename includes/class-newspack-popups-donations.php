@@ -21,11 +21,6 @@ final class Newspack_Popups_Donations {
 	protected static $instance = null;
 
 	/**
-	 * WC-related variables.
-	 */
-	const WC_WEBHOOK_ID = 'newspack_popups_wc_webhook_id';
-
-	/**
 	 * Main Newspack Popups Donations Instance.
 	 * Ensures only one instance of Newspack Popups Donations Instance is loaded or can be loaded.
 	 *
@@ -67,21 +62,42 @@ final class Newspack_Popups_Donations {
 	 * Create a WooCommerce webhook.
 	 */
 	public static function create_wc_webhook() {
-		if ( ! class_exists( 'WC_Webhook' ) ) {
+		if ( ! class_exists( 'WC_Webhook' ) || ! class_exists( 'WC_Data_Store' ) ) {
 			return;
 		}
-		$webhook_id = get_option( self::WC_WEBHOOK_ID, 0 );
-		if ( empty( $webhook_id ) ) {
-			$webhook = new \WC_Webhook();
-			$webhook->set_name( 'Sync to Newspack Popups on order checkout' );
-			$webhook->set_topic( 'order.created' ); // Trigger on checkout.
-			$webhook->set_delivery_url( get_rest_url( null, 'newspack-popups/v1/woocommerce-sync' ) );
+
+		$webhook_endpoint     = 'newspack-popups/v1/woocommerce-sync';
+		$webhook_delivery_url = get_rest_url( null, $webhook_endpoint );
+
+		// Find the webhook with matching endpoint. If the delivery URL is not as expected,
+		// update the webhook. This might happen after a site is migrated.
+		// Otherwise, if such webhook is not found, create it.
+		$data_store            = WC_Data_Store::load( 'webhook' );
+		$matching_webhooks     = array_values(
+			array_filter(
+				$data_store->search_webhooks(),
+				function( $webhook_id ) use ( $webhook_endpoint ) {
+					$webhook = wc_get_webhook( $webhook_id );
+					return false !== stripos( $webhook->get_delivery_url(), $webhook_endpoint );
+				}
+			)
+		);
+		$should_upsert_webhook = false;
+		if ( 0 !== count( $matching_webhooks ) ) {
+			$webhook               = wc_get_webhook( $matching_webhooks[0] );
+			$should_upsert_webhook = $webhook->get_delivery_url() !== $webhook_delivery_url;
+		} else {
+			$webhook               = new \WC_Webhook();
+			$should_upsert_webhook = true;
+		}
+
+		if ( $should_upsert_webhook ) {
+			$webhook->set_name( 'Sync to Newspack Campaigns' );
+			$webhook->set_topic( 'order.created' );
+			$webhook->set_delivery_url( $webhook_delivery_url );
 			$webhook->set_status( 'active' );
 			$webhook->set_user_id( get_current_user_id() );
 			$webhook->save();
-			$webhook_id = $webhook->get_id();
-
-			update_option( self::WC_WEBHOOK_ID, $webhook_id );
 		}
 	}
 
