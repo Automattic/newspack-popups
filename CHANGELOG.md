@@ -1,3 +1,10 @@
+## [1.37.2-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.37.1...v1.37.2-alpha.1) (2021-08-17)
+
+
+### Bug Fixes
+
+* amp analytics polyfill tweak ([e8de420](https://github.com/Automattic/newspack-popups/commit/e8de420cc1481f5b9dede20563a35412474c2b44))
+
 ## [1.37.1](https://github.com/Automattic/newspack-popups/compare/v1.37.0...v1.37.1) (2021-08-10)
 
 
