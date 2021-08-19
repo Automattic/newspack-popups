@@ -152,6 +152,9 @@ final class Newspack_Popups_Model {
 					}
 					update_post_meta( $id, $key, $value );
 					break;
+				case 'post_types':
+					update_post_meta( $id, $key, $value );
+					break;
 				default:
 					update_post_meta( $id, $key, esc_attr( $value ) );
 			}
@@ -345,6 +348,7 @@ final class Newspack_Popups_Model {
 			'trigger_scroll_progress' => get_post_meta( $id, 'trigger_scroll_progress', true ),
 			'utm_suppression'         => get_post_meta( $id, 'utm_suppression', true ),
 			'selected_segment_id'     => get_post_meta( $id, 'selected_segment_id', true ),
+			'post_types'              => get_post_meta( $id, 'post_types', true ),
 		];
 
 		return wp_parse_args(
@@ -364,8 +368,26 @@ final class Newspack_Popups_Model {
 				'trigger_scroll_progress' => 0,
 				'utm_suppression'         => null,
 				'selected_segment_id'     => '',
+				'post_types'              => self::get_globally_supported_post_types(),
 			]
 		);
+	}
+
+	/**
+	 * Get the globally supported post types.
+	 */
+	public static function get_globally_supported_post_types() {
+		return apply_filters(
+			'newspack_campaigns_post_types_for_campaigns',
+			self::get_default_popup_post_types()
+		);
+	}
+
+	/**
+	 * Get the default supported post types.
+	 */
+	public static function get_default_popup_post_types() {
+		return [ 'post', 'page' ];
 	}
 
 	/**

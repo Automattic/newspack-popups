@@ -23,6 +23,7 @@ export const optionsFieldsSelector = select => {
 		trigger_type,
 		utm_suppression,
 		selected_segment_id,
+		post_types,
 	} = meta || {};
 
 	const isInlinePlacement = placementValue =>
@@ -46,6 +47,7 @@ export const optionsFieldsSelector = select => {
 		selected_segment_id,
 		isInlinePlacement,
 		isOverlay,
+		post_types,
 	};
 };
 

@@ -288,6 +288,25 @@ final class Newspack_Popups {
 			]
 		);
 
+		\register_meta(
+			'post',
+			'post_types',
+			[
+				'object_subtype' => self::NEWSPACK_POPUPS_CPT,
+				'show_in_rest'   => [
+					'schema' => [
+						'items' => [
+							'type' => 'string',
+						],
+					],
+				],
+				'type'           => 'array',
+				'default'        => Newspack_Popups_Model::get_default_popup_post_types(),
+				'single'         => true,
+				'auth_callback'  => '__return_true',
+			]
+		);
+
 		// Meta field for all post types.
 		\register_meta(
 			'post',
@@ -422,11 +441,22 @@ final class Newspack_Popups {
 			'newspack-popups',
 			'newspack_popups_data',
 			[
-				'preview_post'      => self::preview_post_permalink(),
-				'segments'          => Newspack_Popups_Segmentation::get_segments(),
-				'custom_placements' => Newspack_Popups_Custom_Placements::get_custom_placements(),
-				'taxonomy'          => self::NEWSPACK_POPUPS_TAXONOMY,
-				'is_prompt'         => self::NEWSPACK_POPUPS_CPT == get_post_type(),
+				'preview_post'         => self::preview_post_permalink(),
+				'segments'             => Newspack_Popups_Segmentation::get_segments(),
+				'custom_placements'    => Newspack_Popups_Custom_Placements::get_custom_placements(),
+				'taxonomy'             => self::NEWSPACK_POPUPS_TAXONOMY,
+				'is_prompt'            => self::NEWSPACK_POPUPS_CPT == get_post_type(),
+				'available_post_types' => array_values(
+					get_post_types(
+						[
+							'public'       => true,
+							'show_in_rest' => true,
+							'_builtin'     => false,
+						],
+						'objects'
+					)
+				),
+
 			]
 		);
 		\wp_enqueue_style(
