@@ -148,19 +148,15 @@ class E2ETest extends WP_UnitTestCase_PageWithPopups {
 			'Duplicated prompt has same content as original prompt.'
 		);
 
-		self::assertEmpty(
-			array_diff(
-				wp_get_post_terms( $original_popup_id, [ 'category', 'post_tag', Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY ], [ 'fields' => 'ids' ] ),
-				wp_get_post_terms( $duplicate_popup_id, [ 'category', 'post_tag', Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY ], [ 'fields' => 'ids' ] )
-			),
+		self::assertEquals(
+			wp_get_post_terms( $original_popup_id, [ 'category', 'post_tag', Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY ], [ 'fields' => 'ids' ] ),
+			wp_get_post_terms( $duplicate_popup_id, [ 'category', 'post_tag', Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY ], [ 'fields' => 'ids' ] ),
 			'Duplicated prompt has the same categories, tags, and campaign terms as original prompt.'
 		);
 
-		self::assertEmpty(
-			array_diff(
-				Newspack_Popups_Model::get_popup_options( $original_popup_id ),
-				Newspack_Popups_Model::get_popup_options( $duplicate_popup_id )
-			),
+		self::assertEquals(
+			Newspack_Popups_Model::get_popup_options( $original_popup_id ),
+			Newspack_Popups_Model::get_popup_options( $duplicate_popup_id ),
 			'Duplicated prompt has the same prompt options as the original prompt.'
 		);
 	}

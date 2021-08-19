@@ -34,17 +34,6 @@ final class Newspack_Popups_Inserter {
 	 * @return array Popup objects.
 	 */
 	public static function popups_for_post() {
-		// Inject prompts only in posts, pages, and CPTs that explicitly opt in.
-		if ( ! in_array(
-			get_post_type(),
-			apply_filters(
-				'newspack_campaigns_post_types_for_campaigns',
-				[ 'post', 'page' ]
-			)
-		) ) {
-			return [];
-		}
-
 		if ( ! empty( self::$popups ) ) {
 			return self::$popups;
 		}
@@ -169,17 +158,6 @@ final class Newspack_Popups_Inserter {
 
 		// If not in the loop, ignore.
 		if ( ! in_the_loop() ) {
-			return $content;
-		}
-
-		// If the current post isn't an allowed post type, ignore.
-		if ( ! in_array(
-			get_post_type(),
-			apply_filters(
-				'newspack_campaigns_post_types_for_campaigns',
-				[ 'post', 'page' ]
-			)
-		) ) {
 			return $content;
 		}
 
@@ -712,10 +690,11 @@ final class Newspack_Popups_Inserter {
 	 * @return bool Should popup be shown.
 	 */
 	public static function should_display( $popup, $check_if_is_post = false ) {
-		// Inline prompts may only be rendered on posts, unless they are above-header.
+		$post_type = get_post_type();
+		// Inline prompts may not be rendered on pages, unless they are above-header.
 		if (
 			$check_if_is_post &&
-			'post' !== get_post_type() &&
+			'page' === $post_type &&
 			( Newspack_Popups_Model::is_inline( $popup ) && ! Newspack_Popups_Model::is_above_header( $popup ) )
 		) {
 			return false;
@@ -733,14 +712,30 @@ final class Newspack_Popups_Inserter {
 			}
 		}
 
-		// Context in which the popup appears - the taxonomy of the post.
+		// Context in which the popup appears
+		// - the taxonomy of the post.
 		$is_taxonomy_matching = self::assess_taxonomy_filter( $popup, 'category' ) && self::assess_taxonomy_filter( $popup, 'post_tag' );
-		// Custom and manual placements should override taxonomy conditions, since they are placed arbitrarily.
+		// - the types of the posts supported for all popups.
+		$global_post_types = Newspack_Popups_Model::get_globally_supported_post_types();
+		// - the type of the post supported by this popup, if different than the global setting.
+		$popup_post_types = $popup['options']['post_types'];
+
+		if ( 0 === count( array_diff( $popup_post_types, Newspack_Popups_Model::get_default_popup_post_types() ) ) ) {
+			// Popup post types are same as default post types - no need to check the former.
+			$is_post_type_matching_global_post_types = in_array( $post_type, $global_post_types );
+			$is_post_context_matching                = $is_taxonomy_matching && $is_post_type_matching_global_post_types;
+		} else {
+			// Popup post types override the global post types.
+			$is_post_type_matching_popup_post_types = in_array( $post_type, $popup_post_types );
+			$is_post_context_matching               = $is_taxonomy_matching && $is_post_type_matching_popup_post_types;
+		}
+
+		// Custom and manual placements should override context conditions, since they are placed arbitrarily.
 		$is_arbitrarily_placed = Newspack_Popups_Custom_Placements::is_custom_placement_or_manual( $popup );
 		// Prompts should be hidden on account related pages (e.g. password reset page).
 		$is_on_account_related_page = Newspack_Popups::is_account_related_post( get_post() );
 
-		$should_be_displayed = ( $is_arbitrarily_placed || $is_taxonomy_matching ) && ! $is_on_account_related_page;
+		$should_be_displayed = ( $is_arbitrarily_placed || $is_post_context_matching ) && ! $is_on_account_related_page;
 
 		return $should_be_displayed;
 	}

@@ -43,6 +43,7 @@ class ModelTest extends WP_UnitTestCase {
 				'trigger_scroll_progress' => '30',
 				'utm_suppression'         => null,
 				'selected_segment_id'     => '',
+				'post_types'              => [ 'post', 'page' ],
 			],
 			'Default options are as expected.'
 		);
