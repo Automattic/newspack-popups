@@ -47,26 +47,29 @@ final class Newspack_Popups {
 	public function __construct() {
 		add_action( 'admin_init', [ __CLASS__, 'create_lightweight_api_config' ] );
 		add_action( 'admin_notices', [ __CLASS__, 'api_config_missing_notice' ] );
-		add_action( 'init', [ __CLASS__, 'register_cpt' ] );
-		add_action( 'init', [ __CLASS__, 'register_meta' ] );
-		add_action( 'init', [ __CLASS__, 'register_taxonomy' ] );
-		add_action( 'enqueue_block_editor_assets', [ __CLASS__, 'enqueue_block_editor_assets' ] );
-		add_action( 'customize_controls_enqueue_scripts', [ __CLASS__, 'enqueue_customizer_assets' ] );
-		add_filter( 'display_post_states', [ __CLASS__, 'display_post_states' ], 10, 2 );
-		add_action( 'save_post_' . self::NEWSPACK_POPUPS_CPT, [ __CLASS__, 'popup_default_fields' ], 10, 3 );
-		add_action( 'transition_post_status', [ __CLASS__, 'remove_default_category' ], 10, 3 );
 
-		add_filter( 'show_admin_bar', [ __CLASS__, 'show_admin_bar' ], 10, 2 ); // phpcs:ignore WordPressVIPMinimum.UserExperience.AdminBarRemoval.RemovalDetected
+		if ( self::is_api_configured() ) {
+			add_action( 'init', [ __CLASS__, 'register_cpt' ] );
+			add_action( 'init', [ __CLASS__, 'register_meta' ] );
+			add_action( 'init', [ __CLASS__, 'register_taxonomy' ] );
+			add_action( 'enqueue_block_editor_assets', [ __CLASS__, 'enqueue_block_editor_assets' ] );
+			add_action( 'customize_controls_enqueue_scripts', [ __CLASS__, 'enqueue_customizer_assets' ] );
+			add_filter( 'display_post_states', [ __CLASS__, 'display_post_states' ], 10, 2 );
+			add_action( 'save_post_' . self::NEWSPACK_POPUPS_CPT, [ __CLASS__, 'popup_default_fields' ], 10, 3 );
+			add_action( 'transition_post_status', [ __CLASS__, 'remove_default_category' ], 10, 3 );
 
-		include_once dirname( __FILE__ ) . '/class-newspack-popups-model.php';
-		include_once dirname( __FILE__ ) . '/class-newspack-popups-inserter.php';
-		include_once dirname( __FILE__ ) . '/class-newspack-popups-api.php';
-		include_once dirname( __FILE__ ) . '/class-newspack-popups-settings.php';
-		include_once dirname( __FILE__ ) . '/class-newspack-popups-segmentation.php';
-		include_once dirname( __FILE__ ) . '/class-newspack-popups-custom-placements.php';
-		include_once dirname( __FILE__ ) . '/class-newspack-popups-parse-logs.php';
-		include_once dirname( __FILE__ ) . '/class-newspack-popups-donations.php';
-		include_once dirname( __FILE__ ) . '/class-newspack-popups-view-as.php';
+			add_filter( 'show_admin_bar', [ __CLASS__, 'show_admin_bar' ], 10, 2 ); // phpcs:ignore WordPressVIPMinimum.UserExperience.AdminBarRemoval.RemovalDetected
+
+			include_once dirname( __FILE__ ) . '/class-newspack-popups-model.php';
+			include_once dirname( __FILE__ ) . '/class-newspack-popups-inserter.php';
+			include_once dirname( __FILE__ ) . '/class-newspack-popups-api.php';
+			include_once dirname( __FILE__ ) . '/class-newspack-popups-settings.php';
+			include_once dirname( __FILE__ ) . '/class-newspack-popups-segmentation.php';
+			include_once dirname( __FILE__ ) . '/class-newspack-popups-custom-placements.php';
+			include_once dirname( __FILE__ ) . '/class-newspack-popups-parse-logs.php';
+			include_once dirname( __FILE__ ) . '/class-newspack-popups-donations.php';
+			include_once dirname( __FILE__ ) . '/class-newspack-popups-view-as.php';
+		}
 	}
 
 	/**
@@ -626,13 +629,17 @@ final class Newspack_Popups {
 	}
 
 	/**
+	 * Is the API configured?
+	 */
+	public static function is_api_configured() {
+		return file_exists( self::LIGHTWEIGHT_API_CONFIG_FILE_PATH_LEGACY ) || file_exists( self::LIGHTWEIGHT_API_CONFIG_FILE_PATH );
+	}
+
+	/**
 	 * Add an admin notice if config is missing.
 	 */
 	public static function api_config_missing_notice() {
-		if (
-			file_exists( self::LIGHTWEIGHT_API_CONFIG_FILE_PATH_LEGACY ) ||
-			file_exists( self::LIGHTWEIGHT_API_CONFIG_FILE_PATH )
-		) {
+		if ( self::is_api_configured() ) {
 			return;
 		}
 		?>
