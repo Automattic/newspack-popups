@@ -23,6 +23,7 @@ import ColorsSidebar from './ColorsSidebar';
 import Preview from './Preview';
 import Duplicate from './Duplicate';
 import EditorAdditions from './EditorAdditions';
+import PostTypesPanel from './PostTypesPanel';
 import './style.scss';
 
 // Action dispatchers for the sidebar components.
@@ -48,6 +49,7 @@ const FrequencySidebarWithData = connectData( FrequencySidebar );
 const SegmentationSidebarWithData = connectData( SegmentationSidebar );
 const DismissSidebarWithData = connectData( DismissSidebar );
 const ColorsSidebarWithData = connectData( ColorsSidebar );
+const PostTypesPanelWithData = connectData( PostTypesPanel );
 
 // Register components.
 registerPlugin( 'newspack-popups', {
@@ -105,6 +107,18 @@ registerPlugin( 'newspack-popups-colors', {
 			title={ __( 'Color Settings', 'newspack-popups' ) }
 		>
 			<ColorsSidebarWithData />
+		</PluginDocumentSettingPanel>
+	),
+	icon: null,
+} );
+
+registerPlugin( 'newspack-popups-post-types', {
+	render: () => (
+		<PluginDocumentSettingPanel
+			name="post-types-panel"
+			title={ __( 'Post Types', 'newspack-popups' ) }
+		>
+			<PostTypesPanelWithData />
 		</PluginDocumentSettingPanel>
 	),
 	icon: null,
