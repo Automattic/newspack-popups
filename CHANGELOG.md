@@ -1,3 +1,10 @@
+# [1.38.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.37.2...v1.38.0-alpha.1) (2021-08-25)
+
+
+### Features
+
+* targeting campaigns by post type ([91b056b](https://github.com/Automattic/newspack-popups/commit/91b056bfa7ea51ffffe9bd7312a395edb8de5be5)), closes [#567](https://github.com/Automattic/newspack-popups/issues/567)
+
 ## [1.37.2](https://github.com/Automattic/newspack-popups/compare/v1.37.1...v1.37.2) (2021-08-17)
 
 
