@@ -73,6 +73,13 @@ class WP_UnitTestCase_PageWithPopups extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Get number of popups rendered on the page.
+	 */
+	protected function getRenderedPopupsAmount() {
+		return self::$dom_xpath->query( '//amp-layout' )->length;
+	}
+
+	/**
 	 * Trigger post rendering with popups in it.
 	 *
 	 * @param string $url_query Query to append to URL.
