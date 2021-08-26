@@ -77,7 +77,7 @@ const App = () => {
 			<Card>
 				<CardHeader isShady>
 					<FlexBlock>
-						<h2>{ __( 'Prompts Settings', 'newspack-popups' ) }</h2>
+						<h2>{ __( 'Settings', 'newspack-popups' ) }</h2>
 					</FlexBlock>
 				</CardHeader>
 				<CardBody>{ settings.map( renderSetting ) }</CardBody>
