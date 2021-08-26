@@ -7,12 +7,20 @@ import { render, useState } from '@wordpress/element';
 import domReady from '@wordpress/dom-ready';
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
+import {
+	Button,
+	Card,
+	CardBody,
+	CardHeader,
+	CheckboxControl,
+	FlexBlock,
+	SelectControl,
+} from '@wordpress/components';
 
 /**
- * External dependencies
+ * Newspack dependencies.
  */
-import { Card, Grid, FormattedHeader, CheckboxControl, SelectControl } from 'newspack-components';
-import HeaderIcon from '@material-ui/icons/Settings';
+import { NewspackLogo } from 'newspack-components';
 
 /**
  * Internal dependencies
@@ -60,13 +68,21 @@ const App = () => {
 	};
 
 	return (
-		<Grid>
-			<FormattedHeader
-				headerIcon={ <HeaderIcon /> }
-				headerText={ __( 'Campaigns Settings', 'newspack-popups' ) }
-			/>
-			<Card>{ settings.map( renderSetting ) }</Card>
-		</Grid>
+		<div className="newspack-campaigns__wrapper">
+			<div className="newspack-logo__wrapper">
+				<Button href="https://newspack.pub/" target="_blank" label={ __( 'By Newspack' ) }>
+					<NewspackLogo height={ 32 } />
+				</Button>
+			</div>
+			<Card>
+				<CardHeader isShady>
+					<FlexBlock>
+						<h2>{ __( 'Prompts Settings', 'newspack-popups' ) }</h2>
+					</FlexBlock>
+				</CardHeader>
+				<CardBody>{ settings.map( renderSetting ) }</CardBody>
+			</Card>
+		</div>
 	);
 };
 

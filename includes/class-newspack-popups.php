@@ -97,7 +97,7 @@ final class Newspack_Popups {
 			'show_in_rest' => true,
 			'supports'     => [ 'editor', 'title', 'custom-fields' ],
 			'taxonomies'   => [ 'category', 'post_tag' ],
-			'menu_icon'    => 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBmaWxsPSIjYTBhNWFhIiBkPSJNMTEuOTkgMTguNTRsLTcuMzctNS43M0wzIDE0LjA3bDkgNyA5LTctMS42My0xLjI3LTcuMzggNS43NHpNMTIgMTZsNy4zNi01LjczTDIxIDlsLTktNy05IDcgMS42MyAxLjI3TDEyIDE2eiIvPjwvc3ZnPgo=',
+			'menu_icon'    => 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDI0IDI0IiByb2xlPSJpbWciIGFyaWEtaGlkZGVuPSJ0cnVlIiBmb2N1c2FibGU9ImZhbHNlIj48cGF0aCBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik02Ljg2MyAxMy42NDRMNSAxMy4yNWgtLjVhLjUuNSAwIDAxLS41LS41di0zYS41LjUgMCAwMS41LS41SDVMMTggNi41aDJWMTZoLTJsLTMuODU0LS44MTUuMDI2LjAwOGEzLjc1IDMuNzUgMCAwMS03LjMxLTEuNTQ5em0xLjQ3Ny4zMTNhMi4yNTEgMi4yNTEgMCAwMDQuMzU2LjkyMWwtNC4zNTYtLjkyMXptLTIuODQtMy4yOEwxOC4xNTcgOGguMzQzdjYuNWgtLjM0M0w1LjUgMTEuODIzdi0xLjE0NnoiIGNsaXAtcnVsZT0iZXZlbm9kZCIgZmlsbD0id2hpdGUiPjwvcGF0aD48L3N2Zz4K',
 		];
 		\register_post_type( self::NEWSPACK_POPUPS_CPT, $cpt_args );
 	}

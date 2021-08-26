@@ -20,6 +20,15 @@
 			margin-right: 0;
 			width: 100%;
 		}
+
+		.is-loading {
+			align-items: center;
+			display: flex;
+
+			.components-spinner {
+				margin-top: 0;
+			}
+		}
 	}
 
 	&__single-prompt-title {
