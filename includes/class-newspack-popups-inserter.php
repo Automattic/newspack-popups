@@ -475,7 +475,13 @@ final class Newspack_Popups_Inserter {
 		if ( ! Newspack_Popups_Segmentation::is_tracking() ) {
 			return;
 		}
-		$popups = array_filter( Newspack_Popups_Model::retrieve_active_popups(), [ __CLASS__, 'should_display' ] );
+		$popups = array_filter(
+			Newspack_Popups_Model::retrieve_popups(
+				// Include drafts if it's a preview request.
+				Newspack_Popups::is_preview_request()
+			),
+			[ __CLASS__, 'should_display' ]
+		);
 
 		// Prevent duplicates - a popup might be duplicated in a shortcode.
 		$unique_ids = [];

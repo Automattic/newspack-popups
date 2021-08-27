@@ -455,7 +455,7 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 	}
 
 	/**
-	 * Shortcode handling.
+	 * Ordering of amp-access array.
 	 */
 	public function test_amp_access_ordering() {
 		$segments           = Newspack_Popups_Segmentation::create_segment(
@@ -486,6 +486,47 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 			$popup_ids_ordered,
 			[ 'id_' . $segmented_popup_id, 'id_' . self::$popup_id, 'id_' . $another_popup_id ],
 			'The popup with the segment comes first in the array.'
+		);
+	}
+
+	/**
+	 * Test amp-access when previewing.
+	 */
+	public function test_amp_access_when_previewing() {
+		self::remove_all_popups();
+
+		$published_popup_id = self::createPopup();
+		$draft_popup_id     = self::createPopup( 'rafraf', null, [ 'post_status' => 'draft' ] );
+
+		self::renderPost();
+		$amp_access_config    = self::getAMPAccessConfig();
+		$popups_in_amp_access = $amp_access_config['popups'];
+		self::assertEquals(
+			count( $popups_in_amp_access ),
+			1,
+			'Just one popup in amp-access'
+		);
+		self::assertEquals(
+			$popups_in_amp_access[0]->id,
+			'id_' . $published_popup_id,
+			'And it is the published one.'
+		);
+
+		$user_id = $this->factory->user->create( [ 'role' => 'administrator' ] );
+		wp_set_current_user( $user_id );
+
+		self::renderPost( 'view_as=all' );
+		$amp_access_config    = self::getAMPAccessConfig();
+		$popups_in_amp_access = $amp_access_config['popups'];
+		self::assertEquals(
+			count( $popups_in_amp_access ),
+			2,
+			'Two popups are in amp-access'
+		);
+		self::assertEquals(
+			$popups_in_amp_access[1]->id,
+			'id_' . $draft_popup_id,
+			'The second one is the draft popup.'
 		);
 	}
 
