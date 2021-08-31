@@ -7,11 +7,11 @@ import { Button, ExternalLink, Notice, Placeholder, Spinner } from '@wordpress/c
 import { useEffect, useState } from '@wordpress/element';
 import { decodeEntities } from '@wordpress/html-entities';
 import { addQueryArgs } from '@wordpress/url';
+import { megaphone } from '@wordpress/icons';
 
 /**
  * External dependencies.
  */
-import CallToActionIcon from '@material-ui/icons/CallToAction';
 import { AutocompleteWithSuggestions } from 'newspack-components'; // TODO: update newspack-components package once this component lands
 
 export const SinglePromptEditor = ( { attributes, setAttributes } ) => {
@@ -96,13 +96,13 @@ export const SinglePromptEditor = ( { attributes, setAttributes } ) => {
 		<Placeholder
 			className="newspack-popups__single-prompt-placeholder"
 			label={ __( 'Single Prompt', 'newspack-popups' ) }
-			icon={ <CallToActionIcon style={ { color: '#36f' } } /> }
+			icon={ megaphone }
 		>
 			{ loading && (
-				<p>
+				<div className="is-loading">
 					{ sprintf( __( 'Loading prompt with ID %s...', 'newspack-popups' ), promptId ) }
 					<Spinner />
-				</p>
+				</div>
 			) }
 
 			{ error && (

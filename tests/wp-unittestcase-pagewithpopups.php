@@ -29,9 +29,7 @@ class WP_UnitTestCase_PageWithPopups extends WP_UnitTestCase {
 		);
 
 		// Remove any popups (from previous tests).
-		foreach ( Newspack_Popups_Model::retrieve_popups() as $popup ) {
-			wp_delete_post( $popup['id'] );
-		}
+		self::remove_all_popups();
 
 		self::$popup_id = self::createPopup();
 
@@ -42,6 +40,15 @@ class WP_UnitTestCase_PageWithPopups extends WP_UnitTestCase {
 				'dismiss_text' => Newspack_Popups::get_default_dismiss_text(),
 			]
 		);
+	}
+
+	/**
+	 * Remove all popups on the test instance.
+	 */
+	protected static function remove_all_popups() {
+		foreach ( Newspack_Popups_Model::retrieve_popups( true ) as $popup ) {
+			wp_delete_post( $popup['id'] );
+		}
 	}
 
 	/**
