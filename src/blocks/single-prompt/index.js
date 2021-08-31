@@ -3,11 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { registerBlockType } from '@wordpress/blocks';
-
-/**
- * External dependencies.
- */
-import CallToActionIcon from '@material-ui/icons/CallToAction';
+import { Icon, megaphone } from '@wordpress/icons';
 
 /**
  * Internal dependencies.
@@ -26,8 +22,11 @@ export const registerSinglePromptBlock = () => {
 	}
 
 	registerBlockType( name, {
-		title: __( 'Newspack Campaigns: Single Prompt', 'newspack-listing' ),
-		icon: <CallToActionIcon style={ { color: '#36f' } } />,
+		title: __( 'Campaigns: Single Prompt', 'newspack-popups' ),
+		icon: {
+			src: <Icon icon={ megaphone } />,
+			foreground: '#36f',
+		},
 		category,
 		keywords: [
 			__( 'newspack', 'newspack-popups' ),

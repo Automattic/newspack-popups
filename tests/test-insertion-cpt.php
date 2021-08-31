@@ -134,4 +134,35 @@ class InsertionTestCPT extends WP_UnitTestCase_PageWithPopups {
 		);
 		remove_filter( 'newspack_campaigns_post_types_for_campaigns', [ __CLASS__, 'filter_use_press_release_cpt_name' ] );
 	}
+
+	/**
+	 * Test popup insertion into a CPT, with popup-specific supported-CPT setting,
+	 * when there's overlap between the popup-specific post types and globally
+	 * supported post types.
+	 */
+	public function test_insertion_in_cpt_popup_specific_vs_global_with_overlap() {
+		\register_post_type( self::$podcast_cpt_name, [ 'public' => true ] );
+
+		self::remove_all_popups();
+		$post_only_popup    = self::createPopup( null, [ 'post_types' => [ 'post' ] ] );
+		$podcast_only_popup = self::createPopup( null, [ 'post_types' => [ self::$podcast_cpt_name ] ] );
+
+		add_filter( 'newspack_campaigns_post_types_for_campaigns', [ __CLASS__, 'filter_use_podcast_cpt_name' ] );
+
+		self::renderPost();
+		self::assertEquals(
+			1,
+			self::getRenderedPopupsAmount(),
+			'One popup is rendered on a post.'
+		);
+
+		self::renderPost( '', null, [], [], self::$podcast_cpt_name );
+		self::assertEquals(
+			1,
+			self::getRenderedPopupsAmount(),
+			'One popup is rendered on podcast CPT.'
+		);
+
+		remove_filter( 'newspack_campaigns_post_types_for_campaigns', [ __CLASS__, 'filter_use_podcast_cpt_name' ] );
+	}
 }

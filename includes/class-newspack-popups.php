@@ -47,26 +47,29 @@ final class Newspack_Popups {
 	public function __construct() {
 		add_action( 'admin_init', [ __CLASS__, 'create_lightweight_api_config' ] );
 		add_action( 'admin_notices', [ __CLASS__, 'api_config_missing_notice' ] );
-		add_action( 'init', [ __CLASS__, 'register_cpt' ] );
-		add_action( 'init', [ __CLASS__, 'register_meta' ] );
-		add_action( 'init', [ __CLASS__, 'register_taxonomy' ] );
-		add_action( 'enqueue_block_editor_assets', [ __CLASS__, 'enqueue_block_editor_assets' ] );
-		add_action( 'customize_controls_enqueue_scripts', [ __CLASS__, 'enqueue_customizer_assets' ] );
-		add_filter( 'display_post_states', [ __CLASS__, 'display_post_states' ], 10, 2 );
-		add_action( 'save_post_' . self::NEWSPACK_POPUPS_CPT, [ __CLASS__, 'popup_default_fields' ], 10, 3 );
-		add_action( 'transition_post_status', [ __CLASS__, 'remove_default_category' ], 10, 3 );
 
-		add_filter( 'show_admin_bar', [ __CLASS__, 'show_admin_bar' ], 10, 2 ); // phpcs:ignore WordPressVIPMinimum.UserExperience.AdminBarRemoval.RemovalDetected
+		if ( self::is_api_configured() ) {
+			add_action( 'init', [ __CLASS__, 'register_cpt' ] );
+			add_action( 'init', [ __CLASS__, 'register_meta' ] );
+			add_action( 'init', [ __CLASS__, 'register_taxonomy' ] );
+			add_action( 'enqueue_block_editor_assets', [ __CLASS__, 'enqueue_block_editor_assets' ] );
+			add_action( 'customize_controls_enqueue_scripts', [ __CLASS__, 'enqueue_customizer_assets' ] );
+			add_filter( 'display_post_states', [ __CLASS__, 'display_post_states' ], 10, 2 );
+			add_action( 'save_post_' . self::NEWSPACK_POPUPS_CPT, [ __CLASS__, 'popup_default_fields' ], 10, 3 );
+			add_action( 'transition_post_status', [ __CLASS__, 'remove_default_category' ], 10, 3 );
 
-		include_once dirname( __FILE__ ) . '/class-newspack-popups-model.php';
-		include_once dirname( __FILE__ ) . '/class-newspack-popups-inserter.php';
-		include_once dirname( __FILE__ ) . '/class-newspack-popups-api.php';
-		include_once dirname( __FILE__ ) . '/class-newspack-popups-settings.php';
-		include_once dirname( __FILE__ ) . '/class-newspack-popups-segmentation.php';
-		include_once dirname( __FILE__ ) . '/class-newspack-popups-custom-placements.php';
-		include_once dirname( __FILE__ ) . '/class-newspack-popups-parse-logs.php';
-		include_once dirname( __FILE__ ) . '/class-newspack-popups-donations.php';
-		include_once dirname( __FILE__ ) . '/class-newspack-popups-view-as.php';
+			add_filter( 'show_admin_bar', [ __CLASS__, 'show_admin_bar' ], 10, 2 ); // phpcs:ignore WordPressVIPMinimum.UserExperience.AdminBarRemoval.RemovalDetected
+
+			include_once dirname( __FILE__ ) . '/class-newspack-popups-model.php';
+			include_once dirname( __FILE__ ) . '/class-newspack-popups-inserter.php';
+			include_once dirname( __FILE__ ) . '/class-newspack-popups-api.php';
+			include_once dirname( __FILE__ ) . '/class-newspack-popups-settings.php';
+			include_once dirname( __FILE__ ) . '/class-newspack-popups-segmentation.php';
+			include_once dirname( __FILE__ ) . '/class-newspack-popups-custom-placements.php';
+			include_once dirname( __FILE__ ) . '/class-newspack-popups-parse-logs.php';
+			include_once dirname( __FILE__ ) . '/class-newspack-popups-donations.php';
+			include_once dirname( __FILE__ ) . '/class-newspack-popups-view-as.php';
+		}
 	}
 
 	/**
@@ -97,7 +100,7 @@ final class Newspack_Popups {
 			'show_in_rest' => true,
 			'supports'     => [ 'editor', 'title', 'custom-fields' ],
 			'taxonomies'   => [ 'category', 'post_tag' ],
-			'menu_icon'    => 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBmaWxsPSIjYTBhNWFhIiBkPSJNMTEuOTkgMTguNTRsLTcuMzctNS43M0wzIDE0LjA3bDkgNyA5LTctMS42My0xLjI3LTcuMzggNS43NHpNMTIgMTZsNy4zNi01LjczTDIxIDlsLTktNy05IDcgMS42MyAxLjI3TDEyIDE2eiIvPjwvc3ZnPgo=',
+			'menu_icon'    => 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDI0IDI0IiByb2xlPSJpbWciIGFyaWEtaGlkZGVuPSJ0cnVlIiBmb2N1c2FibGU9ImZhbHNlIj48cGF0aCBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik02Ljg2MyAxMy42NDRMNSAxMy4yNWgtLjVhLjUuNSAwIDAxLS41LS41di0zYS41LjUgMCAwMS41LS41SDVMMTggNi41aDJWMTZoLTJsLTMuODU0LS44MTUuMDI2LjAwOGEzLjc1IDMuNzUgMCAwMS03LjMxLTEuNTQ5em0xLjQ3Ny4zMTNhMi4yNTEgMi4yNTEgMCAwMDQuMzU2LjkyMWwtNC4zNTYtLjkyMXptLTIuODQtMy4yOEwxOC4xNTcgOGguMzQzdjYuNWgtLjM0M0w1LjUgMTEuODIzdi0xLjE0NnoiIGNsaXAtcnVsZT0iZXZlbm9kZCIgZmlsbD0id2hpdGUiPjwvcGF0aD48L3N2Zz4K',
 		];
 		\register_post_type( self::NEWSPACK_POPUPS_CPT, $cpt_args );
 	}
@@ -656,13 +659,17 @@ final class Newspack_Popups {
 	}
 
 	/**
+	 * Is the API configured?
+	 */
+	public static function is_api_configured() {
+		return file_exists( self::LIGHTWEIGHT_API_CONFIG_FILE_PATH_LEGACY ) || file_exists( self::LIGHTWEIGHT_API_CONFIG_FILE_PATH );
+	}
+
+	/**
 	 * Add an admin notice if config is missing.
 	 */
 	public static function api_config_missing_notice() {
-		if (
-			file_exists( self::LIGHTWEIGHT_API_CONFIG_FILE_PATH_LEGACY ) ||
-			file_exists( self::LIGHTWEIGHT_API_CONFIG_FILE_PATH )
-		) {
+		if ( self::is_api_configured() ) {
 			return;
 		}
 		?>

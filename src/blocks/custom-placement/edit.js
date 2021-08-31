@@ -6,11 +6,7 @@ import { __, sprintf } from '@wordpress/i18n';
 import { ExternalLink, Notice, Placeholder, SelectControl, Spinner } from '@wordpress/components';
 import { Fragment, useEffect, useState } from '@wordpress/element';
 import { addQueryArgs } from '@wordpress/url';
-
-/**
- * External dependencies.
- */
-import CallToActionIcon from '@material-ui/icons/CallToAction';
+import { megaphone } from '@wordpress/icons';
 
 export const CustomPlacementEditor = ( { attributes, setAttributes } ) => {
 	const [ loading, setLoading ] = useState( false );
@@ -85,7 +81,7 @@ export const CustomPlacementEditor = ( { attributes, setAttributes } ) => {
 		<Placeholder
 			className="newspack-popups__custom-placement-placeholder"
 			label={ __( 'Custom Placement', 'newspack-popups' ) }
-			icon={ <CallToActionIcon style={ { color: '#36f' } } /> }
+			icon={ megaphone }
 		>
 			<SelectControl
 				id="newspack-popups__custom-placement-select"
@@ -129,7 +125,7 @@ export const CustomPlacementEditor = ( { attributes, setAttributes } ) => {
 								const segmentId = segments[ segmentName ].id;
 								return (
 									<Fragment key={ segmentId }>
-										<h4>
+										<strong>
 											{ segmentId && (
 												<ExternalLink
 													href={ `/wp-admin/admin.php?page=newspack-popups-wizard#/segments/${ segmentId }` }
@@ -149,7 +145,7 @@ export const CustomPlacementEditor = ( { attributes, setAttributes } ) => {
 													) }
 												</>
 											) }
-										</h4>
+										</strong>
 										<ul>
 											{ segments[ segmentName ].prompts.map( prompt => (
 												<li key={ prompt.id }>
