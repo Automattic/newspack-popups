@@ -1,3 +1,17 @@
+# [1.39.0](https://github.com/Automattic/newspack-popups/compare/v1.38.0...v1.39.0) (2021-08-31)
+
+
+### Bug Fixes
+
+* cpt handling ([91d48a4](https://github.com/Automattic/newspack-popups/commit/91d48a4ae09afb468367db9857eb425e33b668d1))
+* disable until configured ([#608](https://github.com/Automattic/newspack-popups/issues/608)) ([aae712a](https://github.com/Automattic/newspack-popups/commit/aae712a43d7b581d23a1493ed6dad2c426f67070)), closes [#591](https://github.com/Automattic/newspack-popups/issues/591)
+* include drafts in segment previews ([7c57ba9](https://github.com/Automattic/newspack-popups/commit/7c57ba92bef548d0a0aef5ecfe1713d87a9a8520))
+
+
+### Features
+
+* update icons and blocks ([#611](https://github.com/Automattic/newspack-popups/issues/611)) ([75f2018](https://github.com/Automattic/newspack-popups/commit/75f201801e61302179aa31defd8a3137e813c45f))
+
 # [1.38.0](https://github.com/Automattic/newspack-popups/compare/v1.37.2...v1.38.0) (2021-08-25)
 
 
