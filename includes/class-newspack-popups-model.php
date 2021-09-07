@@ -269,14 +269,17 @@ final class Newspack_Popups_Model {
 		if ( $query->have_posts() ) {
 			while ( $query->have_posts() ) {
 				$query->the_post();
-				$popup = self::create_popup_object(
-					get_post( get_the_ID() ),
-					$include_taxonomies
-				);
-				$popup = self::deprecate_test_never_manual( $popup, 'publish' === $query->get( 'post_status', null ) );
+				$popup_post = get_post( get_the_ID() );
+				if ( Newspack_Popups::NEWSPACK_POPUPS_CPT === $popup_post->post_type ) {
+					$popup = self::create_popup_object(
+						$popup_post,
+						$include_taxonomies
+					);
+					$popup = self::deprecate_test_never_manual( $popup, 'publish' === $query->get( 'post_status', null ) );
 
-				if ( $popup ) {
-					$popups[] = $popup;
+					if ( $popup ) {
+						$popups[] = $popup;
+					}
 				}
 			}
 			wp_reset_postdata();
