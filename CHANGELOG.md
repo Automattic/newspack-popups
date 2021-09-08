@@ -1,3 +1,10 @@
+## [1.39.1](https://github.com/Automattic/newspack-popups/compare/v1.39.0...v1.39.1) (2021-09-08)
+
+
+### Bug Fixes
+
+* ensure only popup CPTs are handled ([fdc1bdd](https://github.com/Automattic/newspack-popups/commit/fdc1bdd32267ad59fcd03e61c4f7369af7b41768))
+
 # [1.39.0](https://github.com/Automattic/newspack-popups/compare/v1.38.0...v1.39.0) (2021-08-31)
 
 
