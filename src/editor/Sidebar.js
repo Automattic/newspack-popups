@@ -21,6 +21,8 @@ const Sidebar = ( {
 	onMetaFieldChange,
 	placement,
 	trigger_scroll_progress,
+	trigger_posts_count,
+	repeat_prompt,
 	trigger_delay,
 	trigger_type,
 	isOverlay,
@@ -48,7 +50,12 @@ const Sidebar = ( {
 			/>
 			<SelectControl
 				label={ isOverlay ? __( 'Position' ) : __( 'Placement' ) }
-				help={ getPlacementHelpMessage( placement, trigger_scroll_progress ) }
+				help={ getPlacementHelpMessage(
+					placement,
+					trigger_scroll_progress,
+					trigger_posts_count,
+					repeat_prompt
+				) }
 				value={ placement }
 				onChange={ updatePlacement }
 				options={
@@ -60,6 +67,7 @@ const Sidebar = ( {
 						  ]
 						: [
 								{ value: 'inline', label: __( 'In article content' ) },
+								{ value: 'archives', label: __( 'In archive pages' ) },
 								{ value: 'above_header', label: __( 'Above site header' ) },
 								{ value: 'manual', label: __( 'Manual only', 'newspack-popups' ) },
 						  ].concat(
@@ -110,6 +118,23 @@ const Sidebar = ( {
 					min={ 0 }
 					max={ 100 }
 				/>
+			) }
+			{ placement === 'archives' && (
+				<Fragment>
+					<RangeControl
+						label={ __( 'Number of items before prompt', 'newspack-popups' ) }
+						value={ trigger_posts_count }
+						onChange={ value => onMetaFieldChange( 'trigger_posts_count', value ) }
+						min={ 1 }
+						max={ 20 }
+					/>
+
+					<ToggleControl
+						label={ __( 'Repeat prompt', 'newspack-popups' ) }
+						checked={ repeat_prompt }
+						onChange={ value => onMetaFieldChange( 'repeat_prompt', value ) }
+					/>
+				</Fragment>
 			) }
 			<ToggleControl
 				label={ __( 'Display Prompt Title', 'newspack-popups' ) }

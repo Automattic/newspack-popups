@@ -19,6 +19,8 @@ export const optionsFieldsSelector = select => {
 		overlay_opacity,
 		placement,
 		trigger_scroll_progress,
+		trigger_posts_count,
+		repeat_prompt,
 		trigger_delay,
 		trigger_type,
 		utm_suppression,
@@ -41,6 +43,8 @@ export const optionsFieldsSelector = select => {
 		overlay_opacity,
 		placement,
 		trigger_scroll_progress,
+		trigger_posts_count,
+		repeat_prompt,
 		trigger_delay,
 		trigger_type,
 		utm_suppression,
@@ -127,9 +131,16 @@ export const isCustomPlacement = placementValue => {
  *
  * @param {string} placementValue Placement of the prompt.
  * @param {number|string} triggerPercentage Insertion percentage, for inline prompts.
+ * @param {number|string} triggerCount Insertion posts count, for archives prompts.
+ * @param {boolean} repeat_prompt Repeat prompt every {triggerCount}, for archives prompts.
  * @return {string} An appropriate help message.
  */
-export const getPlacementHelpMessage = ( placementValue, triggerPercentage = 0 ) => {
+export const getPlacementHelpMessage = (
+	placementValue,
+	triggerPercentage = 0,
+	triggerCount = 0,
+	repeat_prompt = false
+) => {
 	if ( isCustomPlacement( placementValue ) ) {
 		const customPlacements = window.newspack_popups_data?.custom_placements || {};
 		return sprintf(
@@ -170,6 +181,22 @@ export const getPlacementHelpMessage = ( placementValue, triggerPercentage = 0 )
 				),
 				triggerPercentage + '%'
 			);
+		case 'archives':
+			return repeat_prompt
+				? sprintf(
+						__(
+							'The prompt will be automatically inserted every %d articles in the archive pages.',
+							'newspack-popups'
+						),
+						triggerCount
+				  )
+				: sprintf(
+						__(
+							'The prompt will be automatically inserted after %d articles in the archive pages.',
+							'newspack-popups'
+						),
+						triggerCount
+				  );
 		case 'manual':
 			return __(
 				'The prompt will appear only where inserted using the Single Prompt block or a shortcode.',

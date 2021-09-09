@@ -41,6 +41,8 @@ class ModelTest extends WP_UnitTestCase {
 				'trigger_type'            => 'scroll',
 				'trigger_delay'           => '3',
 				'trigger_scroll_progress' => '30',
+				'trigger_posts_count'     => 0,
+				'repeat_prompt'           => false,
 				'utm_suppression'         => null,
 				'selected_segment_id'     => '',
 				'post_types'              => [ 'post', 'page' ],
