@@ -23,7 +23,7 @@ final class Newspack_Popups_Model {
 	 *
 	 * @var array
 	 */
-	protected static $inline_placements = [ 'inline', 'above_header' ];
+	protected static $inline_placements = [ 'inline', 'above_header', 'archives' ];
 
 	/**
 	 * Retrieve all Popups (first 100).
@@ -231,6 +231,8 @@ final class Newspack_Popups_Model {
 				'trigger_type'            => filter_input( INPUT_GET, 'trigger_type', FILTER_SANITIZE_STRING ),
 				'trigger_delay'           => filter_input( INPUT_GET, 'trigger_delay', FILTER_SANITIZE_STRING ),
 				'trigger_scroll_progress' => filter_input( INPUT_GET, 'trigger_scroll_progress', FILTER_SANITIZE_STRING ),
+				'trigger_posts_count'     => filter_input( INPUT_GET, 'trigger_posts_count', FILTER_SANITIZE_STRING ),
+				'repeat_prompt'           => filter_input( INPUT_GET, 'repeat_prompt', FILTER_VALIDATE_BOOLEAN ),
 				'utm_suppression'         => filter_input( INPUT_GET, 'utm_suppression', FILTER_SANITIZE_STRING ),
 			]
 		);
@@ -349,6 +351,8 @@ final class Newspack_Popups_Model {
 			'trigger_type'            => get_post_meta( $id, 'trigger_type', true ),
 			'trigger_delay'           => get_post_meta( $id, 'trigger_delay', true ),
 			'trigger_scroll_progress' => get_post_meta( $id, 'trigger_scroll_progress', true ),
+			'trigger_posts_count'     => get_post_meta( $id, 'trigger_posts_count', true ),
+			'repeat_prompt'           => get_post_meta( $id, 'repeat_prompt', true ),
 			'utm_suppression'         => get_post_meta( $id, 'utm_suppression', true ),
 			'selected_segment_id'     => get_post_meta( $id, 'selected_segment_id', true ),
 			'post_types'              => get_post_meta( $id, 'post_types', true ),
@@ -369,6 +373,8 @@ final class Newspack_Popups_Model {
 				'trigger_type'            => 'time',
 				'trigger_delay'           => 0,
 				'trigger_scroll_progress' => 0,
+				'trigger_posts_count'     => 0,
+				'repeat_prompt'           => false,
 				'utm_suppression'         => null,
 				'selected_segment_id'     => '',
 				'post_types'              => self::get_globally_supported_post_types(),
@@ -507,13 +513,24 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
+	 * Get popups which should be inserted above page header.
+	 *
+	 * @param object $popup The popup object.
+	 * @return boolean True if the popup should be inserted above page header.
+	 */
+	public static function should_be_inserted_in_archive_pages( $popup ) {
+		return self::is_inline( $popup ) && 'archives' === $popup['options']['placement'];
+	}
+
+	/**
 	 * Get popups which should be inserted in page content.
 	 *
 	 * @param object $popup The popup object.
 	 * @return boolean True if the popup should be inserted in page content.
 	 */
 	public static function should_be_inserted_in_page_content( $popup ) {
-		return self::should_be_inserted_above_page_header( $popup ) === false;
+		return self::should_be_inserted_above_page_header( $popup ) === false 
+			&& self::should_be_inserted_in_archive_pages( $popup ) === false;
 	}
 
 	/**

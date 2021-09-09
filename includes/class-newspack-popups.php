@@ -120,6 +120,7 @@ final class Newspack_Popups {
 				'auth_callback'  => '__return_true',
 			]
 		);
+
 		\register_meta(
 			'post',
 			'trigger_scroll_progress',
@@ -131,6 +132,31 @@ final class Newspack_Popups {
 				'auth_callback'  => '__return_true',
 			]
 		);
+
+		\register_meta(
+			'post',
+			'trigger_posts_count',
+			[
+				'object_subtype' => self::NEWSPACK_POPUPS_CPT,
+				'show_in_rest'   => true,
+				'type'           => 'integer',
+				'single'         => true,
+				'auth_callback'  => '__return_true',
+			]
+		);
+
+		\register_meta(
+			'post',
+			'repeat_prompt',
+			[
+				'object_subtype' => self::NEWSPACK_POPUPS_CPT,
+				'show_in_rest'   => true,
+				'type'           => 'boolean',
+				'single'         => true,
+				'auth_callback'  => '__return_true',
+			]
+		);
+
 		\register_meta(
 			'post',
 			'trigger_delay',
@@ -377,6 +403,17 @@ final class Newspack_Popups {
 	}
 
 	/**
+	 * Get preview archive permalink. Used to preview prompts in archive pages in the popup wizard.
+	 *
+	 * @return string
+	 */
+	public static function preview_archive_permalink() {
+		$categories = get_categories();
+
+		return count( $categories ) > 0 ? get_category_link( $categories[0] ) : '';
+	}
+
+	/**
 	 * Load up common JS/CSS for the editor.
 	 */
 	public static function enqueue_block_editor_assets() {
@@ -445,6 +482,7 @@ final class Newspack_Popups {
 			'newspack_popups_data',
 			[
 				'preview_post'         => self::preview_post_permalink(),
+				'preview_archive'      => self::preview_archive_permalink(),
 				'segments'             => Newspack_Popups_Segmentation::get_segments(),
 				'custom_placements'    => Newspack_Popups_Custom_Placements::get_custom_placements(),
 				'taxonomy'             => self::NEWSPACK_POPUPS_TAXONOMY,
@@ -623,6 +661,8 @@ final class Newspack_Popups {
 		update_post_meta( $post_id, 'trigger_type', $trigger_type );
 		update_post_meta( $post_id, 'trigger_delay', 3 );
 		update_post_meta( $post_id, 'trigger_scroll_progress', 30 );
+		update_post_meta( $post_id, 'trigger_posts_count', 0 );
+		update_post_meta( $post_id, 'repeat_prompt', false );
 		update_post_meta( $post_id, 'utm_suppression', '' );
 		update_post_meta( $post_id, 'selected_segment_id', $segment );
 
