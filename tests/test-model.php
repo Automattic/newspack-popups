@@ -41,7 +41,7 @@ class ModelTest extends WP_UnitTestCase {
 				'trigger_type'                   => 'scroll',
 				'trigger_delay'                  => '3',
 				'trigger_scroll_progress'        => '30',
-				'archive_insertion_posts_count'  => 0,
+				'archive_insertion_posts_count'  => 1,
 				'archive_insertion_is_repeating' => false,
 				'utm_suppression'                => null,
 				'selected_segment_id'            => '',
