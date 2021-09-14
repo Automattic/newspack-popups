@@ -621,6 +621,10 @@ final class Newspack_Popups {
 			case 'overlay-bottom':
 				$placement = 'bottom';
 				break;
+			case 'archives':
+				$placement = 'archives';
+				$frequency = 'always';
+				break;
 			case 'above-header':
 				$placement = 'above_header';
 				$frequency = 'always';
