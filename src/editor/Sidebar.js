@@ -21,8 +21,8 @@ const Sidebar = ( {
 	onMetaFieldChange,
 	placement,
 	trigger_scroll_progress,
-	trigger_posts_count,
-	repeat_prompt,
+	archive_insertion_posts_count,
+	archive_insertion_is_repeating,
 	trigger_delay,
 	trigger_type,
 	isOverlay,
@@ -53,8 +53,8 @@ const Sidebar = ( {
 				help={ getPlacementHelpMessage(
 					placement,
 					trigger_scroll_progress,
-					trigger_posts_count,
-					repeat_prompt
+					archive_insertion_posts_count,
+					archive_insertion_is_repeating
 				) }
 				value={ placement }
 				onChange={ updatePlacement }
@@ -123,16 +123,16 @@ const Sidebar = ( {
 				<Fragment>
 					<RangeControl
 						label={ __( 'Number of items before prompt', 'newspack-popups' ) }
-						value={ trigger_posts_count }
-						onChange={ value => onMetaFieldChange( 'trigger_posts_count', value ) }
+						value={ archive_insertion_posts_count }
+						onChange={ value => onMetaFieldChange( 'archive_insertion_posts_count', value ) }
 						min={ 1 }
 						max={ 20 }
 					/>
 
 					<ToggleControl
 						label={ __( 'Repeat prompt', 'newspack-popups' ) }
-						checked={ repeat_prompt }
-						onChange={ value => onMetaFieldChange( 'repeat_prompt', value ) }
+						checked={ archive_insertion_is_repeating }
+						onChange={ value => onMetaFieldChange( 'archive_insertion_is_repeating', value ) }
 					/>
 				</Fragment>
 			) }

@@ -135,7 +135,7 @@ final class Newspack_Popups {
 
 		\register_meta(
 			'post',
-			'trigger_posts_count',
+			'archive_insertion_posts_count',
 			[
 				'object_subtype' => self::NEWSPACK_POPUPS_CPT,
 				'show_in_rest'   => true,
@@ -147,7 +147,7 @@ final class Newspack_Popups {
 
 		\register_meta(
 			'post',
-			'repeat_prompt',
+			'archive_insertion_is_repeating',
 			[
 				'object_subtype' => self::NEWSPACK_POPUPS_CPT,
 				'show_in_rest'   => true,
@@ -661,8 +661,8 @@ final class Newspack_Popups {
 		update_post_meta( $post_id, 'trigger_type', $trigger_type );
 		update_post_meta( $post_id, 'trigger_delay', 3 );
 		update_post_meta( $post_id, 'trigger_scroll_progress', 30 );
-		update_post_meta( $post_id, 'trigger_posts_count', 0 );
-		update_post_meta( $post_id, 'repeat_prompt', false );
+		update_post_meta( $post_id, 'archive_insertion_posts_count', 0 );
+		update_post_meta( $post_id, 'archive_insertion_is_repeating', false );
 		update_post_meta( $post_id, 'utm_suppression', '' );
 		update_post_meta( $post_id, 'selected_segment_id', $segment );
 

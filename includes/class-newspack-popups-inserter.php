@@ -372,13 +372,13 @@ final class Newspack_Popups_Inserter {
 		
 		$archives_popups = array_filter( self::popups_for_post(), [ 'Newspack_Popups_Model', 'should_be_inserted_in_archive_pages' ] );
 		foreach ( $archives_popups as $popup ) {
-			$trigger_posts_count = intval( $popup['options']['trigger_posts_count'] );
-			// insert after trigger_posts_count articles
-			// or every trigger_posts_count posts if prompt set to repeated
+			$archive_insertion_posts_count = intval( $popup['options']['archive_insertion_posts_count'] );
+			// insert after archive_insertion_posts_count articles
+			// or every archive_insertion_posts_count posts if prompt set to repeated
 			// or at the end if the total posts count is less than the trigger count.
-			if ( $post_count === $trigger_posts_count
-				|| ( $popup['options']['repeat_prompt'] && 0 === $post_count % $trigger_posts_count )
-				|| ( $trigger_posts_count >= $wp_query->post_count && $post_count === $wp_query->post_count )
+			if ( $post_count === $archive_insertion_posts_count
+				|| ( $popup['options']['archive_insertion_is_repeating'] && 0 === $post_count % $archive_insertion_posts_count )
+				|| ( $archive_insertion_posts_count >= $wp_query->post_count && $post_count === $wp_query->post_count )
 			) {
 				echo Newspack_Popups_Model::generate_popup( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			}
