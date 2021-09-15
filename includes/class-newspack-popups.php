@@ -408,7 +408,7 @@ final class Newspack_Popups {
 	 * @return string
 	 */
 	public static function preview_archive_permalink() {
-		$categories = get_categories();
+		$categories = array_values( get_categories() );
 
 		return count( $categories ) > 0 ? get_category_link( $categories[0] ) : '';
 	}
