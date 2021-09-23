@@ -335,6 +335,25 @@ final class Newspack_Popups {
 				'auth_callback'  => '__return_true',
 			]
 		);
+		
+		\register_meta(
+			'post',
+			'archive_page_types',
+			[
+				'object_subtype' => self::NEWSPACK_POPUPS_CPT,
+				'show_in_rest'   => [
+					'schema' => [
+						'items' => [
+							'type' => 'string',
+						],
+					],
+				],
+				'type'           => 'array',
+				'default'        => Newspack_Popups_Model::get_default_popup_archive_page_types(),
+				'single'         => true,
+				'auth_callback'  => '__return_true',
+			]
+		);
 
 		// Meta field for all post types.
 		\register_meta(
