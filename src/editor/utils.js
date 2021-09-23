@@ -27,7 +27,18 @@ export const optionsFieldsSelector = select => {
 	} = meta || {};
 
 	const isInlinePlacement = placementValue =>
-		-1 === [ 'top', 'bottom', 'center' ].indexOf( placementValue );
+		-1 ===
+		[
+			'top-left',
+			'top',
+			'top-right',
+			'center-left',
+			'center',
+			'center-right',
+			'bottom-left',
+			'bottom',
+			'bottom-right',
+		].indexOf( placementValue );
 	const isOverlay = ! isInlinePlacement( placement );
 
 	return {

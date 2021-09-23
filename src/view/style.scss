@@ -6,6 +6,8 @@ $color__secondary-variation: darken( $color__secondary, 10% );
 $font__system: -apple-system, blinkmacsystemfont, 'Segoe UI', roboto, oxygen, ubuntu, cantarell,
 	'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
 
+$site__lightbox-popup: 25%;
+
 .newspack-lightbox {
 	align-items: center;
 	bottom: 0;
@@ -121,16 +123,18 @@ $font__system: -apple-system, blinkmacsystemfont, 'Segoe UI', roboto, oxygen, ub
 	}
 
 	/* Placements */
-	&.newspack-lightbox-placement-center {
+	&.newspack-lightbox-placement-center,
+	&.newspack-lightbox-placement-bottom-left,
+	&.newspack-lightbox-placement-bottom-right,
+	&.newspack-lightbox-placement-center-left,
+	&.newspack-lightbox-placement-center-right,
+	&.newspack-lightbox-placement-top-left,
+	&.newspack-lightbox-placement-top-right {
 		.newspack-popup-wrapper {
 			max-height: 90%;
 			max-height: calc( 100% - 1.5em );
-			min-width: 100%;
+			// min-width: 100%;
 			overflow-y: auto;
-
-			@media only screen and ( min-width: 780px ) {
-				min-width: 780px;
-			}
 		}
 	}
 
@@ -139,13 +143,61 @@ $font__system: -apple-system, blinkmacsystemfont, 'Segoe UI', roboto, oxygen, ub
 		.newspack-popup-wrapper {
 			max-height: 100%;
 			overflow-y: auto;
-			width: 100%;
+			// width: 100%;
+		}
+
+		.newspack-popup {
+			// max-width: 90%;
+			padding-left: 0;
+			padding-right: 0;
+			// width: 1200px;
+		}
+	}
+
+	/* sizing */
+	&.newspack-lightbox-size-small,
+	&.newspack-lightbox-size-medium,
+	&.newspack-lightbox-size-large,
+	&.newspack-lightbox-size-full {
+		.newspack-popup-wrapper {
+			@media only screen and ( min-width: 780px ) {
+				min-width: 780px;
+			}
 		}
 
 		.newspack-popup {
 			max-width: 90%;
 			padding-left: 0;
 			padding-right: 0;
+			// width: 1200px;
+		}
+	}
+
+	&.newspack-lightbox-size-small {
+		.newspack-popup-wrapper {
+			width: $site__lightbox-popup;
+		}
+	}
+
+	&.newspack-lightbox-size-medium {
+		.newspack-popup-wrapper {
+			width: 2 * $site__lightbox-popup;
+		}
+	}
+
+	&.newspack-lightbox-size-large {
+		.newspack-popup-wrapper {
+			width: 3 * $site__lightbox-popup;
+		}
+	}
+
+	&.newspack-lightbox-size-full {
+		.newspack-popup-wrapper {
+			min-width: 100%;
+		}
+
+		.newspack-popup {
+			max-width: 90%;
 			width: 1200px;
 		}
 	}
@@ -156,6 +208,34 @@ $font__system: -apple-system, blinkmacsystemfont, 'Segoe UI', roboto, oxygen, ub
 
 	&.newspack-lightbox-placement-top {
 		align-items: flex-start;
+	}
+
+	&.newspack-lightbox-placement-bottom-right {
+		align-items: flex-end;
+		justify-content: flex-end;
+	}
+
+	&.newspack-lightbox-placement-bottom-left {
+		align-items: flex-end;
+		justify-content: flex-start;
+	}
+
+	&.newspack-lightbox-placement-top-right {
+		align-items: flex-start;
+		justify-content: flex-end;
+	}
+
+	&.newspack-lightbox-placement-top-left {
+		align-items: flex-start;
+		justify-content: flex-start;
+	}
+
+	&.newspack-lightbox-placement-center-right {
+		justify-content: flex-end;
+	}
+
+	&.newspack-lightbox-placement-center-left {
+		justify-content: flex-start;
 	}
 }
 

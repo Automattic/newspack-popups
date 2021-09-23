@@ -13,6 +13,7 @@ import { RadioControl, RangeControl, SelectControl, ToggleControl } from '@wordp
  * Internal dependencies
  */
 import { isCustomPlacement, getPlacementHelpMessage } from '../editor/utils';
+import PositionPlacementControl from './PositionPlacementControl';
 
 const Sidebar = ( {
 	display_title,
@@ -44,21 +45,23 @@ const Sidebar = ( {
 					{ label: __( 'Inline', 'newspack-popups' ), value: 'inline' },
 					{ label: __( 'Overlay', 'newspack-popups' ), value: 'center' },
 				] }
-				onChange={ value => updatePlacement( value ) }
+				onChange={ updatePlacement }
 			/>
+			{ isOverlay ? (
+				<PositionPlacementControl
+					layout={ placement }
+					label={ __( 'Position' ) }
+					help={ getPlacementHelpMessage( placement, trigger_scroll_progress ) }
+					value={ placement }
+					onChange={ updatePlacement }
+				/>
+			) : (
 			<SelectControl
-				label={ isOverlay ? __( 'Position' ) : __( 'Placement' ) }
+					label={ __( 'Placement' ) }
 				help={ getPlacementHelpMessage( placement, trigger_scroll_progress ) }
 				value={ placement }
 				onChange={ updatePlacement }
-				options={
-					isOverlay
-						? [
-								{ value: 'center', label: __( 'Center' ) },
-								{ value: 'top', label: __( 'Top' ) },
-								{ value: 'bottom', label: __( 'Bottom' ) },
-						  ]
-						: [
+					options={ [
 								{ value: 'inline', label: __( 'In article content' ) },
 								{ value: 'above_header', label: __( 'Above site header' ) },
 								{ value: 'manual', label: __( 'Manual only', 'newspack-popups' ) },
@@ -67,9 +70,10 @@ const Sidebar = ( {
 									value: key,
 									label: customPlacements[ key ],
 								} ) )
-						  )
-				}
+					) }
 			/>
+			) }
+
 			{ isOverlay && (
 				<Fragment>
 					<SelectControl

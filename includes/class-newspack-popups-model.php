@@ -16,7 +16,7 @@ final class Newspack_Popups_Model {
 	 *
 	 * @var array
 	 */
-	protected static $overlay_placements = [ 'top', 'bottom', 'center' ];
+	protected static $overlay_placements = [ 'top', 'bottom', 'center', 'bottom-right', 'bottom-left', 'top-right', 'top-left', 'center-right', 'center-left' ];
 
 	/**
 	 * Possible placements of inline popups.
@@ -442,7 +442,7 @@ final class Newspack_Popups_Model {
 					$popup['options']['trigger_scroll_progress'] = 0;
 					break;
 			};
-			if ( ! in_array( $popup['options']['placement'], [ 'top', 'bottom' ], true ) ) {
+			if ( ! in_array( $popup['options']['placement'], self::$overlay_placements, true ) ) {
 				$popup['options']['placement'] = 'center';
 			}
 		}
@@ -1011,9 +1011,9 @@ final class Newspack_Popups_Model {
 								"selector": "#<?php echo esc_attr( $element_id ); ?> .newspack-popup-wrapper",
 								"delay": "<?php echo intval( $popup['options']['trigger_delay'] ) * 1000 + 625; ?>",
 								"keyframes": {
-									<?php if ( 'top' === $popup['options']['placement'] ) : ?>
+									<?php if ( in_array( $popup['options']['placement'], [ 'top', 'top-left', 'top-right' ] ) ) : ?>
 										"transform": ["translateY(-100%)", "translateY(0)"]
-									<?php elseif ( 'bottom' === $popup['options']['placement'] ) : ?>
+									<?php elseif ( in_array( $popup['options']['placement'], [ 'bottom', 'bottom-left', 'bottom-right' ] ) ) : ?>
 										"transform": ["translateY(100%)", "translateY(0)"]
 									<?php else : ?>
 										"opacity": ["0", "1"]
