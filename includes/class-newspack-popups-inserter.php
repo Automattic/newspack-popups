@@ -372,6 +372,17 @@ final class Newspack_Popups_Inserter {
 		
 		$archives_popups = array_filter( self::popups_for_post(), [ 'Newspack_Popups_Model', 'should_be_inserted_in_archive_pages' ] );
 		foreach ( $archives_popups as $popup ) {
+			// insert popup only on selected archive page types.
+			if ( is_category() && ! in_array( 'category', $popup['options']['archive_page_types'] )
+				|| ( is_tag() && ! in_array( 'tag', $popup['options']['archive_page_types'] ) )
+				|| ( is_author() && ! in_array( 'author', $popup['options']['archive_page_types'] ) )
+				|| ( is_date() && ! in_array( 'date', $popup['options']['archive_page_types'] ) )
+				|| ( is_post_type_archive() && ! in_array( 'post-type', $popup['options']['archive_page_types'] ) )
+				|| ( is_tax() && ! in_array( 'taxonomy', $popup['options']['archive_page_types'] ) )
+			) {
+					return;
+			}
+
 			$archive_insertion_posts_count = intval( $popup['options']['archive_insertion_posts_count'] );
 			// insert after archive_insertion_posts_count articles
 			// or every archive_insertion_posts_count posts if prompt set to repeated

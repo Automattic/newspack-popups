@@ -153,6 +153,7 @@ final class Newspack_Popups_Model {
 					update_post_meta( $id, $key, $value );
 					break;
 				case 'post_types':
+				case 'archive_page_types':
 					update_post_meta( $id, $key, $value );
 					break;
 				default:
@@ -356,6 +357,7 @@ final class Newspack_Popups_Model {
 			'utm_suppression'                => get_post_meta( $id, 'utm_suppression', true ),
 			'selected_segment_id'            => get_post_meta( $id, 'selected_segment_id', true ),
 			'post_types'                     => get_post_meta( $id, 'post_types', true ),
+			'archive_page_types'             => get_post_meta( $id, 'archive_page_types', true ),
 		];
 
 		return wp_parse_args(
@@ -378,6 +380,7 @@ final class Newspack_Popups_Model {
 				'utm_suppression'                => null,
 				'selected_segment_id'            => '',
 				'post_types'                     => self::get_globally_supported_post_types(),
+				'archive_page_types'             => self::get_supported_archive_page_types(),
 			]
 		);
 	}
@@ -391,12 +394,29 @@ final class Newspack_Popups_Model {
 			self::get_default_popup_post_types()
 		);
 	}
+	
+	/**
+	 * Get the supported archive page types.
+	 */
+	public static function get_supported_archive_page_types() {
+		return apply_filters(
+			'newspack_campaigns_archive_page_types_for_campaigns',
+			self::get_default_popup_archive_page_types()
+		);
+	}
 
 	/**
 	 * Get the default supported post types.
 	 */
 	public static function get_default_popup_post_types() {
 		return [ 'post', 'page' ];
+	}
+	
+	/**
+	 * Get the default supported archive page types.
+	 */
+	public static function get_default_popup_archive_page_types() {
+		return [ 'category', 'tag', 'author', 'date', 'post-type', 'taxonomy' ];
 	}
 
 	/**

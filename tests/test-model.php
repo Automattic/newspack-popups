@@ -46,6 +46,7 @@ class ModelTest extends WP_UnitTestCase {
 				'utm_suppression'                => null,
 				'selected_segment_id'            => '',
 				'post_types'                     => [ 'post', 'page' ],
+				'archive_page_types'             => [ 'category', 'tag', 'author', 'date', 'post-type', 'taxonomy' ],
 			],
 			'Default options are as expected.'
 		);
