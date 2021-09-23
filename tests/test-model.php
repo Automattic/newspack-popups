@@ -37,6 +37,7 @@ class ModelTest extends WP_UnitTestCase {
 				'frequency'               => 'always',
 				'overlay_color'           => '#000000',
 				'overlay_opacity'         => '30',
+				'overlay_size'            => 'medium',
 				'placement'               => 'inline',
 				'trigger_type'            => 'scroll',
 				'trigger_delay'           => '3',

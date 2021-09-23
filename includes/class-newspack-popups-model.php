@@ -227,6 +227,7 @@ final class Newspack_Popups_Model {
 				'frequency'               => filter_input( INPUT_GET, 'frequency', FILTER_SANITIZE_STRING ),
 				'overlay_color'           => filter_input( INPUT_GET, 'overlay_color', FILTER_SANITIZE_STRING ),
 				'overlay_opacity'         => filter_input( INPUT_GET, 'overlay_opacity', FILTER_SANITIZE_STRING ),
+				'overlay_size'            => filter_input( INPUT_GET, 'overlay_size', FILTER_SANITIZE_STRING ),
 				'placement'               => filter_input( INPUT_GET, 'placement', FILTER_SANITIZE_STRING ),
 				'trigger_type'            => filter_input( INPUT_GET, 'trigger_type', FILTER_SANITIZE_STRING ),
 				'trigger_delay'           => filter_input( INPUT_GET, 'trigger_delay', FILTER_SANITIZE_STRING ),
@@ -345,6 +346,7 @@ final class Newspack_Popups_Model {
 			'frequency'               => get_post_meta( $id, 'frequency', true ),
 			'overlay_color'           => get_post_meta( $id, 'overlay_color', true ),
 			'overlay_opacity'         => get_post_meta( $id, 'overlay_opacity', true ),
+			'overlay_size'            => get_post_meta( $id, 'overlay_size', true ),
 			'placement'               => get_post_meta( $id, 'placement', true ),
 			'trigger_type'            => get_post_meta( $id, 'trigger_type', true ),
 			'trigger_delay'           => get_post_meta( $id, 'trigger_delay', true ),
@@ -365,6 +367,7 @@ final class Newspack_Popups_Model {
 				'frequency'               => 'always',
 				'overlay_color'           => '#000000',
 				'overlay_opacity'         => 30,
+				'overlay_size'            => 'medium',
 				'placement'               => 'inline',
 				'trigger_type'            => 'time',
 				'trigger_delay'           => 0,
@@ -920,9 +923,10 @@ final class Newspack_Popups_Model {
 		$hide_border            = $popup['options']['hide_border'];
 		$overlay_opacity        = absint( $popup['options']['overlay_opacity'] ) / 100;
 		$overlay_color          = $popup['options']['overlay_color'];
+		$overlay_size           = $popup['options']['overlay_size'];
 		$hidden_fields          = self::get_hidden_fields( $popup );
 		$is_newsletter_prompt   = self::has_newsletter_prompt( $popup );
-		$classes                = array( 'newspack-lightbox', 'newspack-popup', 'newspack-lightbox-placement-' . $popup['options']['placement'] );
+		$classes                = array( 'newspack-lightbox', 'newspack-popup', 'newspack-lightbox-placement-' . $popup['options']['placement'], 'newspack-lightbox-size-' . $overlay_size );
 		$classes[]              = ( ! empty( $popup['title'] ) && $display_title ) ? 'newspack-lightbox-has-title' : null;
 		$classes[]              = $hide_border ? 'newspack-lightbox-no-border' : null;
 		$classes[]              = $is_newsletter_prompt ? 'newspack-newsletter-prompt-overlay' : null;

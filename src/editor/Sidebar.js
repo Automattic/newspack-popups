@@ -21,6 +21,7 @@ const Sidebar = ( {
 	frequency,
 	onMetaFieldChange,
 	placement,
+	overlay_size,
 	trigger_scroll_progress,
 	trigger_delay,
 	trigger_type,
@@ -34,6 +35,7 @@ const Sidebar = ( {
 		}
 	};
 	const customPlacements = window.newspack_popups_data?.custom_placements || {};
+	const popupSizeOptions = window.newspack_popups_data?.popup_size_options || {};
 
 	return (
 		<Fragment>
@@ -56,26 +58,34 @@ const Sidebar = ( {
 					onChange={ updatePlacement }
 				/>
 			) : (
-			<SelectControl
+				<SelectControl
 					label={ __( 'Placement' ) }
-				help={ getPlacementHelpMessage( placement, trigger_scroll_progress ) }
-				value={ placement }
-				onChange={ updatePlacement }
+					help={ getPlacementHelpMessage( placement, trigger_scroll_progress ) }
+					value={ placement }
+					onChange={ updatePlacement }
 					options={ [
-								{ value: 'inline', label: __( 'In article content' ) },
-								{ value: 'above_header', label: __( 'Above site header' ) },
-								{ value: 'manual', label: __( 'Manual only', 'newspack-popups' ) },
-						  ].concat(
-								Object.keys( customPlacements ).map( key => ( {
-									value: key,
-									label: customPlacements[ key ],
-								} ) )
+						{ value: 'inline', label: __( 'In article content' ) },
+						{ value: 'above_header', label: __( 'Above site header' ) },
+						{ value: 'manual', label: __( 'Manual only', 'newspack-popups' ) },
+					].concat(
+						Object.keys( customPlacements ).map( key => ( {
+							value: key,
+							label: customPlacements[ key ],
+						} ) )
 					) }
-			/>
+				/>
 			) }
 
 			{ isOverlay && (
 				<Fragment>
+					<SelectControl
+						label={ __( 'Size' ) }
+						value={ overlay_size }
+						onChange={ size => {
+							onMetaFieldChange( 'overlay_size', size );
+						} }
+						options={ popupSizeOptions }
+					/>
 					<SelectControl
 						label={ __( 'Trigger' ) }
 						help={ __( 'The event to trigger the prompt.', 'newspack-popups' ) }

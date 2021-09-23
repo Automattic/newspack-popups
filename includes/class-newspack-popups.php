@@ -220,6 +220,18 @@ final class Newspack_Popups {
 
 		\register_meta(
 			'post',
+			'overlay_size',
+			[
+				'object_subtype' => self::NEWSPACK_POPUPS_CPT,
+				'show_in_rest'   => true,
+				'type'           => 'string',
+				'single'         => true,
+				'auth_callback'  => '__return_true',
+			]
+		);
+
+		\register_meta(
+			'post',
 			'dismiss_text',
 			[
 				'object_subtype' => self::NEWSPACK_POPUPS_CPT,
@@ -447,6 +459,7 @@ final class Newspack_Popups {
 				'preview_post'         => self::preview_post_permalink(),
 				'segments'             => Newspack_Popups_Segmentation::get_segments(),
 				'custom_placements'    => Newspack_Popups_Custom_Placements::get_custom_placements(),
+				'popup_size_options'   => self::get_popup_size_options(),
 				'taxonomy'             => self::NEWSPACK_POPUPS_TAXONOMY,
 				'is_prompt'            => self::NEWSPACK_POPUPS_CPT == get_post_type(),
 				'available_post_types' => array_values(
@@ -571,17 +584,20 @@ final class Newspack_Popups {
 		$type      = isset( $_GET['placement'] ) ? sanitize_text_field( $_GET['placement'] ) : null; //phpcs:ignore
 		$segment   = isset( $_GET['segment'] ) ? sanitize_text_field( $_GET['segment'] ) : ''; //phpcs:ignore
 		$group     = isset( $_GET['group'] ) ? absint( $_GET['group'] ) : null; //phpcs:ignore
-		$frequency = 'daily';
+		$frequency    = 'daily';
+		$overlay_size = 'medium';
 
 		switch ( $type ) {
 			case 'overlay-center':
 				$placement = 'center';
 				break;
 			case 'overlay-top':
-				$placement = 'top';
+				$placement    = 'top';
+				$overlay_size = 'full';
 				break;
 			case 'overlay-bottom':
-				$placement = 'bottom';
+				$placement    = 'bottom';
+				$overlay_size = 'full';
 				break;
 			case 'above-header':
 				$placement = 'above_header';
@@ -619,6 +635,7 @@ final class Newspack_Popups {
 		update_post_meta( $post_id, 'frequency', $frequency );
 		update_post_meta( $post_id, 'overlay_color', '#000000' );
 		update_post_meta( $post_id, 'overlay_opacity', 30 );
+		update_post_meta( $post_id, 'overlay_size', $overlay_size );
 		update_post_meta( $post_id, 'placement', $placement );
 		update_post_meta( $post_id, 'trigger_type', $trigger_type );
 		update_post_meta( $post_id, 'trigger_delay', 3 );
@@ -899,6 +916,44 @@ final class Newspack_Popups {
 		}
 
 		return $new_popup_id;
+	}
+
+	/**
+	 * Generates the possible sizes for a popup.
+	 *
+	 * @return array popup possible sizes
+	 */
+	public static function get_popup_size_options() {
+		/**
+		 * Filters the list of possible popup sizes.
+		 * 
+		 * @param array Array of possible popup sizes.
+		 *     $params = [
+		 *          'value' => (string) size value.
+		 *          'label' => (string) size label to be displayed.
+		 *     ]
+		 */ 
+		return apply_filters(
+			'newspack_popups_size_options',
+			[
+				[
+					'value' => 'small',
+					'label' => __( 'Small', 'newspack-popups' ),
+				],
+				[
+					'value' => 'medium',
+					'label' => __( 'Medium', 'newspack-popups' ),
+				],
+				[
+					'value' => 'large',
+					'label' => __( 'Large', 'newspack-popups' ),
+				],
+				[
+					'value' => 'full',
+					'label' => __( 'Full Width', 'newspack-popups' ),
+				],
+			] 
+		);
 	}
 }
 Newspack_Popups::instance();
