@@ -500,13 +500,14 @@ final class Newspack_Popups {
 			'newspack-popups',
 			'newspack_popups_data',
 			[
-				'preview_post'         => self::preview_post_permalink(),
-				'preview_archive'      => self::preview_archive_permalink(),
-				'segments'             => Newspack_Popups_Segmentation::get_segments(),
-				'custom_placements'    => Newspack_Popups_Custom_Placements::get_custom_placements(),
-				'taxonomy'             => self::NEWSPACK_POPUPS_TAXONOMY,
-				'is_prompt'            => self::NEWSPACK_POPUPS_CPT == get_post_type(),
-				'available_post_types' => array_values(
+				'preview_post'                 => self::preview_post_permalink(),
+				'preview_archive'              => self::preview_archive_permalink(),
+				'segments'                     => Newspack_Popups_Segmentation::get_segments(),
+				'custom_placements'            => Newspack_Popups_Custom_Placements::get_custom_placements(),
+				'available_archive_page_types' => self::get_available_archive_page_types(),
+				'taxonomy'                     => self::NEWSPACK_POPUPS_TAXONOMY,
+				'is_prompt'                    => self::NEWSPACK_POPUPS_CPT == get_post_type(),
+				'available_post_types'         => array_values(
 					get_post_types(
 						[
 							'public'       => true,
@@ -962,6 +963,44 @@ final class Newspack_Popups {
 		}
 
 		return $new_popup_id;
+	}
+
+	/**
+	 * Get available archive page types where to display prompts
+	 */
+	public static function get_available_archive_page_types() {
+		return [
+			[
+				'name'  => 'category',
+				/* translators: archive page */
+				'label' => __( 'Categories' ),
+			],
+			[
+				'name'  => 'tag',
+				/* translators: archive page */
+				'label' => __( 'Tags' ),
+			],
+			[
+				'name'  => 'author',
+				/* translators: archive page */
+				'label' => __( 'Authors' ),
+			],
+			[
+				'name'  => 'date',
+				/* translators: archive page */
+				'label' => __( 'Date' ),
+			],
+			[
+				'name'  => 'post-type',
+				/* translators: archive page */
+				'label' => __( 'Custom Post Types' ),
+			],
+			[
+				'name'  => 'taxonomy',
+				/* translators: archive page */
+				'label' => __( 'Taxonomies' ),
+			],
+		];
 	}
 }
 Newspack_Popups::instance();
