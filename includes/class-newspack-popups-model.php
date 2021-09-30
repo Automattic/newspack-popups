@@ -394,7 +394,7 @@ final class Newspack_Popups_Model {
 			self::get_default_popup_post_types()
 		);
 	}
-	
+
 	/**
 	 * Get the supported archive page types.
 	 */
@@ -411,7 +411,7 @@ final class Newspack_Popups_Model {
 	public static function get_default_popup_post_types() {
 		return [ 'post', 'page' ];
 	}
-	
+
 	/**
 	 * Get the default supported archive page types.
 	 */
@@ -549,7 +549,7 @@ final class Newspack_Popups_Model {
 	 * @return boolean True if the popup should be inserted in page content.
 	 */
 	public static function should_be_inserted_in_page_content( $popup ) {
-		return self::should_be_inserted_above_page_header( $popup ) === false 
+		return self::should_be_inserted_above_page_header( $popup ) === false
 			&& self::should_be_inserted_in_archive_pages( $popup ) === false;
 	}
 

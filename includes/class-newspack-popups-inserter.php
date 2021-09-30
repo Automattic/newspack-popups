@@ -363,13 +363,13 @@ final class Newspack_Popups_Inserter {
 	/**
 	 * Insert popup after posts in archive pages. Called in the custom hook after_archive_post
 	 * The hook is add inside the posts loop in the archive template.
-	 * 
+	 *
 	 * @param integer $post_count order of the post in the posts loop.
 	 * @return void
 	 */
 	public static function insert_inline_prompt_in_archive_pages( $post_count ) {
 		global $wp_query;
-		
+
 		$archives_popups = array_filter( self::popups_for_post(), [ 'Newspack_Popups_Model', 'should_be_inserted_in_archive_pages' ] );
 		foreach ( $archives_popups as $popup ) {
 			// insert popup only on selected archive page types.
