@@ -335,7 +335,7 @@ final class Newspack_Popups {
 				'auth_callback'  => '__return_true',
 			]
 		);
-		
+
 		\register_meta(
 			'post',
 			'archive_page_types',
