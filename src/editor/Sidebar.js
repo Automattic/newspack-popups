@@ -7,7 +7,18 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Fragment } from '@wordpress/element';
-import { RadioControl, RangeControl, SelectControl, ToggleControl } from '@wordpress/components';
+import {
+	RadioControl,
+	RangeControl,
+	SelectControl,
+	ToggleControl,
+	CheckboxControl,
+} from '@wordpress/components';
+
+/**
+ * External dependencies
+ */
+import { without } from 'lodash';
 
 /**
  * Internal dependencies
@@ -27,6 +38,7 @@ const Sidebar = ( {
 	trigger_type,
 	isOverlay,
 	isInlinePlacement,
+	archive_page_types = [],
 } ) => {
 	const updatePlacement = value => {
 		onMetaFieldChange( 'placement', value );
@@ -35,6 +47,7 @@ const Sidebar = ( {
 		}
 	};
 	const customPlacements = window.newspack_popups_data?.custom_placements || {};
+	const availableArchivePageTypes = window.newspack_popups_data?.available_archive_page_types || [];
 
 	return (
 		<Fragment>
@@ -128,6 +141,27 @@ const Sidebar = ( {
 						min={ 1 }
 						max={ 20 }
 					/>
+
+					<div className="newspack-popups__prompt-type-control">
+						<legend className="components-base-control__legend">
+							{ __( 'Archive Page Types', 'newspack-popups' ) }
+						</legend>
+						{ availableArchivePageTypes.map( ( { name, label } ) => (
+							<CheckboxControl
+								key={ name }
+								label={ label }
+								checked={ archive_page_types.indexOf( name ) > -1 }
+								onChange={ isIncluded => {
+									onMetaFieldChange(
+										'archive_page_types',
+										isIncluded
+											? [ ...archive_page_types, name ]
+											: without( archive_page_types, name )
+									);
+								} }
+							/>
+						) ) }
+					</div>
 
 					<ToggleControl
 						label={ __( 'Repeat prompt', 'newspack-popups' ) }

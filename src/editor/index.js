@@ -24,7 +24,6 @@ import Preview from './Preview';
 import Duplicate from './Duplicate';
 import EditorAdditions from './EditorAdditions';
 import PostTypesPanel from './PostTypesPanel';
-import ArchivePageTypesSidebar from './ArchivePageTypesSidebar';
 import './style.scss';
 
 // Action dispatchers for the sidebar components.
@@ -51,7 +50,6 @@ const SegmentationSidebarWithData = connectData( SegmentationSidebar );
 const DismissSidebarWithData = connectData( DismissSidebar );
 const ColorsSidebarWithData = connectData( ColorsSidebar );
 const PostTypesPanelWithData = connectData( PostTypesPanel );
-const ArchivePageTypesSidebarWithData = connectData( ArchivePageTypesSidebar );
 
 // Register components.
 registerPlugin( 'newspack-popups', {
@@ -123,11 +121,6 @@ registerPlugin( 'newspack-popups-post-types', {
 			<PostTypesPanelWithData />
 		</PluginDocumentSettingPanel>
 	),
-	icon: null,
-} );
-
-registerPlugin( 'newspack-popups-archive-page-types', {
-	render: () => <ArchivePageTypesSidebarWithData />,
 	icon: null,
 } );
 
