@@ -135,7 +135,7 @@ const Sidebar = ( {
 			{ placement === 'archives' && (
 				<Fragment>
 					<RangeControl
-						label={ __( 'Number of items before prompt', 'newspack-popups' ) }
+						label={ __( 'Number of articles before prompt', 'newspack-popups' ) }
 						value={ archive_insertion_posts_count }
 						onChange={ value => onMetaFieldChange( 'archive_insertion_posts_count', value ) }
 						min={ 1 }
