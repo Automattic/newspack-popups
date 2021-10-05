@@ -62,7 +62,7 @@ const PositionPlacementControl = ( { layout, label, help, onChange, ...props } )
 		<Fragment>
 			<div className="newspack-popups-css-grid-selector">
 				<p className="components-base-control__label">{ label }</p>
-				<ButtonGroup aria-label={ __( 'Select layout', 'coblocks' ) } { ...props }>
+				<ButtonGroup aria-label={ __( 'Select layout', 'newspack-popups' ) } { ...props }>
 					{ layoutOptions.map( ( { label: layoutLabel, value }, index ) => {
 						return (
 							<Tooltip text={ layoutLabel } key={ `grid-tooltip-${ index }` }>
@@ -73,10 +73,6 @@ const PositionPlacementControl = ( { layout, label, help, onChange, ...props } )
 										isPrimary={ value === layout }
 										onClick={ () => {
 											onChange( value );
-											// updateButtonsAttributes( value.split( '-' )[ 1 ] );
-											// if ( layoutAttributes[ value ].wrapper ) {
-											// 	updateBlockAttributes( clientId, layoutAttributes[ value ].wrapper );
-											// }
 										} }
 									/>
 								</div>
