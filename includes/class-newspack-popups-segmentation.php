@@ -641,6 +641,11 @@ final class Newspack_Popups_Segmentation {
 		$events_table_name         = Segmentation::get_events_table_name();
 		$removed_rows_count_events = $wpdb->query( $wpdb->prepare( "DELETE FROM $events_table_name WHERE type = %s AND created_at < now() - interval 30 DAY", 'post_read' ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
 
+		// Guard against data that grows past a certain size.
+		$limit                         = 10000;
+		$removed_rows_large_transients = $wpdb->query( "DELETE FROM $transients_table_name WHERE length(`option_value`) > $limit" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
+		$removed_rows_large_events     = $wpdb->query( "DELETE FROM $event_table_name WHERE length(`option_value`) > $limit" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
+
 		if ( defined( 'IS_TEST_ENV' ) && IS_TEST_ENV ) {
 			return;
 		}
@@ -648,6 +653,8 @@ final class Newspack_Popups_Segmentation {
 		error_log( 'Newspack Campaigns: Data pruning – removed ' . $removed_rows_count_transients . ' rows from ' . $transients_table_name . ' table.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 		error_log( 'Newspack Campaigns: Data pruning – removed ' . $removed_rows_count_previews_transients . ' preview session rows from ' . $transients_table_name . ' table.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 		error_log( 'Newspack Campaigns: Data pruning – removed ' . $removed_rows_count_events . ' rows from ' . $events_table_name . ' table.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+		error_log( 'Newspack Campaigns: Data pruning – removed ' . $removed_rows_large_transients . ' rows from ' . $transients_table_name . ' table with data larger than ' . $limit . ' bytes.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+		error_log( 'Newspack Campaigns: Data pruning – removed ' . $removed_rows_large_events . ' rows from ' . $events_table_name . ' table with data larger than ' . $limit . ' bytes.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 	}
 }
 Newspack_Popups_Segmentation::instance();
