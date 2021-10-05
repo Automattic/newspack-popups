@@ -1,3 +1,17 @@
+# [1.41.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.40.0...v1.41.0-alpha.1) (2021-10-05)
+
+
+### Bug Fixes
+
+* fix prompt previewe permalink for archive placement ([cb4a2ad](https://github.com/Automattic/newspack-popups/commit/cb4a2addea7164e58fb0c4c06dc9530aea5584fb))
+
+
+### Features
+
+* add archive page types filter for inline prompts ([bce176a](https://github.com/Automattic/newspack-popups/commit/bce176a81b4b29ace31f6e4ff249f3b6453b3bbf))
+* handle in archive pages placement when adding a prompt ([c97baf7](https://github.com/Automattic/newspack-popups/commit/c97baf7260e434743ec9fcce94f758e81f815ce4))
+* **inline prompt:** add a new placement option for the archive pages ([83ae398](https://github.com/Automattic/newspack-popups/commit/83ae398348910881145247ff4b6c970405650d74)), closes [#450](https://github.com/Automattic/newspack-popups/issues/450)
+
 # [1.40.0](https://github.com/Automattic/newspack-popups/compare/v1.39.1...v1.40.0) (2021-09-28)
 
 
