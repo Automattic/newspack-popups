@@ -632,19 +632,47 @@ final class Newspack_Popups_Segmentation {
 		$transients_table_name = Segmentation::get_transients_table_name();
 
 		// Remove reader data if not containing donations nor subscriptions, and not updated in 30 days.
-		$removed_rows_count_transients = $wpdb->query( "DELETE FROM $transients_table_name WHERE `option_value` LIKE '%\"donations\";a:0%' AND `option_value` LIKE '%\"email_subscriptions\";a:0%' AND date < now() - interval 30 DAY" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
+		$removed_rows_count_transients = $wpdb->query( // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
+			$wpdb->prepare(
+				"DELETE FROM %s WHERE `option_value` LIKE '%\"donations\";a:0%' AND `option_value` LIKE '%\"email_subscriptions\";a:0%' AND date < now() - interval 30 DAY", // phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.LikeWildcardsInQuery, WordPress.DB.PreparedSQLPlaceholders.LikeWildcardsInQueryWithPlaceholder
+				$transients_table_name
+			)
+		);
 
 		// Remove all preview sessions data.
-		$removed_rows_count_previews_transients = $wpdb->query( "DELETE FROM $transients_table_name WHERE option_name LIKE '%preview%'" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
+		$removed_rows_count_previews_transients = $wpdb->query( // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
+			$wpdb->prepare(
+				"DELETE FROM %s WHERE option_name LIKE '%preview%'", // phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.LikeWildcardsInQuery, WordPress.DB.PreparedSQLPlaceholders.LikeWildcardsInQueryWithPlaceholder
+				$transients_table_name
+			)
+		);
 
 		// Events, like post read, don't need to stick around for more than 30 days.
 		$events_table_name         = Segmentation::get_events_table_name();
-		$removed_rows_count_events = $wpdb->query( $wpdb->prepare( "DELETE FROM $events_table_name WHERE type = %s AND created_at < now() - interval 30 DAY", 'post_read' ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
+		$removed_rows_count_events = $wpdb->query( // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
+			$wpdb->prepare(
+				'DELETE FROM %s WHERE type = %s AND created_at < now() - interval 30 DAY',
+				$events_table_name,
+				'post_read'
+			)
+		);
 
 		// Guard against data that grows past a certain size.
 		$limit                         = 10000;
-		$removed_rows_large_transients = $wpdb->query( "DELETE FROM $transients_table_name WHERE length(`option_value`) > $limit" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
-		$removed_rows_large_events     = $wpdb->query( "DELETE FROM $event_table_name WHERE length(`option_value`) > $limit" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
+		$removed_rows_large_transients = $wpdb->query( // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
+			$wpdb->prepare(
+				'DELETE FROM %s WHERE length(`option_value`) > %d',
+				$transients_table_name,
+				$limit
+			)
+		);
+		$removed_rows_large_events     = $wpdb->query( // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
+			$wpdb->prepare(
+				'DELETE FROM %s WHERE length(`option_value`) > %d',
+				$event_table_name,
+				$limit
+			)
+		);
 
 		if ( defined( 'IS_TEST_ENV' ) && IS_TEST_ENV ) {
 			return;
