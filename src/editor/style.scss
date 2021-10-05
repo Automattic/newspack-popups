@@ -1,4 +1,3 @@
-// css from CoBlocks Hero placement selector
 .block-editor-post-preview__button-toggle,
 .edit-post-post-visibility {
 	display: none;
@@ -64,20 +63,6 @@
 	}
 }
 
-:-ms-fullscreen .newspack-popups-css-grid-selector,
-:root .newspack-popups-css-grid-selector {
-	.components-button-group {
-		display: flex;
-		flex-wrap: wrap;
-
-		.components-button {
-			display: table-cell;
-			padding: 18px;
-			width: 50%;
-		}
-	}
-}
-
 .newspack-popups-css-grid-selector {
 	margin-bottom: 1em;
 
@@ -87,7 +72,6 @@
 		grid-template-rows: repeat( 3, 1fr );
 
 		div {
-			// background: $white;
 			padding: 1px;
 		}
 
@@ -96,14 +80,6 @@
 			height: 100%;
 			padding: 20px;
 			width: 100%;
-
-			svg {
-				display: none;
-			}
-		}
-
-		.is-selected {
-			z-index: 99;
 		}
 
 		div:nth-of-type( 1 ) .components-button {
