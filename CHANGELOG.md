@@ -1,3 +1,10 @@
+# [1.41.0-alpha.2](https://github.com/Automattic/newspack-popups/compare/v1.41.0-alpha.1...v1.41.0-alpha.2) (2021-10-05)
+
+
+### Performance Improvements
+
+* prune rows from DB tables with data larger than a certain size ([#634](https://github.com/Automattic/newspack-popups/issues/634)) ([4b4fc5a](https://github.com/Automattic/newspack-popups/commit/4b4fc5a4bcee9f72fdae0448ed23448ec64e382e))
+
 # [1.41.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.40.0...v1.41.0-alpha.1) (2021-10-05)
 
 
