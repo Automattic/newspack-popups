@@ -900,7 +900,7 @@ final class Newspack_Popups_Model {
 			$popup = self::retrieve_preview_popup( Newspack_Popups::previewed_popup_id() );
 		}
 
-		if ( has_block( 'newspack-blocks/homepage-articles', $popup['content'] ) ) {
+		if ( self::is_overlay( $popup ) && self::is_overlay( $popup ) && has_block( 'newspack-blocks/homepage-articles', $popup['content'] ) ) {
 			add_filter( 'newspack_blocks_homepage_enable_duplication', '__return_true' );
 		}
 
@@ -1030,7 +1030,7 @@ final class Newspack_Popups_Model {
 		</amp-animation>
 		<?php
 		self::insert_event_tracking( $popup, $body, $element_id );
-		if ( has_block( 'newspack-blocks/homepage-articles', $popup['content'] ) ) {
+		if ( self::is_overlay( $popup ) && has_block( 'newspack-blocks/homepage-articles', $popup['content'] ) ) {
 			add_filter( 'newspack_blocks_homepage_enable_duplication', '__return_false' );
 		}
 		?>
