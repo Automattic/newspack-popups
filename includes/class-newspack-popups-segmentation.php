@@ -669,7 +669,7 @@ final class Newspack_Popups_Segmentation {
 		$removed_rows_large_events     = $wpdb->query( // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
 			$wpdb->prepare(
 				'DELETE FROM %s WHERE length(`option_value`) > %d',
-				$event_table_name,
+				$events_table_name,
 				$limit
 			)
 		);
