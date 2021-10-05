@@ -160,14 +160,44 @@ export const getPlacementHelpMessage = ( placementValue, triggerPercentage = 0 )
 				'The prompt will be displayed as an overlay at the center of the viewport.',
 				'newspack-popups'
 			);
+		case 'center-left':
+			return __(
+				'The prompt will be displayed as an overlay at the center left of the viewport.',
+				'newspack-popups'
+			);
+		case 'center-right':
+			return __(
+				'The prompt will be displayed as an overlay at the center right of the viewport.',
+				'newspack-popups'
+			);
 		case 'top':
 			return __(
 				'The prompt will be displayed as an overlay at the top of the viewport.',
 				'newspack-popups'
 			);
+		case 'top-left':
+			return __(
+				'The prompt will be displayed as an overlay at the top left of the viewport.',
+				'newspack-popups'
+			);
+		case 'top-right':
+			return __(
+				'The prompt will be displayed as an overlay at the top right of the viewport.',
+				'newspack-popups'
+			);
 		case 'bottom':
 			return __(
 				'The prompt will be displayed as an overlay at the bottom of the viewport.',
+				'newspack-popups'
+			);
+		case 'bottom-left':
+			return __(
+				'The prompt will be displayed as an overlay at the bottom left of the viewport.',
+				'newspack-popups'
+			);
+		case 'bottom-right':
+			return __(
+				'The prompt will be displayed as an overlay at the bottom right of the viewport.',
 				'newspack-popups'
 			);
 		case 'above_header':
