@@ -672,8 +672,9 @@ final class Newspack_Popups_Segmentation {
 			)
 		);
 
+		$removed_rows_with_many_events = 0;
 		foreach ( $client_ids_with_many_events as $row ) {
-			$removed_rows_with_many_events = $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
+			$removed_rows_with_many_events += $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
 				$wpdb->prepare(
 					"DELETE FROM $events_table_name WHERE `client_id` = %s AND type = %s AND created_at < now() - interval 1 DAY", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 					$row->client_id,
@@ -690,7 +691,10 @@ final class Newspack_Popups_Segmentation {
 		error_log( 'Newspack Campaigns: Data pruning – removed ' . $removed_rows_count_previews_transients . ' preview session rows from ' . $transients_table_name . ' table.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 		error_log( 'Newspack Campaigns: Data pruning – removed ' . $removed_rows_count_events . ' rows from ' . $events_table_name . ' table.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 		error_log( 'Newspack Campaigns: Data pruning – removed ' . $removed_rows_large_transients . ' rows from ' . $transients_table_name . ' table with data larger than ' . $byte_size_limit . ' bytes.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-		error_log( 'Newspack Campaigns: Data pruning – removed ' . $removed_rows_with_many_events . ' rows from ' . $events_table_name . ' table with more than ' . $event_count_limit . ' events.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+
+		if ( 0 < $removed_rows_with_many_events ) {
+			error_log( 'Newspack Campaigns: Data pruning – removed ' . $removed_rows_with_many_events . ' rows from ' . $events_table_name . ' table with more than ' . $event_count_limit . ' events.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+		}
 	}
 }
 Newspack_Popups_Segmentation::instance();
