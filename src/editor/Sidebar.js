@@ -64,6 +64,7 @@ const Sidebar = ( {
 						help={ getPlacementHelpMessage( placement, trigger_scroll_progress ) }
 						value={ placement }
 						onChange={ updatePlacement }
+						size={ overlay_size }
 					/>
 				</>
 			) : (

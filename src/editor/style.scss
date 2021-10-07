@@ -104,6 +104,22 @@
 		}
 	}
 
+	&.size-full-width .components-button-group {
+		grid-template-columns: 1fr;
+
+		div:first-of-type .components-button {
+			border-radius: 4px 4px 0 0 !important;
+		}
+
+		div:nth-of-type( 2 ) .components-button {
+			border-radius: 0 !important;
+		}
+
+		div:last-of-type .components-button {
+			border-radius: 0 0 4px 4px !important;
+		}
+	}
+
 	.components-base-control__help {
 		font-size: 12px;
 		font-style: normal;
