@@ -66,6 +66,11 @@
 .newspack-popups-css-grid-selector {
 	margin-bottom: 1em;
 
+	.components-base-control__label {
+		margin-bottom: 0;
+		margin-top: 1em;
+	}
+
 	.components-button-group {
 		display: grid;
 		grid-template-columns: repeat( 3, 1fr );
