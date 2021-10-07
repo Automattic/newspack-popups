@@ -926,16 +926,20 @@ final class Newspack_Popups {
 	public static function get_popup_size_options() {
 		/**
 		 * Filters the list of possible popup sizes.
-		 * 
+		 *
 		 * @param array Array of possible popup sizes.
 		 *     $params = [
 		 *          'value' => (string) size value.
 		 *          'label' => (string) size label to be displayed.
 		 *     ]
-		 */ 
+		 */
 		return apply_filters(
 			'newspack_popups_size_options',
 			[
+				[
+					'value' => 'x-small',
+					'label' => __( 'Extra Small', 'newspack-popups' ),
+				],
 				[
 					'value' => 'small',
 					'label' => __( 'Small', 'newspack-popups' ),
@@ -949,10 +953,10 @@ final class Newspack_Popups {
 					'label' => __( 'Large', 'newspack-popups' ),
 				],
 				[
-					'value' => 'full',
-					'label' => __( 'Full Width', 'newspack-popups' ),
+					'value' => 'full-width',
+					'label' => __( 'Full-Width', 'newspack-popups' ),
 				],
-			] 
+			]
 		);
 	}
 }

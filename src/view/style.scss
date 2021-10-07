@@ -1,12 +1,16 @@
-// Secondary Color based on Newspack Theme
-$color__secondary: #555;
+// Secondary Color
+$color__secondary: #757575;
 $color__secondary-variation: darken( $color__secondary, 10% );
 
 // System Font
 $font__system: -apple-system, blinkmacsystemfont, 'Segoe UI', roboto, oxygen, ubuntu, cantarell,
 	'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
 
-$site__lightbox-popup: 25%;
+// Sizes
+$size__x-small: 380px;
+$size__small: 544px;
+$size__medium: 784px;
+$size__large: 1264px;
 
 .newspack-lightbox {
 	align-items: center;
@@ -64,8 +68,8 @@ $site__lightbox-popup: 25%;
 	.newspack-popup {
 		background: transparent;
 		margin: 0 auto;
-		max-width: 780px;
-		padding: 1.5em;
+		max-width: $size__medium;
+		padding: 32px;
 
 		> *:first-child {
 			margin-top: 0;
@@ -132,7 +136,7 @@ $site__lightbox-popup: 25%;
 	&.newspack-lightbox-placement-top-right {
 		.newspack-popup-wrapper {
 			max-height: 90%;
-			max-height: calc( 100% - 1.5em );
+			max-height: calc( 100% - 32px );
 			overflow-y: auto;
 		}
 	}
@@ -143,57 +147,63 @@ $site__lightbox-popup: 25%;
 			max-height: 100%;
 			overflow-y: auto;
 		}
-
-		.newspack-popup {
-			padding-left: 0;
-			padding-right: 0;
-		}
 	}
 
-	/* sizing */
+	/* Sizing */
+	&.newspack-lightbox-size-x-small,
 	&.newspack-lightbox-size-small,
 	&.newspack-lightbox-size-medium,
 	&.newspack-lightbox-size-large,
-	&.newspack-lightbox-size-full {
+	&.newspack-lightbox-size-full-width {
 		.newspack-popup-wrapper {
-			@media only screen and ( min-width: 780px ) {
-				min-width: 780px;
+			max-width: 100%;
+
+			@media only screen and ( min-width: $size__x-small ) {
+				min-width: $size__x-small;
+				width: $size__x-small;
 			}
 		}
 
 		.newspack-popup {
-			max-width: 90%;
-			padding-left: 0;
-			padding-right: 0;
+			max-width: 100%;
 		}
 	}
 
 	&.newspack-lightbox-size-small {
 		.newspack-popup-wrapper {
-			width: $site__lightbox-popup;
+			@media only screen and ( min-width: $size__small ) {
+				min-width: $size__small;
+				width: $size__small;
+			}
 		}
 	}
 
 	&.newspack-lightbox-size-medium {
 		.newspack-popup-wrapper {
-			width: 2 * $site__lightbox-popup;
+			@media only screen and ( min-width: $size__medium ) {
+				min-width: $size__medium;
+				width: $size__medium;
+			}
 		}
 	}
 
 	&.newspack-lightbox-size-large {
 		.newspack-popup-wrapper {
-			width: 3 * $site__lightbox-popup;
+			@media only screen and ( min-width: $size__large ) {
+				min-width: $size__large;
+				width: $size__large;
+			}
 		}
 	}
 
-	&.newspack-lightbox-size-full {
+	&.newspack-lightbox-size-full-width {
 		.newspack-popup-wrapper {
 			min-width: 100%;
+			width: 100%;
 		}
 
 		.newspack-popup {
-			max-width: 90%;
-			width: 1200px;
+			max-width: $size__large;
 		}
 	}
 
