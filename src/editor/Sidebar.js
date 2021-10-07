@@ -6,7 +6,6 @@
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Fragment } from '@wordpress/element';
 import { RadioControl, RangeControl, SelectControl, ToggleControl } from '@wordpress/components';
 
 /**
@@ -38,7 +37,7 @@ const Sidebar = ( {
 	const popupSizeOptions = window.newspack_popups_data?.popup_size_options || {};
 
 	return (
-		<Fragment>
+		<>
 			<RadioControl
 				className="newspack-popups__prompt-type-control"
 				label={ __( 'Prompt type', 'newspack-popups' ) }
@@ -50,13 +49,23 @@ const Sidebar = ( {
 				onChange={ updatePlacement }
 			/>
 			{ isOverlay ? (
-				<PositionPlacementControl
-					layout={ placement }
-					label={ __( 'Position' ) }
-					help={ getPlacementHelpMessage( placement, trigger_scroll_progress ) }
-					value={ placement }
-					onChange={ updatePlacement }
-				/>
+				<>
+					<SelectControl
+						label={ __( 'Size', 'newspack-popups' ) }
+						value={ overlay_size }
+						onChange={ size => {
+							onMetaFieldChange( 'overlay_size', size );
+						} }
+						options={ popupSizeOptions }
+					/>
+					<PositionPlacementControl
+						layout={ placement }
+						label={ __( 'Position', 'newspack-popups' ) }
+						help={ getPlacementHelpMessage( placement, trigger_scroll_progress ) }
+						value={ placement }
+						onChange={ updatePlacement }
+					/>
+				</>
 			) : (
 				<SelectControl
 					label={ __( 'Placement' ) }
@@ -64,8 +73,8 @@ const Sidebar = ( {
 					value={ placement }
 					onChange={ updatePlacement }
 					options={ [
-						{ value: 'inline', label: __( 'In article content' ) },
-						{ value: 'above_header', label: __( 'Above site header' ) },
+						{ value: 'inline', label: __( 'In article content', 'newspack-popups' ) },
+						{ value: 'above_header', label: __( 'Above site header', 'newspack-popups' ) },
 						{ value: 'manual', label: __( 'Manual only', 'newspack-popups' ) },
 					].concat(
 						Object.keys( customPlacements ).map( key => ( {
@@ -77,28 +86,20 @@ const Sidebar = ( {
 			) }
 
 			{ isOverlay && (
-				<Fragment>
+				<>
 					<SelectControl
-						label={ __( 'Size' ) }
-						value={ overlay_size }
-						onChange={ size => {
-							onMetaFieldChange( 'overlay_size', size );
-						} }
-						options={ popupSizeOptions }
-					/>
-					<SelectControl
-						label={ __( 'Trigger' ) }
+						label={ __( 'Trigger', 'newspack-popups' ) }
 						help={ __( 'The event to trigger the prompt.', 'newspack-popups' ) }
 						selected={ trigger_type }
 						options={ [
-							{ label: __( 'Timer' ), value: 'time' },
-							{ label: __( 'Scroll Progress' ), value: 'scroll' },
+							{ label: __( 'Timer', 'newspack-popups' ), value: 'time' },
+							{ label: __( 'Scroll Progress', 'newspack-popups' ), value: 'scroll' },
 						] }
 						onChange={ value => onMetaFieldChange( 'trigger_type', value ) }
 					/>
 					{ 'time' === trigger_type && (
 						<RangeControl
-							label={ __( 'Delay (seconds)' ) }
+							label={ __( 'Delay (seconds)', 'newspack-popups' ) }
 							value={ trigger_delay }
 							onChange={ value => onMetaFieldChange( 'trigger_delay', value ) }
 							min={ 0 }
@@ -114,7 +115,7 @@ const Sidebar = ( {
 							max={ 100 }
 						/>
 					) }
-				</Fragment>
+				</>
 			) }
 			{ placement === 'inline' && (
 				<RangeControl
@@ -137,7 +138,7 @@ const Sidebar = ( {
 					onChange={ value => onMetaFieldChange( 'hide_border', value ) }
 				/>
 			) }
-		</Fragment>
+		</>
 	);
 };
 
