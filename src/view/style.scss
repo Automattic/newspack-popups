@@ -7,6 +7,7 @@ $font__system: -apple-system, blinkmacsystemfont, 'Segoe UI', roboto, oxygen, ub
 	'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
 
 // Sizes
+$overlay__gap: 16px;
 $size__x-small: 380px;
 $size__small: 544px;
 $size__medium: 784px;
@@ -135,8 +136,7 @@ $size__large: 1264px;
 	&.newspack-lightbox-placement-top-left,
 	&.newspack-lightbox-placement-top-right {
 		.newspack-popup-wrapper {
-			max-height: 90%;
-			max-height: calc( 100% - 32px );
+			max-height: calc( 100% - #{$overlay__gap} );
 			overflow-y: auto;
 		}
 	}
@@ -156,12 +156,8 @@ $size__large: 1264px;
 	&.newspack-lightbox-size-large,
 	&.newspack-lightbox-size-full-width {
 		.newspack-popup-wrapper {
-			max-width: 100%;
-
-			@media only screen and ( min-width: $size__x-small ) {
-				min-width: $size__x-small;
-				width: $size__x-small;
-			}
+			min-width: calc( 100% - #{$overlay__gap} );
+			width: calc( 100% - #{$overlay__gap} );
 		}
 
 		.newspack-popup {
@@ -169,9 +165,18 @@ $size__large: 1264px;
 		}
 	}
 
+	&.newspack-lightbox-size-x-small {
+		.newspack-popup-wrapper {
+			@media only screen and ( min-width: #{$size__x-small + $overlay__gap} ) {
+				min-width: $size__x-small;
+				width: $size__x-small;
+			}
+		}
+	}
+
 	&.newspack-lightbox-size-small {
 		.newspack-popup-wrapper {
-			@media only screen and ( min-width: $size__small ) {
+			@media only screen and ( min-width: #{$size__small + $overlay__gap} ) {
 				min-width: $size__small;
 				width: $size__small;
 			}
@@ -180,7 +185,7 @@ $size__large: 1264px;
 
 	&.newspack-lightbox-size-medium {
 		.newspack-popup-wrapper {
-			@media only screen and ( min-width: $size__medium ) {
+			@media only screen and ( min-width: #{$size__medium + $overlay__gap} ) {
 				min-width: $size__medium;
 				width: $size__medium;
 			}
@@ -189,7 +194,7 @@ $size__large: 1264px;
 
 	&.newspack-lightbox-size-large {
 		.newspack-popup-wrapper {
-			@media only screen and ( min-width: $size__large ) {
+			@media only screen and ( min-width: #{$size__large + $overlay__gap} ) {
 				min-width: $size__large;
 				width: $size__large;
 			}
