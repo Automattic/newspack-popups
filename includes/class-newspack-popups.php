@@ -459,6 +459,7 @@ final class Newspack_Popups {
 				'preview_post'         => self::preview_post_permalink(),
 				'segments'             => Newspack_Popups_Segmentation::get_segments(),
 				'custom_placements'    => Newspack_Popups_Custom_Placements::get_custom_placements(),
+				'overlay_placements'   => Newspack_Popups_Model::get_overlay_placements(),
 				'popup_size_options'   => self::get_popup_size_options(),
 				'taxonomy'             => self::NEWSPACK_POPUPS_TAXONOMY,
 				'is_prompt'            => self::NEWSPACK_POPUPS_CPT == get_post_type(),

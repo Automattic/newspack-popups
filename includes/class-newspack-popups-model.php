@@ -380,6 +380,15 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
+	 * Get popups placements.
+	 *
+	 * @return array Array of popup placements.
+	 */
+	public static function get_overlay_placements() {
+		return self::$overlay_placements;
+	}
+
+	/**
 	 * Get the globally supported post types.
 	 */
 	public static function get_globally_supported_post_types() {

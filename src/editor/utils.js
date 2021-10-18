@@ -136,6 +136,17 @@ export const isCustomPlacement = placementValue => {
 };
 
 /**
+ * Is the given placement value an overlay placement?
+ *
+ * @param {string} placementValue Placement of the prompt.
+ * @return {boolean} Whether or not the prompt has an overlay placement.
+ */
+export const isOverlay = placementValue => {
+	const overlayPlacements = window.newspack_popups_data?.overlay_placements || [];
+	return -1 < overlayPlacements.indexOf( placementValue );
+};
+
+/**
  * Given a placement value, construct a context-sensitive help message to display in the editor sidebar.
  *
  * @param {string} placementValue Placement of the prompt.
