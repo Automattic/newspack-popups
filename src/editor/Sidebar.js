@@ -6,7 +6,19 @@
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { RadioControl, RangeControl, SelectControl, ToggleControl } from '@wordpress/components';
+import { Fragment } from '@wordpress/element';
+import {
+	RadioControl,
+	RangeControl,
+	SelectControl,
+	ToggleControl,
+	CheckboxControl,
+} from '@wordpress/components';
+
+/**
+ * External dependencies
+ */
+import { without } from 'lodash';
 
 /**
  * Internal dependencies
@@ -22,10 +34,13 @@ const Sidebar = ( {
 	placement,
 	overlay_size,
 	trigger_scroll_progress,
+	archive_insertion_posts_count,
+	archive_insertion_is_repeating,
 	trigger_delay,
 	trigger_type,
 	isOverlay,
 	isInlinePlacement,
+	archive_page_types = [],
 } ) => {
 	const updatePlacement = value => {
 		onMetaFieldChange( 'placement', value );
@@ -35,6 +50,7 @@ const Sidebar = ( {
 	};
 	const customPlacements = window.newspack_popups_data?.custom_placements || {};
 	const popupSizeOptions = window.newspack_popups_data?.popup_size_options || {};
+	const availableArchivePageTypes = window.newspack_popups_data?.available_archive_page_types || [];
 
 	return (
 		<>
@@ -126,6 +142,44 @@ const Sidebar = ( {
 					min={ 0 }
 					max={ 100 }
 				/>
+			) }
+			{ placement === 'archives' && (
+				<Fragment>
+					<RangeControl
+						label={ __( 'Number of articles before prompt', 'newspack-popups' ) }
+						value={ archive_insertion_posts_count }
+						onChange={ value => onMetaFieldChange( 'archive_insertion_posts_count', value ) }
+						min={ 1 }
+						max={ 20 }
+					/>
+
+					<div className="newspack-popups__prompt-type-control">
+						<legend className="components-base-control__legend">
+							{ __( 'Archive Page Types', 'newspack-popups' ) }
+						</legend>
+						{ availableArchivePageTypes.map( ( { name, label } ) => (
+							<CheckboxControl
+								key={ name }
+								label={ label }
+								checked={ archive_page_types.indexOf( name ) > -1 }
+								onChange={ isIncluded => {
+									onMetaFieldChange(
+										'archive_page_types',
+										isIncluded
+											? [ ...archive_page_types, name ]
+											: without( archive_page_types, name )
+									);
+								} }
+							/>
+						) ) }
+					</div>
+
+					<ToggleControl
+						label={ __( 'Repeat prompt', 'newspack-popups' ) }
+						checked={ archive_insertion_is_repeating }
+						onChange={ value => onMetaFieldChange( 'archive_insertion_is_repeating', value ) }
+					/>
+				</Fragment>
 			) }
 			<ToggleControl
 				label={ __( 'Display Prompt Title', 'newspack-popups' ) }
