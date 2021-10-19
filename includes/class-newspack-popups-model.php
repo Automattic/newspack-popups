@@ -398,6 +398,86 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
+	 * Generates the possible sizes for a popup.
+	 *
+	 * @return array popup possible sizes
+	 */
+	public static function get_popup_size_options() {
+		/**
+		 * Filters the list of possible popup sizes.
+		 *
+		 * @param array Array of possible popup sizes.
+		 *     $params = [
+		 *          'value' => (string) size value.
+		 *          'label' => (string) size label to be displayed.
+		 *     ]
+		 */
+		return apply_filters(
+			'newspack_popups_size_options',
+			[
+				[
+					'value' => 'x-small',
+					'label' => __( 'Extra Small', 'newspack-popups' ),
+				],
+				[
+					'value' => 'small',
+					'label' => __( 'Small', 'newspack-popups' ),
+				],
+				[
+					'value' => 'medium',
+					'label' => __( 'Medium', 'newspack-popups' ),
+				],
+				[
+					'value' => 'large',
+					'label' => __( 'Large', 'newspack-popups' ),
+				],
+				[
+					'value' => 'full-width',
+					'label' => __( 'Full-Width', 'newspack-popups' ),
+				],
+			]
+		);
+	}
+
+	/**
+	 * Get available archive page types where to display prompts
+	 */
+	public static function get_available_archive_page_types() {
+		return [
+			[
+				'name'  => 'category',
+				/* translators: archive page */
+				'label' => __( 'Categories' ),
+			],
+			[
+				'name'  => 'tag',
+				/* translators: archive page */
+				'label' => __( 'Tags' ),
+			],
+			[
+				'name'  => 'author',
+				/* translators: archive page */
+				'label' => __( 'Authors' ),
+			],
+			[
+				'name'  => 'date',
+				/* translators: archive page */
+				'label' => __( 'Date' ),
+			],
+			[
+				'name'  => 'post-type',
+				/* translators: archive page */
+				'label' => __( 'Custom Post Types' ),
+			],
+			[
+				'name'  => 'taxonomy',
+				/* translators: archive page */
+				'label' => __( 'Taxonomies' ),
+			],
+		];
+	}
+
+	/**
 	 * Get the globally supported post types.
 	 */
 	public static function get_globally_supported_post_types() {
