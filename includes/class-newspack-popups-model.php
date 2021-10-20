@@ -902,6 +902,7 @@ final class Newspack_Popups_Model {
 
 		if ( self::is_overlay( $popup ) && self::is_overlay( $popup ) && has_block( 'newspack-blocks/homepage-articles', $popup['content'] ) ) {
 			add_filter( 'newspack_blocks_homepage_enable_duplication', '__return_true' );
+			add_filter( 'newspack_blocks_homepage_shown_rendered_posts', '__return_true' );
 		}
 
 		if ( ! self::is_overlay( $popup ) ) {
@@ -1032,6 +1033,7 @@ final class Newspack_Popups_Model {
 		self::insert_event_tracking( $popup, $body, $element_id );
 		if ( self::is_overlay( $popup ) && has_block( 'newspack-blocks/homepage-articles', $popup['content'] ) ) {
 			add_filter( 'newspack_blocks_homepage_enable_duplication', '__return_false' );
+			add_filter( 'newspack_blocks_homepage_shown_rendered_posts', '__return_false' );
 		}
 		?>
 		<?php
