@@ -517,7 +517,7 @@ final class Newspack_Popups {
 						'objects'
 					)
 				),
-
+				'newspack_plugin_is_active'    => is_plugin_active( 'newspack-plugin/newspack.php' ),
 			]
 		);
 		\wp_enqueue_style(

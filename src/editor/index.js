@@ -9,7 +9,12 @@ import { __ } from '@wordpress/i18n';
 import { compose } from '@wordpress/compose';
 import { withSelect, withDispatch } from '@wordpress/data';
 import { registerPlugin } from '@wordpress/plugins';
-import { PluginDocumentSettingPanel, PluginPostStatusInfo } from '@wordpress/edit-post';
+import {
+	PluginDocumentSettingPanel,
+	PluginPostStatusInfo,
+	__experimentalMainDashboardButton as MainDashboardButton,
+	__experimentalFullscreenModeClose as FullscreenModeClose,
+} from '@wordpress/edit-post';
 
 /**
  * Internal dependencies
@@ -50,6 +55,8 @@ const SegmentationSidebarWithData = connectData( SegmentationSidebar );
 const DismissSidebarWithData = connectData( DismissSidebar );
 const ColorsSidebarWithData = connectData( ColorsSidebar );
 const PostTypesPanelWithData = connectData( PostTypesPanel );
+
+const { newspack_plugin_is_active: newspackPluginIsActive = false } = window?.newspack_popups_data;
 
 // Register components.
 registerPlugin( 'newspack-popups', {
@@ -137,3 +144,14 @@ const PluginPostStatusInfoTest = () => (
 	</PluginPostStatusInfo>
 );
 registerPlugin( 'newspack-popups-preview', { render: PluginPostStatusInfoTest } );
+
+// If the main Newspack plugin is active, let's link back to the Campaigns wizard instead of the post type dashboard page.
+if ( newspackPluginIsActive ) {
+	registerPlugin( 'main-dashboard-button-replace', {
+		render: () => (
+			<MainDashboardButton>
+				<FullscreenModeClose href="/wp-admin/admin.php?page=newspack-popups-wizard" />
+			</MainDashboardButton>
+		),
+	} );
+}
