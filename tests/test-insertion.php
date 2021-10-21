@@ -548,4 +548,67 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 
 		self::assertFalse( strpos( self::$post_content, self::$popup_content ), 'Popup content not rendered in account-related posts.' );
 	}
+
+	/**
+	 * Test categories exclusion.
+	 */
+	public function test_categories_exclusion() {
+		$category_to_exclude_id = $this->factory->term->create(
+			[
+				'name'     => 'Sport',
+				'taxonomy' => 'category',
+				'slug'     => 'sport',
+			]
+		);
+
+		Newspack_Popups_Model::set_popup_options(
+			self::$popup_id,
+			[
+				'excluded_categories' => [ $category_to_exclude_id ],
+			]
+		);
+
+		self::renderPost( '', null, [ $category_to_exclude_id ] );
+		self::assertNotContains(
+			self::$popup_content,
+			self::$post_content,
+			'Does not include the popup content, since the post category is excluded on this popup.'
+		);
+	}
+
+	/**
+	 * Test categories exclusion has priority over inclusion.
+	 */
+	public function test_categories_exclusion_priority_over_inclusion() {
+		$category_to_exclude_id = $this->factory->term->create(
+			[
+				'name'     => 'Arts',
+				'taxonomy' => 'category',
+				'slug'     => 'arts',
+			]
+		);
+
+		wp_set_post_terms( self::$popup_id, [ $category_to_exclude_id ], 'category' );
+
+		self::renderPost( '', null, [ $category_to_exclude_id ] );
+		self::assertContains(
+			self::$popup_content,
+			self::$post_content,
+			'Does contain the popup content, since both post and popup have the same category.'
+		);
+
+		Newspack_Popups_Model::set_popup_options(
+			self::$popup_id,
+			[
+				'excluded_categories' => [ $category_to_exclude_id ],
+			]
+		);
+
+		self::renderPost( '', null, [ $category_to_exclude_id ] );
+		self::assertNotContains(
+			self::$popup_content,
+			self::$post_content,
+			'Does not include the popup content, since the post category is excluded on this popup.'
+		);
+	}
 }

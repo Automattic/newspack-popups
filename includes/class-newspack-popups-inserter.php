@@ -714,11 +714,22 @@ final class Newspack_Popups_Inserter {
 	 * @return bool Whether the prompt should be shown based on matching terms.
 	 */
 	public static function assess_taxonomy_filter( $popup, $taxonomy = 'category' ) {
+		$post_terms     = get_the_terms( get_the_ID(), $taxonomy );
+		$post_terms_ids = array_column( $post_terms ? $post_terms : [], 'term_id' );
+
+		// Check if a post term is excluded on the popup options.
+		if ( 'category' === $taxonomy ) {
+			foreach ( $popup['options']['excluded_categories'] as $category_excluded_id ) {
+				if ( in_array( $category_excluded_id, $post_terms_ids ) ) {
+					return false;
+				}
+			}
+		}
+
 		$popup_terms = get_the_terms( $popup['id'], $taxonomy );
 		if ( false === $popup_terms ) {
 			return true; // No terms on the popup, no need to compare.
 		}
-		$post_terms = get_the_terms( get_the_ID(), $taxonomy );
 		return array_intersect(
 			array_column( $post_terms ? $post_terms : [], 'term_id' ),
 			array_column( $popup_terms, 'term_id' )

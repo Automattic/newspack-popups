@@ -355,6 +355,25 @@ final class Newspack_Popups {
 			]
 		);
 
+		\register_meta(
+			'post',
+			'excluded_categories',
+			[
+				'object_subtype' => self::NEWSPACK_POPUPS_CPT,
+				'show_in_rest'   => [
+					'schema' => [
+						'items' => [
+							'type' => 'integer',
+						],
+					],
+				],
+				'type'           => 'array',
+				'default'        => [],
+				'single'         => true,
+				'auth_callback'  => '__return_true',
+			]
+		);
+
 		// Meta field for all post types.
 		\register_meta(
 			'post',
