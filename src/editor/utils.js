@@ -33,15 +33,15 @@ export const optionsFieldsSelector = select => {
 	const isInlinePlacement = placementValue =>
 		-1 ===
 		[
-			'top-left',
+			'top_left',
 			'top',
-			'top-right',
-			'center-left',
+			'top_right',
+			'center_left',
 			'center',
-			'center-right',
-			'bottom-left',
+			'center_right',
+			'bottom_left',
 			'bottom',
-			'bottom-right',
+			'bottom_right',
 		].indexOf( placementValue );
 	const isOverlay = ! isInlinePlacement( placement );
 
@@ -184,12 +184,12 @@ export const getPlacementHelpMessage = (
 				'The prompt will be displayed as an overlay at the center of the viewport.',
 				'newspack-popups'
 			);
-		case 'center-left':
+		case 'center_left':
 			return __(
 				'The prompt will be displayed as an overlay at the center left of the viewport.',
 				'newspack-popups'
 			);
-		case 'center-right':
+		case 'center_right':
 			return __(
 				'The prompt will be displayed as an overlay at the center right of the viewport.',
 				'newspack-popups'
@@ -199,12 +199,12 @@ export const getPlacementHelpMessage = (
 				'The prompt will be displayed as an overlay at the top of the viewport.',
 				'newspack-popups'
 			);
-		case 'top-left':
+		case 'top_left':
 			return __(
 				'The prompt will be displayed as an overlay at the top left of the viewport.',
 				'newspack-popups'
 			);
-		case 'top-right':
+		case 'top_right':
 			return __(
 				'The prompt will be displayed as an overlay at the top right of the viewport.',
 				'newspack-popups'
@@ -214,12 +214,12 @@ export const getPlacementHelpMessage = (
 				'The prompt will be displayed as an overlay at the bottom of the viewport.',
 				'newspack-popups'
 			);
-		case 'bottom-left':
+		case 'bottom_left':
 			return __(
 				'The prompt will be displayed as an overlay at the bottom left of the viewport.',
 				'newspack-popups'
 			);
-		case 'bottom-right':
+		case 'bottom_right':
 			return __(
 				'The prompt will be displayed as an overlay at the bottom right of the viewport.',
 				'newspack-popups'

@@ -17,7 +17,7 @@ const PositionPlacementControl = ( { layout, label, help, onChange, size, ...pro
 		size !== 'full-width'
 			? [
 					{
-						value: 'top-left',
+						value: 'top_left',
 						/* translators: Overlay Prompt Position */
 						label: __( 'Top Left', 'newspack-popups' ),
 					},
@@ -27,12 +27,12 @@ const PositionPlacementControl = ( { layout, label, help, onChange, size, ...pro
 						label: __( 'Top Center', 'newspack-popups' ),
 					},
 					{
-						value: 'top-right',
+						value: 'top_right',
 						/* translators: Overlay Prompt Position */
 						label: __( 'Top Right', 'newspack-popups' ),
 					},
 					{
-						value: 'center-left',
+						value: 'center_left',
 						/* translators: Overlay Prompt Position */
 						label: __( 'Center Left', 'newspack-popups' ),
 					},
@@ -42,12 +42,12 @@ const PositionPlacementControl = ( { layout, label, help, onChange, size, ...pro
 						label: __( 'Center', 'newspack-popups' ),
 					},
 					{
-						value: 'center-right',
+						value: 'center_right',
 						/* translators: Overlay Prompt Position */
 						label: __( 'Center Right', 'newspack-popups' ),
 					},
 					{
-						value: 'bottom-left',
+						value: 'bottom_left',
 						/* translators: Overlay Prompt Position */
 						label: __( 'Bottom Left', 'newspack-popups' ),
 					},
@@ -57,7 +57,7 @@ const PositionPlacementControl = ( { layout, label, help, onChange, size, ...pro
 						label: __( 'Bottom Center', 'newspack-popups' ),
 					},
 					{
-						value: 'bottom-right',
+						value: 'bottom_right',
 						/* translators: Overlay Prompt Position */
 						label: __( 'Bottom Right', 'newspack-popups' ),
 					},

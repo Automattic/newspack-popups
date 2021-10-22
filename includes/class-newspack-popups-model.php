@@ -16,7 +16,7 @@ final class Newspack_Popups_Model {
 	 *
 	 * @var array
 	 */
-	protected static $overlay_placements = [ 'top', 'bottom', 'center', 'bottom-right', 'bottom-left', 'top-right', 'top-left', 'center-right', 'center-left' ];
+	protected static $overlay_placements = [ 'top', 'bottom', 'center', 'bottom_right', 'bottom_left', 'top_right', 'top_left', 'center_right', 'center_left' ];
 
 	/**
 	 * Possible placements of inline popups.
@@ -1141,9 +1141,9 @@ final class Newspack_Popups_Model {
 								"selector": "#<?php echo esc_attr( $element_id ); ?> .newspack-popup-wrapper",
 								"delay": "<?php echo intval( $popup['options']['trigger_delay'] ) * 1000 + 625; ?>",
 								"keyframes": {
-									<?php if ( in_array( $popup['options']['placement'], [ 'top', 'top-left', 'top-right' ] ) ) : ?>
+									<?php if ( in_array( $popup['options']['placement'], [ 'top', 'top_left', 'top_right' ] ) ) : ?>
 										"transform": ["translateY(-100%)", "translateY(0)"]
-									<?php elseif ( in_array( $popup['options']['placement'], [ 'bottom', 'bottom-left', 'bottom-right' ] ) ) : ?>
+									<?php elseif ( in_array( $popup['options']['placement'], [ 'bottom', 'bottom_left', 'bottom_right' ] ) ) : ?>
 										"transform": ["translateY(100%)", "translateY(0)"]
 									<?php else : ?>
 										"opacity": ["0", "1"]
