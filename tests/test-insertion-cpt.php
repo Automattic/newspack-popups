@@ -86,6 +86,19 @@ class InsertionTestCPT extends WP_UnitTestCase_PageWithPopups {
 		Newspack_Popups_Model::set_popup_options(
 			self::$popup_id,
 			[
+				'post_types' => [ 'post', 'page', $episode_cpt_name ],
+			]
+		);
+		self::renderPost( '', null, [], [], $episode_cpt_name );
+		self::assertEquals(
+			1,
+			self::getRenderedPopupsAmount(),
+			'Popup is rendered when the CPT was added to targeted post types.'
+		);
+
+		Newspack_Popups_Model::set_popup_options(
+			self::$popup_id,
+			[
 				'post_types' => [ $episode_cpt_name ],
 			]
 		);
@@ -93,7 +106,7 @@ class InsertionTestCPT extends WP_UnitTestCase_PageWithPopups {
 		self::assertEquals(
 			1,
 			self::getRenderedPopupsAmount(),
-			'Popup is rendered, since the CPT was added to popup options.'
+			'Popup is rendered when the CPT is the only targeted post type.'
 		);
 
 		self::renderPost( '', null, [], [] );
