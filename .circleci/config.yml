@@ -10,7 +10,7 @@ commands:
 jobs:
   build:
     docker:
-      - image: circleci/php:7.2-node-browsers
+      - image: cimg/php:7.4-browsers
     steps:
       - checkout_with_workspace
       - run:
@@ -23,7 +23,7 @@ jobs:
 
   lint-js-scss:
     docker:
-      - image: circleci/php:7.2-node-browsers
+      - image: cimg/php:7.4-browsers
     steps:
       - checkout_with_workspace
       - run:
@@ -32,7 +32,7 @@ jobs:
 
   test-php:
     docker:
-      - image: circleci/php:7.2
+      - image: cimg/php:7.4
       - image: circleci/mysql:5.6.50
     environment:
       - WP_TESTS_DIR: '/tmp/wordpress-tests-lib'
@@ -47,9 +47,7 @@ jobs:
       - run:
           name: Install Dependencies
           command: |
-            sudo apt-get update && sudo apt-get install subversion
-            sudo -E docker-php-ext-install mysqli
-            sudo apt-get update && sudo apt-get install default-mysql-client
+            sudo apt-get update && sudo apt-get install -y subversion default-mysql-client
       - run:
           name: Run Tests
           command: |
@@ -61,7 +59,7 @@ jobs:
 
   lint-php:
     docker:
-      - image: circleci/php:7.2
+      - image: cimg/php:7.4
     steps:
       - checkout
       - run:
@@ -72,7 +70,7 @@ jobs:
 
   test-js:
     docker:
-      - image: circleci/php:7.2-node-browsers
+      - image: cimg/php:7.4-browsers
     steps:
       - checkout_with_workspace
       - run:
@@ -81,12 +79,12 @@ jobs:
 
   release:
     docker:
-      - image: circleci/php:7.2-node-browsers
+      - image: cimg/php:7.4-browsers
     steps:
       - checkout_with_workspace
       - run:
           name: Install rsync
-          command: sudo apt install rsync
+          command: sudo apt-get update && sudo apt-get install rsync
       - run:
           name: Install PHP packages
           command: composer install --no-dev --no-scripts
@@ -97,7 +95,7 @@ jobs:
   # Reset alpha branch after a release
   post_release:
     docker:
-      - image: circleci/php:7.2-node-browsers
+      - image: cimg/php:7.4-browsers
     steps:
       - checkout
       - run:
