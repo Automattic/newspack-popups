@@ -1,3 +1,10 @@
+## [1.42.1-alpha.2](https://github.com/Automattic/newspack-popups/compare/v1.42.1-alpha.1...v1.42.1-alpha.2) (2021-11-02)
+
+
+### Bug Fixes
+
+* donor landing page ([bedcb4c](https://github.com/Automattic/newspack-popups/commit/bedcb4c47be7c3ea570543bf466bd3b0d7aad590))
+
 ## [1.42.1-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.42.0...v1.42.1-alpha.1) (2021-11-01)
 
 
