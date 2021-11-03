@@ -746,7 +746,7 @@ class APITest extends WP_UnitTestCase {
 		$client_id = 'test_' . uniqid();
 
 		// Report a donation.
-		$donation = [
+		$donation_1 = [
 			'order_id' => '120',
 			'date'     => '2020-10-28',
 			'amount'   => '180.00',
@@ -754,7 +754,25 @@ class APITest extends WP_UnitTestCase {
 		self::$report_client_data->report_client_data(
 			[
 				'client_id' => $client_id,
-				'donation'  => $donation,
+				'donation'  => $donation_1,
+			]
+		);
+		// Add a duplicate to ensure it will not be added.
+		self::$report_client_data->report_client_data(
+			[
+				'client_id' => $client_id,
+				'donation'  => $donation_1,
+			]
+		);
+		// Add another donation, JSON-encoded.
+		$donation_2 = [
+			'date'   => '2020-11-28',
+			'amount' => '180.00',
+		];
+		self::$report_client_data->report_client_data(
+			[
+				'client_id' => $client_id,
+				'donation'  => wp_json_encode( $donation_2 ),
 			]
 		);
 
@@ -764,7 +782,7 @@ class APITest extends WP_UnitTestCase {
 				'suppressed_newsletter_campaign' => false,
 				'posts_read'                     => [],
 				'email_subscriptions'            => [],
-				'donations'                      => [ $donation ],
+				'donations'                      => [ $donation_1, $donation_2 ],
 				'user_id'                        => false,
 				'prompts'                        => [],
 			],
