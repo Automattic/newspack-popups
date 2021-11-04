@@ -379,7 +379,7 @@ final class Newspack_Popups_Model {
 				'archive_insertion_is_repeating' => false,
 				'utm_suppression'                => null,
 				'selected_segment_id'            => '',
-				'post_types'                     => self::get_globally_supported_post_types(),
+				'post_types'                     => self::get_default_popup_post_types(),
 				'archive_page_types'             => self::get_supported_archive_page_types(),
 			]
 		);

@@ -755,37 +755,35 @@ final class Newspack_Popups_Inserter {
 			}
 		}
 
-		// Context in which the popup appears
-		// - the taxonomy of the post.
-		$is_taxonomy_matching = self::assess_taxonomy_filter( $popup, 'category' ) && self::assess_taxonomy_filter( $popup, 'post_tag' );
-		// - the types of the posts supported for all popups.
-		$global_post_types = Newspack_Popups_Model::get_globally_supported_post_types();
-		// - the type of the post supported by this popup, if different than the global setting.
-		$popup_post_types = $popup['options']['post_types'];
-
-		if (
-			// PHP's array_diff "returns the values in [first argument] that are not present in any of the other arrays",
-			// to get a diff between arrays, the arrays have to be compared twice, with reversed argument order.
-			0 === count( array_diff( $popup_post_types, $global_post_types ) )
-			&& 0 === count( array_diff( $global_post_types, $popup_post_types ) )
-		) {
-			// Popup post types are same as globally-set post types - no need to check the former.
-			$is_post_type_matching_global_post_types = in_array( $post_type, $global_post_types );
-			$is_post_context_matching                = $is_taxonomy_matching && $is_post_type_matching_global_post_types;
-		} else {
-			// Popup post types override the global post types.
-			$is_post_type_matching_popup_post_types = in_array( $post_type, $popup_post_types );
-			$is_post_context_matching               = $is_taxonomy_matching && $is_post_type_matching_popup_post_types;
+		// Prompts should be hidden on account related pages (e.g. password reset page).
+		if ( Newspack_Popups::is_account_related_post( get_post() ) ) {
+			return false;
+		}
+		// Custom and manual placements should override context conditions, since they are placed arbitrarily.
+		if ( Newspack_Popups_Custom_Placements::is_custom_placement_or_manual( $popup ) ) {
+			return true;
 		}
 
-		// Custom and manual placements should override context conditions, since they are placed arbitrarily.
-		$is_arbitrarily_placed = Newspack_Popups_Custom_Placements::is_custom_placement_or_manual( $popup );
-		// Prompts should be hidden on account related pages (e.g. password reset page).
-		$is_on_account_related_page = Newspack_Popups::is_account_related_post( get_post() );
+		// Context in which the popup appears.
+		// 1. the taxonomy of the post.
+		$is_taxonomy_matching = self::assess_taxonomy_filter( $popup, 'category' ) && self::assess_taxonomy_filter( $popup, 'post_tag' );
+		// 2. the type of the post supported by this popup, if different than the global setting.
+		$popup_post_types = $popup['options']['post_types'];
 
-		$should_be_displayed = ( $is_arbitrarily_placed || $is_post_context_matching ) && ! $is_on_account_related_page;
+		$default_post_types = Newspack_Popups_Model::get_default_popup_post_types();
 
-		return $should_be_displayed;
+		sort( $popup_post_types );
+		sort( $default_post_types );
+		if ( $popup_post_types === $default_post_types ) {
+			// Popup's post types are the same as default - global post types should be used.
+			$supported_post_types = Newspack_Popups_Model::get_globally_supported_post_types();
+		} else {
+			// Popup's post types are *set* - different than defaults. These should override the global post types.
+			$supported_post_types = $popup_post_types;
+		}
+		$is_post_context_matching = $is_taxonomy_matching && in_array( $post_type, $supported_post_types );
+
+		return $is_post_context_matching;
 	}
 }
 $newspack_popups_inserter = new Newspack_Popups_Inserter();
