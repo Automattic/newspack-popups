@@ -15,7 +15,7 @@ import { addQueryArgs } from '@wordpress/url';
 /**
  * Internal dependencies
  */
-import AutocompleteTokenField from '../components/autocomplete-tokenfield';
+import { AutocompleteTokenField } from 'newspack-components';
 
 const AdvancedSidebar = ( { onMetaFieldChange, excluded_categories = [] } ) => {
 	const getCategoryTitle = category =>
