@@ -14,8 +14,25 @@ const PositionPlacementControl = ( { layout, label, help, onChange, size, ...pro
 	 * Set layout options
 	 */
 	const layoutOptions =
-		size !== 'full-width'
+		size === 'full-width'
 			? [
+					{
+						value: 'top',
+						/* translators: Overlay Prompt Position */
+						label: __( 'Top', 'newspack-popups' ),
+					},
+					{
+						value: 'center',
+						/* translators: Overlay Prompt Position */
+						label: __( 'Center', 'newspack-popups' ),
+					},
+					{
+						value: 'bottom',
+						/* translators: Overlay Prompt Position */
+						label: __( 'Bottom', 'newspack-popups' ),
+					},
+			  ]
+			: [
 					{
 						value: 'top_left',
 						/* translators: Overlay Prompt Position */
@@ -61,25 +78,7 @@ const PositionPlacementControl = ( { layout, label, help, onChange, size, ...pro
 						/* translators: Overlay Prompt Position */
 						label: __( 'Bottom Right', 'newspack-popups' ),
 					},
-			  ]
-			: [
-					{
-						value: 'top',
-						/* translators: Overlay Prompt Position */
-						label: __( 'Top', 'newspack-popups' ),
-					},
-					{
-						value: 'center',
-						/* translators: Overlay Prompt Position */
-						label: __( 'Center', 'newspack-popups' ),
-					},
-					{
-						value: 'bottom',
-						/* translators: Overlay Prompt Position */
-						label: __( 'Bottom', 'newspack-popups' ),
-					},
 			  ];
-
 	return (
 		<div className={ classnames( 'newspack-popups-css-grid-selector', 'size-' + size ) }>
 			<p className="components-base-control__label">{ label }</p>
