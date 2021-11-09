@@ -48,6 +48,28 @@ const Sidebar = ( {
 			onMetaFieldChange( 'frequency', 'once' );
 		}
 	};
+	const updatePlacementWhenPopupIsFullWidth = () => {
+		switch ( placement ) {
+			case 'top_left':
+			case 'top_right':
+				onMetaFieldChange( 'placement', 'top' );
+				break;
+			case 'center_left':
+			case 'center_right':
+				onMetaFieldChange( 'placement', 'center' );
+				break;
+			case 'bottom_left':
+			case 'bottom_right':
+				onMetaFieldChange( 'placement', 'bottom' );
+				break;
+		}
+	};
+	const updateSize = size => {
+		onMetaFieldChange( 'overlay_size', size );
+		if ( 'full-width' === size ) {
+			updatePlacementWhenPopupIsFullWidth();
+		}
+	};
 	const customPlacements = window.newspack_popups_data?.custom_placements || {};
 	const popupSizeOptions = window.newspack_popups_data?.popup_size_options || {};
 	const availableArchivePageTypes = window.newspack_popups_data?.available_archive_page_types || [];
@@ -69,9 +91,7 @@ const Sidebar = ( {
 					<SelectControl
 						label={ __( 'Size', 'newspack-popups' ) }
 						value={ overlay_size }
-						onChange={ size => {
-							onMetaFieldChange( 'overlay_size', size );
-						} }
+						onChange={ updateSize }
 						options={ popupSizeOptions }
 					/>
 					<PositionPlacementControl
