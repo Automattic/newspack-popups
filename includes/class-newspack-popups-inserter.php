@@ -726,6 +726,14 @@ final class Newspack_Popups_Inserter {
 			}
 		}
 
+		if ( 'post_tag' === $taxonomy ) {
+			foreach ( $popup['options']['excluded_tags'] as $post_tag_excluded_id ) {
+				if ( in_array( $post_tag_excluded_id, $post_terms_ids ) ) {
+					return false;
+				}
+			}
+		}
+
 		$popup_terms = get_the_terms( $popup['id'], $taxonomy );
 		if ( false === $popup_terms ) {
 			return true; // No terms on the popup, no need to compare.

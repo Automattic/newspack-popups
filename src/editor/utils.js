@@ -28,6 +28,7 @@ export const optionsFieldsSelector = select => {
 		post_types,
 		archive_page_types,
 		excluded_categories,
+		excluded_tags,
 	} = meta || {};
 
 	const isInlinePlacement = placementValue =>
@@ -56,6 +57,7 @@ export const optionsFieldsSelector = select => {
 		post_types,
 		archive_page_types,
 		excluded_categories,
+		excluded_tags,
 	};
 };
 

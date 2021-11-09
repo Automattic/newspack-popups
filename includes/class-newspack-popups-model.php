@@ -155,6 +155,7 @@ final class Newspack_Popups_Model {
 				case 'post_types':
 				case 'archive_page_types':
 				case 'excluded_categories':
+				case 'excluded_tags':
 					update_post_meta( $id, $key, $value );
 					break;
 				default:
@@ -360,6 +361,7 @@ final class Newspack_Popups_Model {
 			'post_types'                     => get_post_meta( $id, 'post_types', true ),
 			'archive_page_types'             => get_post_meta( $id, 'archive_page_types', true ),
 			'excluded_categories'            => get_post_meta( $id, 'excluded_categories', true ),
+			'excluded_tags'                  => get_post_meta( $id, 'excluded_tags', true ),
 		];
 
 		return wp_parse_args(
@@ -384,6 +386,7 @@ final class Newspack_Popups_Model {
 				'post_types'                     => self::get_globally_supported_post_types(),
 				'archive_page_types'             => self::get_supported_archive_page_types(),
 				'excluded_categories'            => [],
+				'excluded_tags'                  => [],
 			]
 		);
 	}
