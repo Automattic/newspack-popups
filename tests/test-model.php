@@ -48,6 +48,7 @@ class ModelTest extends WP_UnitTestCase {
 				'post_types'                     => [ 'post', 'page' ],
 				'archive_page_types'             => [ 'category', 'tag', 'author', 'date', 'post-type', 'taxonomy' ],
 				'excluded_categories'            => [],
+				'excluded_tags'                  => [],
 			],
 			'Default options are as expected.'
 		);
