@@ -743,9 +743,9 @@ final class Newspack_Popups {
 		?>
 			<div class="notice notice-error">
 				<p>
-					<?php _e( 'Newspack Campaigns requires a custom configuration file, which is missing. Please create this file following instructions found ', 'newspack-popups' ); ?>
+					<?php _e( 'Newspack Campaigns requires a custom configuration file, which is missing. Please create this file by following ', 'newspack-popups' ); ?>
 					<a href="https://github.com/Automattic/newspack-popups/blob/master/README.md#config-file">
-						<?php _e( 'here.', 'newspack-popups' ); ?>
+						<?php _e( 'these instructions.', 'newspack-popups' ); ?>
 					</a>
 				</p>
 			</div>
