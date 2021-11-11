@@ -24,6 +24,9 @@ copy( $wp_config_file_path, $popups_config_file_path );
 // Give access to tests_add_filter() function.
 require_once $_tests_dir . '/includes/functions.php';
 
+$plugin_dir = dirname( $this->tests_dir );
+require_once $plugin_dir . '/vendor/yoast/phpunit-polyfills/phpunitpolyfills-autoload.php';
+
 /**
  * Manually load the plugin being tested.
  */
