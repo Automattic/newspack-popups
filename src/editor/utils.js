@@ -17,6 +17,7 @@ export const optionsFieldsSelector = select => {
 		hide_border,
 		overlay_color,
 		overlay_opacity,
+		overlay_size,
 		placement,
 		trigger_scroll_progress,
 		archive_insertion_posts_count,
@@ -32,7 +33,18 @@ export const optionsFieldsSelector = select => {
 	} = meta || {};
 
 	const isInlinePlacement = placementValue =>
-		-1 === [ 'top', 'bottom', 'center' ].indexOf( placementValue );
+		-1 ===
+		[
+			'top_left',
+			'top',
+			'top_right',
+			'center_left',
+			'center',
+			'center_right',
+			'bottom_left',
+			'bottom',
+			'bottom_right',
+		].indexOf( placementValue );
 	const isOverlay = ! isInlinePlacement( placement );
 
 	return {
@@ -44,6 +56,7 @@ export const optionsFieldsSelector = select => {
 		frequency,
 		overlay_color,
 		overlay_opacity,
+		overlay_size,
 		placement,
 		trigger_scroll_progress,
 		archive_insertion_posts_count,
@@ -133,6 +146,17 @@ export const isCustomPlacement = placementValue => {
 };
 
 /**
+ * Is the given placement value an overlay placement?
+ *
+ * @param {string} placementValue Placement of the prompt.
+ * @return {boolean} Whether or not the prompt has an overlay placement.
+ */
+export const isOverlay = placementValue => {
+	const overlayPlacements = window.newspack_popups_data?.overlay_placements || [];
+	return -1 < overlayPlacements.indexOf( placementValue );
+};
+
+/**
  * Given a placement value, construct a context-sensitive help message to display in the editor sidebar.
  *
  * @param {string} placementValue Placement of the prompt.
@@ -164,14 +188,44 @@ export const getPlacementHelpMessage = (
 				'The prompt will be displayed as an overlay at the center of the viewport.',
 				'newspack-popups'
 			);
+		case 'center_left':
+			return __(
+				'The prompt will be displayed as an overlay at the center left of the viewport.',
+				'newspack-popups'
+			);
+		case 'center_right':
+			return __(
+				'The prompt will be displayed as an overlay at the center right of the viewport.',
+				'newspack-popups'
+			);
 		case 'top':
 			return __(
 				'The prompt will be displayed as an overlay at the top of the viewport.',
 				'newspack-popups'
 			);
+		case 'top_left':
+			return __(
+				'The prompt will be displayed as an overlay at the top left of the viewport.',
+				'newspack-popups'
+			);
+		case 'top_right':
+			return __(
+				'The prompt will be displayed as an overlay at the top right of the viewport.',
+				'newspack-popups'
+			);
 		case 'bottom':
 			return __(
 				'The prompt will be displayed as an overlay at the bottom of the viewport.',
+				'newspack-popups'
+			);
+		case 'bottom_left':
+			return __(
+				'The prompt will be displayed as an overlay at the bottom left of the viewport.',
+				'newspack-popups'
+			);
+		case 'bottom_right':
+			return __(
+				'The prompt will be displayed as an overlay at the bottom right of the viewport.',
 				'newspack-popups'
 			);
 		case 'above_header':

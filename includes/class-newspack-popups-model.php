@@ -16,7 +16,7 @@ final class Newspack_Popups_Model {
 	 *
 	 * @var array
 	 */
-	protected static $overlay_placements = [ 'top', 'bottom', 'center' ];
+	protected static $overlay_placements = [ 'top', 'bottom', 'center', 'bottom_right', 'bottom_left', 'top_right', 'top_left', 'center_right', 'center_left' ];
 
 	/**
 	 * Possible placements of inline popups.
@@ -230,6 +230,7 @@ final class Newspack_Popups_Model {
 				'frequency'                      => filter_input( INPUT_GET, 'frequency', FILTER_SANITIZE_STRING ),
 				'overlay_color'                  => filter_input( INPUT_GET, 'overlay_color', FILTER_SANITIZE_STRING ),
 				'overlay_opacity'                => filter_input( INPUT_GET, 'overlay_opacity', FILTER_SANITIZE_STRING ),
+				'overlay_size'                   => filter_input( INPUT_GET, 'overlay_size', FILTER_SANITIZE_STRING ),
 				'placement'                      => filter_input( INPUT_GET, 'placement', FILTER_SANITIZE_STRING ),
 				'trigger_type'                   => filter_input( INPUT_GET, 'trigger_type', FILTER_SANITIZE_STRING ),
 				'trigger_delay'                  => filter_input( INPUT_GET, 'trigger_delay', FILTER_SANITIZE_STRING ),
@@ -350,6 +351,7 @@ final class Newspack_Popups_Model {
 			'frequency'                      => get_post_meta( $id, 'frequency', true ),
 			'overlay_color'                  => get_post_meta( $id, 'overlay_color', true ),
 			'overlay_opacity'                => get_post_meta( $id, 'overlay_opacity', true ),
+			'overlay_size'                   => get_post_meta( $id, 'overlay_size', true ),
 			'placement'                      => get_post_meta( $id, 'placement', true ),
 			'trigger_type'                   => get_post_meta( $id, 'trigger_type', true ),
 			'trigger_delay'                  => get_post_meta( $id, 'trigger_delay', true ),
@@ -375,6 +377,7 @@ final class Newspack_Popups_Model {
 				'frequency'                      => 'always',
 				'overlay_color'                  => '#000000',
 				'overlay_opacity'                => 30,
+				'overlay_size'                   => 'medium',
 				'placement'                      => 'inline',
 				'trigger_type'                   => 'time',
 				'trigger_delay'                  => 0,
@@ -389,6 +392,95 @@ final class Newspack_Popups_Model {
 				'excluded_tags'                  => [],
 			]
 		);
+	}
+
+	/**
+	 * Get popups placements.
+	 *
+	 * @return array Array of popup placements.
+	 */
+	public static function get_overlay_placements() {
+		return self::$overlay_placements;
+	}
+
+	/**
+	 * Generates the possible sizes for a popup.
+	 *
+	 * @return array popup possible sizes
+	 */
+	public static function get_popup_size_options() {
+		/**
+		 * Filters the list of possible popup sizes.
+		 *
+		 * @param array Array of possible popup sizes.
+		 *     $params = [
+		 *          'value' => (string) size value.
+		 *          'label' => (string) size label to be displayed.
+		 *     ]
+		 */
+		return apply_filters(
+			'newspack_popups_size_options',
+			[
+				[
+					'value' => 'x-small',
+					'label' => __( 'Extra Small', 'newspack-popups' ),
+				],
+				[
+					'value' => 'small',
+					'label' => __( 'Small', 'newspack-popups' ),
+				],
+				[
+					'value' => 'medium',
+					'label' => __( 'Medium', 'newspack-popups' ),
+				],
+				[
+					'value' => 'large',
+					'label' => __( 'Large', 'newspack-popups' ),
+				],
+				[
+					'value' => 'full-width',
+					'label' => __( 'Full-Width', 'newspack-popups' ),
+				],
+			]
+		);
+	}
+
+	/**
+	 * Get available archive page types where to display prompts
+	 */
+	public static function get_available_archive_page_types() {
+		return [
+			[
+				'name'  => 'category',
+				/* translators: archive page */
+				'label' => __( 'Categories' ),
+			],
+			[
+				'name'  => 'tag',
+				/* translators: archive page */
+				'label' => __( 'Tags' ),
+			],
+			[
+				'name'  => 'author',
+				/* translators: archive page */
+				'label' => __( 'Authors' ),
+			],
+			[
+				'name'  => 'date',
+				/* translators: archive page */
+				'label' => __( 'Date' ),
+			],
+			[
+				'name'  => 'post-type',
+				/* translators: archive page */
+				'label' => __( 'Custom Post Types' ),
+			],
+			[
+				'name'  => 'taxonomy',
+				/* translators: archive page */
+				'label' => __( 'Taxonomies' ),
+			],
+		];
 	}
 
 	/**
@@ -474,7 +566,7 @@ final class Newspack_Popups_Model {
 					$popup['options']['trigger_scroll_progress'] = 0;
 					break;
 			};
-			if ( ! in_array( $popup['options']['placement'], [ 'top', 'bottom' ], true ) ) {
+			if ( ! in_array( $popup['options']['placement'], self::$overlay_placements, true ) ) {
 				$popup['options']['placement'] = 'center';
 			}
 		}
@@ -968,9 +1060,10 @@ final class Newspack_Popups_Model {
 		$hide_border            = $popup['options']['hide_border'];
 		$overlay_opacity        = absint( $popup['options']['overlay_opacity'] ) / 100;
 		$overlay_color          = $popup['options']['overlay_color'];
+		$overlay_size           = $popup['options']['overlay_size'];
 		$hidden_fields          = self::get_hidden_fields( $popup );
 		$is_newsletter_prompt   = self::has_newsletter_prompt( $popup );
-		$classes                = array( 'newspack-lightbox', 'newspack-popup', 'newspack-lightbox-placement-' . $popup['options']['placement'] );
+		$classes                = array( 'newspack-lightbox', 'newspack-popup', 'newspack-lightbox-placement-' . $popup['options']['placement'], 'newspack-lightbox-size-' . $overlay_size );
 		$classes[]              = ( ! empty( $popup['title'] ) && $display_title ) ? 'newspack-lightbox-has-title' : null;
 		$classes[]              = $hide_border ? 'newspack-lightbox-no-border' : null;
 		$classes[]              = $is_newsletter_prompt ? 'newspack-newsletter-prompt-overlay' : null;
@@ -1059,9 +1152,9 @@ final class Newspack_Popups_Model {
 								"selector": "#<?php echo esc_attr( $element_id ); ?> .newspack-popup-wrapper",
 								"delay": "<?php echo intval( $popup['options']['trigger_delay'] ) * 1000 + 625; ?>",
 								"keyframes": {
-									<?php if ( 'top' === $popup['options']['placement'] ) : ?>
+									<?php if ( in_array( $popup['options']['placement'], [ 'top', 'top_left', 'top_right' ] ) ) : ?>
 										"transform": ["translateY(-100%)", "translateY(0)"]
-									<?php elseif ( 'bottom' === $popup['options']['placement'] ) : ?>
+									<?php elseif ( in_array( $popup['options']['placement'], [ 'bottom', 'bottom_left', 'bottom_right' ] ) ) : ?>
 										"transform": ["translateY(100%)", "translateY(0)"]
 									<?php else : ?>
 										"opacity": ["0", "1"]
