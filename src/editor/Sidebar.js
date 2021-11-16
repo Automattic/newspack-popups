@@ -111,6 +111,7 @@ const Sidebar = ( {
 					onChange={ updatePlacement }
 					options={ [
 						{ value: 'inline', label: __( 'In article content', 'newspack-popups' ) },
+						{ value: 'archives', label: __( 'In archive pages' ) },
 						{ value: 'above_header', label: __( 'Above site header', 'newspack-popups' ) },
 						{ value: 'manual', label: __( 'Manual only', 'newspack-popups' ) },
 					].concat(
