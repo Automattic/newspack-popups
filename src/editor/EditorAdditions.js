@@ -59,11 +59,14 @@ const EditorAdditions = () => {
 	useEffect(() => {
 		const blockEditor = document.querySelector( '.block-editor-block-list__layout' );
 		if ( blockEditor ) {
+			blockEditor.classList.forEach( className => {
+				if ( className.startsWith( 'is-size-' ) ) {
+					blockEditor.classList.remove( className );
+				}
+			} );
+
 			if ( isOverlay( placement ) ) {
-				blockEditor.className = `block-editor-block-list__layout is-size-${ overlay_size }`;
-			} else {
-				// Reset the class in case we switch from overlay placement.
-				blockEditor.className = `block-editor-block-list__layout`;
+				blockEditor.classList.add( `is-size-${ overlay_size }` );
 			}
 		}
 	}, [ overlay_size, placement ]);
