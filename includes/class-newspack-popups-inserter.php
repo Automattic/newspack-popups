@@ -368,16 +368,6 @@ final class Newspack_Popups_Inserter {
 			return $content;
 		}
 
-		if ( function_exists( 'scaip_maybe_insert_shortcode' ) ) {
-			// Prevent default SCAIP insertion.
-			remove_filter( 'the_content', 'scaip_maybe_insert_shortcode', 10 );
-
-			// In order to prevent the SCAIP ad being inserted mid-popup, let's insert the ads
-			// manually. SCAIP begins by checking if there are any ads already inserted and bails
-			// if there are, to allow for manual ads placement.
-			$content = scaip_maybe_insert_shortcode( $content );
-		}
-
 		$content_with_popups = self::insert_popups_in_post_content(
 			$content,
 			$popups
