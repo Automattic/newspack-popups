@@ -69,15 +69,15 @@ class ContentInsertionTest extends WP_UnitTestCase {
 			$popups
 		);
 		self::assertEquals(
-			self::rendered_popup( '1' ) . '
+			self::rendered_popup( '1' ) . '<!-- wp:image {"align":"right"} -->
 <div class="wp-block-image">image</div>
-
+<!-- /wp:image --><!-- wp:paragraph -->
 <p>Paragraph 1</p>
-' . self::rendered_popup( '2' ) . '
+<!-- /wp:paragraph -->' . self::rendered_popup( '2' ) . '<!-- wp:heading -->
 <h2>A heading</h2>
-
+<!-- /wp:heading --><!-- wp:paragraph -->
 <p>Paragraph 2</p>
-' . self::rendered_popup( '3' ),
+<!-- /wp:paragraph -->' . self::rendered_popup( '3' ),
 			$content_with_popups,
 			'The popups are inserted into the content at expected positions.'
 		);
@@ -104,7 +104,7 @@ Paragraph 2
 			$popups
 		);
 		self::assertEquals(
-			self::rendered_popup( '1' ) . '<p>Paragraph 1</p>' . self::rendered_popup( '2' ) . '<h2>A heading</h2><p>Paragraph 2</p><blockquote><p>A quote</p></blockquote>' . self::rendered_popup( '3' ),
+			self::rendered_popup( '1' ) . '<!-- wp:html --><p>Paragraph 1</p><!-- /wp:html -->' . self::rendered_popup( '2' ) . '<!-- wp:heading --><h2>A heading</h2><!-- /wp:heading --><!-- wp:html --><p>Paragraph 2</p><!-- /wp:html --><!-- wp:html --><blockquote><p>A quote</p></blockquote><!-- /wp:html -->' . self::rendered_popup( '3' ),
 			$content_with_popups,
 			'The popups are inserted into the content at expected positions.'
 		);
