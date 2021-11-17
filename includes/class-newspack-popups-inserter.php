@@ -312,8 +312,7 @@ final class Newspack_Popups_Inserter {
 
 			// Render blocks from the block group.
 			foreach ( $block_group as $block ) {
-				$block_content = render_block( $block );
-				$output       .= $block_content;
+				$output .= serialize_block( $block );
 			}
 		}
 
