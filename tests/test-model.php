@@ -37,6 +37,7 @@ class ModelTest extends WP_UnitTestCase {
 				'frequency'                      => 'always',
 				'overlay_color'                  => '#000000',
 				'overlay_opacity'                => '30',
+				'overlay_size'                   => 'medium',
 				'placement'                      => 'inline',
 				'trigger_type'                   => 'scroll',
 				'trigger_delay'                  => '3',
@@ -47,6 +48,8 @@ class ModelTest extends WP_UnitTestCase {
 				'selected_segment_id'            => '',
 				'post_types'                     => [ 'post', 'page' ],
 				'archive_page_types'             => [ 'category', 'tag', 'author', 'date', 'post-type', 'taxonomy' ],
+				'excluded_categories'            => [],
+				'excluded_tags'                  => [],
 			],
 			'Default options are as expected.'
 		);

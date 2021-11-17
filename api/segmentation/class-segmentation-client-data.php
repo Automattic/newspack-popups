@@ -45,8 +45,8 @@ class Segmentation_Client_Data extends Lightweight_API {
 		// Add a donation to client.
 		$donation = $this->get_request_param( 'donation', $request );
 		if ( $donation ) {
-			if ( 'string' === $donation ) {
-				$donation = json_decode( $donation );
+			if ( 'string' === gettype( $donation ) ) {
+				$donation = (array) json_decode( $donation );
 			}
 			$client_data_update['donations'][] = $donation;
 		}
@@ -72,10 +72,11 @@ class Segmentation_Client_Data extends Lightweight_API {
 		$mailchimp_campaign_id   = $this->get_request_param( 'mc_cid', $request );
 		$mailchimp_subscriber_id = $this->get_request_param( 'mc_eid', $request );
 		if ( $mailchimp_campaign_id && $mailchimp_subscriber_id ) {
-			$mailchimp_api_key_option_name = 'newspack_newsletters_mailchimp_api_key';
+			$mailchimp_api_key_option_name        = 'newspack_mailchimp_api_key';
+			$mailchimp_api_key_option_name_legacy = 'newspack_newsletters_mailchimp_api_key';
 			global $wpdb;
 			$mailchimp_api_key = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-				$wpdb->prepare( "SELECT option_value FROM `$wpdb->options` WHERE option_name=%s", $mailchimp_api_key_option_name )
+				$wpdb->prepare( "SELECT option_value FROM `$wpdb->options` WHERE option_name IN (%s,%s) ORDER BY FIELD(%s,%s)", $mailchimp_api_key_option_name, $mailchimp_api_key_option_name_legacy, $mailchimp_api_key_option_name, $mailchimp_api_key_option_name_legacy )
 			);
 			if ( $mailchimp_api_key ) {
 				$mc            = new Mailchimp( $mailchimp_api_key->option_value );
