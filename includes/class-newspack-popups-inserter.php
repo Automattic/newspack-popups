@@ -132,80 +132,136 @@ final class Newspack_Popups_Inserter {
 	}
 
 	/**
-	 * Process popups and insert into post and page content if needed.
+	 * Some blocks should never have a prompt right after them. For example, a prompt right after a subheading
+	 * (header block) would not look good.
 	 *
-	 * @param string $content The content of the post.
+	 * @param object $block A block.
 	 */
-	public static function insert_popups_in_content( $content = '' ) {
-		// Avoid duplicate execution.
-		if ( true === self::$the_content_has_rendered ) {
-			return $content;
+	private static function can_block_be_followed_by_prompt( $block ) {
+		if (
+			in_array(
+				$block['blockName'],
+				[
+					// A prompt may not appear right after a heading block.
+					'core/heading',
+				]
+			) ) {
+			return false;
 		}
-
-		// Not Frontend.
-		if ( is_admin() ) {
-			return $content;
+		if (
+			// A prompt may not appear after a floated image block, because it
+			// will mess up the layout then.
+			'core/image' === $block['blockName']
+			&& isset( $block['attrs']['align'] )
+			&& in_array( $block['attrs']['align'], [ 'left', 'right' ] )
+		) {
+			return false;
 		}
+		return true;
+	}
 
-		// Content is empty.
-		if ( empty( trim( $content ) ) ) {
-			return $content;
-		}
-
-		// No popup insertion in archive pages.
-		if ( ! is_singular() ) {
-			return $content;
-		}
-
-		// If not in the loop, ignore.
-		if ( ! in_the_loop() ) {
-			return $content;
-		}
-
-		// Don't inject inline popups on paywalled posts.
-		// It doesn't make sense with a paywall message and also causes an infinite loop.
-		if ( function_exists( 'wc_memberships_is_post_content_restricted' ) && wc_memberships_is_post_content_restricted() ) {
-			return $content;
-		}
-
-		// If any popups are inserted using a shortcode, skip them - no need to duplicate.
-		$shortcoded_popups_ids = self::get_shortcoded_popups_ids( get_the_content() );
-		$popups                = array_filter(
-			self::popups_for_post(),
-			function ( $popup ) use ( $shortcoded_popups_ids ) {
-				return ! in_array( $popup['id'], $shortcoded_popups_ids ) && Newspack_Popups_Model::should_be_inserted_in_page_content( $popup );
-			}
+	/**
+	 * Convert blocks containing classic (legacy) content into regular blocks.
+	 *
+	 * @param array $blocks Array of blocks, some of which might be classic content.
+	 */
+	private static function convert_classic_blocks( $blocks ) {
+		return array_reduce(
+			$blocks,
+			function( $blocks, $block ) {
+				$is_classic_block = null === $block['blockName'] || 'core/freeform' === $block['blockName']; // Classic content results in a block without a block name.
+				$is_empty         = empty( trim( $block['innerHTML'] ) );
+				if ( $is_classic_block && ! $is_empty ) {
+					$classic_content = force_balance_tags( wpautop( $block['innerHTML'] ) ); // Ensure we have paragraph tags and valid HTML.
+					$dom             = new DomDocument();
+					libxml_use_internal_errors( true );
+					$dom->loadHTML( mb_convert_encoding( $classic_content, 'HTML-ENTITIES', get_bloginfo( 'charset' ) ) );
+					$dom_body = $dom->getElementsByTagName( 'body' );
+					if ( 0 < $dom_body->length ) {
+						$dom_body_elements = $dom_body->item( 0 )->childNodes;
+						foreach ( $dom_body_elements as $index => $entry ) {
+							$block_html = $dom->saveHtml( $entry );
+							$block_name = 'core/html';
+							if ( 1 === preg_match( '/^<h\d>.*<\/h\d>$/', $block_html ) ) {
+								$block_name = 'core/heading';
+							}
+							$blocks[] = [
+								'blockName'    => $block_name,
+								'attrs'        => [],
+								'innerBlocks'  => [],
+								'innerHTML'    => $block_html,
+								'innerContent' => [
+									$block_html,
+								],
+							];
+						}
+					}
+				} else {
+					$blocks[] = $block;
+				}
+				return $blocks;
+			},
+			[]
 		);
+	}
 
-		if ( empty( $popups ) ) {
-			return $content;
-		}
-
-		if ( function_exists( 'scaip_maybe_insert_shortcode' ) ) {
-			// Prevent default SCAIP insertion.
-			remove_filter( 'the_content', 'scaip_maybe_insert_shortcode', 10 );
-
-			// In order to prevent the SCAIP ad being inserted mid-popup, let's insert the ads
-			// manually. SCAI begins by checking if there are any ads already inserted and bails
-			// if there are, to allow for manual ads placement.
-			$content = scaip_maybe_insert_shortcode( $content );
-		}
-
+	/**
+	 * Insert popups in a post content.
+	 *
+	 * @param string $content The post content.
+	 * @param array  $popups Array of popup objects.
+	 */
+	public static function insert_popups_in_post_content( $content, $popups ) {
 		// For certain types of blocks, their innerHTML is not a good representation of the length of their content.
 		// For example, slideshows may have an arbitrary amount of slide content, but only show one slide at a time.
 		// For these blocks, let's ignore their length for purposes of inserting prompts.
-		$blacklisted_blocks = [ 'jetpack/slideshow', 'newspack-blocks/carousel', 'newspack-popups/single-prompt' ];
-		$parsed_blocks      = parse_blocks( $content );
-		$total_length       = 0;
+		$length_ignored_blocks = [ 'jetpack/slideshow', 'newspack-blocks/carousel', 'newspack-popups/single-prompt' ];
 
+		$parsed_blocks = self::convert_classic_blocks( parse_blocks( $content ) );
+
+		$parsed_blocks = array_values( // array_values will reindex the array.
+			// Filter out empty blocks.
+			array_filter(
+				$parsed_blocks,
+				function( $block ) {
+					return 0 !== strlen( trim( $block['innerHTML'] ) );
+				}
+			)
+		);
+
+		$block_index          = 0;
+		$parsed_blocks_groups = array_reduce(
+			$parsed_blocks,
+			function ( $block_groups, $block ) use ( &$block_index, $parsed_blocks ) {
+				// Look up the prev block to maybe include it in the group.
+				if ( 0 !== $block_index ) {
+					$prev_block                           = $parsed_blocks[ $block_index - 1 ];
+					$should_next_be_grouped_with_previous = ! self::can_block_be_followed_by_prompt( $prev_block );
+					if ( $should_next_be_grouped_with_previous ) {
+						$block_groups[] = [ $prev_block, $block ];
+					} elseif ( self::can_block_be_followed_by_prompt( $block ) ) {
+						$block_groups[] = [ $block ];
+					}
+				} elseif ( self::can_block_be_followed_by_prompt( $block ) ) {
+					$block_groups[] = [ $block ];
+				}
+
+				$block_index++;
+				return $block_groups;
+			},
+			[]
+		);
+		$total_length         = 0;
+
+		// Compute the total length of the content.
 		foreach ( $parsed_blocks as $block ) {
-			if ( ! in_array( $block['blockName'], $blacklisted_blocks ) ) {
+			if ( in_array( $block['blockName'], $length_ignored_blocks ) ) {
+				// Give length-ignored blocks a length of 1 so that prompts at 0% can still be inserted before them.
+				$total_length++;
+			} else {
 				$is_classic_block = null === $block['blockName'] || 'core/freeform' === $block['blockName']; // Classic block doesn't have a block name.
 				$block_content    = $is_classic_block ? force_balance_tags( wpautop( $block['innerHTML'] ) ) : $block['innerHTML'];
 				$total_length    += strlen( wp_strip_all_tags( $block_content ) );
-			} else {
-				// Give blacklisted blocks a length so that prompts at 0% can still be inserted before them.
-				$total_length++;
 			}
 		}
 
@@ -232,74 +288,18 @@ final class Newspack_Popups_Inserter {
 		$pos    = 0;
 		$output = '';
 
-		foreach ( $parsed_blocks as $block ) {
-			$is_classic_block = null === $block['blockName']; // Classic block doesn't have a block name.
-
-			// Classic block content: insert prompts between block-level HTML elements.
-			if ( $is_classic_block ) {
-				$classic_content = force_balance_tags( wpautop( $block['innerHTML'] ) ); // Ensure we have paragraph tags and valid HTML.
-				if ( 0 === strlen( wp_strip_all_tags( $classic_content ) ) ) {
-					continue;
+		foreach ( $parsed_blocks_groups as $block_group ) {
+			// Compute the length of the blocks in the group.
+			foreach ( $block_group as $block ) {
+				if ( in_array( $block['blockName'], $length_ignored_blocks ) ) {
+					// Give length-ignored blocks a length of 1 so that prompts at 0% can still be inserted before them.
+					$pos++;
+				} else {
+					$pos += strlen( wp_strip_all_tags( $block['innerHTML'] ) );
 				}
-				$positions     = [];
-				$last_position = -1;
-				$block_endings = [ // Block-level elements eligble for prompt insertion.
-					'</p>',
-					'</ol>',
-					'</ul>',
-					'</h1>',
-					'</h2>',
-					'</h3>',
-					'</h4>',
-					'</h5>',
-					'</h6>',
-					'</div>',
-					'</figure>',
-					'</aside>',
-					'</dl>',
-					'</pre>',
-					'</section>',
-					'</table>',
-				];
-
-				// Parse the classic content string by block endings.
-				foreach ( $block_endings as $block_ending ) {
-					$last_position = -1;
-					while ( stripos( $classic_content, $block_ending, $last_position + 1 ) ) {
-						// Get the position of the end of the next $block_ending.
-						$last_position = stripos( $classic_content, $block_ending, $last_position + 1 ) + strlen( $block_ending );
-						$positions[]   = $last_position;
-					}
-				}
-
-				sort( $positions, SORT_NUMERIC );
-				$last_position = 0;
-
-				// Insert prompts between block-level elements.
-				foreach ( $positions as $position ) {
-					foreach ( $inline_popups as &$inline_popup ) {
-						if (
-							! $inline_popup['is_inserted'] &&
-							$position > $inline_popup['precise_position']
-						) {
-							$output                     .= '<!-- wp:shortcode -->[newspack-popup id="' . $inline_popup['id'] . '"]<!-- /wp:shortcode -->';
-							$inline_popup['is_inserted'] = true;
-						}
-					}
-					$output       .= substr( $classic_content, $last_position, $position - $last_position );
-					$last_position = $position;
-				}
-
-				$pos += strlen( $classic_content );
-				continue;
 			}
 
-			// Regular block content: insert prompts between blocks.
-			if ( ! in_array( $block['blockName'], $blacklisted_blocks ) ) {
-				$pos += strlen( wp_strip_all_tags( $block['innerHTML'] ) );
-			} else {
-				$pos++;
-			}
+			// Inject prompts before the group.
 			foreach ( $inline_popups as &$inline_popup ) {
 				if (
 					! $inline_popup['is_inserted'] &&
@@ -309,15 +309,17 @@ final class Newspack_Popups_Inserter {
 					$inline_popup['is_inserted'] = true;
 				}
 			}
-			$block_content = render_block( $block );
-			$output       .= $block_content;
+
+			// Render blocks from the block group.
+			foreach ( $block_group as $block ) {
+				$output .= serialize_block( $block );
+			}
 		}
 
 		// 3. Insert any remaining inline prompts at the end.
 		foreach ( $inline_popups as &$inline_popup ) {
 			if ( ! $inline_popup['is_inserted'] ) {
-				$output .= '<!-- wp:shortcode -->[newspack-popup id="' . $inline_popup['id'] . '"]<!-- /wp:shortcode -->';
-
+				$output                     .= '<!-- wp:shortcode -->[newspack-popup id="' . $inline_popup['id'] . '"]<!-- /wp:shortcode -->';
 				$inline_popup['is_inserted'] = true;
 			}
 		}
@@ -326,9 +328,53 @@ final class Newspack_Popups_Inserter {
 		foreach ( $overlay_popups as $overlay_popup ) {
 			$output = '<!-- wp:html -->' . Newspack_Popups_Model::generate_popup( $overlay_popup ) . '<!-- /wp:html -->' . $output;
 		}
+		return $output;
+	}
+
+	/**
+	 * Process popups and insert into post and page content if needed.
+	 *
+	 * @param string $content The content of the post.
+	 */
+	public static function insert_popups_in_content( $content = '' ) {
+		if (
+			// Avoid duplicate execution.
+			true === self::$the_content_has_rendered
+			// Not Frontend.
+			|| is_admin()
+			// Content is empty.
+			|| empty( trim( $content ) )
+			// No popup insertion in archive pages - there's another method for that.
+			|| ! is_singular()
+			// If not in the loop, ignore.
+			|| ! in_the_loop()
+			// Don't inject inline popups on paywalled posts.
+			// It doesn't make sense with a paywall message and also causes an infinite loop.
+			|| function_exists( 'wc_memberships_is_post_content_restricted' ) && wc_memberships_is_post_content_restricted()
+		) {
+			return $content;
+		}
+
+		// If any popups are inserted using a shortcode, skip them - no need to duplicate.
+		$shortcoded_popups_ids = self::get_shortcoded_popups_ids( get_the_content() );
+		$popups                = array_filter(
+			self::popups_for_post(),
+			function ( $popup ) use ( $shortcoded_popups_ids ) {
+				return ! in_array( $popup['id'], $shortcoded_popups_ids ) && Newspack_Popups_Model::should_be_inserted_in_page_content( $popup );
+			}
+		);
+
+		if ( empty( $popups ) ) {
+			return $content;
+		}
+
+		$content_with_popups = self::insert_popups_in_post_content(
+			$content,
+			$popups
+		);
 
 		self::$the_content_has_rendered = true;
-		return $output;
+		return $content_with_popups;
 	}
 
 	/**
@@ -714,11 +760,30 @@ final class Newspack_Popups_Inserter {
 	 * @return bool Whether the prompt should be shown based on matching terms.
 	 */
 	public static function assess_taxonomy_filter( $popup, $taxonomy = 'category' ) {
+		$post_terms     = get_the_terms( get_the_ID(), $taxonomy );
+		$post_terms_ids = array_column( $post_terms ? $post_terms : [], 'term_id' );
+
+		// Check if a post term is excluded on the popup options.
+		if ( 'category' === $taxonomy ) {
+			foreach ( $popup['options']['excluded_categories'] as $category_excluded_id ) {
+				if ( in_array( $category_excluded_id, $post_terms_ids ) ) {
+					return false;
+				}
+			}
+		}
+
+		if ( 'post_tag' === $taxonomy ) {
+			foreach ( $popup['options']['excluded_tags'] as $post_tag_excluded_id ) {
+				if ( in_array( $post_tag_excluded_id, $post_terms_ids ) ) {
+					return false;
+				}
+			}
+		}
+
 		$popup_terms = get_the_terms( $popup['id'], $taxonomy );
 		if ( false === $popup_terms ) {
 			return true; // No terms on the popup, no need to compare.
 		}
-		$post_terms = get_the_terms( get_the_ID(), $taxonomy );
 		return array_intersect(
 			array_column( $post_terms ? $post_terms : [], 'term_id' ),
 			array_column( $popup_terms, 'term_id' )
@@ -755,37 +820,35 @@ final class Newspack_Popups_Inserter {
 			}
 		}
 
-		// Context in which the popup appears
-		// - the taxonomy of the post.
-		$is_taxonomy_matching = self::assess_taxonomy_filter( $popup, 'category' ) && self::assess_taxonomy_filter( $popup, 'post_tag' );
-		// - the types of the posts supported for all popups.
-		$global_post_types = Newspack_Popups_Model::get_globally_supported_post_types();
-		// - the type of the post supported by this popup, if different than the global setting.
-		$popup_post_types = $popup['options']['post_types'];
-
-		if (
-			// PHP's array_diff "returns the values in [first argument] that are not present in any of the other arrays",
-			// to get a diff between arrays, the arrays have to be compared twice, with reversed argument order.
-			0 === count( array_diff( $popup_post_types, $global_post_types ) )
-			&& 0 === count( array_diff( $global_post_types, $popup_post_types ) )
-		) {
-			// Popup post types are same as globally-set post types - no need to check the former.
-			$is_post_type_matching_global_post_types = in_array( $post_type, $global_post_types );
-			$is_post_context_matching                = $is_taxonomy_matching && $is_post_type_matching_global_post_types;
-		} else {
-			// Popup post types override the global post types.
-			$is_post_type_matching_popup_post_types = in_array( $post_type, $popup_post_types );
-			$is_post_context_matching               = $is_taxonomy_matching && $is_post_type_matching_popup_post_types;
+		// Prompts should be hidden on account related pages (e.g. password reset page).
+		if ( Newspack_Popups::is_account_related_post( get_post() ) ) {
+			return false;
+		}
+		// Custom and manual placements should override context conditions, since they are placed arbitrarily.
+		if ( Newspack_Popups_Custom_Placements::is_custom_placement_or_manual( $popup ) ) {
+			return true;
 		}
 
-		// Custom and manual placements should override context conditions, since they are placed arbitrarily.
-		$is_arbitrarily_placed = Newspack_Popups_Custom_Placements::is_custom_placement_or_manual( $popup );
-		// Prompts should be hidden on account related pages (e.g. password reset page).
-		$is_on_account_related_page = Newspack_Popups::is_account_related_post( get_post() );
+		// Context in which the popup appears.
+		// 1. the taxonomy of the post.
+		$is_taxonomy_matching = self::assess_taxonomy_filter( $popup, 'category' ) && self::assess_taxonomy_filter( $popup, 'post_tag' );
+		// 2. the type of the post supported by this popup, if different than the global setting.
+		$popup_post_types = $popup['options']['post_types'];
 
-		$should_be_displayed = ( $is_arbitrarily_placed || $is_post_context_matching ) && ! $is_on_account_related_page;
+		$default_post_types = Newspack_Popups_Model::get_default_popup_post_types();
 
-		return $should_be_displayed;
+		sort( $popup_post_types );
+		sort( $default_post_types );
+		if ( $popup_post_types === $default_post_types ) {
+			// Popup's post types are the same as default - global post types should be used.
+			$supported_post_types = Newspack_Popups_Model::get_globally_supported_post_types();
+		} else {
+			// Popup's post types are *set* - different than defaults. These should override the global post types.
+			$supported_post_types = $popup_post_types;
+		}
+		$is_post_context_matching = $is_taxonomy_matching && in_array( $post_type, $supported_post_types );
+
+		return $is_post_context_matching;
 	}
 }
 $newspack_popups_inserter = new Newspack_Popups_Inserter();
