@@ -215,7 +215,8 @@ final class Newspack_Popups_API {
 	 * @return WP_REST_Response with complete info to render the Engagement Wizard.
 	 */
 	public function api_get_duplicate_title( $request ) {
-		$response = Newspack_Popups::get_duplicate_title( $request['id'] );
+		$duplicate_of = get_post_meta( $request['id'], 'duplicate_of', true );
+		$response     = Newspack_Popups::get_duplicate_title( $duplicate_of, $request['id'] );
 		return rest_ensure_response( $response );
 	}
 

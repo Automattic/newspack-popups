@@ -159,5 +159,21 @@ class E2ETest extends WP_UnitTestCase_PageWithPopups {
 			Newspack_Popups_Model::get_popup_options( $duplicate_popup_id ),
 			'Duplicated prompt has the same prompt options as the original prompt.'
 		);
+
+		// Subsequent duplicate with different title.
+		wp_update_post(
+			[
+				'ID'         => $duplicate_popup_id,
+				'post_title' => 'Second popup',
+			]
+		);
+
+		$subsequent_duplicate_id = Newspack_Popups::duplicate_popup( $duplicate_popup_id );
+
+		self::assertEquals(
+			get_the_title( $subsequent_duplicate_id ),
+			'Second popup copy',
+			'Subsequent duplicates are iterated based on their parent’s title.'
+		);
 	}
 }

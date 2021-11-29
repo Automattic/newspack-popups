@@ -947,25 +947,54 @@ final class Newspack_Popups {
 	}
 
 	/**
+	 * Generate the duplicated post title base.
+	 *
+	 * @param string $original_title Original post title.
+	 * @param string $parent_title Post to duplicate title.
+	 * @return string
+	 */
+	private static function get_duplicated_post_base_title( $original_title, $parent_title ) {
+		/* translators: %s: Duplicate prompt title */
+		$original_base_title = sprintf( __( '%s copy', 'newspack-popups' ), $original_title );
+
+		// Prepend ` copy` only if it's not already on the post title.
+		return preg_match( "/^$original_base_title\s*\d*$/", $parent_title )
+		? $original_base_title
+		/* translators: %s: Duplicate prompt title */
+		: sprintf( __( '%s copy', 'newspack-popups' ), $parent_title );
+	}
+
+	/**
 	 * Get a default title for duplicated prompts.
 	 *
-	 * @param int $old_id The ID of the prompt being duplicated.
+	 * @param int $original_id The ID of the original prompt.
+	 * @param int $parent_id The ID of the prompt being duplicated.
 	 * @return string The title for the duplicated prompt.
 	 */
-	public static function get_duplicate_title( $old_id ) {
-		/* translators: %s: Duplicate prompt title */
-		$duplicate_title  = sprintf( __( '%s copy', 'newspack-popups' ), get_the_title( $old_id ) );
+	public static function get_duplicate_title( $original_id, $parent_id ) {
+		$original_title  = get_the_title( $original_id );
+		$duplicate_title = self::get_duplicated_post_base_title( $original_title, get_the_title( $parent_id ) );
+
 		$duplicated_posts = new \WP_Query(
 			[
-				'fields'      => 'ids',
 				'post_status' => [ 'publish', 'draft', 'pending', 'future' ],
 				'post_type'   => self::NEWSPACK_POPUPS_CPT,
 				'meta_key'    => 'duplicate_of', // phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-				'meta_value'  => $old_id,
+				'meta_value'  => $original_id,
 			]
 		);
 
-		$duplicate_count = $duplicated_posts->found_posts;
+		$duplicated_posts_with_same_title = array_filter(
+			$duplicated_posts->get_posts(),
+			function( $prompt ) use ( $original_title ) {
+				/* translators: %s: Duplicate prompt title */
+				$original_prompt_title = sprintf( __( '%s copy', 'newspack-popups' ), $original_title );
+				// Filter duplicated posts with a duplicate count postponed to the same title.
+				return preg_match( "/^$original_prompt_title\s*\d*$/", $prompt->post_title );
+			}
+		);
+
+		$duplicate_count = count( $duplicated_posts_with_same_title );
 
 		// Append iterator to title if there are already copies.
 		if ( 0 < $duplicate_count ) {
@@ -988,19 +1017,22 @@ final class Newspack_Popups {
 		$new_popup_id = false;
 
 		if ( is_a( $old_popup, 'WP_Post' ) && self::NEWSPACK_POPUPS_CPT === $old_popup->post_type ) {
-			$duplicate_of = get_post_meta( $id, 'duplicate_of', true );
-			$original_id  = 0 < $duplicate_of ? $duplicate_of : $id; // If the post we're duplicating is itself a copy, inherit the 'duplicate_of' value. Otherwise, set the value to the post we're duplicating.
-			$new_popup    = [
+			$duplicate_of        = get_post_meta( $id, 'duplicate_of', true );
+			$original_id         = 0 < $duplicate_of ? $duplicate_of : $id; // If the post we're duplicating is itself a copy, inherit the 'duplicate_of' value. Otherwise, set the value to the post we're duplicating.
+			$original_title_base = self::get_duplicated_post_base_title( get_the_title( $original_id ), $title );
+			$new_popup           = [
 				'post_type'     => self::NEWSPACK_POPUPS_CPT,
 				'post_status'   => 'draft',
-				'post_title'    => ! empty( $title ) ? $title : self::get_duplicate_title( $original_id ),
+				'post_title'    => ! empty( $title ) ? $title : self::get_duplicate_title( $duplicate_of, $id ),
 				'post_author'   => $old_popup->post_author,
 				'post_content'  => $old_popup->post_content,
 				'post_excerpt'  => $old_popup->post_excerpt,
 				'post_category' => wp_get_post_categories( $id, [ 'fields' => 'ids' ] ),
 				'tags_input'    => wp_get_post_tags( $id, [ 'fields' => 'ids' ] ),
 				'meta_input'    => [
-					'duplicate_of' => $original_id,
+					// A campaign is set as the origin of another one, if the later have the same title with the count of occurences suffixed (e.g. my prompt 3).
+					'duplicate_of' => preg_match( "/^$original_title_base\s*\d*$/", $title )
+									? $original_id : 0,
 				],
 			];
 
