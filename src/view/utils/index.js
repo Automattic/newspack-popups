@@ -87,6 +87,8 @@ export const processFormData = ( data, formElement ) => {
  * retrieve client ID related linker param to be inserted into site cookies.
  *
  * @param  {Object} config amp-analytics configuration.
+ * @param {Object} config.linkers Linkers configuration.
+ * @param {Object} config.cookies Cookies configuration.
  * @param  {string} [url=window.location.href] A URL, presumably with the linker param.
  * @param  {string} [documentCookie=document.cookie] The cookie.
  * @return {Object} Cookie value and a clean URL – without the linker param.
