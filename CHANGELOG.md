@@ -1,3 +1,10 @@
+## [1.44.1-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.44.0...v1.44.1-alpha.1) (2021-11-18)
+
+
+### Bug Fixes
+
+* prevent insertions which break layout; improve classic-content insertion ([#647](https://github.com/Automattic/newspack-popups/issues/647)) ([3a19928](https://github.com/Automattic/newspack-popups/commit/3a199287a36359493b311258ca1f47236f550e59)), closes [#555](https://github.com/Automattic/newspack-popups/issues/555)
+
 # [1.44.0](https://github.com/Automattic/newspack-popups/compare/v1.43.0...v1.44.0) (2021-11-18)
 
 
