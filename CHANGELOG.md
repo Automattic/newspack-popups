@@ -1,3 +1,11 @@
+# [1.45.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.44.1-alpha.1...v1.45.0-alpha.1) (2021-11-30)
+
+
+### Features
+
+* enable config path override from environment ([#660](https://github.com/Automattic/newspack-popups/issues/660)) ([8327ea3](https://github.com/Automattic/newspack-popups/commit/8327ea3ee6ca5eed93e3b8660ef2e44cd0520196))
+* update link text ([#658](https://github.com/Automattic/newspack-popups/issues/658)) ([864e65e](https://github.com/Automattic/newspack-popups/commit/864e65ed0cc1018208698a2351eb84375e72092f)), closes [#454](https://github.com/Automattic/newspack-popups/issues/454)
+
 ## [1.44.1-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.44.0...v1.44.1-alpha.1) (2021-11-18)
 
 
