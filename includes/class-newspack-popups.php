@@ -1031,7 +1031,7 @@ final class Newspack_Popups {
 				'tags_input'    => wp_get_post_tags( $id, [ 'fields' => 'ids' ] ),
 				'meta_input'    => [
 					// A campaign is set as the origin of another one, if the later have the same title with the count of occurences suffixed (e.g. my prompt 3).
-					'duplicate_of' => preg_match( "/^$original_title_base\s*\d*$/", $title )
+					'duplicate_of' => empty( $title ) || preg_match( "/^$original_title_base\s*\d*$/", $title )
 									? $original_id : 0,
 				],
 			];
