@@ -22,7 +22,7 @@ const DuplicateButton = ( {
 	const [ duplicateTitle, setDuplicateTitle ] = useState( null );
 	const [ duplicated, setDuplicated ] = useState( null );
 
-	useEffect( () => {
+	useEffect(() => {
 		setError( null );
 		if ( modalVisible && ! duplicateTitle ) {
 			getDefaultDupicateTitle();
@@ -31,13 +31,13 @@ const DuplicateButton = ( {
 			setDuplicated( null );
 			setDuplicateTitle( null );
 		}
-	}, [ modalVisible ] );
+	}, [ modalVisible ]);
 
 	const getDefaultDupicateTitle = async () => {
 		const promptToDuplicate = parseInt( duplicateOf || postId );
 		try {
 			const defaultTitle = await apiFetch( {
-				path: `/newspack-popups/v1/${ promptToDuplicate }/duplicate`,
+				path: `/newspack-popups/v1/${ promptToDuplicate }/${ postId }/duplicate`,
 			} );
 
 			setDuplicateTitle( defaultTitle );
