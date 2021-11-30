@@ -22,7 +22,7 @@ const DuplicateButton = ( {
 	const [ duplicateTitle, setDuplicateTitle ] = useState( null );
 	const [ duplicated, setDuplicated ] = useState( null );
 
-	useEffect(() => {
+	useEffect( () => {
 		setError( null );
 		if ( modalVisible && ! duplicateTitle ) {
 			getDefaultDupicateTitle();
@@ -31,7 +31,7 @@ const DuplicateButton = ( {
 			setDuplicated( null );
 			setDuplicateTitle( null );
 		}
-	}, [ modalVisible ]);
+	}, [ modalVisible ] );
 
 	const getDefaultDupicateTitle = async () => {
 		const promptToDuplicate = parseInt( duplicateOf || postId );
