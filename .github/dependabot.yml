@@ -1,0 +1,20 @@
+# Dependabot config.
+# Keep NPM and Composer packages up-to-date.
+
+version: 2
+updates:
+  # Enable version updates for npm
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+    reviewers:
+      - 'Automattic/newspack-product'
+
+  # Enable version updates for Composer
+  - package-ecosystem: 'composer'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+    reviewers:
+      - 'Automattic/newspack-product'

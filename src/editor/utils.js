@@ -174,6 +174,7 @@ export const getPlacementHelpMessage = (
 	if ( isCustomPlacement( placementValue ) ) {
 		const customPlacements = window.newspack_popups_data?.custom_placements || {};
 		return sprintf(
+			// Translators: Custom placement name.
 			__(
 				'The prompt will appear where %s is inserted using the Custom Placement block.',
 				'newspack-popups'
@@ -235,6 +236,7 @@ export const getPlacementHelpMessage = (
 			);
 		case 'inline':
 			return sprintf(
+				// Translators: Trigger percentage.
 				__(
 					'The prompt will be automatically inserted about %s into article content.',
 					'newspack-popups'
@@ -244,6 +246,7 @@ export const getPlacementHelpMessage = (
 		case 'archives':
 			return archive_insertion_is_repeating
 				? sprintf(
+						// Translators: Insertion period.
 						__(
 							'The prompt will be automatically inserted every %d articles in the archive pages.',
 							'newspack-popups'
@@ -251,6 +254,7 @@ export const getPlacementHelpMessage = (
 						triggerCount
 				  )
 				: sprintf(
+						// Translators: Insertion period articles count.
 						__(
 							'The prompt will be automatically inserted after %d articles in the archive pages.',
 							'newspack-popups'
