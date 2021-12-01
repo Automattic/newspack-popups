@@ -1,3 +1,10 @@
+## [1.45.1-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.45.0...v1.45.1-alpha.1) (2021-12-01)
+
+
+### Bug Fixes
+
+* path to config file ([2758ae1](https://github.com/Automattic/newspack-popups/commit/2758ae1f7354028628b82f6a1f44c2558cf92ab8))
+
 # [1.45.0](https://github.com/Automattic/newspack-popups/compare/v1.44.0...v1.45.0) (2021-11-30)
 
 
