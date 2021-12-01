@@ -23,7 +23,7 @@ if ( ! defined( 'WP_DEBUG' ) ) {
 }
 
 $legacy_config_path = $wp_root_path . 'newspack-popups-config.php';
-$config_path        = WP_CONTENT_DIR . 'newspack-popups-config.php';
+$config_path        = rtrim( WP_CONTENT_DIR, '/' ) . '/newspack-popups-config.php';
 if ( file_exists( $legacy_config_path ) ) {
 	require_once $legacy_config_path;
 } elseif ( file_exists( $config_path ) ) {
