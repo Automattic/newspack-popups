@@ -219,12 +219,21 @@ final class Newspack_Popups_Inserter {
 
 		$parsed_blocks = self::convert_classic_blocks( parse_blocks( $content ) );
 
+		// List of blocks that require innerHTML to render content.
+		$innerhtml_blocks_names = [
+			'core/paragraph',
+			'core/heading',
+			'core/list',
+			'core/quote',
+			'core/html',
+			'core/freeform',
+		];
 		$parsed_blocks = array_values( // array_values will reindex the array.
 			// Filter out empty blocks.
 			array_filter(
 				$parsed_blocks,
-				function( $block ) {
-					return ! ( 'core/paragraph' === $block['blockName'] && empty( trim( $block['innerHTML'] ) ) );
+				function( $block ) use ( $innerhtml_blocks_names ) {
+					return ! ( in_array( $block['innerHTML'], $innerhtml_blocks_names ) && empty( trim( $block['innerHTML'] ) ) );
 				}
 			)
 		);
