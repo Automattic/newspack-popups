@@ -29,7 +29,9 @@ if ( file_exists( $legacy_config_path ) ) {
 } elseif ( file_exists( $config_path ) ) {
 	require_once $config_path;
 } else {
-	die( 'missing config file' );
+	header( 'HTTP/1.0 503 Service Unavailable' );
+	header( 'Content-Type: application/json' );
+	die( "{ error: 'missing_config_file' }" );
 }
 
 // phpcs:disable
@@ -50,6 +52,8 @@ if ( file_exists( ABSPATH . WPINC . '/wp-db.php' ) ) {
 	require_once ABSPATH . WPINC . '/wp-db.php';
 	require_once ABSPATH . WPINC . '/functions.php';
 } else {
+	header( 'HTTP/1.0 503 Service Unavailable' );
+	header( 'Content-Type: application/json' );
 	die( "{ error: 'no_wordpress' }" );
 }
 
@@ -60,8 +64,8 @@ if ( file_exists( WP_CONTENT_DIR . '/object-cache.php' ) ) {
 }
 
 global $wpdb;
-$db_prefix = defined('DB_PREFIX') ? DB_PREFIX : 'wp_';
-$wpdb = new wpdb( DB_USER, DB_PASSWORD, DB_NAME, DB_HOST );
+$db_prefix = defined( 'DB_PREFIX' ) ? DB_PREFIX : 'wp_';
+$wpdb      = new wpdb( DB_USER, DB_PASSWORD, DB_NAME, DB_HOST );
 $wpdb->set_prefix( $db_prefix );
 
 global $table_prefix;
