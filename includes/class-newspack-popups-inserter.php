@@ -233,7 +233,7 @@ final class Newspack_Popups_Inserter {
 			array_filter(
 				$parsed_blocks,
 				function( $block ) use ( $innerhtml_blocks_names ) {
-					return ! ( in_array( $block['innerHTML'], $innerhtml_blocks_names ) && empty( trim( $block['innerHTML'] ) ) );
+					return ! ( in_array( $block['blockName'], $innerhtml_blocks_names ) && empty( trim( $block['innerHTML'] ) ) );
 				}
 			)
 		);
