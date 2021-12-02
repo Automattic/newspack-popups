@@ -93,8 +93,8 @@ class ContentInsertionTest extends WP_UnitTestCase {
 				'core/paragraph',
 				'core/shortcode', // Popup 2.
 				'core/heading',
-				'core/paragraph', // Popup 3.
-				'core/shortcode',
+				'core/paragraph',
+				'core/shortcode', // Popup 3.
 			],
 			$content_with_popups,
 			'The popups are inserted into the content at expected positions.'
