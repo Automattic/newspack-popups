@@ -225,9 +225,8 @@ final class Newspack_Popups_Inserter {
 				$parsed_blocks,
 				function( $block ) {
 					$is_inner_html_empty   = 0 === strlen( trim( $block['innerHTML'] ) );
-					$is_null_block         = null === $block['blockName'];
 					$is_inner_blocks_empty = [] === $block['innerBlocks'];
-					return ! ( $is_inner_html_empty && $is_null_block && $is_inner_blocks_empty );
+					return ! ( $is_inner_html_empty && $is_inner_blocks_empty );
 				}
 			)
 		);
