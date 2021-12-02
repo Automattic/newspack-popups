@@ -228,7 +228,7 @@ final class Newspack_Popups_Inserter {
 			'core/html',
 			'core/freeform',
 		];
-		$parsed_blocks = array_values( // array_values will reindex the array.
+		$parsed_blocks          = array_values( // array_values will reindex the array.
 			// Filter out empty blocks.
 			array_filter(
 				$parsed_blocks,
