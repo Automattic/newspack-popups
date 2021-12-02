@@ -1,3 +1,10 @@
+## [1.45.2](https://github.com/Automattic/newspack-popups/compare/v1.45.1...v1.45.2) (2021-12-02)
+
+
+### Bug Fixes
+
+* stricter empty block check ([#717](https://github.com/Automattic/newspack-popups/issues/717)) ([86108a3](https://github.com/Automattic/newspack-popups/commit/86108a359bb0183c6d4df8932fba47991718f881))
+
 ## [1.45.2-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.45.1...v1.45.2-alpha.1) (2021-12-02)
 
 
