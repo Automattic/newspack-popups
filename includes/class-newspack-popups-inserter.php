@@ -220,7 +220,7 @@ final class Newspack_Popups_Inserter {
 		$parsed_blocks = self::convert_classic_blocks( parse_blocks( $content ) );
 
 		// List of blocks that require innerHTML to render content.
-		$innerhtml_blocks_names = [
+		$blocks_to_skip_empty = [
 			'core/paragraph',
 			'core/heading',
 			'core/list',
@@ -228,15 +228,15 @@ final class Newspack_Popups_Inserter {
 			'core/html',
 			'core/freeform',
 		];
-		$parsed_blocks          = array_values( // array_values will reindex the array.
+		$parsed_blocks        = array_values( // array_values will reindex the array.
 			// Filter out empty blocks.
 			array_filter(
 				$parsed_blocks,
-				function( $block ) use ( $innerhtml_blocks_names ) {
-					$null_block_name    = null === $block['blockName'];
-					$is_innerhtml_block = in_array( $block['blockName'], $innerhtml_blocks_names, true );
-					$is_empty           = empty( trim( $block['innerHTML'] ) );
-					return ! ( $is_empty && ( $null_block_name || $is_innerhtml_block ) );
+				function( $block ) use ( $blocks_to_skip_empty ) {
+					$null_block_name     = null === $block['blockName'];
+					$is_skip_empty_block = in_array( $block['blockName'], $blocks_to_skip_empty, true );
+					$is_empty            = empty( trim( $block['innerHTML'] ) );
+					return ! ( $is_empty && ( $null_block_name || $is_skip_empty_block ) );
 				}
 			)
 		);
