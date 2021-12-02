@@ -36,7 +36,7 @@ class ContentInsertionTest extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Assert that that serialized blocks match the block names.
+	 * Assert that serialized blocks match the block names.
 	 *
 	 * @param string[] $expected List of block names.
 	 * @param array    $actual   Parsed blocks for assertion.
