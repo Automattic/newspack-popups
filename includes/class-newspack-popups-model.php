@@ -507,7 +507,10 @@ final class Newspack_Popups_Model {
 	 * Get the default supported post types.
 	 */
 	public static function get_default_popup_post_types() {
-		return [ 'post', 'page' ];
+		return apply_filters(
+			'newspack_campaigns_default_supported_post_types',
+			[ 'post', 'page' ]
+		);
 	}
 
 	/**
