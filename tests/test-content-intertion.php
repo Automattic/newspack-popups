@@ -91,8 +91,8 @@ class ContentInsertionTest extends WP_UnitTestCase {
 				'core/shortcode', // Popup 1.
 				'core/image',
 				'core/paragraph',
-				'core/shortcode', // Popup 2.
 				'core/heading',
+				'core/shortcode', // Popup 2.
 				'core/paragraph',
 				'core/shortcode', // Popup 3.
 			],
