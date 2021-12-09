@@ -124,11 +124,14 @@ class E2ETest extends WP_UnitTestCase_PageWithPopups {
 		wp_set_post_terms( $original_popup_id, [ $tag_id ], 'post_tag' );
 		wp_set_post_terms( $original_popup_id, [ $campaign_id ], Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY );
 
-		$duplicate_popup_id  = Newspack_Popups::duplicate_popup( $original_popup_id );
-		$second_duplicate_id = Newspack_Popups::duplicate_popup( $duplicate_popup_id );
-		$original_popup      = get_post( $original_popup_id );
-		$duplicate_popup     = get_post( $duplicate_popup_id );
-		$second_duplicate    = get_post( $second_duplicate_id );
+		$duplicate_popup_id          = Newspack_Popups::duplicate_popup( $original_popup_id );
+		$second_duplicate_id         = Newspack_Popups::duplicate_popup( $duplicate_popup_id );
+		$duplicate_with_new_title_id = Newspack_Popups::duplicate_popup( $original_popup_id, 'Second popup' );
+		$subsequent_duplicate_id     = Newspack_Popups::duplicate_popup( $duplicate_with_new_title_id );
+
+		$original_popup   = get_post( $original_popup_id );
+		$duplicate_popup  = get_post( $duplicate_popup_id );
+		$second_duplicate = get_post( $second_duplicate_id );
 
 		self::assertEquals(
 			$duplicate_popup->post_title,
@@ -140,6 +143,12 @@ class E2ETest extends WP_UnitTestCase_PageWithPopups {
 			$second_duplicate->post_title,
 			'Popup title copy 2',
 			'Subsequent duplicates are iterated based on the original’s title.'
+		);
+
+		self::assertEquals(
+			get_the_title( $subsequent_duplicate_id ),
+			'Second popup copy',
+			'Subsequent duplicates are iterated based on their parent’s title.'
 		);
 
 		self::assertEquals(
