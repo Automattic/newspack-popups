@@ -253,9 +253,11 @@ final class Newspack_Popups_Inserter {
 					return $block_groups;
 				}
 
-				// Look up the next block to maybe include it in the group.
-				$should_block_be_grouped_with_next = ! self::can_block_be_followed_by_prompt( $block ) && $total_blocks > $block_index + 1;
-				if ( $should_block_be_grouped_with_next ) {
+				// If this block can be followed by a prompt, and/or it's the last block.
+				if ( self::can_block_be_followed_by_prompt( $block ) || $total_blocks === $block_index + 1 ) {
+					$block_groups[] = [ $block ];
+				} else {
+					// Look up the next block to maybe include it in the group.
 					$next_block   = $block;
 					$next_index   = 0;
 					$group_blocks = [];
@@ -272,8 +274,6 @@ final class Newspack_Popups_Inserter {
 					}
 
 					$block_groups[] = $group_blocks;
-				} else {
-					$block_groups[] = [ $block ];
 				}
 
 				$block_index++;
