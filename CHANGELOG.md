@@ -1,3 +1,16 @@
+# [1.46.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.45.2...v1.46.0-alpha.1) (2021-12-09)
+
+
+### Bug Fixes
+
+* archive prompt spacing ([#715](https://github.com/Automattic/newspack-popups/issues/715)) ([248c093](https://github.com/Automattic/newspack-popups/commit/248c093cf78f44500ad1e9e4802b9ce9a1d701c7)), closes [#708](https://github.com/Automattic/newspack-popups/issues/708) [#708](https://github.com/Automattic/newspack-popups/issues/708)
+* naming duplicated prompts ([#706](https://github.com/Automattic/newspack-popups/issues/706)) ([3fa3be6](https://github.com/Automattic/newspack-popups/commit/3fa3be699b688d2423cdc7fe0a3b12111a782fae))
+
+
+### Features
+
+* **api:** add HTTP reponse codes to error reponses ([7572ff2](https://github.com/Automattic/newspack-popups/commit/7572ff2a423082d046075e9bf172971e3ff678cb))
+
 ## [1.45.2](https://github.com/Automattic/newspack-popups/compare/v1.45.1...v1.45.2) (2021-12-02)
 
 
