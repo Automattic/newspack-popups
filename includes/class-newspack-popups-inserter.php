@@ -242,19 +242,37 @@ final class Newspack_Popups_Inserter {
 		);
 
 		$block_index          = 0;
+		$grouped_blocks       = [];
+		$total_blocks         = count( $parsed_blocks );
 		$parsed_blocks_groups = array_reduce(
 			$parsed_blocks,
-			function ( $block_groups, $block ) use ( &$block_index, $parsed_blocks ) {
-				// Look up the prev block to maybe include it in the group.
-				if ( 0 !== $block_index ) {
-					$prev_block                           = $parsed_blocks[ $block_index - 1 ];
-					$should_next_be_grouped_with_previous = ! self::can_block_be_followed_by_prompt( $prev_block );
-					if ( $should_next_be_grouped_with_previous ) {
-						$block_groups[] = [ $prev_block, $block ];
-					} elseif ( self::can_block_be_followed_by_prompt( $block ) ) {
-						$block_groups[] = [ $block ];
+			function ( $block_groups, $block ) use ( &$block_index, $parsed_blocks, $total_blocks, &$grouped_blocks ) {
+				// If we've already included this block in a previous group, bail early to avoid content duplication.
+				if ( in_array( $block_index, $grouped_blocks, true ) ) {
+					$block_index++;
+					return $block_groups;
+				}
+
+				// Look up the next block to maybe include it in the group.
+				$should_block_be_grouped_with_next = ! self::can_block_be_followed_by_prompt( $block ) && $total_blocks > $block_index + 1;
+				if ( $should_block_be_grouped_with_next ) {
+					$next_block   = $block;
+					$next_index   = 0;
+					$group_blocks = [];
+
+					// If the next block also can't be followed by a prompt, keep adding blocks to the group until we get to one that can be.
+					while (
+						! self::can_block_be_followed_by_prompt( $next_block ) &&
+						( $total_blocks > $block_index + $next_index + 1 ) // Avoid trying to get a "next" block if we've reached the end of content.
+					) {
+						$next_block       = $parsed_blocks[ $block_index + $next_index ];
+						$group_blocks[]   = $next_block;
+						$grouped_blocks[] = $block_index + $next_index;
+						$next_index       ++;
 					}
-				} elseif ( self::can_block_be_followed_by_prompt( $block ) ) {
+
+					$block_groups[] = $group_blocks;
+				} else {
 					$block_groups[] = [ $block ];
 				}
 
