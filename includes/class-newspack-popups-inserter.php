@@ -241,40 +241,41 @@ final class Newspack_Popups_Inserter {
 			)
 		);
 
-		$block_index          = 0;
-		$grouped_blocks       = [];
-		$total_blocks         = count( $parsed_blocks );
+		$block_index            = 0;
+		$grouped_blocks_indexes = [];
+		$max_index              = count( $parsed_blocks );
+
 		$parsed_blocks_groups = array_reduce(
 			$parsed_blocks,
-			function ( $block_groups, $block ) use ( &$block_index, $parsed_blocks, $total_blocks, &$grouped_blocks ) {
+			function ( $block_groups, $block ) use ( &$block_index, $parsed_blocks, $max_index, &$grouped_blocks_indexes ) {
+				$next_index = $block_index;
+
 				// If we've already included this block in a previous group, bail early to avoid content duplication.
-				if ( in_array( $block_index, $grouped_blocks, true ) ) {
+				if ( in_array( $next_index, $grouped_blocks_indexes, true ) ) {
 					$block_index++;
 					return $block_groups;
 				}
 
-				// If this block can be followed by a prompt, and/or it's the last block.
-				if ( self::can_block_be_followed_by_prompt( $block ) || $total_blocks === $block_index + 1 ) {
-					$block_groups[] = [ $block ];
-				} else {
-					// Look up the next block to maybe include it in the group.
-					$next_block   = $block;
-					$next_index   = 0;
-					$group_blocks = [];
+				// Create a group of blocks that can be followed by a prompt.
+				$next_block     = $block;
+				$group_blocks   = [];
+				$index_in_group = 0;
 
-					// If the next block also can't be followed by a prompt, keep adding blocks to the group until we get to one that can be.
-					while (
-						! self::can_block_be_followed_by_prompt( $next_block ) &&
-						( $total_blocks > $block_index + $next_index + 1 ) // Avoid trying to get a "next" block if we've reached the end of content.
-					) {
-						$next_block       = $parsed_blocks[ $block_index + $next_index ];
-						$group_blocks[]   = $next_block;
-						$grouped_blocks[] = $block_index + $next_index;
-						$next_index       ++;
-					}
-
-					$block_groups[] = $group_blocks;
+				// Insert any following blocks, which can't be followed by a prompt.
+				while ( $next_index < $max_index && ! self::can_block_be_followed_by_prompt( $next_block ) ) {
+					$next_block               = $parsed_blocks[ $next_index ];
+					$group_blocks[]           = $next_block;
+					$grouped_blocks_indexes[] = $next_index;
+					$next_index       ++;
+					$index_in_group++;
 				}
+				// Always insert the initial block in the group (if the index in group was not incremented, this is the initial block).
+				if ( 0 === $index_in_group ) {
+					$group_blocks[]           = $next_block;
+					$grouped_blocks_indexes[] = $next_index;
+				}
+
+				$block_groups[] = $group_blocks;
 
 				$block_index++;
 				return $block_groups;
