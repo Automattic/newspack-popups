@@ -43,7 +43,14 @@ class ContentInsertionTest extends WP_UnitTestCase {
 	 * @param string   $message  Message.
 	 */
 	private static function assertEqualBlockNames( $expected, $actual, $message = '' ) {
-		$actual_names = wp_list_pluck( $actual, 'blockName' );
+		$parsed_blocks = parse_blocks(
+			str_replace(
+				array( "\n", "\r" ),
+				'', 
+				$actual
+			)
+		);
+		$actual_names  = wp_list_pluck( $parsed_blocks, 'blockName' );
 		self::assertEquals( $expected, $actual_names, $message );
 	}
 
@@ -51,7 +58,7 @@ class ContentInsertionTest extends WP_UnitTestCase {
 	 * Insertion into block-based post content.
 	 */
 	public function test_insertion_into_block_content() {
-		$post_content        = '
+		$post_content = '
 <!-- wp:image {"align":"right"} -->
 <div class="wp-block-image">image</div>
 <!-- /wp:image -->
@@ -68,7 +75,7 @@ class ContentInsertionTest extends WP_UnitTestCase {
 <p>Paragraph 2</p>
 <!-- /wp:paragraph -->
 ';
-		$popups              = [
+		$popups       = [
 			// A popup before any content.
 			self::create_inline_popup( '1', '0' ),
 			// A popup that should not be inserted right after a heading.
@@ -76,16 +83,6 @@ class ContentInsertionTest extends WP_UnitTestCase {
 			// A popup after all content.
 			self::create_inline_popup( '3', '100' ),
 		];
-		$content_with_popups = parse_blocks(
-			str_replace(
-				array( "\n", "\r" ),
-				'',
-				Newspack_Popups_Inserter::insert_popups_in_post_content(
-					$post_content,
-					$popups
-				)
-			)
-		);
 		self::assertEqualBlockNames(
 			[
 				'core/shortcode', // Popup 1.
@@ -96,7 +93,10 @@ class ContentInsertionTest extends WP_UnitTestCase {
 				'core/paragraph',
 				'core/shortcode', // Popup 3.
 			],
-			$content_with_popups,
+			Newspack_Popups_Inserter::insert_popups_in_post_content(
+				$post_content,
+				$popups
+			),
 			'The popups are inserted into the content at expected positions.'
 		);
 	}
@@ -105,11 +105,11 @@ class ContentInsertionTest extends WP_UnitTestCase {
 	 * Insertion into classic (legacy) post content.
 	 */
 	public function test_insertion_into_classic_content() {
-		$post_content        = 'Paragraph 1
+		$post_content = 'Paragraph 1
 <h2>A heading</h2>
 Paragraph 2
 <blockquote>A quote</blockquote>';
-		$popups              = [
+		$popups       = [
 			// A popup before any content.
 			self::create_inline_popup( '1', '0' ),
 			// A popup that should not be inserted right after a heading.
@@ -117,12 +117,6 @@ Paragraph 2
 			// A popup after all content.
 			self::create_inline_popup( '3', '100' ),
 		];
-		$content_with_popups = parse_blocks(
-			Newspack_Popups_Inserter::insert_popups_in_post_content(
-				$post_content,
-				$popups
-			)
-		);
 		self::assertEqualBlockNames(
 			[
 				'core/shortcode', // Popup 1.
@@ -133,7 +127,10 @@ Paragraph 2
 				'core/html',
 				'core/shortcode', // Popup 3.
 			],
-			$content_with_popups,
+			Newspack_Popups_Inserter::insert_popups_in_post_content(
+				$post_content,
+				$popups
+			),
 			'The popups are inserted into the content at expected positions.'
 		);
 	}
