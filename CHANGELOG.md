@@ -1,3 +1,10 @@
+# [1.46.0-alpha.2](https://github.com/Automattic/newspack-popups/compare/v1.46.0-alpha.1...v1.46.0-alpha.2) (2021-12-10)
+
+
+### Bug Fixes
+
+* duplicated, grouped blocks ([#727](https://github.com/Automattic/newspack-popups/issues/727)) ([062be58](https://github.com/Automattic/newspack-popups/commit/062be58abad6e4cba9f050834a01885558e12d7d))
+
 # [1.46.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.45.2...v1.46.0-alpha.1) (2021-12-09)
 
 
