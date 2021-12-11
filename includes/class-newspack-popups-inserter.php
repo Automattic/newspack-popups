@@ -40,7 +40,8 @@ final class Newspack_Popups_Inserter {
 
 		// Get the previewed popup and return early.
 		if ( Newspack_Popups::previewed_popup_id() ) {
-			return [ Newspack_Popups_Model::retrieve_preview_popup( Newspack_Popups::previewed_popup_id() ) ];
+			$preview_popup = Newspack_Popups_Model::retrieve_preview_popup( Newspack_Popups::previewed_popup_id() );
+			return [ $preview_popup ];
 		}
 
 		// Popups disabled for this page.

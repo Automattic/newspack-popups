@@ -15,7 +15,7 @@ final class Newspack_Popups {
 	const NEWSPACK_POPUPS_CPT                   = 'newspack_popups_cpt';
 	const NEWSPACK_POPUPS_TAXONOMY              = 'newspack_popups_taxonomy';
 	const NEWSPACK_POPUPS_ACTIVE_CAMPAIGN_GROUP = 'newspack_popups_active_campaign_group';
-	const NEWSPACK_POPUP_PREVIEW_QUERY_PARAM    = 'newspack_popups_preview_id';
+	const NEWSPACK_POPUP_PREVIEW_QUERY_PARAM    = 'pid';
 	const NEWSPACK_POPUPS_TAXONOMY_STATUS       = 'newspack_popups_taxonomy_status';
 
 	const LIGHTWEIGHT_API_CONFIG_FILE_PATH_LEGACY = WP_CONTENT_DIR . '/../newspack-popups-config.php';
