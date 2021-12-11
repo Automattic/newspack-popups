@@ -50,8 +50,6 @@ const PreviewSetting = ( { autosavePost, isSavingPost, postId, metaFields } ) =>
 	const previewURL =
 		window.newspack_popups_data[ isArchivePagesPrompt ? 'preview_archive' : 'preview_post' ] || '/';
 
-	console.log( `${ previewURL }?${ query }` );
-
 	return (
 		<WebPreview
 			url={ `${ previewURL }?${ query }` }
