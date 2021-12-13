@@ -658,17 +658,14 @@ final class Newspack_Popups_Inserter {
 				function( $popup ) use ( $view_as_spec ) {
 					$view_as_spec    = Segmentation::parse_view_as( $view_as_spec );
 					$view_as_segment = isset( $view_as_spec['segment'] ) ? $view_as_spec['segment'] : false;
-					$view_as_prompt  = isset( $view_as_spec['campaign'] ) ? $view_as_spec['campaign'] : false;
 					$view_as_all     = isset( $view_as_spec['all'] ) && ! empty( $view_as_spec['all'] );
 
 					if ( $view_as_segment ) {
 						$segments = ! empty( $popup['options']['selected_segment_id'] ) ? explode( ',', $popup['options']['selected_segment_id'] ) : [];
 						return ( 'everyone' === $view_as_segment && empty( $segments ) ) || in_array( $view_as_segment, $segments, true );
 					} else {
-						return $view_as_all || ( $view_as_prompt && (int) $popup['id'] === (int) $view_as_prompt );
+						return $view_as_all;
 					}
-
-					return false;
 				}
 			);
 		}
