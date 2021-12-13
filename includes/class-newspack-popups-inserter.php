@@ -662,8 +662,8 @@ final class Newspack_Popups_Inserter {
 					$view_as_all     = isset( $view_as_spec['all'] ) && ! empty( $view_as_spec['all'] );
 
 					if ( $view_as_segment ) {
-						$segments = explode( ',', $popup['options']['selected_segment_id'] );
-						return 'everyone' === $view_as_segment || in_array( $view_as_segment, $segments, true );
+						$segments = ! empty( $popup['options']['selected_segment_id'] ) ? explode( ',', $popup['options']['selected_segment_id'] ) : [];
+						return ( 'everyone' === $view_as_segment && empty( $segments ) ) || in_array( $view_as_segment, $segments, true );
 					} else {
 						return $view_as_all || ( $view_as_prompt && (int) $popup['id'] === (int) $view_as_prompt );
 					}
