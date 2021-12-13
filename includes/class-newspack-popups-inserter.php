@@ -637,6 +637,42 @@ final class Newspack_Popups_Inserter {
 			'noPingback'    => true,
 		];
 
+		// If previewing a specific prompt, no need to include config for all prompts.
+		$previewed_popup_id = Newspack_Popups::previewed_popup_id();
+		if ( $previewed_popup_id ) {
+			$popups = array_filter(
+				$popups,
+				function( $popup ) use ( $previewed_popup_id ) {
+					return (int) $popup['id'] === (int) $previewed_popup_id;
+				}
+			);
+		}
+
+		// If previewing as a segment or previewing a specific prompt, no need to include config for all prompts.
+		$view_as_spec = Newspack_Popups_View_As::viewing_as_spec();
+		if ( $view_as_spec ) {
+			$popups_access_provider['authorization'] .= '&view_as=' . wp_json_encode( $view_as_spec );
+
+			$popups = array_filter(
+				$popups,
+				function( $popup ) use ( $view_as_spec ) {
+					$view_as_spec    = Segmentation::parse_view_as( $view_as_spec );
+					$view_as_segment = isset( $view_as_spec['segment'] ) ? $view_as_spec['segment'] : false;
+					$view_as_prompt  = isset( $view_as_spec['campaign'] ) ? $view_as_spec['campaign'] : false;
+					$view_as_all     = isset( $view_as_spec['all'] ) && ! empty( $view_as_spec['all'] );
+
+					if ( $view_as_segment ) {
+						$segments = explode( ',', $popup['options']['selected_segment_id'] );
+						return 'everyone' === $view_as_segment || in_array( $view_as_segment, $segments, true );
+					} else {
+						return $view_as_all || ( $view_as_prompt && (int) $popup['id'] === (int) $view_as_prompt );
+					}
+
+					return false;
+				}
+			);
+		}
+
 		$popups_configs = [];
 		foreach ( $popups as $popup ) {
 			$popups_configs[] = self::create_single_popup_access_payload( $popup );
@@ -656,7 +692,7 @@ final class Newspack_Popups_Inserter {
 			);
 		}
 
-		$settings                                 = array_reduce(
+		$settings = $previewed_popup_id ? [] : array_reduce(
 			\Newspack_Popups_Settings::get_settings(),
 			function ( $acc, $item ) {
 				$key       = $item['key'];
@@ -665,6 +701,7 @@ final class Newspack_Popups_Inserter {
 			},
 			(object) []
 		);
+
 		$popups_access_provider['authorization'] .= '&ref=DOCUMENT_REFERRER';
 		$popups_access_provider['authorization'] .= '&popups=' . wp_json_encode( $popups_configs );
 		$popups_access_provider['authorization'] .= '&settings=' . wp_json_encode( $settings );
@@ -675,10 +712,6 @@ final class Newspack_Popups_Inserter {
 				'is_post'    => is_single(),
 			]
 		);
-		$view_as_spec                             = Newspack_Popups_View_As::viewing_as_spec();
-		if ( $view_as_spec ) {
-			$popups_access_provider['authorization'] .= '&view_as=' . wp_json_encode( $view_as_spec );
-		}
 		if ( isset( $_GET['newspack-campaigns-debug'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 			$popups_access_provider['authorization'] .= '&debug';
 		}

@@ -12,38 +12,19 @@ import { __ } from '@wordpress/i18n';
 import { stringify } from 'qs';
 import { WebPreview } from 'newspack-components';
 
-// Mapping of abbreviated query string params.
-const SHORTENED_QUERY_KEYS = {
-	background_color: 'bc',
-	display_title: 'ti',
-	hide_border: 'hb',
-	dismiss_text: 'dt',
-	dismiss_text_alignment: 'da',
-	frequency: 'fr',
-	overlay_color: 'oc',
-	overlay_opacity: 'oo',
-	overlay_size: 'os',
-	placement: 'pl',
-	trigger_type: 'tt',
-	trigger_delay: 'td',
-	trigger_scroll_progress: 'ts',
-	archive_insertion_posts_count: 'ac',
-	archive_insertion_is_repeating: 'ar',
-	utm_suppression: 'ut',
-};
-
 const PreviewSetting = ( { autosavePost, isSavingPost, postId, metaFields } ) => {
-	const abbreviatedMetaFields = {};
+	const previewQueryKeys = window.newspack_popups_data?.preview_query_keys;
+	const abbreviatedKeys = {};
 	Object.keys( metaFields ).forEach( key => {
-		if ( SHORTENED_QUERY_KEYS.hasOwnProperty( key ) ) {
-			abbreviatedMetaFields[ SHORTENED_QUERY_KEYS[ key ] ] = metaFields[ key ];
+		if ( previewQueryKeys.hasOwnProperty( key ) ) {
+			abbreviatedKeys[ previewQueryKeys[ key ] ] = metaFields[ key ];
 		}
 	} );
 
 	const query = stringify( {
 		pid: postId,
 		// Autosave does not handle meta fields, so these will be passed in the URL
-		...abbreviatedMetaFields,
+		...abbreviatedKeys,
 	} );
 
 	const isArchivePagesPrompt = metaFields.placement === 'archives';
