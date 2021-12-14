@@ -70,13 +70,16 @@ final class Newspack_Popups_API {
 
 		\register_rest_route(
 			'newspack-popups/v1',
-			'/(?P<id>\d+)/duplicate',
+			'/(?P<original_id>\d+)/(?P<id>\d+)/duplicate',
 			[
 				'methods'             => \WP_REST_Server::READABLE,
 				'callback'            => [ $this, 'api_get_duplicate_title' ],
 				'permission_callback' => [ $this, 'permission_callback' ],
 				'args'                => [
-					'id' => [
+					'original_id' => [
+						'sanitize_callback' => 'absint',
+					],
+					'id'          => [
 						'sanitize_callback' => 'absint',
 					],
 				],
@@ -215,7 +218,7 @@ final class Newspack_Popups_API {
 	 * @return WP_REST_Response with complete info to render the Engagement Wizard.
 	 */
 	public function api_get_duplicate_title( $request ) {
-		$response = Newspack_Popups::get_duplicate_title( $request['id'] );
+		$response = Newspack_Popups::get_duplicate_title( $request['original_id'], $request['id'] );
 		return rest_ensure_response( $response );
 	}
 

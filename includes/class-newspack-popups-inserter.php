@@ -241,22 +241,41 @@ final class Newspack_Popups_Inserter {
 			)
 		);
 
-		$block_index          = 0;
+		$block_index            = 0;
+		$grouped_blocks_indexes = [];
+		$max_index              = count( $parsed_blocks );
+
 		$parsed_blocks_groups = array_reduce(
 			$parsed_blocks,
-			function ( $block_groups, $block ) use ( &$block_index, $parsed_blocks ) {
-				// Look up the prev block to maybe include it in the group.
-				if ( 0 !== $block_index ) {
-					$prev_block                           = $parsed_blocks[ $block_index - 1 ];
-					$should_next_be_grouped_with_previous = ! self::can_block_be_followed_by_prompt( $prev_block );
-					if ( $should_next_be_grouped_with_previous ) {
-						$block_groups[] = [ $prev_block, $block ];
-					} elseif ( self::can_block_be_followed_by_prompt( $block ) ) {
-						$block_groups[] = [ $block ];
-					}
-				} elseif ( self::can_block_be_followed_by_prompt( $block ) ) {
-					$block_groups[] = [ $block ];
+			function ( $block_groups, $block ) use ( &$block_index, $parsed_blocks, $max_index, &$grouped_blocks_indexes ) {
+				$next_index = $block_index;
+
+				// If we've already included this block in a previous group, bail early to avoid content duplication.
+				if ( in_array( $next_index, $grouped_blocks_indexes, true ) ) {
+					$block_index++;
+					return $block_groups;
 				}
+
+				// Create a group of blocks that can be followed by a prompt.
+				$next_block     = $block;
+				$group_blocks   = [];
+				$index_in_group = 0;
+
+				// Insert any following blocks, which can't be followed by a prompt.
+				while ( $next_index < $max_index && ! self::can_block_be_followed_by_prompt( $next_block ) ) {
+					$next_block               = $parsed_blocks[ $next_index ];
+					$group_blocks[]           = $next_block;
+					$grouped_blocks_indexes[] = $next_index;
+					$next_index ++;
+					$index_in_group++;
+				}
+				// Always insert the initial block in the group (if the index in group was not incremented, this is the initial block).
+				if ( 0 === $index_in_group ) {
+					$group_blocks[]           = $next_block;
+					$grouped_blocks_indexes[] = $next_index;
+				}
+
+				$block_groups[] = $group_blocks;
 
 				$block_index++;
 				return $block_groups;
@@ -449,7 +468,8 @@ final class Newspack_Popups_Inserter {
 				|| ( $popup['options']['archive_insertion_is_repeating'] && 0 === $post_count % $archive_insertion_posts_count )
 				|| ( $archive_insertion_posts_count >= $wp_query->post_count && $post_count === $wp_query->post_count )
 			) {
-				echo Newspack_Popups_Model::generate_popup( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				// Wrapping the popup in an article with `entry` class element to keep the archive page markup.
+				echo '<article class="entry">' . Newspack_Popups_Model::generate_popup( $popup ) . '</article>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			}
 		}
 	}
