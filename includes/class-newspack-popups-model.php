@@ -507,7 +507,23 @@ final class Newspack_Popups_Model {
 	 * Get the default supported post types.
 	 */
 	public static function get_default_popup_post_types() {
-		return [ 'post', 'page' ];
+		// Any custom post type that is both public and has a post type archive.
+		$public_post_types = array_values(
+			get_post_types(
+				[
+					'has_archive' => true,
+					'public'      => true,
+				]
+			)
+		);
+
+		// Default 'post' and 'page' post types actually have 'is_archive' => false, but we still want them.
+		$public_post_types = array_merge( [ 'post', 'page' ], $public_post_types );
+
+		return apply_filters(
+			'newspack_campaigns_default_supported_post_types',
+			$public_post_types
+		);
 	}
 
 	/**

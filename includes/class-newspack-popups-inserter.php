@@ -831,14 +831,6 @@ final class Newspack_Popups_Inserter {
 	 */
 	public static function should_display( $popup, $check_if_is_post = false ) {
 		$post_type = get_post_type();
-		// Inline prompts may not be rendered on pages, unless they are above-header.
-		if (
-			$check_if_is_post &&
-			'page' === $post_type &&
-			( Newspack_Popups_Model::is_inline( $popup ) && ! Newspack_Popups_Model::is_above_header( $popup ) )
-		) {
-			return false;
-		}
 
 		// Unless it's a preview request, perform some additional checks.
 		if ( ! Newspack_Popups::is_preview_request() ) {

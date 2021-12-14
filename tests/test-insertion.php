@@ -42,9 +42,9 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 		$amp_layout_elements = self::$dom_xpath->query( '//amp-layout' );
 
 		self::assertEquals(
-			0,
+			1,
 			$amp_layout_elements->length,
-			'There are no popups, since the only one available is an inline one, and this is a page.'
+			'Inserts the inline prompt on a page.'
 		);
 		self::assertContains(
 			self::$raw_post_content,
@@ -61,7 +61,7 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 		self::assertContains(
 			$overlay_content,
 			$overlay_text_content,
-			'Inserts the popup content on a page, since this is an overlay prompt.'
+			'Inserts the overlay prompt on a page.'
 		);
 	}
 
