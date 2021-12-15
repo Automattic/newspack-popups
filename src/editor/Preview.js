@@ -13,10 +13,18 @@ import { stringify } from 'qs';
 import { WebPreview } from 'newspack-components';
 
 const PreviewSetting = ( { autosavePost, isSavingPost, postId, metaFields } ) => {
+	const previewQueryKeys = window.newspack_popups_data?.preview_query_keys || {};
+	const abbreviatedKeys = {};
+	Object.keys( metaFields ).forEach( key => {
+		if ( previewQueryKeys.hasOwnProperty( key ) ) {
+			abbreviatedKeys[ previewQueryKeys[ key ] ] = metaFields[ key ];
+		}
+	} );
+
 	const query = stringify( {
-		newspack_popups_preview_id: postId,
+		pid: postId,
 		// Autosave does not handle meta fields, so these will be passed in the URL
-		...metaFields,
+		...abbreviatedKeys,
 	} );
 
 	const isArchivePagesPrompt = metaFields.placement === 'archives';

@@ -1,3 +1,15 @@
+# [1.47.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.46.0...v1.47.0-alpha.1) (2021-12-15)
+
+
+### Features
+
+* add a filter for supported post types ([#726](https://github.com/Automattic/newspack-popups/issues/726)) ([bd94d2a](https://github.com/Automattic/newspack-popups/commit/bd94d2a235ebe90896f4856e5f1e15afe53ec4bf))
+
+
+### Performance Improvements
+
+* shorten query params for preview iframe URLs ([#732](https://github.com/Automattic/newspack-popups/issues/732)) ([42af58f](https://github.com/Automattic/newspack-popups/commit/42af58f7129cfe7896fc8adde3e40dd5ff46bf82))
+
 # [1.46.0](https://github.com/Automattic/newspack-popups/compare/v1.45.2...v1.46.0) (2021-12-14)
 
 
