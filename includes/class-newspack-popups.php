@@ -15,11 +15,30 @@ final class Newspack_Popups {
 	const NEWSPACK_POPUPS_CPT                   = 'newspack_popups_cpt';
 	const NEWSPACK_POPUPS_TAXONOMY              = 'newspack_popups_taxonomy';
 	const NEWSPACK_POPUPS_ACTIVE_CAMPAIGN_GROUP = 'newspack_popups_active_campaign_group';
-	const NEWSPACK_POPUP_PREVIEW_QUERY_PARAM    = 'newspack_popups_preview_id';
+	const NEWSPACK_POPUP_PREVIEW_QUERY_PARAM    = 'pid';
 	const NEWSPACK_POPUPS_TAXONOMY_STATUS       = 'newspack_popups_taxonomy_status';
 
 	const LIGHTWEIGHT_API_CONFIG_FILE_PATH_LEGACY = WP_CONTENT_DIR . '/../newspack-popups-config.php';
 	const LIGHTWEIGHT_API_CONFIG_FILE_PATH        = WP_CONTENT_DIR . '/newspack-popups-config.php';
+
+	const PREVIEW_QUERY_KEYS = [
+		'background_color'               => 'bc',
+		'display_title'                  => 'ti',
+		'hide_border'                    => 'hb',
+		'dismiss_text'                   => 'dt',
+		'dismiss_text_alignment'         => 'da',
+		'frequency'                      => 'fr',
+		'overlay_color'                  => 'oc',
+		'overlay_opacity'                => 'oo',
+		'overlay_size'                   => 'os',
+		'placement'                      => 'pl',
+		'trigger_type'                   => 'tt',
+		'trigger_delay'                  => 'td',
+		'trigger_scroll_progress'        => 'ts',
+		'archive_insertion_posts_count'  => 'ac',
+		'archive_insertion_is_repeating' => 'ar',
+		'utm_suppression'                => 'ut',
+	];
 
 	/**
 	 * The single instance of the class.
@@ -569,7 +588,7 @@ final class Newspack_Popups {
 						'objects'
 					)
 				),
-
+				'preview_query_keys'           => self::PREVIEW_QUERY_KEYS,
 			]
 		);
 		\wp_enqueue_style(

@@ -222,22 +222,22 @@ final class Newspack_Popups_Model {
 			$post_object,
 			false,
 			[
-				'background_color'               => filter_input( INPUT_GET, 'background_color', FILTER_SANITIZE_STRING ),
-				'display_title'                  => filter_input( INPUT_GET, 'display_title', FILTER_VALIDATE_BOOLEAN ),
-				'hide_border'                    => filter_input( INPUT_GET, 'hide_border', FILTER_VALIDATE_BOOLEAN ),
-				'dismiss_text'                   => filter_input( INPUT_GET, 'dismiss_text', FILTER_SANITIZE_STRING ),
-				'dismiss_text_alignment'         => filter_input( INPUT_GET, 'dismiss_text_alignment', FILTER_SANITIZE_STRING ),
-				'frequency'                      => filter_input( INPUT_GET, 'frequency', FILTER_SANITIZE_STRING ),
-				'overlay_color'                  => filter_input( INPUT_GET, 'overlay_color', FILTER_SANITIZE_STRING ),
-				'overlay_opacity'                => filter_input( INPUT_GET, 'overlay_opacity', FILTER_SANITIZE_STRING ),
-				'overlay_size'                   => filter_input( INPUT_GET, 'overlay_size', FILTER_SANITIZE_STRING ),
-				'placement'                      => filter_input( INPUT_GET, 'placement', FILTER_SANITIZE_STRING ),
-				'trigger_type'                   => filter_input( INPUT_GET, 'trigger_type', FILTER_SANITIZE_STRING ),
-				'trigger_delay'                  => filter_input( INPUT_GET, 'trigger_delay', FILTER_SANITIZE_STRING ),
-				'trigger_scroll_progress'        => filter_input( INPUT_GET, 'trigger_scroll_progress', FILTER_SANITIZE_STRING ),
-				'archive_insertion_posts_count'  => filter_input( INPUT_GET, 'archive_insertion_posts_count', FILTER_SANITIZE_STRING ),
-				'archive_insertion_is_repeating' => filter_input( INPUT_GET, 'archive_insertion_is_repeating', FILTER_VALIDATE_BOOLEAN ),
-				'utm_suppression'                => filter_input( INPUT_GET, 'utm_suppression', FILTER_SANITIZE_STRING ),
+				'background_color'               => filter_input( INPUT_GET, 'bc', FILTER_SANITIZE_STRING ),
+				'display_title'                  => filter_input( INPUT_GET, 'ti', FILTER_VALIDATE_BOOLEAN ),
+				'hide_border'                    => filter_input( INPUT_GET, 'hb', FILTER_VALIDATE_BOOLEAN ),
+				'dismiss_text'                   => filter_input( INPUT_GET, 'dt', FILTER_SANITIZE_STRING ),
+				'dismiss_text_alignment'         => filter_input( INPUT_GET, 'da', FILTER_SANITIZE_STRING ),
+				'frequency'                      => filter_input( INPUT_GET, 'fr', FILTER_SANITIZE_STRING ),
+				'overlay_color'                  => filter_input( INPUT_GET, 'oc', FILTER_SANITIZE_STRING ),
+				'overlay_opacity'                => filter_input( INPUT_GET, 'oo', FILTER_SANITIZE_STRING ),
+				'overlay_size'                   => filter_input( INPUT_GET, 'os', FILTER_SANITIZE_STRING ),
+				'placement'                      => filter_input( INPUT_GET, 'pl', FILTER_SANITIZE_STRING ),
+				'trigger_type'                   => filter_input( INPUT_GET, 'tt', FILTER_SANITIZE_STRING ),
+				'trigger_delay'                  => filter_input( INPUT_GET, 'td', FILTER_SANITIZE_STRING ),
+				'trigger_scroll_progress'        => filter_input( INPUT_GET, 'ts', FILTER_SANITIZE_STRING ),
+				'archive_insertion_posts_count'  => filter_input( INPUT_GET, 'ac', FILTER_SANITIZE_STRING ),
+				'archive_insertion_is_repeating' => filter_input( INPUT_GET, 'ar', FILTER_VALIDATE_BOOLEAN ),
+				'utm_suppression'                => filter_input( INPUT_GET, 'ut', FILTER_SANITIZE_STRING ),
 			]
 		);
 	}
@@ -507,7 +507,23 @@ final class Newspack_Popups_Model {
 	 * Get the default supported post types.
 	 */
 	public static function get_default_popup_post_types() {
-		return [ 'post', 'page' ];
+		// Any custom post type that is both public and has a post type archive.
+		$public_post_types = array_values(
+			get_post_types(
+				[
+					'has_archive' => true,
+					'public'      => true,
+				]
+			)
+		);
+
+		// Default 'post' and 'page' post types actually have 'is_archive' => false, but we still want them.
+		$public_post_types = array_merge( [ 'post', 'page' ], $public_post_types );
+
+		return apply_filters(
+			'newspack_campaigns_default_supported_post_types',
+			$public_post_types
+		);
 	}
 
 	/**
@@ -530,7 +546,7 @@ final class Newspack_Popups_Model {
 		$campaign_post_options = self::get_popup_options( $id, $options );
 		$popup                 = [
 			'id'      => $id,
-			'status'  => $campaign_post->post_status,
+			'status'  => 'inherit' === $campaign_post->post_status ? 'preview' : $campaign_post->post_status,
 			'title'   => $campaign_post->post_title,
 			'content' => $campaign_post->post_content,
 			'options' => $campaign_post_options,
@@ -937,7 +953,7 @@ final class Newspack_Popups_Model {
 					type="hidden"
 					value="1"
 				/>
-				<button on="tap:<?php echo esc_attr( $element_id ); ?>.hide" aria-label="<?php esc_attr( $dismiss_text ); ?>" style="<?php echo esc_attr( self::container_style( $popup ) ); ?>"><?php echo esc_attr( $dismiss_text ); ?></button>
+				<button on="tap:<?php echo esc_attr( $element_id ); ?>.hide" aria-label="<?php esc_attr( $dismiss_text ); ?>" style="<?php echo esc_attr( self::container_style( $popup ) ); ?>"><?php echo esc_html( $dismiss_text ); ?></button>
 			</form>
 		<?php
 	}
@@ -1102,7 +1118,7 @@ final class Newspack_Popups_Model {
 						action-xhr="<?php echo esc_url( $endpoint ); ?>"
 						target="_top">
 						<?php echo $hidden_fields; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-						<button on="tap:<?php echo esc_attr( $element_id ); ?>.hide" class="newspack-lightbox__close" aria-label="<?php esc_html_e( 'Close Pop-up', 'newspack-popups' ); ?>" style="<?php echo esc_attr( self::container_style( $popup ) ); ?>">
+						<button on="tap:<?php echo esc_attr( $element_id ); ?>.hide" class="newspack-lightbox__close" aria-label="<?php esc_html_e( 'Close Pop-up', 'newspack-popups' ); // phpcs:ignore WordPressVIPMinimum.Security.ProperEscapingFunction.htmlAttrNotByEscHTML ?>" style="<?php echo esc_attr( self::container_style( $popup ) ); ?>">
 							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" role="img" aria-hidden="true" focusable="false"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
 						</button>
 					</form>
