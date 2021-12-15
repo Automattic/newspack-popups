@@ -953,7 +953,7 @@ final class Newspack_Popups_Model {
 					type="hidden"
 					value="1"
 				/>
-				<button on="tap:<?php echo esc_attr( $element_id ); ?>.hide" aria-label="<?php esc_attr( $dismiss_text ); ?>" style="<?php echo esc_attr( self::container_style( $popup ) ); ?>"><?php echo esc_attr( $dismiss_text ); ?></button>
+				<button on="tap:<?php echo esc_attr( $element_id ); ?>.hide" aria-label="<?php esc_attr( $dismiss_text ); ?>" style="<?php echo esc_attr( self::container_style( $popup ) ); ?>"><?php echo esc_html( $dismiss_text ); ?></button>
 			</form>
 		<?php
 	}
@@ -1118,7 +1118,7 @@ final class Newspack_Popups_Model {
 						action-xhr="<?php echo esc_url( $endpoint ); ?>"
 						target="_top">
 						<?php echo $hidden_fields; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-						<button on="tap:<?php echo esc_attr( $element_id ); ?>.hide" class="newspack-lightbox__close" aria-label="<?php esc_html_e( 'Close Pop-up', 'newspack-popups' ); ?>" style="<?php echo esc_attr( self::container_style( $popup ) ); ?>">
+						<button on="tap:<?php echo esc_attr( $element_id ); ?>.hide" class="newspack-lightbox__close" aria-label="<?php esc_html_e( 'Close Pop-up', 'newspack-popups' ); // phpcs:ignore WordPressVIPMinimum.Security.ProperEscapingFunction.htmlAttrNotByEscHTML ?>" style="<?php echo esc_attr( self::container_style( $popup ) ); ?>">
 							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" role="img" aria-hidden="true" focusable="false"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
 						</button>
 					</form>
