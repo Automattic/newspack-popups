@@ -195,7 +195,7 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 
 		$popup_content = 'Hello, world';
 		$popup_id      = self::createPopup( $popup_content, [], [ 'post_status' => 'draft' ] );
-		$preview_param = 'newspack_popups_preview_id=' . $popup_id;
+		$preview_param = 'pid=' . $popup_id;
 
 		self::renderPost( $preview_param );
 		$amp_layout_elements = self::$dom_xpath->query( '//amp-layout' );
