@@ -13,9 +13,9 @@ class ContentInsertionTest extends WP_UnitTestCase {
 
 	public function setUp() { // phpcs:ignore Squiz.Commenting.FunctionComment.Missing
 		self::$popups = [
-			self::create_inline_popup( '0' ),
-			self::create_inline_popup( '70' ),
-			self::create_inline_popup( '100' ),
+			self::create_inline_popup( 'scroll', '0' ),
+			self::create_inline_popup( 'scroll', '70' ),
+			self::create_inline_popup( 'scroll', '100' ),
 		];
 	}
 
@@ -23,15 +23,18 @@ class ContentInsertionTest extends WP_UnitTestCase {
 	/**
 	 * Create an inline popup configuration object.
 	 *
-	 * @param string $placement Placement, as percentage in content.
+	 * @param string $trigger_type Popup insertion trigger type (e.g. `scroll`).
+	 * @param string $placement Placement, as percentage or blocks count in content.
 	 */
-	private static function create_inline_popup( $placement ) {
+	private static function create_inline_popup( $trigger_type, $placement ) {
 		return [
 			'id'      => wp_rand(),
 			'content' => 'Some content.',
 			'options' => [
 				'placement'               => 'inline',
-				'trigger_scroll_progress' => $placement,
+				'trigger_type'            => $trigger_type,
+				'trigger_scroll_progress' => 'scroll' === $trigger_type ? $placement : '0',
+				'trigger_blocks_count'    => 'blocks_count' === $trigger_type ? $placement : '0',
 			],
 		];
 	}
@@ -152,9 +155,9 @@ class ContentInsertionTest extends WP_UnitTestCase {
 			Newspack_Popups_Inserter::insert_popups_in_post_content(
 				$post_content,
 				[
-					self::create_inline_popup( '24' ),
-					self::create_inline_popup( '50' ),
-					self::create_inline_popup( '60' ),
+					self::create_inline_popup( 'scroll', '24' ),
+					self::create_inline_popup( 'scroll', '50' ),
+					self::create_inline_popup( 'scroll', '60' ),
 				]
 			),
 			'The popups are inserted into the content at expected positions.'
@@ -283,11 +286,90 @@ Paragraph 2
 <blockquote>A quote</blockquote>';
 		$popups       = [
 			// A popup before any content.
-			self::create_inline_popup( '0' ),
+			self::create_inline_popup( 'scroll', '0' ),
 			// A popup that should not be inserted right after a heading.
-			self::create_inline_popup( '30' ),
+			self::create_inline_popup( 'scroll', '30' ),
 			// A popup after all content.
-			self::create_inline_popup( '100' ),
+			self::create_inline_popup( 'scroll', '100' ),
+		];
+		self::assertEqualBlockNames(
+			[
+				'core/shortcode', // Popup 1.
+				'core/html',
+				'core/shortcode', // Popup 2.
+				'core/heading',
+				'core/html',
+				'core/html',
+				'core/shortcode', // Popup 3.
+			],
+			Newspack_Popups_Inserter::insert_popups_in_post_content(
+				$post_content,
+				$popups
+			),
+			'The popups are inserted into the content at expected positions.'
+		);
+	}
+
+	/**
+	 * Insertion into block-based post content.
+	 */
+	public function test_insertion_into_block_content_based_on_blocks_count() {
+		$popups = [
+			self::create_inline_popup( 'blocks_count', '0' ),
+			self::create_inline_popup( 'blocks_count', '1' ),
+			self::create_inline_popup( 'blocks_count', '3' ),
+		];
+
+		$post_content = '
+<!-- wp:image {"align":"right"} -->
+<div class="wp-block-image">image</div>
+<!-- /wp:image -->
+
+<!-- wp:paragraph -->
+<p>Paragraph 1</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:heading -->
+<h2>A heading</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>Paragraph 2</p>
+<!-- /wp:paragraph -->
+';
+		self::assertEqualBlockNames(
+			[
+				'core/shortcode', // Popup 1.
+				'core/image',
+				'core/paragraph',
+				'core/shortcode', // Popup 2 – inserted before the heading, not after it.
+				'core/heading',
+				'core/paragraph',
+				'core/shortcode', // Popup 3.
+			],
+			Newspack_Popups_Inserter::insert_popups_in_post_content(
+				$post_content,
+				$popups
+			),
+			'The popups are inserted into the content at expected positions.'
+		);
+	}
+
+	/**
+	 * Insertion into classic (legacy) post content.
+	 */
+	public function test_insertion_into_classic_content_based_on_blocks_count() {
+		$post_content = 'Paragraph 1
+<h2>A heading</h2>
+Paragraph 2
+<blockquote>A quote</blockquote>';
+		$popups       = [
+			// A popup before any content.
+			self::create_inline_popup( 'blocks_count', '0' ),
+			// A popup that should not be inserted right after a heading.
+			self::create_inline_popup( 'blocks_count', '1' ),
+			// A popup after all content.
+			self::create_inline_popup( 'blocks_count', '4' ),
 		];
 		self::assertEqualBlockNames(
 			[
