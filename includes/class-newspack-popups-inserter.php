@@ -303,7 +303,8 @@ final class Newspack_Popups_Inserter {
 		foreach ( $popups as $popup ) {
 			if ( Newspack_Popups_Model::is_inline( $popup ) ) {
 				$percentage                = intval( $popup['options']['trigger_scroll_progress'] ) / 100;
-				$popup['precise_position'] = $total_length * $percentage;
+				$blocks_before_prompt      = intval( $popup['options']['trigger_blocks_count'] );
+				$popup['precise_position'] = 'blocks_count' === $popup['options']['trigger_type'] ? $blocks_before_prompt : $total_length * $percentage;
 				$popup['is_inserted']      = false;
 				$inline_popups[]           = $popup;
 			} elseif ( Newspack_Popups_Model::is_overlay( $popup ) ) {
@@ -320,7 +321,7 @@ final class Newspack_Popups_Inserter {
 		$pos    = 0;
 		$output = '';
 
-		foreach ( $parsed_blocks_groups as $block_group ) {
+		foreach ( $parsed_blocks_groups as $block_index => $block_group ) {
 			// Compute the length of the blocks in the group.
 			foreach ( $block_group as $block ) {
 				if ( in_array( $block['blockName'], $length_ignored_blocks ) ) {
@@ -335,7 +336,15 @@ final class Newspack_Popups_Inserter {
 			foreach ( $inline_popups as &$inline_popup ) {
 				if (
 					! $inline_popup['is_inserted'] &&
+					'scroll' === $inline_popup['options']['trigger_type'] &&
 					$pos > $inline_popup['precise_position']
+				) {
+					$output                     .= '<!-- wp:shortcode -->[newspack-popup id="' . $inline_popup['id'] . '"]<!-- /wp:shortcode -->';
+					$inline_popup['is_inserted'] = true;
+				} elseif (
+					! $inline_popup['is_inserted'] &&
+					'blocks_count' === $inline_popup['options']['trigger_type'] &&
+					$block_index >= $inline_popup['precise_position']
 				) {
 					$output                     .= '<!-- wp:shortcode -->[newspack-popup id="' . $inline_popup['id'] . '"]<!-- /wp:shortcode -->';
 					$inline_popup['is_inserted'] = true;

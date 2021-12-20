@@ -33,11 +33,12 @@ const Sidebar = ( {
 	onMetaFieldChange,
 	placement,
 	overlay_size,
+	trigger_type,
+	trigger_delay,
 	trigger_scroll_progress,
+	trigger_blocks_count,
 	archive_insertion_posts_count,
 	archive_insertion_is_repeating,
-	trigger_delay,
-	trigger_type,
 	isOverlay,
 	isInlinePlacement,
 	archive_page_types = [],
@@ -106,7 +107,11 @@ const Sidebar = ( {
 			) : (
 				<SelectControl
 					label={ __( 'Placement' ) }
-					help={ getPlacementHelpMessage( placement, trigger_scroll_progress ) }
+					help={ getPlacementHelpMessage(
+						placement,
+						trigger_scroll_progress,
+						trigger_blocks_count
+					) }
 					value={ placement }
 					onChange={ updatePlacement }
 					options={ [
@@ -156,13 +161,35 @@ const Sidebar = ( {
 				</>
 			) }
 			{ placement === 'inline' && (
-				<RangeControl
-					label={ __( 'Approximate Position (in percent)', 'newspack-popups' ) }
-					value={ trigger_scroll_progress }
-					onChange={ value => onMetaFieldChange( 'trigger_scroll_progress', value ) }
-					min={ 0 }
-					max={ 100 }
-				/>
+				<>
+					<SelectControl
+						label={ __( 'Trigger', 'newspack-popups' ) }
+						help={ __( 'The event to trigger the prompt.', 'newspack-popups' ) }
+						value={ trigger_type }
+						options={ [
+							{ label: __( 'Scroll Progress', 'newspack-popups' ), value: 'scroll' },
+							{ label: __( 'Blocks Count', 'newspack-popups' ), value: 'blocks_count' },
+						] }
+						onChange={ value => onMetaFieldChange( 'trigger_type', value ) }
+					/>
+					{ 'scroll' === trigger_type && (
+						<RangeControl
+							label={ __( 'Approximate Position (in percent)', 'newspack-popups' ) }
+							value={ trigger_scroll_progress }
+							onChange={ value => onMetaFieldChange( 'trigger_scroll_progress', value ) }
+							min={ 0 }
+							max={ 100 }
+						/>
+					) }
+					{ 'blocks_count' === trigger_type && (
+						<RangeControl
+							label={ __( 'Number of blocks before the prompt', 'newspack-popups' ) }
+							value={ trigger_blocks_count }
+							onChange={ value => onMetaFieldChange( 'trigger_blocks_count', value ) }
+							min={ 0 }
+						/>
+					) }
+				</>
 			) }
 			{ placement === 'archives' && (
 				<Fragment>

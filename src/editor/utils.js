@@ -1,4 +1,4 @@
-import { __, sprintf } from '@wordpress/i18n';
+import { __, sprintf, _n } from '@wordpress/i18n';
 
 /**
  * Data selector for popup options (stored in post meta)
@@ -19,11 +19,12 @@ export const optionsFieldsSelector = select => {
 		overlay_opacity,
 		overlay_size,
 		placement,
+		trigger_type,
+		trigger_delay,
 		trigger_scroll_progress,
+		trigger_blocks_count,
 		archive_insertion_posts_count,
 		archive_insertion_is_repeating,
-		trigger_delay,
-		trigger_type,
 		utm_suppression,
 		selected_segment_id,
 		post_types,
@@ -58,11 +59,12 @@ export const optionsFieldsSelector = select => {
 		overlay_opacity,
 		overlay_size,
 		placement,
+		trigger_type,
+		trigger_delay,
 		trigger_scroll_progress,
+		trigger_blocks_count,
 		archive_insertion_posts_count,
 		archive_insertion_is_repeating,
-		trigger_delay,
-		trigger_type,
 		utm_suppression,
 		selected_segment_id,
 		isInlinePlacement,
@@ -235,14 +237,25 @@ export const getPlacementHelpMessage = (
 				'newspack-popups'
 			);
 		case 'inline':
-			return sprintf(
-				// Translators: Trigger percentage.
-				__(
-					'The prompt will be automatically inserted about %s into article content.',
-					'newspack-popups'
-				),
-				triggerPercentage + '%'
-			);
+			return triggerCount
+				? sprintf(
+						// Translators: Trigger percentage.
+						_n(
+							'The prompt will be automatically inserted after %s block of content.',
+							'The prompt will be automatically inserted after %s blocks of content.',
+							triggerCount,
+							'newspack-popups'
+						),
+						triggerCount
+				  )
+				: sprintf(
+						// Translators: Trigger percentage.
+						__(
+							'The prompt will be automatically inserted about %s into article content.',
+							'newspack-popups'
+						),
+						triggerPercentage + '%'
+				  );
 		case 'archives':
 			return archive_insertion_is_repeating
 				? sprintf(
