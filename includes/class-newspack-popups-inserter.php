@@ -713,11 +713,14 @@ final class Newspack_Popups_Inserter {
 			$popups_access_provider['authorization'] .= '&debug';
 		}
 
-		?>
-		<script id="amp-access" type="application/json">
-			<?php echo wp_json_encode( $popups_access_provider ); ?>
-		</script>
-		<?php
+		add_filter(
+			'newspack_campaigns_amp_access_providers',
+			function( $providers_config ) use ( $popups_access_provider ) {
+				$providers_config[] = $popups_access_provider;
+				return $providers_config;
+			}
+		);
+
 	}
 
 	/**
