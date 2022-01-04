@@ -128,7 +128,7 @@
   "dependencies": {
     "@babel/runtime": "^7.16.5",
     "@wordpress/api-fetch": "^5.2.6",
-    "@wordpress/block-editor": "^8.0.5",
+    "@wordpress/block-editor": "^8.0.13",
     "@wordpress/blocks": "^11.1.4",
     "@wordpress/components": "^19.1.5",
     "@wordpress/compose": "^5.0.6",
