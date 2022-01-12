@@ -494,7 +494,7 @@ final class Newspack_Popups_Inserter {
 			wp_register_script(
 				'newspack-popups-view',
 				plugins_url( '../dist/view.js', __FILE__ ),
-				[ 'wp-dom-ready', 'wp-url' ],
+				[ 'wp-dom-ready', 'wp-url', 'mediaelement-core' ],
 				filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/view.js' ),
 				true
 			);
