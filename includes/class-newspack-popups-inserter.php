@@ -482,12 +482,19 @@ final class Newspack_Popups_Inserter {
 		if ( defined( 'IS_TEST_ENV' ) && IS_TEST_ENV ) {
 			return;
 		}
+
+		// Don't enqueue assets if prompts are disabled on this post.
+		$has_disabled_prompts = is_singular() && ! empty( get_post_meta( get_the_ID(), 'newspack_popups_has_disabled_popups', true ) );
+		if ( $has_disabled_prompts ) {
+			return;
+		}
+
 		$is_amp = function_exists( 'is_amp_endpoint' ) && is_amp_endpoint();
 		if ( ! $is_amp ) {
 			wp_register_script(
 				'newspack-popups-view',
 				plugins_url( '../dist/view.js', __FILE__ ),
-				[ 'wp-dom-ready', 'wp-url' ],
+				[ 'wp-dom-ready', 'wp-url', 'mediaelement-core' ],
 				filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/view.js' ),
 				true
 			);
