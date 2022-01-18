@@ -313,7 +313,7 @@ class Newspack_Popups_Settings {
 
 				$item          = wp_parse_args( $item, $default_setting );
 				$default_value = isset( $item['default'] ) ? $item['default'] : false;
-				$value         = get_option( $item['key'], $default_value );
+				$value         = isset( $item['value'] ) ? $item['value'] : $default_value;
 				$type          = 'select' === $item['type'] ? 'string' : $item['type'];
 				if ( false !== $value ) {
 					settype( $value, $type );
