@@ -31,12 +31,9 @@ final class Newspack_Popups_API {
 				'callback'            => [ $this, 'update_settings' ],
 				'permission_callback' => [ $this, 'permission_callback' ],
 				'args'                => [
-					'option_name'  => [
-						'validate_callback' => [ __CLASS__, 'validate_settings_option_name' ],
-						'sanitize_callback' => 'esc_attr',
-					],
-					'option_value' => [
-						'sanitize_callback' => 'esc_attr',
+					'settingsToUpdate' => [
+						'validate_callback' => [ __CLASS__, 'validate_settings' ],
+						'sanitize_callback' => [ __CLASS__, 'sanitize_array' ],
 					],
 				],
 			]
@@ -106,6 +103,45 @@ final class Newspack_Popups_API {
 	}
 
 	/**
+	 * Recursively sanitize an array of arbitrary values.
+	 *
+	 * @param array $array Array to be sanitized.
+	 * @return array Sanitized array.
+	 */
+	public static function sanitize_array( $array ) {
+		foreach ( $array as $key => $value ) {
+			if ( is_array( $value ) ) {
+				$value = self::sanitize_array( $value );
+			} elseif ( is_string( $value ) ) {
+					$value = sanitize_text_field( $value );
+			} elseif ( is_numeric( $value ) ) {
+				$value = intval( $value );
+			} else {
+				$value = boolval( $value );
+			}
+		}
+
+		return $array;
+	}
+
+	/**
+	 * Validate settings to be updated.
+	 *
+	 * @param String $settings_to_update Associative array of settings to be updated.
+	 */
+	public static function validate_settings( $settings_to_update ) {
+		$valid = true;
+
+		foreach ( $settings_to_update as $key => $value ) {
+			if ( ! self::validate_settings_option_name( $key ) ) {
+				$valid = false;
+			}
+		}
+
+		return $valid;
+	}
+
+	/**
 	 * Validate settings option key.
 	 *
 	 * @param String $key Meta key.
@@ -146,12 +182,22 @@ final class Newspack_Popups_API {
 	 * @param WP_REST_Request $request Request object.
 	 */
 	public static function update_settings( $request ) {
-		return \Newspack_Popups_Settings::set_settings(
-			[
-				'option_name'  => $request['option_name'],
-				'option_value' => $request['option_value'],
-			]
-		);
+		$settings_to_update = $request['settingsToUpdate'];
+
+		foreach ( $settings_to_update as $key => $value ) {
+			$result = \Newspack_Popups_Settings::set_settings(
+				[
+					'option_value' => $value,
+					'option_name'  => $key,
+				]
+			);
+
+			if ( is_wp_error( $result ) ) {
+				return $result;
+			}
+		}
+
+		return \Newspack_Popups_Settings::get_settings();
 	}
 
 	/**

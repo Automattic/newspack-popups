@@ -697,7 +697,7 @@ final class Newspack_Popups_Inserter {
 		}
 
 		$settings = $previewed_popup_id ? [] : array_reduce(
-			\Newspack_Popups_Settings::get_settings(),
+			\Newspack_Popups_Settings::get_settings( false, true ),
 			function ( $acc, $item ) {
 				$key       = $item['key'];
 				$acc->$key = $item['value'];
