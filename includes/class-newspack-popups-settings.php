@@ -164,6 +164,13 @@ class Newspack_Popups_Settings {
 
 	/**
 	 * Return all settings.
+	 *
+	 * @param boolean $assoc If true, return settings list as an associative array keyed by option name.
+	 *                       If false, return a flat array of settings objects.
+	 * @param boolean $get_segments If true, append segmentation info to response.
+	 *                              Used by the AMP Access request to match reader segment to prompt segment.
+	 *
+	 * @return array Array of settings objects.
 	 */
 	public static function get_settings( $assoc = false, $get_segments = false ) {
 		$donor_landing_options       = [
