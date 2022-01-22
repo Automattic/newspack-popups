@@ -107,7 +107,7 @@ class Segmentation_Client_Data extends Lightweight_API {
 								function ( $merge_field ) use ( $donor_merge_fields ) {
 									$matches = false;
 									foreach ( $donor_merge_fields as $donor_merge_field ) {
-										if ( strpos( $merge_field, $donor_merge_field ) !== false ) {
+										if ( strpos( $merge_field, trim( $donor_merge_field ) ) !== false ) {
 											$matches = true;
 										}
 									}
