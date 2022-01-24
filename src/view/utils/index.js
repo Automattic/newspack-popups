@@ -35,7 +35,7 @@ export const getClientIDValue = () => getCookies()[ 'newspack-cid' ];
 /**
  * Replace a dynamic value, like a client ID, in a string.
  *
- * @param  {string} value A string to replace value in.
+ * @param {string} value A string to replace value in.
  * @return {string} String with the value replaced.
  */
 export const substituteDynamicValue = value => {
@@ -48,7 +48,7 @@ export const substituteDynamicValue = value => {
 /**
  * Replace dynamic values in a URL.
  *
- * @param  {string} url A URL with dynamic values.
+ * @param {string} url A URL with dynamic values.
  * @return {string} URL with the values replaced.
  */
 export const parseDynamicURL = url => {
@@ -64,8 +64,8 @@ export const parseDynamicURL = url => {
  * Given a data object and a form HTML element,
  * update the data with values from the form.
  *
- * @param  {Object} data An object.
- * @param  {HTMLFormElement} formElement A form element.
+ * @param {Object}          data        An object.
+ * @param {HTMLFormElement} formElement A form element.
  * @return {Object} Updated data.
  */
 export const processFormData = ( data, formElement ) => {
@@ -86,11 +86,11 @@ export const processFormData = ( data, formElement ) => {
  * Given an amp-analytics configuration, a current url, and cookies,
  * retrieve client ID related linker param to be inserted into site cookies.
  *
- * @param  {Object} config amp-analytics configuration.
- * @param {Object} config.linkers Linkers configuration.
- * @param {Object} config.cookies Cookies configuration.
- * @param  {string} [url=window.location.href] A URL, presumably with the linker param.
- * @param  {string} [documentCookie=document.cookie] The cookie.
+ * @param {Object} config                           amp-analytics configuration.
+ * @param {Object} config.linkers                   Linkers configuration.
+ * @param {Object} config.cookies                   Cookies configuration.
+ * @param {string} [url=window.location.href]       A URL, presumably with the linker param.
+ * @param {string} [documentCookie=document.cookie] The cookie.
  * @return {Object} Cookie value and a clean URL – without the linker param.
  */
 export const getCookieValueFromLinker = (
