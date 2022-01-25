@@ -1,3 +1,10 @@
+## [1.47.1](https://github.com/Automattic/newspack-popups/compare/v1.47.0...v1.47.1) (2022-01-25)
+
+
+### Bug Fixes
+
+* view.js conflict with mediaelement.js ([#771](https://github.com/Automattic/newspack-popups/issues/771)) ([748451e](https://github.com/Automattic/newspack-popups/commit/748451e9dcae71647c831359f8d679320ef42b4c))
+
 ## [1.47.1-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.47.0...v1.47.1-alpha.1) (2022-01-24)
 
 
