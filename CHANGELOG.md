@@ -1,3 +1,10 @@
+## [1.47.2-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.47.1...v1.47.2-alpha.1) (2022-02-01)
+
+
+### Bug Fixes
+
+* **class-newspack-popups-model.php:** fire the "Form Submission" event on submit, not submit success ([#790](https://github.com/Automattic/newspack-popups/issues/790)) ([c9bfbbb](https://github.com/Automattic/newspack-popups/commit/c9bfbbb525373400b97488422f6f7549a9b87082))
+
 ## [1.47.1](https://github.com/Automattic/newspack-popups/compare/v1.47.0...v1.47.1) (2022-01-25)
 
 
