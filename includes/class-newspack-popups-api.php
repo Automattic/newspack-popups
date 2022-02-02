@@ -119,6 +119,8 @@ final class Newspack_Popups_API {
 			} else {
 				$value = boolval( $value );
 			}
+
+			$array[ $key ] = $value;
 		}
 
 		return $array;
