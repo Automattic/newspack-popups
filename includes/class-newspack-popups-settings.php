@@ -50,7 +50,9 @@ class Newspack_Popups_Settings {
 	 * @param object $options options.
 	 */
 	public static function set_settings( $options ) {
-		if ( update_option( $options['option_name'], $options['option_value'] ) ) {
+		$added = add_option( $options['option_name'], $options['option_value'] ); // Ensure the option exists before updating.
+
+		if ( $added || update_option( $options['option_name'], $options['option_value'] ) ) {
 			return true;
 		} else {
 			return new \WP_Error(
