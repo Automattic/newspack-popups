@@ -127,8 +127,6 @@ class Newspack_Popups_Settings {
 				return (float) $value;
 			case 'string':
 				return sanitize_text_field( $value );
-			case 'select':
-				return sanitize_text_field( $value );
 			default:
 				return '';
 		}
