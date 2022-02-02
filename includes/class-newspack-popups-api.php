@@ -199,7 +199,7 @@ final class Newspack_Popups_API {
 			}
 		}
 
-		return \Newspack_Popups_Settings::get_settings();
+		return \rest_ensure_response( \Newspack_Popups_Settings::get_settings() );
 	}
 
 	/**

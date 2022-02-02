@@ -14,6 +14,7 @@ import {
 	CardHeader,
 	CheckboxControl,
 	FlexBlock,
+	Notice,
 	SelectControl,
 	TextControl,
 } from '@wordpress/components';
@@ -32,22 +33,28 @@ const App = () => {
 	const [ inFlight, setInFlight ] = useState( false );
 	const [ settings, setSettings ] = useState( newspack_popups_settings );
 	const [ settingsToUpdate, setSettingsToUpdate ] = useState( {} );
+	const [ error, setError ] = useState( null );
 	const handleSettingChange = option_name => option_value => {
 		const newSettings = { ...settingsToUpdate };
 		newSettings[ option_name ] = option_value;
 		setSettingsToUpdate( newSettings );
 	};
 	const handleSave = () => {
+		setError( null );
 		setInFlight( true );
 		apiFetch( {
 			path: '/newspack-popups/v1/settings/',
 			method: 'POST',
 			data: { settingsToUpdate },
-		} ).then( response => {
-			setSettingsToUpdate( {} );
-			setSettings( response );
-			setInFlight( false );
-		} );
+		} )
+			.then( response => {
+				setSettingsToUpdate( {} );
+				setSettings( response );
+				setInFlight( false );
+			} )
+			.catch( e => {
+				setError( e.message || __( 'Error updating settings.', 'newspack-popups' ) );
+			} );
 	};
 
 	const renderSetting = setting => {
@@ -119,9 +126,14 @@ const App = () => {
 				</CardHeader>
 				<CardBody>
 					{ settings.map( renderSetting ) }
+					{ error && (
+						<Notice status="error" isDismissible={ false }>
+							{ error }
+						</Notice>
+					) }
 					<div className="newspack-popups-save">
 						<Button
-							disabled={ 0 === Object.keys( settingsToUpdate ).length }
+							disabled={ inFlight || 0 === Object.keys( settingsToUpdate ).length }
 							onClick={ handleSave }
 						>
 							{ __( 'Save', 'newspack-popups' ) }
