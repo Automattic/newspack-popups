@@ -33,16 +33,12 @@ const PreviewSetting = ( { autosavePost, isSavingPost, postId, metaFields } ) =>
 	const previewURL =
 		window.newspack_popups_data[ isArchivePagesPrompt ? 'preview_archive' : 'preview_post' ] || '/';
 
-	const decorateURL = urlToDecorate => {
-		return addQueryArgs( urlToDecorate, query );
-	};
-
 	const onWebPreviewLoad = iframeEl => {
 		if ( iframeEl ) {
 			[
 				...iframeEl.contentWindow.document.querySelectorAll( 'a[href^="' + frontendUrl + '"]' ),
 			].forEach( anchor => {
-				anchor.setAttribute( 'href', decorateURL( anchor.getAttribute( 'href' ) ) );
+				anchor.setAttribute( 'href', addQueryArgs( anchor.getAttribute( 'href' ), query ) );
 			} );
 			onLoad( iframeEl );
 		}
