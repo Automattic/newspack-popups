@@ -10,7 +10,6 @@ import { addQueryArgs } from '@wordpress/url';
 /**
  * External dependencies
  */
-import { stringify } from 'qs';
 import { WebPreview } from 'newspack-components';
 
 const PreviewSetting = ( { autosavePost, isSavingPost, postId, metaFields } ) => {
