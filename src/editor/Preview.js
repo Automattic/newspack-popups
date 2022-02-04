@@ -5,6 +5,7 @@ import { Button } from '@wordpress/components';
 import { withSelect, withDispatch } from '@wordpress/data';
 import { compose } from '@wordpress/compose';
 import { __ } from '@wordpress/i18n';
+import { addQueryArgs } from '@wordpress/url';
 
 /**
  * External dependencies
@@ -14,6 +15,8 @@ import { WebPreview } from 'newspack-components';
 
 const PreviewSetting = ( { autosavePost, isSavingPost, postId, metaFields } ) => {
 	const previewQueryKeys = window.newspack_popups_data?.preview_query_keys || {};
+	const frontendUrl = window?.newspack_popups_data?.frontend_url || '/';
+	const onLoad = () => {};
 	const abbreviatedKeys = {};
 	Object.keys( metaFields ).forEach( key => {
 		if ( previewQueryKeys.hasOwnProperty( key ) ) {
@@ -21,19 +24,35 @@ const PreviewSetting = ( { autosavePost, isSavingPost, postId, metaFields } ) =>
 		}
 	} );
 
-	const query = stringify( {
+	const query = {
 		pid: postId,
 		// Autosave does not handle meta fields, so these will be passed in the URL
 		...abbreviatedKeys,
-	} );
+	};
 
 	const isArchivePagesPrompt = metaFields.placement === 'archives';
 	const previewURL =
 		window.newspack_popups_data[ isArchivePagesPrompt ? 'preview_archive' : 'preview_post' ] || '/';
 
+	const decorateURL = urlToDecorate => {
+		return addQueryArgs( urlToDecorate, query );
+	};
+
+	const onWebPreviewLoad = iframeEl => {
+		if ( iframeEl ) {
+			[
+				...iframeEl.contentWindow.document.querySelectorAll( 'a[href^="' + frontendUrl + '"]' ),
+			].forEach( anchor => {
+				anchor.setAttribute( 'href', decorateURL( anchor.getAttribute( 'href' ) ) );
+			} );
+			onLoad( iframeEl );
+		}
+	};
+
 	return (
 		<WebPreview
-			url={ `${ previewURL }?${ query }` }
+			url={ addQueryArgs( previewURL, query ) }
+			onLoad={ onWebPreviewLoad }
 			renderButton={ ( { showPreview } ) => (
 				<Button
 					isPrimary
