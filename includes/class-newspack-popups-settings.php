@@ -50,14 +50,39 @@ class Newspack_Popups_Settings {
 	 * @param object $options options.
 	 */
 	public static function set_settings( $options ) {
-		$added = add_option( $options['option_name'], $options['option_value'] ); // Ensure the option exists before updating.
+		$settings_list = self::get_settings();
+		$option_name   = $options['option_name'];
+		$setting       = array_reduce(
+			$settings_list,
+			function( $acc, $config ) use ( $option_name ) {
+				if ( $option_name === $config['key'] ) {
+					$acc = $config;
+				}
+				return $acc;
+			},
+			false
+		);
 
-		if ( $added || update_option( $options['option_name'], $options['option_value'] ) ) {
+		if ( ! $setting ) {
+			return new \WP_Error(
+				'newspack_popups_settings_error',
+				sprintf(
+					// Translators: error message if trying to update an invalid setting key.
+					esc_html__( 'Option %s does not exist.', 'newspack-popups' ),
+					$option_name
+				)
+			);
+		}
+
+		$option_type  = 'select' === $setting['type'] ? 'string' : $setting['type'];
+		$option_value = self::sanitize_setting_option( $option_type, $options['option_value'] );
+
+		if ( update_option( $option_name, $option_value ) ) {
 			return true;
 		} else {
 			return new \WP_Error(
 				'newspack_popups_settings_error',
-				esc_html__( 'Error updating the settings.', 'newspack' )
+				esc_html__( 'Error updating the settings.', 'newspack-popups' )
 			);
 		}
 	}
