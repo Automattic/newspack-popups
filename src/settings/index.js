@@ -50,10 +50,12 @@ const App = () => {
 			.then( response => {
 				setSettingsToUpdate( {} );
 				setSettings( response );
-				setInFlight( false );
 			} )
 			.catch( e => {
 				setError( e.message || __( 'Error updating settings.', 'newspack-popups' ) );
+			} )
+			.finally( () => {
+				setInFlight( false );
 			} );
 	};
 
