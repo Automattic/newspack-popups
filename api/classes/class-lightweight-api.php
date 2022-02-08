@@ -333,7 +333,7 @@ class Lightweight_API {
 	public function get_all_clients_data() {
 		global $wpdb;
 		$events_table_name   = Segmentation::get_events_table_name();
-		$all_client_ids_rows = $wpdb->get_results( "SELECT DISTINCT client_id FROM $events_table_name" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$all_client_ids_rows = $wpdb->get_results( "SELECT DISTINCT client_id,id FROM $events_table_name ORDER BY id DESC LIMIT 1000" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$api                 = new Lightweight_API();
 		return array_reduce(
 			$all_client_ids_rows,
