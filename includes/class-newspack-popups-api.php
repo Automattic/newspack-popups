@@ -28,7 +28,7 @@ final class Newspack_Popups_API {
 			'settings',
 			[
 				'methods'             => \WP_REST_Server::EDITABLE,
-				'callback'            => [ $this, 'update_settings' ],
+				'callback'            => [ $this, 'update_settings_standalone' ],
 				'permission_callback' => [ $this, 'permission_callback' ],
 				'args'                => [
 					'settingsToUpdate' => [
@@ -180,14 +180,16 @@ final class Newspack_Popups_API {
 
 	/**
 	 * Handler for API settings update endpoint.
+	 * This endpoint is used by the standlone Settings page, which
+	 * is only used if the main Newspack plugin UI isn't available.
 	 *
 	 * @param WP_REST_Request $request Request object.
 	 */
-	public static function update_settings( $request ) {
+	public static function update_settings_standalone( $request ) {
 		$settings_to_update = $request['settingsToUpdate'];
 
 		foreach ( $settings_to_update as $key => $value ) {
-			$result = \Newspack_Popups_Settings::set_settings(
+			$result = \Newspack_Popups_Settings::set_settings_standalone(
 				[
 					'option_value' => $value,
 					'option_name'  => $key,

@@ -45,11 +45,13 @@ class Newspack_Popups_Settings {
 	}
 
 	/**
-	 * Update settings.
+	 * Update settings from the standalone Settings page.
+	 * The standalone Settings page is an alternative UI used only when the main
+	 * Newspack plugin's UI is not available.
 	 *
 	 * @param object $options options.
 	 */
-	public static function set_settings( $options ) {
+	public static function set_settings_standalone( $options ) {
 		$settings_list = self::get_settings();
 		$option_name   = $options['option_name'];
 		$setting       = array_reduce(
