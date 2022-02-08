@@ -32,6 +32,19 @@ const mapDispatchToProps = dispatch => {
 	const { createNotice, removeNotice } = dispatch( 'core/notices' );
 	return {
 		onMetaFieldChange: ( key, value ) => {
+			const customFieldLabel = document.querySelector( `input[value="${ key }"` );
+			let customFieldValue;
+
+			if ( customFieldLabel ) {
+				customFieldValue = customFieldLabel.parentElement.nextElementSibling.querySelector(
+					'textarea'
+				);
+			}
+
+			if ( customFieldValue ) {
+				customFieldValue.value = value;
+			}
+
 			dispatch( 'core/editor' ).editPost( { meta: { [ key ]: value } } );
 		},
 		createNotice,
