@@ -100,12 +100,12 @@ class Lightweight_API {
 		$valid_referers = [
 			$http_referer,
 		];
-		$http_host = ! empty( $_SERVER['HTTP_HOST'] ) ? $_SERVER['HTTP_HOST'] : null; // phpcs:ignore
+		$server_name = ! empty( $_SERVER['SERVER_NAME'] ) ? $_SERVER['SERVER_NAME'] : null; // phpcs:ignore
 		// Enable requests from AMP Cache.
 		if ( preg_match( '/\.cdn\.ampproject\.org/', $http_referer ) ) {
 			return true;
 		}
-		return ! empty( $http_referer ) && ! empty( $http_host ) && in_array( strtolower( $http_host ), $valid_referers, true );
+		return ! empty( $http_referer ) && ! empty( $server_name ) && in_array( strtolower( $server_name ), $valid_referers, true );
 	}
 
 	/**
