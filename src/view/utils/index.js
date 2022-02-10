@@ -82,6 +82,13 @@ export const processFormData = ( data, formElement ) => {
 	return data;
 };
 
+// Get the hash from a URL without any query strings.
+const getHash = url => {
+	const hash = new URL( url ).hash.split( /\?|\&/ );
+
+	return hash[ 0 ];
+};
+
 /**
  * Given an amp-analytics configuration, a current url, and cookies,
  * retrieve client ID related linker param to be inserted into site cookies.
@@ -99,13 +106,20 @@ export const getCookieValueFromLinker = (
 	documentCookie = document.cookie
 ) => {
 	let cookieValue;
-	let cleanURL;
+	let cleanURL = url;
 	if ( linkers && linkers.enabled && cookies && cookies.enabled ) {
 		const linkerName = Object.keys( linkers ).filter( k => k !== 'enabled' )[ 0 ];
 		const cookieName = Object.keys( cookies ).filter( k => k !== 'enabled' )[ 0 ];
 		const linkerParam = getQueryArg( url, linkerName );
 		const hasCIDCookie = documentCookie.indexOf( cookieName ) >= 0;
-		cleanURL = removeQueryArgs( url, linkerName );
+
+		// URLs with a hash fragment preceding a query string won't be able to extract the query string by itself.
+		// Let's remove the hash fragment before processing the query string, then add it back afterward.
+		const hash = getHash( url );
+		if ( hash ) {
+			cleanURL = url.replace( hash, '' );
+		}
+		cleanURL = removeQueryArgs( cleanURL, linkerName ) + hash;
 
 		// Strip trailing `?` character from clean URL.
 		if ( '?' === cleanURL.charAt( cleanURL.length - 1 ) ) {
