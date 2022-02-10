@@ -1,3 +1,21 @@
+# [1.48.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.47.2-alpha.1...v1.48.0-alpha.1) (2022-02-10)
+
+
+### Bug Fixes
+
+* don't strip URL query params if there's a hash in the URL ([#798](https://github.com/Automattic/newspack-popups/issues/798)) ([4deea2e](https://github.com/Automattic/newspack-popups/commit/4deea2e2218d25b9d64aac558a80502baa434ed9))
+
+
+### Features
+
+* allow admins to define merge fields for donors ([#777](https://github.com/Automattic/newspack-popups/issues/777)) ([183aa59](https://github.com/Automattic/newspack-popups/commit/183aa59ff62a042f90e0b6ddba15899b567fae07))
+* **api:** remove forcing HTTP; tweak referer verification ([5bd188b](https://github.com/Automattic/newspack-popups/commit/5bd188bd490572e5cfb158a170a2dd7535902e65))
+
+
+### Performance Improvements
+
+* **segmentation:** limit query results when fetching segmentation reach data ([#797](https://github.com/Automattic/newspack-popups/issues/797)) ([eb95a04](https://github.com/Automattic/newspack-popups/commit/eb95a04e0ebb974111e7780b8ad48c5262878314)), closes [#627](https://github.com/Automattic/newspack-popups/issues/627)
+
 ## [1.47.2-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.47.1...v1.47.2-alpha.1) (2022-02-01)
 
 
