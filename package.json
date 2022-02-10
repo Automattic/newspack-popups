@@ -3,150 +3,43 @@
   "version": "1.47.2-alpha.1",
   "main": "Gruntfile.js",
   "author": "Automattic",
-  "devDependencies": {
-    "@automattic/calypso-build": "^10.0.0",
-    "@babel/core": "^7.16.12",
-    "@babel/preset-env": "^7.16.8",
-    "@commitlint/cli": "^15.0.0",
-    "@commitlint/config-conventional": "^15.0.0",
-    "@semantic-release/changelog": "^6.0.1",
-    "@semantic-release/git": "^10.0.1",
-    "@wordpress/eslint-plugin": "^9.3.0",
-    "@wordpress/stylelint-config": "^19.1.0",
-    "babel-jest": "^27.4.6",
-    "cz-conventional-changelog": "^3.3.0",
-    "eslint": "^7.32.0",
-    "eslint-config-prettier": "^8.3.0",
-    "eslint-plugin-import": "^2.25.4",
-    "eslint-plugin-jsdoc": "^37.6.3",
-    "eslint-plugin-prettier": "^4.0.0",
-    "eslint-plugin-react": "^7.28.0",
-    "jest": "^27.4.7",
-    "lint-staged": "^12.3.1",
-    "npm-run-all": "^4.1.5",
-    "prettier": "npm:wp-prettier@2.2.1-beta-1",
-    "react": "^17.0.2",
-    "semantic-release": "^18.0.1",
-    "semantic-release-version-bump": "^1.3.0",
-    "stylelint": "^13.13.1",
-    "stylelint-config-prettier": "^9.0.3",
-    "stylelint-prettier": "^2.0.0",
-    "webpack": "^5.67.0",
-    "webpack-cli": "^4.9.1"
-  },
   "scripts": {
-    "cm": "git-cz",
-    "semantic-release": "semantic-release",
-    "start": "npm run dev",
-    "dev": "calypso-build --watch --config='./webpack.config.js'",
-    "lint": "npm-run-all --parallel lint:*",
-    "lint:js": "eslint --ext .js,.jsx src",
-    "format:js": "prettier 'src/**/*.{js,jsx}' --write",
-    "lint:scss": "stylelint \"**/*.scss\" --syntax scss",
-    "format:scss": "prettier --write 'src/**/*.scss'",
-    "lint:scss:staged": "stylelint --syntax scss",
-    "build": "calypso-build --config='./webpack.config.js'",
+    "cm": "newspack-scripts commit",
+    "semantic-release": "newspack-scripts release --files=newspack-popups.php",
+    "start": "npm ci && newspack-scripts watch",
+    "watch": "newspack-scripts watch",
+    "build": "newspack-scripts build",
     "clean": "rm -rf dist/",
+    "lint": "npm run lint:scss && npm run lint:js",
+    "lint:js": "eslint --ext .js,.jsx src",
+    "lint:js:staged": "eslint --ext .js,.jsx",
+    "lint:php:staged": "./vendor/bin/phpcs",
+    "lint:scss": "stylelint '**/*.scss' --syntax scss --config=./node_modules/newspack-scripts/config/stylelint.config.js",
+    "lint:scss:staged": "stylelint --syntax scss --config=./node_modules/newspack-scripts/config/stylelint.config.js",
+    "format:js": "prettier 'src/**/*.{js,jsx}' --write",
+    "format:scss": "prettier --write 'src/**/*.scss'",
     "release:archive": "rm -rf release && mkdir -p release && rsync -r . ./release/newspack-popups --exclude-from='./.distignore' && cd release && zip -r newspack-popups.zip newspack-popups",
     "release": "npm run build && npm run semantic-release",
-    "test": "jest"
+    "test": "newspack-scripts test"
   },
   "lint-staged": {
     "*.scss": "npm run lint:scss:staged"
   },
-  "release": {
-    "branches": [
-      "release",
-      {
-        "name": "alpha",
-        "prerelease": "alpha"
-      }
-    ],
-    "prepare": [
-      "@semantic-release/changelog",
-      "@semantic-release/npm",
-      [
-        "semantic-release-version-bump",
-        {
-          "files": "newspack-popups.php",
-          "callback": "npm run release:archive"
-        }
-      ],
-      {
-        "path": "@semantic-release/git",
-        "assets": [
-          "newspack-popups.php",
-          "package.json",
-          "package-lock.json",
-          "CHANGELOG.md"
-        ],
-        "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
-      }
-    ],
-    "plugins": [
-      "@semantic-release/commit-analyzer",
-      "@semantic-release/release-notes-generator",
-      [
-        "@semantic-release/npm",
-        {
-          "npmPublish": false
-        }
-      ],
-      "semantic-release-version-bump",
-      [
-        "@semantic-release/github",
-        {
-          "assets": [
-            {
-              "path": "./release/newspack-popups.zip",
-              "label": "newspack-popups.zip"
-            }
-          ]
-        }
-      ]
-    ]
-  },
-  "jest": {
-    "testMatch": [
-      "<rootDir>/**/*test.js?(x)",
-      "!**/.eslintrc.*"
-    ],
-    "transform": {
-      "^.+\\.js?$": "babel-jest"
-    },
-    "moduleNameMapper": {
-      "\\.(scss|css)$": "identity-obj-proxy"
-    },
-    "verbose": false,
-    "testEnvironment": "jsdom"
-  },
-  "config": {
-    "commitizen": {
-      "path": "./node_modules/cz-conventional-changelog"
-    }
-  },
   "dependencies": {
-    "@babel/runtime": "^7.16.7",
-    "@wordpress/api-fetch": "^5.2.6",
-    "@wordpress/block-editor": "^8.0.13",
-    "@wordpress/blocks": "^11.1.4",
-    "@wordpress/components": "^19.1.5",
-    "@wordpress/compose": "^5.0.6",
-    "@wordpress/data": "^6.1.4",
-    "@wordpress/dom-ready": "^3.2.3",
-    "@wordpress/edit-post": "^5.0.20",
-    "@wordpress/element": "^4.0.4",
-    "@wordpress/html-entities": "^3.2.3",
-    "@wordpress/i18n": "^4.2.4",
-    "@wordpress/icons": "^6.1.1",
-    "@wordpress/plugins": "^4.0.6",
-    "@wordpress/url": "^3.3.1",
     "classnames": "^2.3.1",
     "intersection-observer": "^0.12.0",
     "js-cookie": "^3.0.1",
     "lodash": "^4.17.21",
     "newspack-components": "^2.0.3",
-    "qs": "^6.10.2",
+    "qs": "^6.10.3",
     "whatwg-fetch": "^3.6.2"
+  },
+  "devDependencies": {
+    "@rushstack/eslint-patch": "^1.1.0",
+    "eslint": "^7.32.0",
+    "lint-staged": "^12.3.3",
+    "newspack-scripts": "^3.1.0",
+    "prettier": "npm:wp-prettier@^2.2.1-beta-1",
+    "stylelint": "^13.13.1"
   }
 }
