@@ -15,7 +15,6 @@ import { WebPreview } from 'newspack-components';
 const PreviewSetting = ( { autosavePost, isSavingPost, postId, metaFields } ) => {
 	const previewQueryKeys = window.newspack_popups_data?.preview_query_keys || {};
 	const frontendUrl = window?.newspack_popups_data?.frontend_url || '/';
-	const onLoad = () => {};
 	const abbreviatedKeys = {};
 	Object.keys( metaFields ).forEach( key => {
 		if ( previewQueryKeys.hasOwnProperty( key ) ) {
@@ -40,7 +39,6 @@ const PreviewSetting = ( { autosavePost, isSavingPost, postId, metaFields } ) =>
 			].forEach( anchor => {
 				anchor.setAttribute( 'href', addQueryArgs( anchor.getAttribute( 'href' ), query ) );
 			} );
-			onLoad( iframeEl );
 		}
 	};
 
