@@ -569,6 +569,7 @@ final class Newspack_Popups {
 			'newspack-popups',
 			'newspack_popups_data',
 			[
+				'frontend_url'                 => get_site_url(),
 				'preview_post'                 => self::preview_post_permalink(),
 				'preview_archive'              => self::preview_archive_permalink(),
 				'segments'                     => Newspack_Popups_Segmentation::get_segments(),
