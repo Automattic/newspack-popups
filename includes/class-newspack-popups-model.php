@@ -366,8 +366,21 @@ final class Newspack_Popups_Model {
 			'excluded_tags'                  => get_post_meta( $id, 'excluded_tags', true ),
 		];
 
+		// Remove empty options, except for those whose value might actually be 0.
+		$filtered_options = array_filter(
+			$post_options,
+			function( $value, $key ) {
+				if ( 'overlay_opacity' === $key ) {
+					return true;
+				}
+
+				return ! empty( $value );
+			},
+			ARRAY_FILTER_USE_BOTH
+		);
+
 		return wp_parse_args(
-			array_filter( $post_options ),
+			$filtered_options,
 			[
 				'background_color'               => '#FFFFFF',
 				'display_title'                  => false,
