@@ -368,8 +368,21 @@ final class Newspack_Popups_Model {
 			'excluded_tags'                  => get_post_meta( $id, 'excluded_tags', true ),
 		];
 
+		// Remove empty options, except for those whose value might actually be 0.
+		$filtered_options = array_filter(
+			$post_options,
+			function( $value, $key ) {
+				if ( 'overlay_opacity' === $key ) {
+					return true;
+				}
+
+				return ! empty( $value );
+			},
+			ARRAY_FILTER_USE_BOTH
+		);
+
 		return wp_parse_args(
-			array_filter( $post_options ),
+			$filtered_options,
 			[
 				'background_color'               => '#FFFFFF',
 				'display_title'                  => false,
@@ -878,7 +891,7 @@ final class Newspack_Popups_Model {
 
 		if ( $has_form ) {
 			$analytics_events[] = [
-				'amp_on'     => 'amp-form-submit-success',
+				'amp_on'     => 'amp-form-submit',
 				'on'         => 'submit',
 				'element'    => '#' . esc_attr( $element_id ) . ' form:not(.' . self::get_form_class( 'action', $element_id ) . ')', // Not an 'action' (dismissal) form.
 				'event_name' => __( 'Form Submission', 'newspack-popups' ),
@@ -1264,7 +1277,7 @@ final class Newspack_Popups_Model {
 	 * @return string Endpoint URL.
 	 */
 	public static function get_reader_endpoint() {
-		return str_replace( 'http:', 'https:', plugins_url( '../api/campaigns/index.php', __FILE__ ) );
+		return plugins_url( '../api/campaigns/index.php', __FILE__ );
 	}
 
 	/**

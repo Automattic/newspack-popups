@@ -132,7 +132,7 @@ const Sidebar = props => {
 					<SelectControl
 						label={ __( 'Trigger', 'newspack-popups' ) }
 						help={ __( 'The event to trigger the prompt.', 'newspack-popups' ) }
-						selected={ trigger_type }
+						value={ trigger_type }
 						options={ [
 							{ label: __( 'Timer', 'newspack-popups' ), value: 'time' },
 							{ label: __( 'Scroll Progress', 'newspack-popups' ), value: 'scroll' },
