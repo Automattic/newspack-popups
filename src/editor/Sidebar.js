@@ -163,11 +163,11 @@ const Sidebar = ( {
 			{ placement === 'inline' && (
 				<>
 					<SelectControl
-						label={ __( 'Trigger', 'newspack-popups' ) }
-						help={ __( 'The event to trigger the prompt.', 'newspack-popups' ) }
+						label={ __( 'Insertion position', 'newspack-popups' ) }
+						help={ __( 'The position at which to insert the prompt.', 'newspack-popups' ) }
 						value={ trigger_type }
 						options={ [
-							{ label: __( 'Scroll Progress', 'newspack-popups' ), value: 'scroll' },
+							{ label: __( 'Percentage', 'newspack-popups' ), value: 'scroll' },
 							{ label: __( 'Blocks Count', 'newspack-popups' ), value: 'blocks_count' },
 						] }
 						onChange={ value => onMetaFieldChange( 'trigger_type', value ) }

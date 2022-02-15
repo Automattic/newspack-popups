@@ -155,6 +155,7 @@ final class Newspack_Popups {
 
 		\register_meta(
 			'post',
+			// Not really a "trigger", since this meta applies only to inline prompts. Keeping the "trigger"-based naming for consistency.
 			'trigger_blocks_count',
 			[
 				'object_subtype' => self::NEWSPACK_POPUPS_CPT,
