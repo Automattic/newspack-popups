@@ -161,19 +161,10 @@ export const isOverlay = placementValue => {
 /**
  * Given a placement value, construct a context-sensitive help message to display in the editor sidebar.
  *
- * @param {string} placementValue Placement of the prompt.
- * @param {number|string} triggerPercentage Insertion percentage, for inline prompts.
- * @param {number|string} triggerCount Insertion posts count, for archives prompts.
- * @param {boolean} archive_insertion_is_repeating Repeat prompt every {triggerCount}, for archives prompts.
  * @return {string} An appropriate help message.
  */
-export const getPlacementHelpMessage = (
-	placementValue,
-	triggerPercentage = 0,
-	triggerCount = 0,
-	archive_insertion_is_repeating = false
-) => {
-	if ( isCustomPlacement( placementValue ) ) {
+export const getPlacementHelpMessage = props => {
+	if ( isCustomPlacement( props.placement ) ) {
 		const customPlacements = window.newspack_popups_data?.custom_placements || {};
 		return sprintf(
 			// Translators: Custom placement name.
@@ -181,11 +172,11 @@ export const getPlacementHelpMessage = (
 				'The prompt will appear where %s is inserted using the Custom Placement block.',
 				'newspack-popups'
 			),
-			customPlacements[ placementValue ] || __( 'this custom placement', 'newspack-popups' )
+			customPlacements[ props.placement ] || __( 'this custom placement', 'newspack-popups' )
 		);
 	}
 
-	switch ( placementValue ) {
+	switch ( props.placement ) {
 		case 'center':
 			return __(
 				'The prompt will be displayed as an overlay at the center of the viewport.',
@@ -237,34 +228,34 @@ export const getPlacementHelpMessage = (
 				'newspack-popups'
 			);
 		case 'inline':
-			return triggerCount
+			return props.trigger_type === 'blocks_count'
 				? sprintf(
-						// Translators: Trigger percentage.
+						// Translators: Blocks count until insertion.
 						_n(
 							'The prompt will be automatically inserted after %s block of content.',
 							'The prompt will be automatically inserted after %s blocks of content.',
-							triggerCount,
+							props.trigger_blocks_count,
 							'newspack-popups'
 						),
-						triggerCount
+						props.trigger_blocks_count
 				  )
 				: sprintf(
-						// Translators: Trigger percentage.
+						// Translators: Article percentage count until insertion.
 						__(
 							'The prompt will be automatically inserted about %s into article content.',
 							'newspack-popups'
 						),
-						triggerPercentage + '%'
+						props.trigger_scroll_progress + '%'
 				  );
 		case 'archives':
-			return archive_insertion_is_repeating
+			return props.archive_insertion_is_repeating
 				? sprintf(
 						// Translators: Insertion period.
 						__(
 							'The prompt will be automatically inserted every %d articles in the archive pages.',
 							'newspack-popups'
 						),
-						triggerCount
+						props.archive_insertion_posts_count
 				  )
 				: sprintf(
 						// Translators: Insertion period articles count.
@@ -272,7 +263,7 @@ export const getPlacementHelpMessage = (
 							'The prompt will be automatically inserted after %d articles in the archive pages.',
 							'newspack-popups'
 						),
-						triggerCount
+						props.archive_insertion_posts_count
 				  );
 		case 'manual':
 			return __(

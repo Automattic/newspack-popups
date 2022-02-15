@@ -26,23 +26,24 @@ import { without } from 'lodash';
 import { isCustomPlacement, getPlacementHelpMessage } from '../editor/utils';
 import PositionPlacementControl from './PositionPlacementControl';
 
-const Sidebar = ( {
-	display_title,
-	hide_border,
-	frequency,
-	onMetaFieldChange,
-	placement,
-	overlay_size,
-	trigger_type,
-	trigger_delay,
-	trigger_scroll_progress,
-	trigger_blocks_count,
-	archive_insertion_posts_count,
-	archive_insertion_is_repeating,
-	isOverlay,
-	isInlinePlacement,
-	archive_page_types = [],
-} ) => {
+const Sidebar = props => {
+	const {
+		display_title,
+		hide_border,
+		frequency,
+		onMetaFieldChange,
+		placement,
+		overlay_size,
+		trigger_type,
+		trigger_delay,
+		trigger_scroll_progress,
+		trigger_blocks_count,
+		archive_insertion_posts_count,
+		archive_insertion_is_repeating,
+		isOverlay,
+		isInlinePlacement,
+		archive_page_types = [],
+	} = props;
 	const updatePlacement = value => {
 		onMetaFieldChange( 'placement', value );
 		if ( ! isInlinePlacement( value ) && frequency === 'always' ) {
@@ -75,6 +76,8 @@ const Sidebar = ( {
 	const popupSizeOptions = window.newspack_popups_data?.popup_size_options || {};
 	const availableArchivePageTypes = window.newspack_popups_data?.available_archive_page_types || [];
 
+	const helpMessage = getPlacementHelpMessage( props );
+
 	return (
 		<>
 			<RadioControl
@@ -98,7 +101,7 @@ const Sidebar = ( {
 					<PositionPlacementControl
 						layout={ placement }
 						label={ __( 'Position', 'newspack-popups' ) }
-						help={ getPlacementHelpMessage( placement, trigger_scroll_progress ) }
+						help={ helpMessage }
 						value={ placement }
 						onChange={ updatePlacement }
 						size={ overlay_size }
@@ -107,11 +110,7 @@ const Sidebar = ( {
 			) : (
 				<SelectControl
 					label={ __( 'Placement' ) }
-					help={ getPlacementHelpMessage(
-						placement,
-						trigger_scroll_progress,
-						trigger_blocks_count
-					) }
+					help={ helpMessage }
 					value={ placement }
 					onChange={ updatePlacement }
 					options={ [
