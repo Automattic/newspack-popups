@@ -76,8 +76,8 @@ final class Newspack_Popups {
 			add_action( 'customize_controls_enqueue_scripts', [ __CLASS__, 'enqueue_customizer_assets' ] );
 			add_filter( 'display_post_states', [ __CLASS__, 'display_post_states' ], 10, 2 );
 			add_action( 'save_post_' . self::NEWSPACK_POPUPS_CPT, [ __CLASS__, 'popup_default_fields' ], 10, 3 );
-			add_action( 'transition_post_status', [ __CLASS__, 'remove_default_category' ], 10, 3 );
-
+			add_action( 'transition_post_status', [ __CLASS__, 'prevent_default_category_on_publish' ], 10, 3 );
+			add_filter( 'delete_category', [ __CLASS__, 'prevent_default_category_on_term_delete' ] );
 			add_filter( 'show_admin_bar', [ __CLASS__, 'show_admin_bar' ], 10, 2 ); // phpcs:ignore WordPressVIPMinimum.UserExperience.AdminBarRemoval.RemovalDetected
 
 			include_once dirname( __FILE__ ) . '/class-newspack-popups-model.php';
@@ -942,20 +942,57 @@ final class Newspack_Popups {
 	}
 
 	/**
+	 * Remove the default category from the given post, if it's the only category applied to that post.
+	 *
+	 * @param int $post_id ID of the post.
+	 */
+	private static function remove_default_category( $post_id ) {
+		$default_category_id = (int) get_option( 'default_category', false );
+		$post_categories     = wp_get_post_categories( $post_id );
+		if ( 1 === count( $post_categories ) && reset( $post_categories ) === $default_category_id ) {
+			wp_remove_object_terms( $post_id, $default_category_id, 'category' );
+		}
+	}
+
+	/**
 	 * Prevent setting the default category when publishing.
 	 *
 	 * @param string $new_status New status.
 	 * @param string $old_status Old status.
 	 * @param bool   $post Post.
 	 */
-	public static function remove_default_category( $new_status, $old_status, $post ) {
+	public static function prevent_default_category_on_publish( $new_status, $old_status, $post ) {
 		if ( self::NEWSPACK_POPUPS_CPT === $post->post_type && 'publish' !== $old_status && 'publish' === $new_status ) {
-			$default_category_id = (int) get_option( 'default_category', false );
-			$popup_has_category  = has_category( $default_category_id, $post->ID );
-			if ( $popup_has_category ) {
-				wp_remove_object_terms( $post->ID, $default_category_id, 'category' );
-			}
+			self::remove_default_category( $post->ID );
 		}
+	}
+
+	/**
+	 * When a category is deleted, any posts that have only that category assigned
+	 * are automatically assigned the site's default category (usually "Uncategorized").
+	 * We want to prevent this behavior for prompts, as prompts with the default
+	 * category will only appear on posts with that category.
+	 *
+	 * @return int The number of prompts affected by this callback.
+	 */
+	public static function prevent_default_category_on_term_delete() {
+		$prompts_updated          = 0;
+		$default_category_id      = (int) get_option( 'default_category', false );
+		$default_category_prompts = get_posts(
+			[
+				'cat'            => $default_category_id,
+				'post_status'    => 'any',
+				'post_type'      => self::NEWSPACK_POPUPS_CPT,
+				'posts_per_page' => 100, // Assumes a site won't have more than 100 prompts.
+			]
+		);
+
+		foreach ( $default_category_prompts as $prompt ) {
+			self::remove_default_category( $prompt->ID );
+			$prompts_updated ++;
+		}
+
+		return $prompts_updated;
 	}
 
 	/**
