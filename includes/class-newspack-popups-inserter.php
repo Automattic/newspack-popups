@@ -216,7 +216,12 @@ final class Newspack_Popups_Inserter {
 		// For certain types of blocks, their innerHTML is not a good representation of the length of their content.
 		// For example, slideshows may have an arbitrary amount of slide content, but only show one slide at a time.
 		// For these blocks, let's ignore their length for purposes of inserting prompts.
-		$length_ignored_blocks = [ 'jetpack/slideshow', 'newspack-blocks/carousel', 'newspack-popups/single-prompt' ];
+		$length_ignored_blocks = [
+			'jetpack/slideshow',
+			'newspack-blocks/carousel',
+			'newspack-popups/single-prompt',
+			'core/group',
+		];
 
 		$parsed_blocks = self::convert_classic_blocks( parse_blocks( $content ) );
 
