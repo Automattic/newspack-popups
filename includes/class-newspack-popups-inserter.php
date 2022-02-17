@@ -339,18 +339,18 @@ final class Newspack_Popups_Inserter {
 
 			// Inject prompts before the group.
 			foreach ( $inline_popups as &$inline_popup ) {
-				if (
-					! $inline_popup['is_inserted'] &&
-					'scroll' === $inline_popup['options']['trigger_type'] &&
-					$pos > $inline_popup['precise_position']
-				) {
-					$output                     .= '<!-- wp:shortcode -->[newspack-popup id="' . $inline_popup['id'] . '"]<!-- /wp:shortcode -->';
-					$inline_popup['is_inserted'] = true;
-				} elseif (
-					! $inline_popup['is_inserted'] &&
-					'blocks_count' === $inline_popup['options']['trigger_type'] &&
-					$block_index >= $inline_popup['precise_position']
-				) {
+				if ( $inline_popup['is_inserted'] ) {
+					// Skip if already inserted.
+					continue;
+				}
+
+				$position          = $inline_popup['precise_position'];
+				$trigger_type      = $inline_popup['options']['trigger_type'];
+				$insert_at_zero    = 0 === $position; // If the position is 0, the prompt should always appear first.
+				$insert_for_scroll = 'scroll' === $trigger_type && $pos > $position;
+				$insert_for_blocks = 'blocks_count' === $trigger_type && $block_index >= $position;
+
+				if ( $insert_at_zero || $insert_for_scroll || $insert_for_blocks ) {
 					$output                     .= '<!-- wp:shortcode -->[newspack-popup id="' . $inline_popup['id'] . '"]<!-- /wp:shortcode -->';
 					$inline_popup['is_inserted'] = true;
 				}
