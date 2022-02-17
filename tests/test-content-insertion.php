@@ -388,4 +388,62 @@ Paragraph 2
 			'The popups are inserted into the content at expected positions.'
 		);
 	}
+
+	/**
+	 * Test prompt insertion at 0% with a single Group block.
+	 * Group blocks are treated as single blocks to provide editors with a way
+	 * to prevent prompt insertion between specific bits of content.
+	 */
+	public function test_prompt_insertion_zero_group() {
+		$post_content = '
+<!-- wp:group -->
+<div class="wp-block-group"><!-- wp:paragraph -->
+<p>Paragraph 1</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>Paragraph 2</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>Paragraph 3</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:group -->
+<div class="wp-block-group"><!-- wp:heading -->
+<h2 id="inner-group">Inner group</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>Inner Paragraph 1</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>Inner Paragraph 2</p>
+<!-- /wp:paragraph --></div>
+<!-- /wp:group -->
+
+<!-- wp:paragraph -->
+<p>Paragraph 4</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>Paragraph 5</p>
+<!-- /wp:paragraph --></div>
+<!-- /wp:group -->';
+
+		self::assertEqualBlockNames(
+			[
+				'core/shortcode', // Popup 1 - inserted before the group block.
+				'core/group',
+				'core/shortcode', // Popup 2 - inserted after the group block.
+				'core/shortcode', // Popup 3.
+			],
+			Newspack_Popups_Inserter::insert_popups_in_post_content(
+				$post_content,
+				self::$popups
+			),
+			'The popups are inserted into the content at expected positions.'
+		);
+	}
 }
