@@ -207,6 +207,45 @@ final class Newspack_Popups_Inserter {
 	}
 
 	/**
+	 * Get content from a given block's inner blocks, and recursively from those blocks' inner blocks.
+	 *
+	 * @param object $block A block.
+	 *
+	 * @return string The block's inner content.
+	 */
+	public static function get_inner_block_content( $block ) {
+		$inner_block_content = '';
+
+		if ( 0 < count( $block['innerBlocks'] ) ) {
+			foreach ( $block['innerBlocks'] as $inner_block ) {
+				$inner_block_content .= $inner_block['innerHTML'];
+
+				// Recursively get content from nested inner blocks.
+				if ( 0 < count( $inner_block['innerBlocks'] ) ) {
+					$inner_block_content .= self::get_inner_block_content( $inner_block );
+				}
+			}
+		}
+
+		return $inner_block_content;
+	}
+
+	/**
+	 * Get content from given block, including content from the block's inner blocks, if any.
+	 *
+	 * @param object $block A block.
+	 *
+	 * @return string The block's content.
+	 */
+	public static function get_block_content( $block ) {
+		$is_classic_block = null === $block['blockName'] || 'core/freeform' === $block['blockName']; // Classic block doesn't have a block name.
+		$block_content    = $is_classic_block ? force_balance_tags( wpautop( $block['innerHTML'] ) ) : $block['innerHTML'];
+		$block_content   .= self::get_inner_block_content( $block );
+
+		return $block_content;
+	}
+
+	/**
 	 * Insert popups in a post content.
 	 *
 	 * @param string $content The post content.
@@ -216,12 +255,7 @@ final class Newspack_Popups_Inserter {
 		// For certain types of blocks, their innerHTML is not a good representation of the length of their content.
 		// For example, slideshows may have an arbitrary amount of slide content, but only show one slide at a time.
 		// For these blocks, let's ignore their length for purposes of inserting prompts.
-		$length_ignored_blocks = [
-			'jetpack/slideshow',
-			'newspack-blocks/carousel',
-			'newspack-popups/single-prompt',
-			'core/group',
-		];
+		$length_ignored_blocks = [ 'jetpack/slideshow', 'newspack-blocks/carousel', 'newspack-popups/single-prompt' ];
 
 		$parsed_blocks = self::convert_classic_blocks( parse_blocks( $content ) );
 
@@ -296,9 +330,8 @@ final class Newspack_Popups_Inserter {
 				// Give length-ignored blocks a length of 1 so that prompts at 0% can still be inserted before them.
 				$total_length++;
 			} else {
-				$is_classic_block = null === $block['blockName'] || 'core/freeform' === $block['blockName']; // Classic block doesn't have a block name.
-				$block_content    = $is_classic_block ? force_balance_tags( wpautop( $block['innerHTML'] ) ) : $block['innerHTML'];
-				$total_length    += strlen( wp_strip_all_tags( $block_content ) );
+				$block_content = self::get_block_content( $block );
+				$total_length += strlen( wp_strip_all_tags( $block_content ) );
 			}
 		}
 
