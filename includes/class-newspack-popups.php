@@ -980,10 +980,14 @@ final class Newspack_Popups {
 		$default_category_id      = (int) get_option( 'default_category', false );
 		$default_category_prompts = get_posts(
 			[
-				'cat'            => $default_category_id,
 				'post_status'    => 'any',
 				'post_type'      => self::NEWSPACK_POPUPS_CPT,
 				'posts_per_page' => -1,
+				'tax_query'      => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+					'taxonomy'         => 'category',
+					'terms'            => $default_category_id,
+					'include_children' => false,
+				],
 			]
 		);
 
