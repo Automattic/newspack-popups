@@ -159,10 +159,10 @@ export const isOverlay = placementValue => {
 /**
  * Given a placement value, construct a context-sensitive help message to display in the editor sidebar.
  *
- * @param {string} placementValue Placement of the prompt.
- * @param {number|string} triggerPercentage Insertion percentage, for inline prompts.
- * @param {number|string} triggerCount Insertion posts count, for archives prompts.
- * @param {boolean} archive_insertion_is_repeating Repeat prompt every {triggerCount}, for archives prompts.
+ * @param {string}        placementValue                 Placement of the prompt.
+ * @param {number|string} triggerPercentage              Insertion percentage, for inline prompts.
+ * @param {number|string} triggerCount                   Insertion posts count, for archives prompts.
+ * @param {boolean}       archive_insertion_is_repeating Repeat prompt every {triggerCount}, for archives prompts.
  * @return {string} An appropriate help message.
  */
 export const getPlacementHelpMessage = (
