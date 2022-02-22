@@ -983,7 +983,7 @@ final class Newspack_Popups {
 				'cat'            => $default_category_id,
 				'post_status'    => 'any',
 				'post_type'      => self::NEWSPACK_POPUPS_CPT,
-				'posts_per_page' => 100, // Assumes a site won't have more than 100 prompts.
+				'posts_per_page' => -1,
 			]
 		);
 
