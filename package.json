@@ -1,6 +1,6 @@
 {
   "name": "newspack-popups",
-  "version": "1.48.0-alpha.1",
+  "version": "1.48.0",
   "main": "Gruntfile.js",
   "author": "Automattic",
   "scripts": {
