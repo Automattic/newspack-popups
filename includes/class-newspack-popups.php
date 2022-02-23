@@ -77,7 +77,7 @@ final class Newspack_Popups {
 			add_filter( 'display_post_states', [ __CLASS__, 'display_post_states' ], 10, 2 );
 			add_action( 'save_post_' . self::NEWSPACK_POPUPS_CPT, [ __CLASS__, 'popup_default_fields' ], 10, 3 );
 			add_action( 'transition_post_status', [ __CLASS__, 'prevent_default_category_on_publish' ], 10, 3 );
-			add_filter( 'pre_delete_term', [ __CLASS__, 'prevent_default_category_on_term_delete' ], 10, 2 );
+			add_action( 'pre_delete_term', [ __CLASS__, 'prevent_default_category_on_term_delete' ], 10, 2 );
 			add_filter( 'show_admin_bar', [ __CLASS__, 'show_admin_bar' ], 10, 2 ); // phpcs:ignore WordPressVIPMinimum.UserExperience.AdminBarRemoval.RemovalDetected
 
 			include_once dirname( __FILE__ ) . '/class-newspack-popups-model.php';
@@ -947,8 +947,12 @@ final class Newspack_Popups {
 	 * @param int $post_id ID of the post.
 	 */
 	private static function remove_default_category( $post_id ) {
-		$default_category_id = (int) get_option( 'default_category', false );
-		$post_categories     = wp_get_post_categories( $post_id );
+		$default_category_id = (int) get_option( 'default_category', 0 );
+		if ( empty( $default_category_id ) ) {
+			return;
+		}
+
+		$post_categories = wp_get_post_categories( $post_id );
 		if ( 1 === count( $post_categories ) && reset( $post_categories ) === $default_category_id ) {
 			wp_remove_object_terms( $post_id, $default_category_id, 'category' );
 		}
@@ -984,8 +988,8 @@ final class Newspack_Popups {
 			return false;
 		}
 
-		$default_category_id = (int) get_option( 'default_category', false );
-		if ( false === $default_category_id ) {
+		$default_category_id = (int) get_option( 'default_category', 0 );
+		if ( empty( $default_category_id ) ) {
 			return false;
 		}
 
