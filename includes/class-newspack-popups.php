@@ -990,7 +990,7 @@ final class Newspack_Popups {
 
 		$default_category_id = (int) get_option( 'default_category', 0 );
 		if ( empty( $default_category_id ) ) {
-			return false;
+			return;
 		}
 
 		$prompts_with_deleted_category = get_posts(
@@ -1005,7 +1005,7 @@ final class Newspack_Popups {
 		);
 
 		if ( empty( $prompts_with_deleted_category ) ) {
-			return false;
+			return;
 		}
 
 		// When the default category is assigned to a prompt and it wasn't previously assigned, remove it.
@@ -1025,8 +1025,6 @@ final class Newspack_Popups {
 			10,
 			4
 		);
-
-		return true;
 	}
 
 	/**
