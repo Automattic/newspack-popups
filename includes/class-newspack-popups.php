@@ -77,7 +77,7 @@ final class Newspack_Popups {
 			add_filter( 'display_post_states', [ __CLASS__, 'display_post_states' ], 10, 2 );
 			add_action( 'save_post_' . self::NEWSPACK_POPUPS_CPT, [ __CLASS__, 'popup_default_fields' ], 10, 3 );
 			add_action( 'transition_post_status', [ __CLASS__, 'prevent_default_category_on_publish' ], 10, 3 );
-			add_filter( 'delete_category', [ __CLASS__, 'prevent_default_category_on_term_delete' ] );
+			add_filter( 'pre_delete_term', [ __CLASS__, 'prevent_default_category_on_term_delete' ], 10, 2 );
 			add_filter( 'show_admin_bar', [ __CLASS__, 'show_admin_bar' ], 10, 2 ); // phpcs:ignore WordPressVIPMinimum.UserExperience.AdminBarRemoval.RemovalDetected
 
 			include_once dirname( __FILE__ ) . '/class-newspack-popups-model.php';
@@ -973,30 +973,52 @@ final class Newspack_Popups {
 	 * We want to prevent this behavior for prompts, as prompts with the default
 	 * category will only appear on posts with that category.
 	 *
+	 * @param int    $deleted_term ID of the term being deleted.
+	 * @param string $taxonomy Name of the taxonomy the term belongs to.
+	 *
 	 * @return int The number of prompts affected by this callback.
 	 */
-	public static function prevent_default_category_on_term_delete() {
-		$prompts_updated          = 0;
-		$default_category_id      = (int) get_option( 'default_category', false );
-		$default_category_prompts = get_posts(
+	public static function prevent_default_category_on_term_delete( $deleted_term, $taxonomy ) {
+		// We only care about categories.
+		if ( 'category' !== $taxonomy ) {
+			return false;
+		}
+
+		$default_category_id           = (int) get_option( 'default_category', false );
+		$prompts_with_deleted_category = get_posts(
 			[
-				'post_status'    => 'any',
-				'post_type'      => self::NEWSPACK_POPUPS_CPT,
-				'posts_per_page' => -1,
-				'tax_query'      => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
-					'taxonomy'         => 'category',
-					'terms'            => $default_category_id,
-					'include_children' => false,
-				],
+				'category__in'     => $deleted_term,
+				'category__not_in' => $default_category_id, // We don't want to remove the default category if it was intentionally added.
+				'fields'           => 'ids',
+				'post_status'      => 'any',
+				'post_type'        => self::NEWSPACK_POPUPS_CPT,
+				'posts_per_page'   => -1,
 			]
 		);
 
-		foreach ( $default_category_prompts as $prompt ) {
-			self::remove_default_category( $prompt->ID );
-			$prompts_updated ++;
+		if ( empty( $prompts_with_deleted_category ) ) {
+			return false;
 		}
 
-		return $prompts_updated;
+		// When the default category is assigned to a prompt and it wasn't previously assigned, remove it.
+		add_action(
+			'set_object_terms',
+			// Use an anonymous function that can read the variables above in its closure.
+			function( $post_id, $terms, $tt_ids, $taxonomy ) use ( $default_category_id, $prompts_with_deleted_category ) {
+				if (
+					self::NEWSPACK_POPUPS_CPT === get_post_type( $post_id ) &&
+					in_array( $post_id, $prompts_with_deleted_category, true ) &&
+					in_array( $default_category_id, $terms, true ) &&
+					'category' === $taxonomy
+				) {
+					self::remove_default_category( $post_id );
+				}
+			},
+			10,
+			4
+		);
+
+		return true;
 	}
 
 	/**
