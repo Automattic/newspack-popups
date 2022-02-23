@@ -985,7 +985,7 @@ final class Newspack_Popups {
 	public static function prevent_default_category_on_term_delete( $deleted_term, $taxonomy ) {
 		// We only care about categories.
 		if ( 'category' !== $taxonomy ) {
-			return false;
+			return;
 		}
 
 		$default_category_id = (int) get_option( 'default_category', 0 );
