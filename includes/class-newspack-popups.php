@@ -984,7 +984,11 @@ final class Newspack_Popups {
 			return false;
 		}
 
-		$default_category_id           = (int) get_option( 'default_category', false );
+		$default_category_id = (int) get_option( 'default_category', false );
+		if ( false === $default_category_id ) {
+			return false;
+		}
+
 		$prompts_with_deleted_category = get_posts(
 			[
 				'category__in'     => $deleted_term,
