@@ -36,6 +36,28 @@ final class Newspack_Popups_Segmentation {
 	const SEGMENTS_OPTION_NAME = 'newspack_popups_segments';
 
 	/**
+	 * Default config for a segment.
+	 */
+	const DEFAULT_SEGMENT_CONFIG = [
+		'min_posts'           => 0,
+		'max_posts'           => 0,
+		'min_session_posts'   => 0,
+		'max_session_posts'   => 0,
+		'is_subscribed'       => false,
+		'is_donor'            => false,
+		'is_not_subscribed'   => false,
+		'is_not_donor'        => false,
+		'favorite_categories' => [],
+		'referrers'           => '',
+		'referrers_not'       => '',
+	];
+
+	/**
+	 * Name of the option to store default segment IDs.
+	 */
+	const DEFAULT_SEGMENTS_OPTION_NAME = 'newspack_popups_default_segments';
+
+	/**
 	 * Main Newspack Segmentation Plugin Instance.
 	 * Ensures only one instance of Newspack Segmentation Plugin Instance is loaded or can be loaded.
 	 *
@@ -387,6 +409,68 @@ final class Newspack_Popups_Segmentation {
 	}
 
 	/**
+	 * Get array of default segments by type.
+	 *
+	 * @return array Array of default segments.
+	 */
+	public static function get_default_segments() {
+		return get_option( self::DEFAULT_SEGMENTS_OPTION_NAME, false );
+	}
+
+	/**
+	 * Generate default segments. If they've already been generated, rebuild them with default parameters.
+	 *
+	 * @return array Array of all segments.
+	 */
+	public static function create_default_segments() {
+		$default_segments = get_option( self::DEFAULT_SEGMENTS_OPTION_NAME, [] );
+		$default_options  = [
+			'donors'           => [
+				'name'          => __( '[Newspack] Donors', 'newspack-popups' ),
+				'configuration' => [
+					'is_donor' => true,
+				],
+			],
+			'frequent_readers' => [
+				'name'          => __( '[Newspack] Frequent Readers', 'newspack-popups' ),
+				'configuration' => [
+					'min_posts' => 5,
+				],
+			],
+			'subscribers'      => [
+				'name'          => __( '[Newspack] Newsletter Subscribers', 'newspack-popups' ),
+				'configuration' => [
+					'is_subscribed' => true,
+				],
+			],
+			'everyone_else'    => [
+				'name'          => __( '[Newspack] Everyone Else', 'newspack-popups' ),
+				'configuration' => [
+					'is_not_donor'      => true,
+					'is_not_subscribed' => true,
+				],
+			],
+		];
+
+		foreach ( $default_options as $key => $segment ) {
+			// Ensure all config objects contain all option keys.
+			$segment['configuration'] = wp_parse_args( $segment['configuration'], self::DEFAULT_SEGMENT_CONFIG );
+
+			// If the segment was already created and still exists, update it. Otherwise, create it.
+			if ( isset( $default_segments[ $key ] ) && self::get_segment( $default_segments[ $key ] ) ) {
+				$segment['id'] = $default_segments[ $key ];
+				self::update_segment( $segment );
+			} else {
+				$segment_id               = self::create_segment( $segment, true );
+				$default_segments[ $key ] = $segment_id;
+			}
+		}
+
+		update_option( self::DEFAULT_SEGMENTS_OPTION_NAME, $default_segments );
+		return self::reindex_segments( self::get_segments() );
+	}
+
+	/**
 	 * Get a single segment by ID.
 	 *
 	 * @param string $id A segment id.
@@ -424,9 +508,10 @@ final class Newspack_Popups_Segmentation {
 	/**
 	 * Create a segment.
 	 *
-	 * @param object $segment A segment.
+	 * @param object  $segment A segment.
+	 * @param boolean $get_id If true, return only the created segment ID. Otherwise, return all segments.
 	 */
-	public static function create_segment( $segment ) {
+	public static function create_segment( $segment, $get_id = false ) {
 		$segments              = self::get_segments();
 		$segment['id']         = uniqid();
 		$segment['created_at'] = gmdate( 'Y-m-d' );
@@ -434,6 +519,11 @@ final class Newspack_Popups_Segmentation {
 		$segments[]            = $segment;
 
 		update_option( self::SEGMENTS_OPTION_NAME, $segments );
+
+		if ( $get_id ) {
+			return $segment['id'];
+		}
+
 		return self::get_segments();
 	}
 
