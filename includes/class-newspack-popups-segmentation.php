@@ -509,9 +509,9 @@ final class Newspack_Popups_Segmentation {
 	 * Create a segment.
 	 *
 	 * @param object  $segment A segment.
-	 * @param boolean $get_id If true, return only the created segment ID. Otherwise, return all segments.
+	 * @param boolean $return_id If true, return the created segment ID. Otherwise, return all segments.
 	 */
-	public static function create_segment( $segment, $get_id = false ) {
+	public static function create_segment( $segment, $return_id = false ) {
 		$segments              = self::get_segments();
 		$segment['id']         = uniqid();
 		$segment['created_at'] = gmdate( 'Y-m-d' );
@@ -520,7 +520,7 @@ final class Newspack_Popups_Segmentation {
 
 		update_option( self::SEGMENTS_OPTION_NAME, $segments );
 
-		if ( $get_id ) {
+		if ( $return_id ) {
 			return $segment['id'];
 		}
 
