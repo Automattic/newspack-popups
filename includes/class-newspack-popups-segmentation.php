@@ -58,6 +58,7 @@ final class Newspack_Popups_Segmentation {
 	 */
 	public function __construct() {
 		add_action( 'init', [ __CLASS__, 'create_database_table' ] );
+		add_action( 'init', [ __CLASS__, 'new_site_setup' ] );
 		add_action( 'wp_footer', [ __CLASS__, 'insert_amp_analytics' ], 20 );
 
 		add_filter( 'newspack_custom_dimensions', [ __CLASS__, 'register_custom_dimensions' ] );
@@ -345,6 +346,15 @@ final class Newspack_Popups_Segmentation {
 			require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 			dbDelta( $sql ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.dbDelta_dbdelta
 			$wpdb->query( $wpdb->prepare( "INSERT INTO `{$transients_table_name}` (option_name, option_value) SELECT option_name, option_value FROM `{$wpdb->options}` WHERE option_name LIKE %s", "_transient%-popup%" ) ); // phpcs:ignore
+		}
+	}
+
+	/**
+	 * Create default segments for sites that don't have any existing segments.
+	 */
+	public static function new_site_setup() {
+		if ( empty( self::get_segments() ) ) {
+			self::create_default_segments();
 		}
 	}
 
