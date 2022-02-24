@@ -36,23 +36,6 @@ final class Newspack_Popups_Segmentation {
 	const SEGMENTS_OPTION_NAME = 'newspack_popups_segments';
 
 	/**
-	 * Default config for a segment.
-	 */
-	const DEFAULT_SEGMENT_CONFIG = [
-		'min_posts'           => 0,
-		'max_posts'           => 0,
-		'min_session_posts'   => 0,
-		'max_session_posts'   => 0,
-		'is_subscribed'       => false,
-		'is_donor'            => false,
-		'is_not_subscribed'   => false,
-		'is_not_donor'        => false,
-		'favorite_categories' => [],
-		'referrers'           => '',
-		'referrers_not'       => '',
-	];
-
-	/**
 	 * Name of the option to store default segment IDs.
 	 */
 	const DEFAULT_SEGMENTS_OPTION_NAME = 'newspack_popups_default_segments';
@@ -444,7 +427,7 @@ final class Newspack_Popups_Segmentation {
 				],
 			],
 			'everyone_else'    => [
-				'name'          => __( ' Other Readers', 'newspack-popups' ),
+				'name'          => __( 'Other Readers', 'newspack-popups' ),
 				'configuration' => [
 					'is_not_donor'      => true,
 					'is_not_subscribed' => true,
@@ -453,8 +436,10 @@ final class Newspack_Popups_Segmentation {
 		];
 
 		foreach ( $default_options as $key => $segment ) {
+			require_once dirname( __FILE__ ) . '/../api/campaigns/class-campaign-data-utils.php';
+
 			// Ensure all config objects contain all option keys.
-			$segment['configuration'] = wp_parse_args( $segment['configuration'], self::DEFAULT_SEGMENT_CONFIG );
+			$segment['configuration'] = (array) Campaign_Data_Utils::canonize_segment( $segment['configuration'] );
 
 			// If the segment was already created and still exists, update it. Otherwise, create it.
 			if ( isset( $default_segments[ $key ] ) && self::get_segment( $default_segments[ $key ] ) ) {
