@@ -419,19 +419,19 @@ final class Newspack_Popups_Segmentation {
 		$default_segments = get_option( self::DEFAULT_SEGMENTS_OPTION_NAME, [] );
 		$default_options  = [
 			'donors'           => [
-				'name'          => __( ' Donors', 'newspack-popups' ),
+				'name'          => __( 'Donors', 'newspack-popups' ),
 				'configuration' => [
 					'is_donor' => true,
 				],
 			],
 			'frequent_readers' => [
-				'name'          => __( ' Frequent Readers', 'newspack-popups' ),
+				'name'          => __( 'Frequent Readers', 'newspack-popups' ),
 				'configuration' => [
 					'min_posts' => 5,
 				],
 			],
 			'subscribers'      => [
-				'name'          => __( ' Newsletter Subscribers', 'newspack-popups' ),
+				'name'          => __( 'Newsletter Subscribers', 'newspack-popups' ),
 				'configuration' => [
 					'is_subscribed' => true,
 				],
