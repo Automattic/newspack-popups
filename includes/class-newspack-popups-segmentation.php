@@ -353,7 +353,9 @@ final class Newspack_Popups_Segmentation {
 	 * Create default segments for sites that don't have any existing segments.
 	 */
 	public static function new_site_setup() {
-		if ( empty( self::get_segments() ) ) {
+		$segments         = self::get_segments();
+		$default_segments = self::get_default_segments();
+		if ( empty( $segments ) && empty( $default_segments ) ) {
 			self::create_default_segments();
 		}
 	}
