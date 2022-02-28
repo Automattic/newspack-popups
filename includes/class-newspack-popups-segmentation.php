@@ -248,7 +248,7 @@ final class Newspack_Popups_Segmentation {
 				if ( count( $user_orders ) ) {
 					$orders = [];
 					foreach ( $user_orders as $order ) {
-						$order_data = $order->get_data();
+						$order_data  = $order->get_data();
 						$order_items = array_map(
 							function( $item ) {
 								return $item->get_product_id();
