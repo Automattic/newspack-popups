@@ -200,20 +200,25 @@ class Newspack_Popups_Settings {
 	 * @return array Array of settings objects.
 	 */
 	public static function get_settings( $assoc = false, $get_segments = false ) {
-		$donor_landing_options       = [
+		$donor_landing_options = [
 			[
 				'label' => __( '-- None --', 'newspack-popups' ),
 				'value' => '',
 			],
 		];
+
+		// Before executing the query, make sure we can filter it to remove any CPTs that might be added by other plugins.
+		add_action( 'pre_get_posts', [ __CLASS__, 'prevent_other_post_types_in_page_query' ], PHP_INT_MAX );
 		$donor_landing_options_query = new \WP_Query(
 			[
-				'post_type'      => [ 'page' ],
-				'post_status'    => [ 'publish' ],
+				'post_type'      => 'page',
+				'post_status'    => 'publish',
 				'post_parent'    => 0,
-				'posts_per_page' => 100,
+				'posts_per_page' => -1,
 			]
 		);
+		// Remove the query filter so we don't unintentionally affect other queries.
+		remove_action( 'pre_get_posts', [ __CLASS__, 'prevent_other_post_types_in_page_query' ], PHP_INT_MAX );
 
 		if ( $donor_landing_options_query->have_posts() ) {
 			foreach ( $donor_landing_options_query->posts as $page ) {
@@ -509,6 +514,16 @@ class Newspack_Popups_Settings {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Prevents other plugins from adding additional post types to the page query.
+	 * Note: No query checking needed because this callback is only added for the one query we need to filter.
+	 *
+	 * @param WP_Query $query The WP query object.
+	 */
+	public static function prevent_other_post_types_in_page_query( $query ) {
+		$query->set( 'post_type', 'page' ); // phpcs:ignore WordPressVIPMinimum.Hooks.PreGetPosts.PreGetPosts
 	}
 }
 
