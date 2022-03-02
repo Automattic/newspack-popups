@@ -1,3 +1,11 @@
+# [1.49.0-alpha.2](https://github.com/Automattic/newspack-popups/compare/v1.49.0-alpha.1...v1.49.0-alpha.2) (2022-03-02)
+
+
+### Bug Fixes
+
+* only count donation products for donor segmentation ([#814](https://github.com/Automattic/newspack-popups/issues/814)) ([b471dad](https://github.com/Automattic/newspack-popups/commit/b471dada7ba1f88b03caeddda96e9bafa61186cf))
+* prevent non-page post types from appearing in settings dropdown ([#813](https://github.com/Automattic/newspack-popups/issues/813)) ([bc1cead](https://github.com/Automattic/newspack-popups/commit/bc1cead574559d851f14a001117a9fc72e7f4a71))
+
 # [1.49.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.48.0...v1.49.0-alpha.1) (2022-02-24)
 
 
