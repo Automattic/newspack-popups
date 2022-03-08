@@ -1,6 +1,6 @@
 {
   "name": "newspack-popups",
-  "version": "1.48.0",
+  "version": "1.49.0-alpha.2",
   "main": "Gruntfile.js",
   "author": "Automattic",
   "scripts": {
@@ -37,8 +37,8 @@
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.1.0",
     "eslint": "^7.32.0",
-    "lint-staged": "^12.3.3",
-    "newspack-scripts": "^3.1.0",
+    "lint-staged": "^12.3.4",
+    "newspack-scripts": "^3.1.1",
     "prettier": "npm:wp-prettier@^2.2.1-beta-1",
     "stylelint": "^13.13.1"
   }

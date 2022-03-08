@@ -236,20 +236,39 @@ final class Newspack_Popups_Segmentation {
 			$initial_client_report_url_params['mc_cid'] = sanitize_text_field( $_GET['mc_cid'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$initial_client_report_url_params['mc_eid'] = sanitize_text_field( $_GET['mc_eid'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		}
-		if ( is_user_logged_in() && ! Newspack_Popups::is_preview_request() ) {
-			if ( function_exists( 'wc_get_orders' ) ) {
-				$user_orders = wc_get_orders( [ 'customer_id' => get_current_user_id() ] );
+
+		// Handle Newspack donations via WooCommerce.
+		if ( class_exists( '\Newspack\Donations' ) && is_user_logged_in() && ! Newspack_Popups::is_preview_request() ) {
+			$newspack_donation_product_id = (int) get_option( \Newspack\Donations::DONATION_PRODUCT_ID_OPTION, 0 );
+			if ( function_exists( 'wc_get_orders' ) && 0 !== $newspack_donation_product_id ) {
+				$user_orders               = wc_get_orders( [ 'customer_id' => get_current_user_id() ] );
+				$newspack_donation_product = wc_get_product( $newspack_donation_product_id );
+				$newspack_child_products   = $newspack_donation_product ? $newspack_donation_product->get_children() : [];
+
 				if ( count( $user_orders ) ) {
 					$orders = [];
 					foreach ( $user_orders as $order ) {
-						$order_data = $order->get_data();
-						$orders[]   = [
-							'order_id' => $order_data['id'],
-							'date'     => date_format( date_create( $order_data['date_created'] ), 'Y-m-d' ),
-							'amount'   => $order_data['total'],
-						];
+						$order_data  = $order->get_data();
+						$order_items = array_map(
+							function( $item ) {
+								return $item->get_product_id();
+							},
+							array_values( $order->get_items() )
+						);
+
+						// Only count orders that include donation products as donations.
+						if ( 0 < count( array_intersect( $order_items, $newspack_child_products ) ) ) {
+							$orders[] = [
+								'order_id' => $order_data['id'],
+								'date'     => date_format( date_create( $order_data['date_created'] ), 'Y-m-d' ),
+								'amount'   => $order_data['total'],
+							];
+						}
 					}
-					$initial_client_report_url_params['orders'] = wp_json_encode( $orders );
+
+					if ( count( $orders ) ) {
+						$initial_client_report_url_params['orders'] = wp_json_encode( $orders );
+					}
 				}
 			}
 

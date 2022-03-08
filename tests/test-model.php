@@ -42,6 +42,7 @@ class ModelTest extends WP_UnitTestCase {
 				'trigger_type'                   => 'scroll',
 				'trigger_delay'                  => '3',
 				'trigger_scroll_progress'        => '30',
+				'trigger_blocks_count'           => 0,
 				'archive_insertion_posts_count'  => 1,
 				'archive_insertion_is_repeating' => false,
 				'utm_suppression'                => null,
@@ -65,6 +66,20 @@ class ModelTest extends WP_UnitTestCase {
 		self::assertEquals(
 			$popup_object['options']['trigger_scroll_progress'],
 			'42',
+			'Sets options when passed as argument.'
+		);
+
+		$popup_object_blocks_count_basis = Newspack_Popups_Model::create_popup_object(
+			get_post( self::$popup_id ),
+			false,
+			[
+				'trigger_type'         => 'blocks_count',
+				'trigger_blocks_count' => '5',
+			]
+		);
+		self::assertEquals(
+			$popup_object_blocks_count_basis['options']['trigger_blocks_count'],
+			'5',
 			'Sets options when passed as argument.'
 		);
 	}

@@ -235,6 +235,7 @@ final class Newspack_Popups_Model {
 				'trigger_type'                   => filter_input( INPUT_GET, 'tt', FILTER_SANITIZE_STRING ),
 				'trigger_delay'                  => filter_input( INPUT_GET, 'td', FILTER_SANITIZE_STRING ),
 				'trigger_scroll_progress'        => filter_input( INPUT_GET, 'ts', FILTER_SANITIZE_STRING ),
+				'trigger_blocks_count'           => filter_input( INPUT_GET, 'tb', FILTER_SANITIZE_STRING ),
 				'archive_insertion_posts_count'  => filter_input( INPUT_GET, 'ac', FILTER_SANITIZE_STRING ),
 				'archive_insertion_is_repeating' => filter_input( INPUT_GET, 'ar', FILTER_VALIDATE_BOOLEAN ),
 				'utm_suppression'                => filter_input( INPUT_GET, 'ut', FILTER_SANITIZE_STRING ),
@@ -356,6 +357,7 @@ final class Newspack_Popups_Model {
 			'trigger_type'                   => get_post_meta( $id, 'trigger_type', true ),
 			'trigger_delay'                  => get_post_meta( $id, 'trigger_delay', true ),
 			'trigger_scroll_progress'        => get_post_meta( $id, 'trigger_scroll_progress', true ),
+			'trigger_blocks_count'           => get_post_meta( $id, 'trigger_blocks_count', true ),
 			'archive_insertion_posts_count'  => get_post_meta( $id, 'archive_insertion_posts_count', true ),
 			'archive_insertion_is_repeating' => get_post_meta( $id, 'archive_insertion_is_repeating', true ),
 			'utm_suppression'                => get_post_meta( $id, 'utm_suppression', true ),
@@ -366,8 +368,21 @@ final class Newspack_Popups_Model {
 			'excluded_tags'                  => get_post_meta( $id, 'excluded_tags', true ),
 		];
 
+		// Remove empty options, except for those whose value might actually be 0.
+		$filtered_options = array_filter(
+			$post_options,
+			function( $value, $key ) {
+				if ( 'overlay_opacity' === $key ) {
+					return true;
+				}
+
+				return ! empty( $value );
+			},
+			ARRAY_FILTER_USE_BOTH
+		);
+
 		return wp_parse_args(
-			array_filter( $post_options ),
+			$filtered_options,
 			[
 				'background_color'               => '#FFFFFF',
 				'display_title'                  => false,
@@ -382,6 +397,7 @@ final class Newspack_Popups_Model {
 				'trigger_type'                   => 'time',
 				'trigger_delay'                  => 0,
 				'trigger_scroll_progress'        => 0,
+				'trigger_blocks_count'           => 0,
 				'archive_insertion_posts_count'  => 1,
 				'archive_insertion_is_repeating' => false,
 				'utm_suppression'                => null,
@@ -569,6 +585,16 @@ final class Newspack_Popups_Model {
 		}
 
 		if ( self::is_inline( $popup ) ) {
+			switch ( $popup['options']['trigger_type'] ) {
+				case 'blocks_count':
+					$popup['options']['trigger_scroll_progress'] = 0;
+					break;
+				case 'scroll':
+				default:
+					$popup['options']['trigger_blocks_count'] = 0;
+					break;
+			};
+
 			return $popup;
 		}
 
