@@ -1,3 +1,45 @@
+# [1.49.0](https://github.com/Automattic/newspack-popups/compare/v1.48.0...v1.49.0) (2022-03-08)
+
+
+### Bug Fixes
+
+* allow overlay_opacity to be set to 0 for prompts ([#803](https://github.com/Automattic/newspack-popups/issues/803)) ([1e3f68b](https://github.com/Automattic/newspack-popups/commit/1e3f68b7f7315ecc511fc8e9d6fcf612de98f6b7)), closes [#632](https://github.com/Automattic/newspack-popups/issues/632)
+* count inner blocks' content toward post length ([#807](https://github.com/Automattic/newspack-popups/issues/807)) ([f745419](https://github.com/Automattic/newspack-popups/commit/f745419308640d35e66f1d5c5fff41f96bdf45f3))
+* ensure correct option is selected for trigger dropdown ([#802](https://github.com/Automattic/newspack-popups/issues/802)) ([b9210b2](https://github.com/Automattic/newspack-popups/commit/b9210b2d7db59faa0a6e82dac5e736c4ef1fbb0a))
+* only count donation products for donor segmentation ([#814](https://github.com/Automattic/newspack-popups/issues/814)) ([b471dad](https://github.com/Automattic/newspack-popups/commit/b471dada7ba1f88b03caeddda96e9bafa61186cf))
+* prevent default category on term deletion ([#806](https://github.com/Automattic/newspack-popups/issues/806)) ([465c907](https://github.com/Automattic/newspack-popups/commit/465c90705b7dd3e390e2a192dda13e4bdb66884a))
+* prevent non-page post types from appearing in settings dropdown ([#813](https://github.com/Automattic/newspack-popups/issues/813)) ([bc1cead](https://github.com/Automattic/newspack-popups/commit/bc1cead574559d851f14a001117a9fc72e7f4a71))
+* **preview:** pass url params to links within single-prompt preview iframes ([#792](https://github.com/Automattic/newspack-popups/issues/792)) ([6cad2c0](https://github.com/Automattic/newspack-popups/commit/6cad2c0a7689b5ac696c42724bcb9b3e682952d4)), closes [#663](https://github.com/Automattic/newspack-popups/issues/663)
+
+
+### Features
+
+* insertion at block count ([#755](https://github.com/Automattic/newspack-popups/issues/755)) ([9240d52](https://github.com/Automattic/newspack-popups/commit/9240d52ec4c4fd39d708520591ef0198fb9346bc)), closes [#623](https://github.com/Automattic/newspack-popups/issues/623)
+
+# [1.49.0-alpha.2](https://github.com/Automattic/newspack-popups/compare/v1.49.0-alpha.1...v1.49.0-alpha.2) (2022-03-02)
+
+
+### Bug Fixes
+
+* only count donation products for donor segmentation ([#814](https://github.com/Automattic/newspack-popups/issues/814)) ([b471dad](https://github.com/Automattic/newspack-popups/commit/b471dada7ba1f88b03caeddda96e9bafa61186cf))
+* prevent non-page post types from appearing in settings dropdown ([#813](https://github.com/Automattic/newspack-popups/issues/813)) ([bc1cead](https://github.com/Automattic/newspack-popups/commit/bc1cead574559d851f14a001117a9fc72e7f4a71))
+
+# [1.49.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.48.0...v1.49.0-alpha.1) (2022-02-24)
+
+
+### Bug Fixes
+
+* allow overlay_opacity to be set to 0 for prompts ([#803](https://github.com/Automattic/newspack-popups/issues/803)) ([1e3f68b](https://github.com/Automattic/newspack-popups/commit/1e3f68b7f7315ecc511fc8e9d6fcf612de98f6b7)), closes [#632](https://github.com/Automattic/newspack-popups/issues/632)
+* count inner blocks' content toward post length ([#807](https://github.com/Automattic/newspack-popups/issues/807)) ([f745419](https://github.com/Automattic/newspack-popups/commit/f745419308640d35e66f1d5c5fff41f96bdf45f3))
+* ensure correct option is selected for trigger dropdown ([#802](https://github.com/Automattic/newspack-popups/issues/802)) ([b9210b2](https://github.com/Automattic/newspack-popups/commit/b9210b2d7db59faa0a6e82dac5e736c4ef1fbb0a))
+* prevent default category on term deletion ([#806](https://github.com/Automattic/newspack-popups/issues/806)) ([465c907](https://github.com/Automattic/newspack-popups/commit/465c90705b7dd3e390e2a192dda13e4bdb66884a))
+* **preview:** pass url params to links within single-prompt preview iframes ([#792](https://github.com/Automattic/newspack-popups/issues/792)) ([6cad2c0](https://github.com/Automattic/newspack-popups/commit/6cad2c0a7689b5ac696c42724bcb9b3e682952d4)), closes [#663](https://github.com/Automattic/newspack-popups/issues/663)
+
+
+### Features
+
+* insertion at block count ([#755](https://github.com/Automattic/newspack-popups/issues/755)) ([9240d52](https://github.com/Automattic/newspack-popups/commit/9240d52ec4c4fd39d708520591ef0198fb9346bc)), closes [#623](https://github.com/Automattic/newspack-popups/issues/623)
+
 # [1.48.0](https://github.com/Automattic/newspack-popups/compare/v1.47.2...v1.48.0) (2022-02-22)
 
 
