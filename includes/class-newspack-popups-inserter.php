@@ -877,6 +877,11 @@ final class Newspack_Popups_Inserter {
 	 * @return bool Whether the prompt should be shown based on matching terms.
 	 */
 	public static function assess_taxonomy_filter( $popup, $taxonomy = 'category' ) {
+		// If a preview request, ensure the prompt appears in the first post loaded in the preview window.
+		if ( Newspack_Popups::is_preview_request() ) {
+			return true;
+		}
+
 		$post_terms     = get_the_terms( get_the_ID(), $taxonomy );
 		$post_terms_ids = array_column( $post_terms ? $post_terms : [], 'term_id' );
 

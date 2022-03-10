@@ -1,3 +1,17 @@
+## [1.49.1](https://github.com/Automattic/newspack-popups/compare/v1.49.0...v1.49.1) (2022-03-10)
+
+
+### Bug Fixes
+
+* prefix preview query param keys to avoid collisions ([b6b82ed](https://github.com/Automattic/newspack-popups/commit/b6b82ed639e45e40e6e08118eeb083d92b25ffbf))
+
+## [1.49.1-hotfix.1](https://github.com/Automattic/newspack-popups/compare/v1.49.0...v1.49.1-hotfix.1) (2022-03-10)
+
+
+### Bug Fixes
+
+* prefix preview query param keys to avoid collisions ([b6b82ed](https://github.com/Automattic/newspack-popups/commit/b6b82ed639e45e40e6e08118eeb083d92b25ffbf))
+
 # [1.49.0](https://github.com/Automattic/newspack-popups/compare/v1.48.0...v1.49.0) (2022-03-08)
 
 

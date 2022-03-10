@@ -22,23 +22,23 @@ final class Newspack_Popups {
 	const LIGHTWEIGHT_API_CONFIG_FILE_PATH        = WP_CONTENT_DIR . '/newspack-popups-config.php';
 
 	const PREVIEW_QUERY_KEYS = [
-		'background_color'               => 'bc',
-		'display_title'                  => 'ti',
-		'hide_border'                    => 'hb',
-		'dismiss_text'                   => 'dt',
-		'dismiss_text_alignment'         => 'da',
-		'frequency'                      => 'fr',
-		'overlay_color'                  => 'oc',
-		'overlay_opacity'                => 'oo',
-		'overlay_size'                   => 'os',
-		'placement'                      => 'pl',
-		'trigger_type'                   => 'tt',
-		'trigger_delay'                  => 'td',
-		'trigger_scroll_progress'        => 'ts',
-		'trigger_blocks_count'           => 'tb',
-		'archive_insertion_posts_count'  => 'ac',
-		'archive_insertion_is_repeating' => 'ar',
-		'utm_suppression'                => 'ut',
+		'background_color'               => 'n_bc',
+		'display_title'                  => 'n_ti',
+		'hide_border'                    => 'n_hb',
+		'dismiss_text'                   => 'n_dt',
+		'dismiss_text_alignment'         => 'n_da',
+		'frequency'                      => 'n_fr',
+		'overlay_color'                  => 'n_oc',
+		'overlay_opacity'                => 'n_oo',
+		'overlay_size'                   => 'n_os',
+		'placement'                      => 'n_pl',
+		'trigger_type'                   => 'n_tt',
+		'trigger_delay'                  => 'n_td',
+		'trigger_scroll_progress'        => 'n_ts',
+		'trigger_blocks_count'           => 'n_tb',
+		'archive_insertion_posts_count'  => 'n_ac',
+		'archive_insertion_is_repeating' => 'n_ar',
+		'utm_suppression'                => 'n_ut',
 	];
 
 	/**
@@ -677,7 +677,7 @@ final class Newspack_Popups {
 		$is_customizer_preview = is_customize_preview();
 		// Used by the Newspack Plugin's Campaigns Wizard.
 		$is_view_as_preview = false != Newspack_Popups_View_As::viewing_as_spec();
-		return self::previewed_popup_id() || $is_view_as_preview || $is_customizer_preview;
+		return ! empty( self::previewed_popup_id() ) || $is_view_as_preview || $is_customizer_preview;
 	}
 
 	/**
