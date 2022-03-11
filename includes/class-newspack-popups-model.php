@@ -943,7 +943,7 @@ final class Newspack_Popups_Model {
 		if ( Newspack_Popups_Settings::is_non_interactive() ) {
 			return '';
 		}
-		if ( Newspack_Popups::previewed_popup_id() && Newspack_Popups::is_user_admin() ) {
+		if ( Newspack_Popups::previewed_popup_id() ) {
 			return '';
 		}
 		// The amp-access endpoint is queried only once (on page load), but after changing block settings,

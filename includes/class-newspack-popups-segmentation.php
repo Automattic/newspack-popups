@@ -180,12 +180,10 @@ final class Newspack_Popups_Segmentation {
 
 	/**
 	 * Should tracking code be inserted?
+	 * We shouldn't be tracking analytics in the dashboard, in previews, or on the front-end by admin/editor users.
 	 */
 	public static function is_tracking() {
-		if ( Newspack_Popups::is_preview_request() ) {
-			return true;
-		}
-		if ( is_admin() || self::is_admin_user() || Newspack_Popups_Settings::is_non_interactive() ) {
+		if ( is_admin() || Newspack_Popups::is_user_admin() || Newspack_Popups_Settings::is_non_interactive() ) {
 			return false;
 		}
 		return true;
