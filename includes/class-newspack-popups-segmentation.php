@@ -238,12 +238,23 @@ final class Newspack_Popups_Segmentation {
 		}
 
 		// Handle Newspack donations via WooCommerce.
-		if ( class_exists( '\Newspack\Donations' ) && is_user_logged_in() && ! Newspack_Popups::is_preview_request() ) {
-			$newspack_donation_product_id = (int) get_option( \Newspack\Donations::DONATION_PRODUCT_ID_OPTION, 0 );
-			if ( function_exists( 'wc_get_orders' ) && 0 !== $newspack_donation_product_id ) {
+		if ( is_user_logged_in() && ! Newspack_Popups::is_preview_request() ) {
+			$newspack_donation_product_id = class_exists( '\Newspack\Donations' ) ?
+				(int) get_option( \Newspack\Donations::DONATION_PRODUCT_ID_OPTION, 0 ) :
+				0;
+
+			if ( class_exists( 'WooCommerce' ) ) {
 				$user_orders               = wc_get_orders( [ 'customer_id' => get_current_user_id() ] );
-				$newspack_donation_product = wc_get_product( $newspack_donation_product_id );
+				$newspack_donation_product = $newspack_donation_product_id ? wc_get_product( $newspack_donation_product_id ) : null;
 				$newspack_child_products   = $newspack_donation_product ? $newspack_donation_product->get_children() : [];
+
+				/**
+				 * Allows other plugins to designate additional WooCommerce products by ID that should be considered donations.
+				 *
+				 * @param int[] $product_ids Array of WooCommerce product IDs.
+				 */
+				$other_donation_products = apply_filters( 'newspack_popups_donation_products', [] );
+				$all_donation_products   = array_values( array_merge( $newspack_child_products, $other_donation_products ) );
 
 				if ( count( $user_orders ) ) {
 					$orders = [];
@@ -257,7 +268,7 @@ final class Newspack_Popups_Segmentation {
 						);
 
 						// Only count orders that include donation products as donations.
-						if ( 0 < count( array_intersect( $order_items, $newspack_child_products ) ) ) {
+						if ( 0 < count( array_intersect( $order_items, $all_donation_products ) ) ) {
 							$orders[] = [
 								'order_id' => $order_data['id'],
 								'date'     => date_format( date_create( $order_data['date_created'] ), 'Y-m-d' ),
