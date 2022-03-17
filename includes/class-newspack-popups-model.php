@@ -753,7 +753,8 @@ final class Newspack_Popups_Model {
 	protected static function insert_event_tracking( $popup, $body, $element_id ) {
 		if (
 			Newspack_Popups::is_preview_request() ||
-			Newspack_Popups_Settings::is_non_interactive()
+			Newspack_Popups_Settings::is_non_interactive() ||
+			! Newspack_Popups::is_tracking()
 		) {
 			return '';
 		}
@@ -848,7 +849,7 @@ final class Newspack_Popups_Model {
 	 * @param string $element_id The id of the popup element.
 	 */
 	private static function get_analytics_events( $popup, $body, $element_id ) {
-		if ( Newspack_Popups::is_preview_request() ) {
+		if ( Newspack_Popups::is_preview_request() || ! Newspack_Popups::is_tracking() ) {
 			return [];
 		}
 
@@ -943,7 +944,7 @@ final class Newspack_Popups_Model {
 		if ( Newspack_Popups_Settings::is_non_interactive() ) {
 			return '';
 		}
-		if ( Newspack_Popups::previewed_popup_id() && Newspack_Popups::is_user_admin() ) {
+		if ( Newspack_Popups::previewed_popup_id() ) {
 			return '';
 		}
 		// The amp-access endpoint is queried only once (on page load), but after changing block settings,

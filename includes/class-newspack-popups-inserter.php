@@ -642,9 +642,6 @@ final class Newspack_Popups_Inserter {
 	 * make reliable retrieval problematic.
 	 */
 	public static function insert_popups_amp_access() {
-		if ( ! Newspack_Popups_Segmentation::is_tracking() ) {
-			return;
-		}
 		$popups = array_filter(
 			Newspack_Popups_Model::retrieve_popups(
 				// Include drafts if it's a preview request.
@@ -924,12 +921,8 @@ final class Newspack_Popups_Inserter {
 
 		// Unless it's a preview request, perform some additional checks.
 		if ( ! Newspack_Popups::is_preview_request() ) {
-			// Hide prompts for admin users.
-			if ( Newspack_Popups::is_user_admin() ) {
-				return false;
-			}
-			// Hide overlay prompts in non-interactive mode, for non-admin users.
-			if ( ! Newspack_Popups::is_user_admin() && Newspack_Popups_Settings::is_non_interactive() && ! Newspack_Popups_Model::is_inline( $popup ) ) {
+			// Hide overlay prompts in non-interactive mode.
+			if ( Newspack_Popups_Settings::is_non_interactive() && ! Newspack_Popups_Model::is_inline( $popup ) ) {
 				return false;
 			}
 		}

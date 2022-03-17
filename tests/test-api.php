@@ -57,21 +57,25 @@ class APITest extends WP_UnitTestCase {
 				'is_not_subscribed' => true,
 				'priority'          => 3,
 			],
+			'segmentLoggedIn'                     => [
+				'is_logged_in' => true,
+				'priority'     => 4,
+			],
 			'segmentWithReferrers'                => [
 				'referrers' => 'foobar.com, newspack.pub',
-				'priority'  => 4,
+				'priority'  => 5,
 			],
 			'anotherSegmentWithReferrers'         => [
 				'referrers' => 'bar.com',
-				'priority'  => 5,
+				'priority'  => 6,
 			],
 			'segmentWithNegativeReferrer'         => [
 				'referrers_not' => 'baz.com',
-				'priority'      => 6,
+				'priority'      => 7,
 			],
 			'segmentFavCategory42'                => [
 				'favorite_categories' => [ $category_1_id ],
-				'priority'            => 7,
+				'priority'            => 8,
 			],
 		];
 
@@ -1363,6 +1367,28 @@ class APITest extends WP_UnitTestCase {
 		);
 		self::assertTrue(
 			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', '', [ 'segment' => self::$segment_ids['segmentSubscribers'] ] ),
+			'Assert visible when viewing as a segment member.'
+		);
+	}
+
+	/**
+	 * View as a segment – logged in.
+	 */
+	public function test_view_as_segment_logged_in() {
+		$test_popup = self::create_test_popup(
+			[
+				'placement'           => 'inline',
+				'frequency'           => 'always',
+				'selected_segment_id' => self::$segment_ids['segmentLoggedIn'],
+			]
+		);
+
+		self::assertFalse(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
+			'Assert not visible, as the client is not logged in.'
+		);
+		self::assertTrue(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', '', [ 'segment' => self::$segment_ids['segmentLoggedIn'] ] ),
 			'Assert visible when viewing as a segment member.'
 		);
 	}
