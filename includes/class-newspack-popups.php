@@ -844,7 +844,7 @@ final class Newspack_Popups {
 	}
 
 	/**
-	 * Is the user an admin/editor/author/contributor user?
+	 * Is the user an admin or editor user?
 	 * If so, prompts will be shown to these users while logged in, but analytics
 	 * will not be fired for them.
 	 */
