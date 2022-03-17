@@ -844,10 +844,12 @@ final class Newspack_Popups {
 	}
 
 	/**
-	 * Is the user an admin user?
+	 * Is the user an admin/editor/author/contributor user?
+	 * If so, prompts will be shown to these users while logged in, but analytics
+	 * will not be fired for them.
 	 */
 	public static function is_user_admin() {
-		return is_user_logged_in() && current_user_can( 'edit_others_pages' );
+		return is_user_logged_in() && current_user_can( 'edit_posts' );
 	}
 
 	/**
