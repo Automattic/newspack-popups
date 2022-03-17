@@ -856,7 +856,7 @@ final class Newspack_Popups {
 		 * @param string $capability Capability to check. Default: edit_others_pages.
 		 * @return string Filtered capability string.
 		 */
-		$capability = apply_filters( 'newspack_popups_admin_user_capsbility', 'edit_others_pages' );
+		$capability = apply_filters( 'newspack_popups_admin_user_capability', 'edit_others_pages' );
 		return is_user_logged_in() && current_user_can( $capability );
 	}
 
