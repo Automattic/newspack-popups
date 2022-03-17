@@ -849,7 +849,15 @@ final class Newspack_Popups {
 	 * will not be fired for them.
 	 */
 	public static function is_user_admin() {
-		return is_user_logged_in() && current_user_can( 'edit_posts' );
+		/**
+		 * Filter to allow other plugins to decide which capability should be checked
+		 * to determine whether a user's activity should be tracked via Google Analytics.
+		 *
+		 * @param string $capability Capability to check. Default: edit_others_pages.
+		 * @return string Filtered capability string.
+		 */
+		$capability = apply_filters( 'newspack_popups_admin_user_capsbility', 'edit_others_pages' );
+		return is_user_logged_in() && current_user_can( $capability );
 	}
 
 	/**
