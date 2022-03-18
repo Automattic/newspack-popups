@@ -155,6 +155,7 @@ class Newspack_Popups_Settings {
 			case 'float':
 				return (float) $value;
 			case 'string':
+			case 'select':
 				return sanitize_text_field( $value );
 			default:
 				return '';
@@ -286,7 +287,6 @@ class Newspack_Popups_Settings {
 				'section'     => 'donor_settings',
 				'key'         => 'newspack_popups_donor_landing_page',
 				'type'        => 'select',
-				'options'     => $donor_landing_options,
 				'value'       => self::donor_landing_page(),
 				'default'     => '',
 				'description' => __( 'Donor landing page', 'newspack-popups' ),
