@@ -844,10 +844,20 @@ final class Newspack_Popups {
 	}
 
 	/**
-	 * Is the user an admin user?
+	 * Is the user an admin or editor user?
+	 * If so, prompts will be shown to these users while logged in, but analytics
+	 * will not be fired for them.
 	 */
 	public static function is_user_admin() {
-		return is_user_logged_in() && current_user_can( 'edit_others_pages' );
+		/**
+		 * Filter to allow other plugins to decide which capability should be checked
+		 * to determine whether a user's activity should be tracked via Google Analytics.
+		 *
+		 * @param string $capability Capability to check. Default: edit_others_pages.
+		 * @return string Filtered capability string.
+		 */
+		$capability = apply_filters( 'newspack_popups_admin_user_capability', 'edit_others_pages' );
+		return is_user_logged_in() && current_user_can( $capability );
 	}
 
 	/**
