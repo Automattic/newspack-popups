@@ -853,8 +853,26 @@ final class Newspack_Popups_Model {
 			return [];
 		}
 
-		$popup_id            = $popup['id'];
-		$event_category      = 'Newspack Announcement';
+		$popup_id       = $popup['id'];
+		$segment_ids    = isset( $popup['options'] ) && ! empty( $popup['options']['selected_segment_id'] ) ?
+			explode( ',', $popup['options']['selected_segment_id'] ) :
+			[];
+		$segments       = array_reduce(
+			$segment_ids,
+			function( $acc, $segment_id ) {
+				$segment = Newspack_Popups_Segmentation::get_segment( $segment_id );
+				if ( $segment && isset( $segment['name'] ) ) {
+					$acc[] = $segment['name'];
+				}
+				return $acc;
+			},
+			[]
+		);
+		$event_category = sprintf(
+			// Translators: Analytics label for Newspack prompts, including segments.
+			__( 'Newspack Prompt (%s)', 'newspack-popups' ),
+			0 < count( $segments ) ? implode( '; ', $segments ) : __( 'Everyone', 'newspack-popups' )
+		);
 		$formatted_placement = ucwords( str_replace( '_', ' ', $popup['options']['placement'] ) );
 		$event_label         = $formatted_placement . ': ' . $popup['title'] . ' (' . $popup_id . ')';
 
