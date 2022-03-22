@@ -1,3 +1,10 @@
+# [1.50.0](https://github.com/Automattic/newspack-popups/compare/v1.49.1...v1.50.0) (2022-03-22)
+
+
+### Features
+
+* **segmentation:** add filter to designate additional product IDs as donations ([#818](https://github.com/Automattic/newspack-popups/issues/818)) ([c9a00c8](https://github.com/Automattic/newspack-popups/commit/c9a00c86ff509c1d5d67abae1fd78c716248f4f5))
+
 # [1.50.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.49.1...v1.50.0-alpha.1) (2022-03-15)
 
 
