@@ -25,6 +25,7 @@ final class Newspack_Popups {
 		'background_color'               => 'n_bc',
 		'display_title'                  => 'n_ti',
 		'hide_border'                    => 'n_hb',
+		'undismissible_prompt'           => 'n_u',
 		'dismiss_text'                   => 'n_dt',
 		'dismiss_text_alignment'         => 'n_da',
 		'frequency'                      => 'n_fr',
@@ -284,6 +285,19 @@ final class Newspack_Popups {
 				'object_subtype' => self::NEWSPACK_POPUPS_CPT,
 				'show_in_rest'   => true,
 				'type'           => 'string',
+				'single'         => true,
+				'auth_callback'  => '__return_true',
+			]
+		);
+
+		\register_meta(
+			'post',
+			'undismissible_prompt',
+			[
+				'object_subtype' => self::NEWSPACK_POPUPS_CPT,
+				'show_in_rest'   => true,
+				'type'           => 'boolean',
+				'default'        => false,
 				'single'         => true,
 				'auth_callback'  => '__return_true',
 			]
