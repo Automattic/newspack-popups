@@ -26,7 +26,7 @@ const DismissSidebar = ( {
 				<ToggleControl
 					checked={ ! undismissible_prompt }
 					onChange={ () => onMetaFieldChange( 'undismissible_prompt', ! undismissible_prompt ) }
-					label={ __( 'Allow this prompt to be dismissed.', 'newspack-popups' ) }
+					label={ __( 'Allow this prompt to be dismissed', 'newspack-popups' ) }
 				/>
 			) }
 			{ ( isOverlayPlacement( placement ) || ! undismissible_prompt ) && (
