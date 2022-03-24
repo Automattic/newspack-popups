@@ -859,7 +859,7 @@ final class Newspack_Popups_Model {
 		$event_label         = $formatted_placement . ': ' . $popup['title'] . ' (' . $popup_id . ')';
 
 		$has_link                = preg_match( '/<a\s/', $body ) !== 0;
-		$has_form                = preg_match( '/<form\s/', $body ) !== 0;
+		$has_form                = preg_match( '/<form\s|\[gravityforms\s/', $body ) !== 0;
 		$has_dismiss_form        = self::is_overlay( $popup );
 		$has_not_interested_form = $popup['options']['dismiss_text'];
 
