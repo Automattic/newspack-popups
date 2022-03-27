@@ -255,9 +255,9 @@ class Newspack_Popups_Settings {
 				'type'        => 'boolean',
 				'value'       => get_option( 'suppress_all_newsletter_campaigns_if_one_dismissed', true ),
 				'default'     => true,
-				'description' => __( 'Suppress newsletter prompts if dismissed', 'newspack-popups' ),
+				'description' => __( 'Suppress newsletter prompts if permanently dismissed', 'newspack-popups' ),
 				'help'        => __(
-					'Automatically suppress any prompt that contains a newsletter signup block if at least one prompt with a signup block has been dismissed.',
+					'Automatically suppress any dismissible prompt that contains a newsletter signup block if at least one prompt with a signup block has been permanently dismissed.',
 					'newspack-popups'
 				),
 			],
