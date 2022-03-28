@@ -246,7 +246,7 @@ class Newspack_Popups_Settings {
 				'value'       => get_option( 'suppress_newsletter_campaigns', true ),
 				'default'     => true,
 				'description' => __( 'Suppress newsletter prompts for subscribers', 'newspack-popups' ),
-				'help'        => __( 'Automatically suppress any prompt that contains a newsletter signup block for readers coming from a newsletter email.', 'newspack-popups' ),
+				'help'        => __( 'Automatically suppress any dismissible prompt that contains a newsletter signup block for readers coming from a newsletter email.', 'newspack-popups' ),
 				'public'      => false,
 			],
 			[
@@ -257,7 +257,7 @@ class Newspack_Popups_Settings {
 				'default'     => true,
 				'description' => __( 'Suppress newsletter prompts if dismissed', 'newspack-popups' ),
 				'help'        => __(
-					'Automatically suppress any prompt that contains a newsletter signup block if at least one prompt with a signup block has been dismissed.',
+					'Automatically suppress any dismissible prompt that contains a newsletter signup block if at least one prompt with a signup block has been dismissed.',
 					'newspack-popups'
 				),
 			],
@@ -269,7 +269,7 @@ class Newspack_Popups_Settings {
 				'default'     => false,
 				'description' => __( 'Suppress donation prompts for donors', 'newspack-popups' ),
 				'help'        => __(
-					'Automatically suppress all prompts containing a Donate block if the reader has already donated.',
+					'Automatically suppress any dismissible prompt containing a Donate block if the reader has already donated.',
 					'newspack-popups'
 				),
 			],

@@ -225,6 +225,7 @@ final class Newspack_Popups_Model {
 				'background_color'               => filter_input( INPUT_GET, 'n_bc', FILTER_SANITIZE_STRING ),
 				'display_title'                  => filter_input( INPUT_GET, 'n_ti', FILTER_VALIDATE_BOOLEAN ),
 				'hide_border'                    => filter_input( INPUT_GET, 'n_hb', FILTER_VALIDATE_BOOLEAN ),
+				'undismissible_prompt'           => filter_input( INPUT_GET, 'n_u', FILTER_VALIDATE_BOOLEAN ),
 				'dismiss_text'                   => filter_input( INPUT_GET, 'n_dt', FILTER_SANITIZE_STRING ),
 				'dismiss_text_alignment'         => filter_input( INPUT_GET, 'n_da', FILTER_SANITIZE_STRING ),
 				'frequency'                      => filter_input( INPUT_GET, 'n_fr', FILTER_SANITIZE_STRING ),
@@ -345,6 +346,7 @@ final class Newspack_Popups_Model {
 	public static function get_popup_options( $id, $options = null ) {
 		$post_options = isset( $options ) ? $options : [
 			'background_color'               => get_post_meta( $id, 'background_color', true ),
+			'undismissible_prompt'           => get_post_meta( $id, 'undismissible_prompt', true ),
 			'dismiss_text'                   => get_post_meta( $id, 'dismiss_text', true ),
 			'dismiss_text_alignment'         => get_post_meta( $id, 'dismiss_text_alignment', true ),
 			'display_title'                  => get_post_meta( $id, 'display_title', true ),
@@ -387,6 +389,7 @@ final class Newspack_Popups_Model {
 				'background_color'               => '#FFFFFF',
 				'display_title'                  => false,
 				'hide_border'                    => false,
+				'undismissible_prompt'           => false,
 				'dismiss_text'                   => '',
 				'dismiss_text_alignment'         => 'center',
 				'frequency'                      => 'always',
@@ -743,6 +746,21 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
+	 * Is the prompt undismissible?
+	 * Only inline, custom placement, and manual-only prompts can be undismissible.
+	 *
+	 * @param object $popup The popup object.
+	 * @return boolean True if popup is undismissible.
+	 */
+	public static function is_undismissible_prompt( $popup ) {
+		if ( self::is_overlay( $popup ) ) {
+			return false;
+		}
+
+		return isset( $popup['options'] ) && isset( $popup['options']['undismissible_prompt'] ) && $popup['options']['undismissible_prompt'];
+	}
+
+	/**
 	 * Insert amp-analytics tracking code.
 	 *
 	 * @param object $popup The popup object.
@@ -1078,7 +1096,7 @@ final class Newspack_Popups_Model {
 					<h1 class="newspack-popup-title"><?php echo esc_html( $popup['title'] ); ?></h1>
 				<?php endif; ?>
 				<?php echo do_shortcode( $body ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-				<?php if ( ! Newspack_Popups_Settings::is_non_interactive() ) : ?>
+				<?php if ( ! self::is_undismissible_prompt( $popup ) && ! Newspack_Popups_Settings::is_non_interactive() ) : ?>
 					<?php echo self::render_permanent_dismissal_form( $element_id, $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				<?php endif; ?>
 			</amp-layout>

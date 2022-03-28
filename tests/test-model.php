@@ -32,6 +32,7 @@ class ModelTest extends WP_UnitTestCase {
 				'background_color'               => '#FFFFFF',
 				'display_title'                  => false,
 				'hide_border'                    => false,
+				'undismissible_prompt'           => false,
 				'dismiss_text'                   => '',
 				'dismiss_text_alignment'         => 'center',
 				'frequency'                      => 'always',
