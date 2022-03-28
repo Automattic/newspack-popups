@@ -854,10 +854,30 @@ final class Newspack_Popups_Model {
 		}
 
 		$popup_id            = $popup['id'];
-		$event_category      = 'Newspack Announcement';
+		$segment_ids         = isset( $popup['options'] ) && ! empty( $popup['options']['selected_segment_id'] ) ?
+			explode( ',', $popup['options']['selected_segment_id'] ) :
+			[];
+		$segments            = array_reduce(
+			$segment_ids,
+			function( $acc, $segment_id ) {
+				$segment = Newspack_Popups_Segmentation::get_segment( $segment_id );
+				if ( $segment && isset( $segment['name'] ) ) {
+					$acc[] = $segment['name'];
+				}
+				return $acc;
+			},
+			[]
+		);
+		$event_category      = __( 'Newspack Announcement', 'newspack-popups' );
 		$formatted_placement = ucwords( str_replace( '_', ' ', $popup['options']['placement'] ) );
-		$event_label         = $formatted_placement . ': ' . $popup['title'] . ' (' . $popup_id . ')';
-
+		$event_label         = sprintf(
+			// Translators: Analytics label with prompt details (placement, title, ID, targeted segments).
+			__( '%1$s: %2$s (%3$s) - %4$s', 'newspack-popups' ),
+			$formatted_placement,
+			$popup['title'],
+			$popup_id,
+			0 < count( $segments ) ? implode( '; ', $segments ) : __( 'Everyone', 'newspack-popups' )
+		);
 		$has_link                = preg_match( '/<a\s/', $body ) !== 0;
 		$has_form                = preg_match( '/<form\s/', $body ) !== 0;
 		$has_dismiss_form        = self::is_overlay( $popup );
