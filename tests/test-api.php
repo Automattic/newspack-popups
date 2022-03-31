@@ -223,6 +223,26 @@ class APITest extends WP_UnitTestCase {
 			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
 			'Assert not shown after a single reported view.'
 		);
+
+		$test_undismissible_popup = self::create_test_popup(
+			[
+				'frequency'            => 'once',
+				'undismissible_prompt' => true,
+			]
+		);
+
+		// Report a view.
+		self::$report_campaign_data->report_campaign(
+			[
+				'cid'      => self::$client_id,
+				'popup_id' => Newspack_Popups_Model::canonize_popup_id( $test_undismissible_popup['id'] ),
+			]
+		);
+
+		self::assertFalse(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_undismissible_popup['payload'], self::$settings ),
+			'Assert undismissible prompt is not shown after a single reported view.'
+		);
 	}
 
 	/**
@@ -261,6 +281,39 @@ class APITest extends WP_UnitTestCase {
 			),
 			'Assert visible after a day has passed.'
 		);
+
+		$test_undismissible_popup = self::create_test_popup(
+			[
+				'frequency'            => 'daily',
+				'undismissible_prompt' => true,
+			]
+		);
+
+		// Report a view.
+		self::$report_campaign_data->report_campaign(
+			[
+				'cid'      => self::$client_id,
+				'popup_id' => Newspack_Popups_Model::canonize_popup_id( $test_undismissible_popup['id'] ),
+			]
+		);
+
+		self::assertFalse(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_undismissible_popup['payload'], self::$settings ),
+			'Assert undismissible prompt not shown after a single reported view.'
+		);
+
+		self::assertTrue(
+			self::$maybe_show_campaign->should_campaign_be_shown(
+				self::$client_id,
+				$test_undismissible_popup['payload'],
+				self::$settings,
+				'',
+				'',
+				false,
+				strtotime( '+1 day 1 hour' )
+			),
+			'Assert undismissible prompt visible after a day has passed.'
+		);
 	}
 
 	/**
@@ -295,6 +348,37 @@ class APITest extends WP_UnitTestCase {
 		self::assertFalse(
 			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
 			'Assert not shown after a permanently dismissed.'
+		);
+
+		$test_undismissible_popup = self::create_test_popup(
+			[
+				'placement'            => 'inline',
+				'frequency'            => 'always',
+				'undismissible_prompt' => true,
+			]
+		);
+
+		self::assertTrue(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_undismissible_popup['payload'], self::$settings ),
+			'Assert initially visible.'
+		);
+		self::assertTrue(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_undismissible_popup['payload'], self::$settings ),
+			'Assert visible on a subsequent visit.'
+		);
+
+		// Dismiss permanently.
+		self::$report_campaign_data->report_campaign(
+			[
+				'cid'              => self::$client_id,
+				'popup_id'         => Newspack_Popups_Model::canonize_popup_id( $test_undismissible_popup['id'] ),
+				'suppress_forever' => true,
+			]
+		);
+
+		self::assertTrue(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_undismissible_popup['payload'], self::$settings ),
+			'Assert undismissible prompt still shown even if previously permanently dismissed.'
 		);
 	}
 
@@ -356,6 +440,25 @@ class APITest extends WP_UnitTestCase {
 				'http://example.com?utm_source=Our%20Newsletter'
 			),
 			'Assert not shown when a referer is set, using %20 as space.'
+		);
+
+		$test_undismissible_popup = self::create_test_popup(
+			[
+				'placement'            => 'inline',
+				'frequency'            => 'always',
+				'utm_suppression'      => 'Our Newsletter',
+				'undismissible_prompt' => true,
+			]
+		);
+
+		self::assertTrue(
+			self::$maybe_show_campaign->should_campaign_be_shown(
+				self::$client_id,
+				$test_undismissible_popup['payload'],
+				self::$settings,
+				'http://example.com?utm_source=Our%20Newsletter'
+			),
+			'Assert undismissible prompt is still shown.'
 		);
 	}
 
@@ -420,6 +523,49 @@ class APITest extends WP_UnitTestCase {
 				self::$settings
 			),
 			'Assert not shown on a subsequent visit, without the UTM medium in the URL.'
+		);
+
+		$test_undismissible_popup = self::create_test_popup(
+			[
+				'placement'            => 'inline',
+				'frequency'            => 'always',
+				'undismissible_prompt' => true,
+			],
+			'<!-- wp:jetpack/mailchimp --><!-- wp:jetpack/button {"element":"button","uniqueId":"mailchimp-widget-id","text":"Join my email list"} /--><!-- /wp:jetpack/mailchimp -->'
+		);
+
+		self::assertTrue(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_undismissible_popup['payload'], self::$settings ),
+			'Assert visible without referer.'
+		);
+
+		self::assertTrue(
+			self::$maybe_show_campaign->should_campaign_be_shown(
+				self::$client_id,
+				$test_undismissible_popup['payload'],
+				self::$settings,
+				'http://example.com?utm_medium=conduit'
+			),
+			'Assert visible with referer and non-email utm_medium.'
+		);
+
+		self::assertTrue(
+			self::$maybe_show_campaign->should_campaign_be_shown(
+				self::$client_id,
+				$test_undismissible_popup['payload'],
+				self::$settings,
+				'http://example.com?utm_medium=email'
+			),
+			'Assert undismissible prompt still shown with email utm_medium.'
+		);
+
+		self::assertTrue(
+			self::$maybe_show_campaign->should_campaign_be_shown(
+				self::$client_id,
+				$test_undismissible_popup['payload'],
+				self::$settings
+			),
+			'Assert undismissible prompt still shown on a subsequent visit, without the UTM medium in the URL.'
 		);
 
 		$modified_settings                                = clone self::$settings;
@@ -491,6 +637,20 @@ class APITest extends WP_UnitTestCase {
 			'Assert the other newsletter popup is not shown.'
 		);
 
+		$test_undismissible_popup = self::create_test_popup(
+			[
+				'placement'            => 'inline',
+				'frequency'            => 'always',
+				'undismissible_prompt' => true,
+			],
+			'<!-- wp:jetpack/mailchimp --><!-- wp:jetpack/button {"element":"button","uniqueId":"mailchimp-widget-id","text":"Join my email list"} /--><!-- /wp:jetpack/mailchimp -->'
+		);
+
+		self::assertTrue(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_undismissible_popup['payload'], self::$settings ),
+			'Assert an undismissible prompt is still displayed.'
+		);
+
 		$modified_settings = clone self::$settings;
 		$modified_settings->suppress_all_newsletter_campaigns_if_one_dismissed = false;
 		self::assertFalse(
@@ -515,7 +675,7 @@ class APITest extends WP_UnitTestCase {
 	 * Suppression caused by a newsletter subscription.
 	 */
 	public function test_newsletter_subscription() {
-		$test_popup_with_subscription_block = self::create_test_popup(
+		$test_popup_with_subscription_block_a = self::create_test_popup(
 			[
 				'placement' => 'inline',
 				'frequency' => 'always',
@@ -524,7 +684,7 @@ class APITest extends WP_UnitTestCase {
 		);
 
 		self::assertTrue(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_subscription_block['payload'], self::$settings ),
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_subscription_block_a['payload'], self::$settings ),
 			'Assert initially visible.'
 		);
 
@@ -532,15 +692,29 @@ class APITest extends WP_UnitTestCase {
 		self::$report_campaign_data->report_campaign(
 			[
 				'cid'                 => self::$client_id,
-				'popup_id'            => Newspack_Popups_Model::canonize_popup_id( $test_popup_with_subscription_block['id'] ),
+				'popup_id'            => Newspack_Popups_Model::canonize_popup_id( $test_popup_with_subscription_block_a['id'] ),
 				'mailing_list_status' => 'subscribed',
 				'email'               => 'foo@bar.com',
 			]
 		);
 
 		self::assertFalse(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_subscription_block['payload'], self::$settings ),
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_subscription_block_a['payload'], self::$settings ),
 			'Assert not shown after subscribed.'
+		);
+
+		$test_undismissible_popup = self::create_test_popup(
+			[
+				'placement'            => 'inline',
+				'frequency'            => 'always',
+				'undismissible_prompt' => true,
+			],
+			'<!-- wp:jetpack/mailchimp --><!-- wp:jetpack/button {"element":"button","uniqueId":"mailchimp-widget-id","text":"Join my email list"} /--><!-- /wp:jetpack/mailchimp -->'
+		);
+
+		self::assertTrue(
+			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_undismissible_popup['payload'], self::$settings ),
+			'Assert undismissible prompt is still shown after subscribed.'
 		);
 	}
 

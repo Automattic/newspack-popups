@@ -623,8 +623,12 @@ final class Newspack_Popups_Inserter {
 			't'   => $type,
 		];
 
-		if ( Newspack_Popups_Custom_Placements::is_custom_placement_or_manual( $popup ) ) {
+		if ( \Newspack_Popups_Custom_Placements::is_custom_placement_or_manual( $popup ) ) {
 			$popup_payload['c'] = $popup['options']['placement'];
+		}
+
+		if ( \Newspack_Popups_Model::is_undismissible_prompt( $popup ) ) {
+			$popup_payload['u'] = true;
 		}
 
 		return $popup_payload;
