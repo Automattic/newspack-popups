@@ -795,7 +795,14 @@ final class Newspack_Popups_Model {
 		} elseif ( preg_match( '/\[gravityform/', $body ) !== 0 ) {
 			// Gravity Forms block.
 			$subscribe_form_selector = apply_filters( 'newspack_campaigns_form_class', '.gform_wrapper form' );
-			$email_form_field_name   = apply_filters( 'newspack_campaigns_email_form_field_name', 'input_1', $subscribe_form_selector ); // Gravity Forms doesn't allow you to edit the name attribute for fields, so we'll assume that the first input field is the email address.
+
+			/**
+			 * Gravity Forms doesn't allow you to edit the name attribute for fields,
+			 * so we'll assume that the first input field is the email address.
+			 * If your prompt contains a Gravity Form that you do NOT want to track,
+			 * as a subscribe form, return a falsy value such as `null` in the callback.
+			 */
+			$email_form_field_name = apply_filters( 'newspack_campaigns_email_form_field_name', 'input_1', $subscribe_form_selector );
 		} else {
 			// Custom forms.
 			$newspack_form_class           = apply_filters( 'newspack_campaigns_form_class', '.newspack-subscribe-form' );
