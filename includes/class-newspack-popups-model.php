@@ -918,7 +918,7 @@ final class Newspack_Popups_Model {
 		$has_link                = preg_match( '/<a\s/', $body ) !== 0;
 		$newspack_form_class     = apply_filters( 'newspack_campaigns_form_class', '.newspack-subscribe-form' );
 		$newspack_form_class     = '.' === substr( $newspack_form_class, 0, 1 ) ? substr( $newspack_form_class, 1 ) : $newspack_form_class; // Strip the "." class selector.
-		$has_form                = preg_match( '/<form\s|\[gravityforms\s|' . $newspack_form_class . '/', $body ) !== 0;
+		$has_form                = preg_match( '/<form\s|mc4wp-form|\[gravityforms\s|' . $newspack_form_class . '/', $body ) !== 0;
 		$has_dismiss_form        = self::is_overlay( $popup );
 		$has_not_interested_form = $popup['options']['dismiss_text'];
 
