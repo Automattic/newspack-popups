@@ -762,15 +762,31 @@ final class Newspack_Popups_Model {
 
 		$endpoint = self::get_reader_endpoint();
 
-		// Mailchimp.
-		$mailchimp_form_selector = '';
+		// Newsletter subscription forms.
+		$subscribe_form_selector = '';
 		$email_form_field_name   = 'email';
+
+		// Jetpack Mailchimp block.
 		if ( preg_match( '/wp-block-jetpack-mailchimp/', $body ) !== 0 ) {
-			$mailchimp_form_selector = '.wp-block-jetpack-mailchimp form';
+			$subscribe_form_selector = '.wp-block-jetpack-mailchimp form';
 		}
+
+		// MC4WP form.
 		if ( preg_match( '/mc4wp-form/', $body ) !== 0 ) {
-			$mailchimp_form_selector = '.mc4wp-form';
+			$subscribe_form_selector = '.mc4wp-form';
 			$email_form_field_name   = 'EMAIL';
+		}
+
+		// GravityForms block.
+		if ( preg_match( '/\[gravityform/', $body ) !== 0 ) {
+			$subscribe_form_selector = '.gform_wrapper form';
+			$email_form_field_name   = 'input_1'; // GravityForms doesn't allow you to edit the name attribute for fields, so we'll assume that the first input field is the email address.
+		}
+
+		// Custom forms.
+		if ( preg_match( '/newspack-subscribe-form/', $body ) !== 0 ) {
+			$subscribe_form_selector = '.' . apply_filters( 'newspack_campaigns_form_class', 'newspack-subscribe-form' );
+			$email_form_field_name   = apply_filters( 'newspack_campaigns_email_form_field_name', 'email' );
 		}
 
 		$amp_analytics_config = [
@@ -794,11 +810,11 @@ final class Newspack_Popups_Model {
 				],
 			],
 		];
-		if ( $mailchimp_form_selector ) {
+		if ( $subscribe_form_selector ) {
 			$amp_analytics_config['triggers']['formSubmitSuccess'] = [
 				'on'             => 'amp-form-submit-success',
 				'request'        => 'event',
-				'selector'       => '#' . esc_attr( $element_id ) . ' ' . esc_attr( $mailchimp_form_selector ),
+				'selector'       => '#' . esc_attr( $element_id ) . ' ' . esc_attr( $subscribe_form_selector ),
 				'extraUrlParams' => [
 					'popup_id'            => esc_attr( self::canonize_popup_id( $popup['id'] ) ),
 					'cid'                 => 'CLIENT_ID(' . esc_attr( Newspack_Popups_Segmentation::NEWSPACK_SEGMENTATION_CID_NAME ) . ')',
@@ -853,13 +869,13 @@ final class Newspack_Popups_Model {
 			return [];
 		}
 
-		$popup_id            = $popup['id'];
-		$event_category      = 'Newspack Announcement';
-		$formatted_placement = ucwords( str_replace( '_', ' ', $popup['options']['placement'] ) );
-		$event_label         = $formatted_placement . ': ' . $popup['title'] . ' (' . $popup_id . ')';
-
+		$popup_id                = $popup['id'];
+		$event_category          = 'Newspack Announcement';
+		$formatted_placement     = ucwords( str_replace( '_', ' ', $popup['options']['placement'] ) );
+		$event_label             = $formatted_placement . ': ' . $popup['title'] . ' (' . $popup_id . ')';
+		$newspack_form_class     = apply_filters( 'newspack_campaigns_form_class', 'newspack-subscribe-form' );
 		$has_link                = preg_match( '/<a\s/', $body ) !== 0;
-		$has_form                = preg_match( '/<form\s|\[gravityforms\s/', $body ) !== 0;
+		$has_form                = preg_match( '/<form\s|\[gravityforms\s|' . $newspack_form_class . '/', $body ) !== 0;
 		$has_dismiss_form        = self::is_overlay( $popup );
 		$has_not_interested_form = $popup['options']['dismiss_text'];
 
