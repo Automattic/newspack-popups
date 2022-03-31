@@ -782,29 +782,30 @@ final class Newspack_Popups_Model {
 
 		// Newsletter subscription forms.
 		$subscribe_form_selector = '';
-		$email_form_field_name   = 'email';
+		$email_form_field_name   = '';
 
 		// Jetpack Mailchimp block.
 		if ( preg_match( '/wp-block-jetpack-mailchimp/', $body ) !== 0 ) {
-			$subscribe_form_selector = '.wp-block-jetpack-mailchimp form';
+			$subscribe_form_selector = apply_filters( 'newspack_campaigns_form_class', '.wp-block-jetpack-mailchimp form' );
+			$email_form_field_name   = apply_filters( 'newspack_campaigns_email_form_field_name', 'email', $subscribe_form_selector );
 		}
 
 		// MC4WP form.
 		if ( preg_match( '/mc4wp-form/', $body ) !== 0 ) {
-			$subscribe_form_selector = '.mc4wp-form';
-			$email_form_field_name   = 'EMAIL';
+			$subscribe_form_selector = apply_filters( 'newspack_campaigns_form_class', '.mc4wp-form' );
+			$email_form_field_name   = apply_filters( 'newspack_campaigns_email_form_field_name', 'EMAIL', $subscribe_form_selector );
 		}
 
-		// GravityForms block.
+		// Gravity Forms block.
 		if ( preg_match( '/\[gravityform/', $body ) !== 0 ) {
-			$subscribe_form_selector = '.gform_wrapper form';
-			$email_form_field_name   = 'input_1'; // GravityForms doesn't allow you to edit the name attribute for fields, so we'll assume that the first input field is the email address.
+			$subscribe_form_selector = apply_filters( 'newspack_campaigns_form_class', '.gform_wrapper form' );
+			$email_form_field_name   = apply_filters( 'newspack_campaigns_email_form_field_name', 'input_1', $subscribe_form_selector ); // Gravity Forms doesn't allow you to edit the name attribute for fields, so we'll assume that the first input field is the email address.
 		}
 
 		// Custom forms.
 		if ( preg_match( '/newspack-subscribe-form/', $body ) !== 0 ) {
-			$subscribe_form_selector = '.' . apply_filters( 'newspack_campaigns_form_class', 'newspack-subscribe-form' );
-			$email_form_field_name   = apply_filters( 'newspack_campaigns_email_form_field_name', 'email' );
+			$subscribe_form_selector = apply_filters( 'newspack_campaigns_form_class', '.newspack-subscribe-form' );
+			$email_form_field_name   = apply_filters( 'newspack_campaigns_email_form_field_name', 'email', $subscribe_form_selector );
 		}
 
 		$amp_analytics_config = [
@@ -828,7 +829,7 @@ final class Newspack_Popups_Model {
 				],
 			],
 		];
-		if ( $subscribe_form_selector ) {
+		if ( $subscribe_form_selector && $email_form_field_name ) {
 			$amp_analytics_config['triggers']['formSubmitSuccess'] = [
 				'on'             => 'amp-form-submit-success',
 				'request'        => 'event',
@@ -913,7 +914,8 @@ final class Newspack_Popups_Model {
 			0 < count( $segments ) ? implode( '; ', $segments ) : __( 'Everyone', 'newspack-popups' )
 		);
 		$has_link                = preg_match( '/<a\s/', $body ) !== 0;
-		$newspack_form_class     = apply_filters( 'newspack_campaigns_form_class', 'newspack-subscribe-form' );
+		$newspack_form_class     = apply_filters( 'newspack_campaigns_form_class', '.newspack-subscribe-form' );
+		$newspack_form_class     = '.' === substr( $newspack_form_class, 0, 1 ) ? substr( $newspack_form_class, 1 ) : $newspack_form_class; // Strip the "." class selector.
 		$has_form                = preg_match( '/<form\s|\[gravityforms\s|' . $newspack_form_class . '/', $body ) !== 0;
 		$has_dismiss_form        = self::is_overlay( $popup );
 		$has_not_interested_form = $popup['options']['dismiss_text'];
