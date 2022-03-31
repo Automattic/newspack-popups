@@ -1,3 +1,19 @@
+# [1.51.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.50.0...v1.51.0-alpha.1) (2022-03-31)
+
+
+### Bug Fixes
+
+* donation landing page setting ([#826](https://github.com/Automattic/newspack-popups/issues/826)) ([9b057b8](https://github.com/Automattic/newspack-popups/commit/9b057b805c728b3e29ff51426ff09393f6130f31))
+* restore "Announcements" category and move segments to label ([9c429a6](https://github.com/Automattic/newspack-popups/commit/9c429a67478988845082a3ad300b09781acbbe5d))
+
+
+### Features
+
+* add "undismissible" option for inline prompts ([#832](https://github.com/Automattic/newspack-popups/issues/832)) ([f766dac](https://github.com/Automattic/newspack-popups/commit/f766dac3d0e15b89a1d2d92dc0827654bb1d70b6))
+* allow segmentation by user login status ([#825](https://github.com/Automattic/newspack-popups/issues/825)) ([affdbea](https://github.com/Automattic/newspack-popups/commit/affdbeae0de92c908e244cb20fb0658d4ee8f412))
+* **analytics:** add segment name to event_category ([5a9f7c3](https://github.com/Automattic/newspack-popups/commit/5a9f7c3ac8d6c0c52b3e1e8a2faceddd126f52d4))
+* show prompts to logged-in admin and editor users ([#824](https://github.com/Automattic/newspack-popups/issues/824)) ([cba27f5](https://github.com/Automattic/newspack-popups/commit/cba27f52c7114e8df3d92dfd74f4f5ab449b21d2))
+
 # [1.50.0](https://github.com/Automattic/newspack-popups/compare/v1.49.1...v1.50.0) (2022-03-22)
 
 
