@@ -803,8 +803,10 @@ final class Newspack_Popups_Model {
 		}
 
 		// Custom forms.
-		if ( preg_match( '/newspack-subscribe-form/', $body ) !== 0 ) {
-			$subscribe_form_selector = apply_filters( 'newspack_campaigns_form_class', '.newspack-subscribe-form' );
+		$newspack_form_class           = apply_filters( 'newspack_campaigns_form_class', '.newspack-subscribe-form' );
+		$newspack_form_class_minus_dot = '.' === substr( $newspack_form_class, 0, 1 ) ? substr( $newspack_form_class, 1 ) : $newspack_form_class; // Strip the "." class selector.
+		if ( preg_match( '/' . $newspack_form_class_minus_dot . '/', $body ) !== 0 ) {
+			$subscribe_form_selector = $newspack_form_class;
 			$email_form_field_name   = apply_filters( 'newspack_campaigns_email_form_field_name', 'email', $subscribe_form_selector );
 		}
 
