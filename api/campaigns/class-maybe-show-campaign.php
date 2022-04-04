@@ -152,6 +152,18 @@ class Maybe_Show_Campaign extends Lightweight_API {
 				}
 			}
 
+			// If prompt was shown, report a view.
+			if ( $campaign_should_be_shown ) {
+				$campaign_data = $this->get_campaign_data( $client_id, $campaign->id );
+				$campaign_data['count']++;
+				$campaign_data['last_viewed'] = time();
+				$client_data_update           = [
+					'prompts' => [ "$campaign->id" => $campaign_data ],
+				];
+
+				$this->save_client_data( $client_id, $client_data_update );
+			}
+
 			$response[ $campaign->id ] = $campaign_should_be_shown;
 		}
 
