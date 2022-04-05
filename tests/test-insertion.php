@@ -230,7 +230,7 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 		self::assertContains(
 			self::$popup_content,
 			$amp_layout_elements->item( 0 )->textContent,
-			'Includes the popup content.'
+			'Includes the popup content for non-logged-in users.'
 		);
 
 		$user_id = $this->factory->user->create( [ 'role' => 'administrator' ] );
@@ -238,10 +238,10 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 
 		self::renderPost();
 		$amp_layout_elements = self::$dom_xpath->query( '//amp-layout' );
-		self::assertEquals(
-			0,
-			$amp_layout_elements->length,
-			'Does not include popups when the page is loaded by an admin.'
+		self::assertContains(
+			self::$popup_content,
+			$amp_layout_elements->item( 0 )->textContent,
+			'Also includes the popup content for logged-in admin users.'
 		);
 	}
 

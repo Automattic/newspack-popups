@@ -23,7 +23,13 @@ import { without } from 'lodash';
 /**
  * Internal dependencies
  */
-import { isCustomPlacement, getPlacementHelpMessage } from '../editor/utils';
+import {
+	isCustomPlacement,
+	isInlinePlacement,
+	isManualOnlyPlacement,
+	isOverlayPlacement,
+	getPlacementHelpMessage,
+} from './utils';
 import PositionPlacementControl from './PositionPlacementControl';
 
 const Sidebar = props => {
@@ -41,12 +47,11 @@ const Sidebar = props => {
 		archive_insertion_posts_count,
 		archive_insertion_is_repeating,
 		isOverlay,
-		isInlinePlacement,
 		archive_page_types = [],
 	} = props;
 	const updatePlacement = value => {
 		onMetaFieldChange( 'placement', value );
-		if ( ! isInlinePlacement( value ) && frequency === 'always' ) {
+		if ( isOverlayPlacement( value ) && frequency === 'always' ) {
 			onMetaFieldChange( 'frequency', 'once' );
 		}
 	};
@@ -233,7 +238,9 @@ const Sidebar = props => {
 				checked={ display_title }
 				onChange={ value => onMetaFieldChange( 'display_title', value ) }
 			/>
-			{ ( placement === 'inline' || placement === 'manual' || isCustomPlacement( placement ) ) && (
+			{ ( isInlinePlacement( placement ) ||
+				isManualOnlyPlacement( placement ) ||
+				isCustomPlacement( placement ) ) && (
 				<ToggleControl
 					label={ __( 'Hide Prompt Border', 'newspack-popups' ) }
 					checked={ hide_border }
