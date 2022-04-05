@@ -41,6 +41,9 @@ class Report_Campaign_Data extends Lightweight_API {
 		$campaign_data      = $this->get_campaign_data( $client_id, $campaign_id );
 		$client_data_update = [];
 
+		$campaign_data['count']++;
+		$campaign_data['last_viewed'] = time();
+
 		// Handle permanent suppression.
 		if ( $this->get_request_param( 'suppress_forever', $request ) ) {
 			$campaign_data['suppress_forever'] = true;
