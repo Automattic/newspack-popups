@@ -373,6 +373,14 @@ $size__large: 1264px;
 	}
 }
 
+// Hide empty Paragraph Blocks
+.newspack-lightbox,
+.newspack-inline-popup {
+	p:empty {
+		display: none;
+	}
+}
+
 // This is needed for the scroll-triggered popups to function properly.
 // (#page-position-marker element is an absolutely-placed child of .entry-content)
 /* stylelint-disable-next-line no-duplicate-selectors */
