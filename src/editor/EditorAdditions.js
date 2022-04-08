@@ -62,18 +62,22 @@ const EditorAdditions = () => {
 		}
 	}, [ undismissible_prompt, dismiss_text, dismiss_text_alignment ] );
 
-	// Setting editor size as per the popup size.
+	// Setting editor size as per the overlay size or add inline placement.
 	useEffect( () => {
 		const blockEditor = document.querySelector( '.block-editor-block-list__layout' );
 		if ( blockEditor ) {
 			blockEditor.classList.forEach( className => {
 				if ( className.startsWith( 'is-size-' ) ) {
 					blockEditor.classList.remove( className );
+				} else {
+					blockEditor.classList.remove( 'is-placement-inline' );
 				}
 			} );
 
 			if ( isOverlayPlacement( placement ) ) {
 				blockEditor.classList.add( `is-size-${ overlay_size }` );
+			} else {
+				blockEditor.classList.add( 'is-placement-inline' );
 			}
 		}
 	}, [ overlay_size, placement ] );
