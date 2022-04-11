@@ -771,8 +771,7 @@ final class Newspack_Popups_Model {
 	protected static function insert_event_tracking( $popup, $body, $element_id ) {
 		if (
 			Newspack_Popups::is_preview_request() ||
-			Newspack_Popups_Settings::is_non_interactive() ||
-			! Newspack_Popups::is_tracking()
+			Newspack_Popups_Settings::is_non_interactive()
 		) {
 			return '';
 		}
