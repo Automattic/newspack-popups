@@ -783,31 +783,58 @@ final class Newspack_Popups_Model {
 		$subscribe_form_selector = '';
 		$email_form_field_name   = '';
 
+		/**
+		 * A CSS class name that can be added to a form element to indicate that it should be treated as a subscribe form.
+		 * This will allow forms built with platforms other than Jetpack's Mailchimp block or MC4WP to be tracked.
+		 * Jetpack Mailchimp blocks and MC4WP forms will be tracked whether or not they have the class.
+		 *
+		 * @param string $class_name The class name to look for.
+		 */
+		$newspack_form_class = apply_filters( 'newspack_campaigns_form_class', 'newspack-subscribe-form' );
+
 		if ( preg_match( '/wp-block-jetpack-mailchimp/', $body ) !== 0 ) {
 			// Jetpack Mailchimp block.
-			$subscribe_form_selector = apply_filters( 'newspack_campaigns_form_class', '.wp-block-jetpack-mailchimp form' );
+			$subscribe_form_selector = apply_filters( 'newspack_campaigns_form_selector', '.wp-block-jetpack-mailchimp form' );
 			$email_form_field_name   = apply_filters( 'newspack_campaigns_email_form_field_name', 'email', $subscribe_form_selector );
 		} elseif ( preg_match( '/mc4wp-form/', $body ) !== 0 ) {
 			// MC4WP form.
-			$subscribe_form_selector = apply_filters( 'newspack_campaigns_form_class', '.mc4wp-form' );
+			$subscribe_form_selector = apply_filters( 'newspack_campaigns_form_selector', '.mc4wp-form' );
 			$email_form_field_name   = apply_filters( 'newspack_campaigns_email_form_field_name', 'EMAIL', $subscribe_form_selector );
-		} elseif ( preg_match( '/\[gravityform/', $body ) !== 0 ) {
-			// Gravity Forms block.
-			$subscribe_form_selector = apply_filters( 'newspack_campaigns_form_class', '.gform_wrapper form' );
+		} elseif ( preg_match( '/\[gravityforms\s(.*)\]/', $body, $gravity_form_attributes ) !== 0 && class_exists( '\GFAPI' ) ) {
+			// Gravity Forms block produces a shortcode. Check for a form ID attribute on the shortcode.
+			$has_id = preg_match( '/id="(\d*)"/', $gravity_form_attributes[1], $id_matches );
 
-			/**
-			 * Gravity Forms doesn't allow you to edit the name attribute for fields,
-			 * so we'll assume that the first input field is the email address.
-			 * If your prompt contains a Gravity Form that you do NOT want to track,
-			 * as a subscribe form, return a falsy value such as `null` in the callback.
-			 */
-			$email_form_field_name = apply_filters( 'newspack_campaigns_email_form_field_name', 'input_1', $subscribe_form_selector );
+			// If it has an ID we can use to look up the form.
+			if ( $has_id ) {
+				$form_id = $id_matches[1];
+				$form    = \GFAPI::get_form( $form_id );
+
+				// If the form ID matches an existing GF form.
+				if ( $form ) {
+					$form_classes      = explode( ' ', $form['cssClass'] );
+					$is_subscribe_form = in_array( $newspack_form_class, $form_classes, true );
+					$email_field_id    = array_reduce(
+						$form['fields'],
+						function( $acc, $field ) {
+							if ( 'email' === $field['type'] ) {
+								$acc = $field['id'];
+							}
+							return $acc;
+						},
+						null
+					);
+
+					// If the form has the required CSS class and an email input field.
+					if ( $is_subscribe_form && $email_field_id ) {
+						$subscribe_form_selector = apply_filters( 'newspack_campaigns_form_selector', "form.$newspack_form_class" ); // Gravity Forms applies CSS classes directly to the form element.
+						$email_form_field_name   = apply_filters( 'newspack_campaigns_email_form_field_name', "input_$email_field_id", $subscribe_form_selector );
+					}
+				}
+			}
 		} else {
 			// Custom forms.
-			$newspack_form_class           = apply_filters( 'newspack_campaigns_form_class', '.newspack-subscribe-form' );
-			$newspack_form_class_minus_dot = '.' === substr( $newspack_form_class, 0, 1 ) ? substr( $newspack_form_class, 1 ) : $newspack_form_class; // Strip the "." class selector.
-			if ( preg_match( '/' . $newspack_form_class_minus_dot . '/', $body ) !== 0 ) {
-				$subscribe_form_selector = $newspack_form_class;
+			if ( preg_match( '/' . $newspack_form_class . '/', $body ) !== 0 ) {
+				$subscribe_form_selector = apply_filters( 'newspack_campaigns_form_selector', '.' . $newspack_form_class );
 				$email_form_field_name   = apply_filters( 'newspack_campaigns_email_form_field_name', 'email', $subscribe_form_selector );
 			}
 		}
