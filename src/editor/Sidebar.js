@@ -176,21 +176,20 @@ const Sidebar = props => {
 						] }
 						onChange={ value => onMetaFieldChange( 'trigger_type', value ) }
 					/>
-					{ 'scroll' === trigger_type && (
+					{ 'blocks_count' === trigger_type ? (
+						<RangeControl
+							label={ __( 'Number of blocks before the prompt', 'newspack-popups' ) }
+							value={ trigger_blocks_count }
+							onChange={ value => onMetaFieldChange( 'trigger_blocks_count', value ) }
+							min={ 0 }
+						/>
+					) : (
 						<RangeControl
 							label={ __( 'Approximate Position (in percent)', 'newspack-popups' ) }
 							value={ trigger_scroll_progress }
 							onChange={ value => onMetaFieldChange( 'trigger_scroll_progress', value ) }
 							min={ 0 }
 							max={ 100 }
-						/>
-					) }
-					{ 'blocks_count' === trigger_type && (
-						<RangeControl
-							label={ __( 'Number of blocks before the prompt', 'newspack-popups' ) }
-							value={ trigger_blocks_count }
-							onChange={ value => onMetaFieldChange( 'trigger_blocks_count', value ) }
-							min={ 0 }
 						/>
 					) }
 				</>
