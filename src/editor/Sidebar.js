@@ -144,22 +144,21 @@ const Sidebar = props => {
 						] }
 						onChange={ value => onMetaFieldChange( 'trigger_type', value ) }
 					/>
-					{ 'time' === trigger_type && (
-						<RangeControl
-							label={ __( 'Delay (seconds)', 'newspack-popups' ) }
-							value={ trigger_delay }
-							onChange={ value => onMetaFieldChange( 'trigger_delay', value ) }
-							min={ 0 }
-							max={ 60 }
-						/>
-					) }
-					{ 'scroll' === trigger_type && (
+					{ 'scroll' === trigger_type ? (
 						<RangeControl
 							label={ __( 'Scroll Progress (percent)', 'newspack-popups' ) }
 							value={ trigger_scroll_progress }
 							onChange={ value => onMetaFieldChange( 'trigger_scroll_progress', value ) }
 							min={ 1 }
 							max={ 100 }
+						/>
+					) : (
+						<RangeControl
+							label={ __( 'Delay (seconds)', 'newspack-popups' ) }
+							value={ trigger_delay }
+							onChange={ value => onMetaFieldChange( 'trigger_delay', value ) }
+							min={ 0 }
+							max={ 60 }
 						/>
 					) }
 				</>
