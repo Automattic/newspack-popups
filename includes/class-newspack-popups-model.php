@@ -606,6 +606,7 @@ final class Newspack_Popups_Model {
 				case 'scroll':
 					$popup['options']['trigger_delay'] = 0;
 					break;
+				case 'blocks_count':
 				case 'time':
 				default:
 					$popup['options']['trigger_scroll_progress'] = 0;

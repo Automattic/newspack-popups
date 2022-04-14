@@ -380,7 +380,7 @@ final class Newspack_Popups_Inserter {
 				$position          = $inline_popup['precise_position'];
 				$trigger_type      = $inline_popup['options']['trigger_type'];
 				$insert_at_zero    = 0 === $position; // If the position is 0, the prompt should always appear first.
-				$insert_for_scroll = 'scroll' === $trigger_type && $pos > $position;
+				$insert_for_scroll = 'blocks_count' !== $trigger_type && $pos > $position;
 				$insert_for_blocks = 'blocks_count' === $trigger_type && $block_index >= $position;
 
 				if ( $insert_at_zero || $insert_for_scroll || $insert_for_blocks ) {
