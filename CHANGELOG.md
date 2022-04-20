@@ -1,3 +1,35 @@
+# [1.52.0](https://github.com/Automattic/newspack-popups/compare/v1.51.0...v1.52.0) (2022-04-20)
+
+
+### Bug Fixes
+
+* insertion of prompts around Group blocks ([#855](https://github.com/Automattic/newspack-popups/issues/855)) ([6ae5ea9](https://github.com/Automattic/newspack-popups/commit/6ae5ea90c664e359d80e116253a2a675fe200b69))
+* make "scroll" the default inline trigger_type ([#846](https://github.com/Automattic/newspack-popups/issues/846)) ([a2ffee4](https://github.com/Automattic/newspack-popups/commit/a2ffee42bdc44bec33f8769407f1d5c4344fbeb0))
+
+
+### Features
+
+* support other newsletter signup forms ([#836](https://github.com/Automattic/newspack-popups/issues/836)) ([c30702d](https://github.com/Automattic/newspack-popups/commit/c30702de0995204c9eea5bc02f1ad6066e20a796))
+
+# [1.52.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.51.1-alpha.1...v1.52.0-alpha.1) (2022-04-20)
+
+
+### Bug Fixes
+
+* insertion of prompts around Group blocks ([#855](https://github.com/Automattic/newspack-popups/issues/855)) ([6ae5ea9](https://github.com/Automattic/newspack-popups/commit/6ae5ea90c664e359d80e116253a2a675fe200b69))
+
+
+### Features
+
+* support other newsletter signup forms ([#836](https://github.com/Automattic/newspack-popups/issues/836)) ([c30702d](https://github.com/Automattic/newspack-popups/commit/c30702de0995204c9eea5bc02f1ad6066e20a796))
+
+## [1.51.1-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.51.0...v1.51.1-alpha.1) (2022-04-18)
+
+
+### Bug Fixes
+
+* make "scroll" the default inline trigger_type ([#846](https://github.com/Automattic/newspack-popups/issues/846)) ([a2ffee4](https://github.com/Automattic/newspack-popups/commit/a2ffee42bdc44bec33f8769407f1d5c4344fbeb0))
+
 # [1.51.0](https://github.com/Automattic/newspack-popups/compare/v1.50.0...v1.51.0) (2022-04-05)
 
 
