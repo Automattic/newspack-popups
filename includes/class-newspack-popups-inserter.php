@@ -366,8 +366,7 @@ final class Newspack_Popups_Inserter {
 					// Give length-ignored blocks a length of 1 so that prompts at 0% can still be inserted before them.
 					$pos++;
 				} else {
-					$block_content = self::get_block_content( $block );
-					$pos          += strlen( wp_strip_all_tags( $block_content ) );
+					$pos += strlen( wp_strip_all_tags( $block['innerHTML'] ) );
 				}
 			}
 
