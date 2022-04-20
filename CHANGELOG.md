@@ -1,3 +1,10 @@
+## [1.52.1-hotfix.1](https://github.com/Automattic/newspack-popups/compare/v1.52.0...v1.52.1-hotfix.1) (2022-04-20)
+
+
+### Reverts
+
+* Revert "fix: insertion of prompts around Group blocks (#855)" ([b9917f2](https://github.com/Automattic/newspack-popups/commit/b9917f2f7e9c17bad96c8bb0385dbf144d10344b)), closes [#855](https://github.com/Automattic/newspack-popups/issues/855)
+
 # [1.52.0](https://github.com/Automattic/newspack-popups/compare/v1.51.0...v1.52.0) (2022-04-20)
 
 
