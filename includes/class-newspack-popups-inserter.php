@@ -366,7 +366,8 @@ final class Newspack_Popups_Inserter {
 					// Give length-ignored blocks a length of 1 so that prompts at 0% can still be inserted before them.
 					$pos++;
 				} else {
-					$pos += strlen( wp_strip_all_tags( $block['innerHTML'] ) );
+					$block_content = self::get_block_content( $block );
+					$pos          += strlen( wp_strip_all_tags( $block_content ) );
 				}
 			}
 
@@ -380,7 +381,7 @@ final class Newspack_Popups_Inserter {
 				$position          = $inline_popup['precise_position'];
 				$trigger_type      = $inline_popup['options']['trigger_type'];
 				$insert_at_zero    = 0 === $position; // If the position is 0, the prompt should always appear first.
-				$insert_for_scroll = 'scroll' === $trigger_type && $pos > $position;
+				$insert_for_scroll = 'blocks_count' !== $trigger_type && $pos > $position;
 				$insert_for_blocks = 'blocks_count' === $trigger_type && $block_index >= $position;
 
 				if ( $insert_at_zero || $insert_for_scroll || $insert_for_blocks ) {

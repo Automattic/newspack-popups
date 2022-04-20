@@ -435,9 +435,87 @@ Paragraph 2
 		self::assertEqualBlockNames(
 			[
 				'core/shortcode', // Popup 1 - inserted before the group block.
+				'core/shortcode', // Popup 2 - inserted before the group block.
 				'core/group',
-				'core/shortcode', // Popup 2 - inserted after the group block.
 				'core/shortcode', // Popup 3.
+			],
+			Newspack_Popups_Inserter::insert_popups_in_post_content(
+				$post_content,
+				self::$popups
+			),
+			'The popups are inserted into the content at expected positions.'
+		);
+	}
+
+	/**
+	 * Test prompt insertion at 0% with multiple top-level Group blocks.
+	 */
+	public function test_prompt_insertion_multiple_groups() {
+		$post_content = '
+	<!-- wp:group -->
+	<div class="wp-block-group"><!-- wp:paragraph -->
+	<p>Paragraph 1</p>
+	<!-- /wp:paragraph -->
+
+	<!-- wp:paragraph -->
+	<p>Paragraph 2</p>
+	<!-- /wp:paragraph --></div>
+	<!-- /wp:group -->
+
+	<!-- wp:group -->
+	<div class="wp-block-group">
+	<!-- wp:paragraph -->
+	<p>Paragraph 3</p>
+	<!-- /wp:paragraph -->
+
+	<!-- wp:paragraph -->
+	<p>Paragraph 4</p>
+	<!-- /wp:paragraph --></div>
+	<!-- /wp:group -->
+
+	<!-- wp:group -->
+	<div class="wp-block-group">
+	<!-- wp:paragraph -->
+	<p>Paragraph 5</p>
+	<!-- /wp:paragraph -->
+
+	<!-- wp:paragraph -->
+	<p>Paragraph 6</p>
+	<!-- /wp:paragraph --></div>
+	<!-- /wp:group -->
+
+	<!-- wp:group -->
+	<div class="wp-block-group">
+	<!-- wp:paragraph -->
+	<p>Paragraph 7</p>
+	<!-- /wp:paragraph -->
+
+	<!-- wp:paragraph -->
+	<p>Paragraph 8</p>
+	<!-- /wp:paragraph --></div>
+	<!-- /wp:group -->
+
+	<!-- wp:group -->
+	<div class="wp-block-group">
+	<!-- wp:paragraph -->
+	<p>Paragraph 9</p>
+	<!-- /wp:paragraph -->
+
+	<!-- wp:paragraph -->
+	<p>Paragraph 10</p>
+	<!-- /wp:paragraph --></div>
+	<!-- /wp:group -->';
+
+		self::assertEqualBlockNames(
+			[
+				'core/shortcode', // Popup 1 - 0%.
+				'core/group',
+				'core/group',
+				'core/group',
+				'core/shortcode', // Popup 2 - 70%.
+				'core/group',
+				'core/group',
+				'core/shortcode', // Popup 3 - 100%.
 			],
 			Newspack_Popups_Inserter::insert_popups_in_post_content(
 				$post_content,
