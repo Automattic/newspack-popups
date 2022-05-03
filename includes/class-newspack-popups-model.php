@@ -844,22 +844,7 @@ final class Newspack_Popups_Model {
 			'requests' => [
 				'event' => esc_url( $endpoint ),
 			],
-			'triggers' => [
-				'trackPageview' => [
-					'on'             => 'visible',
-					'request'        => 'event',
-					'visibilitySpec' => [
-						'selector'             => '#' . esc_attr( $element_id ),
-						'visiblePercentageMin' => 90,
-						'totalTimeMin'         => 500,
-						'continuousTimeMin'    => 200,
-					],
-					'extraUrlParams' => [
-						'popup_id' => esc_attr( self::canonize_popup_id( $popup['id'] ) ),
-						'cid'      => 'CLIENT_ID(' . esc_attr( Newspack_Popups_Segmentation::NEWSPACK_SEGMENTATION_CID_NAME ) . ')',
-					],
-				],
-			],
+			'triggers' => [],
 		];
 		if ( $subscribe_form_selector && $email_form_field_name ) {
 			$amp_analytics_config['triggers']['formSubmitSuccess'] = [
