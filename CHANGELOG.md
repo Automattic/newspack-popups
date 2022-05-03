@@ -1,3 +1,10 @@
+## [1.52.2-hotfix.1](https://github.com/Automattic/newspack-popups/compare/v1.52.1...v1.52.2-hotfix.1) (2022-05-03)
+
+
+### Bug Fixes
+
+* **analytics:** remove redundant trackPageView trigger ([5c59d67](https://github.com/Automattic/newspack-popups/commit/5c59d67c021b88b4474b7ad69147d20953bfc37c))
+
 ## [1.52.1](https://github.com/Automattic/newspack-popups/compare/v1.52.0...v1.52.1) (2022-04-20)
 
 
