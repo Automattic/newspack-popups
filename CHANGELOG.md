@@ -1,3 +1,10 @@
+## [1.52.2](https://github.com/Automattic/newspack-popups/compare/v1.52.1...v1.52.2) (2022-05-10)
+
+
+### Bug Fixes
+
+* prevent duplicated pageviews if amp-analytics was loaded externally ([2ca79ec](https://github.com/Automattic/newspack-popups/commit/2ca79ec884abbe1c9000229cb894766c8be57fb5))
+
 ## [1.52.1](https://github.com/Automattic/newspack-popups/compare/v1.52.0...v1.52.1) (2022-04-20)
 
 
