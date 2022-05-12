@@ -46,7 +46,8 @@ class Lightweight_API {
 	 */
 	public function __construct() {
 		if ( $this->is_a_web_crawler() ) {
-			$this->error( 'invalid_referer' );
+			header( 'X-Robots-Tag: noindex' );
+			exit;
 		}
 		if ( ! $this->verify_referer() ) {
 			$this->error( 'invalid_referer' );
