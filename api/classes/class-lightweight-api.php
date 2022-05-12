@@ -46,7 +46,7 @@ class Lightweight_API {
 	 */
 	public function __construct() {
 		if ( $this->is_a_web_crawler() ) {
-			header( 'X-Robots-Tag: noindex', false );
+			header( 'X-Robots-Tag: noindex' );
 			exit;
 		}
 		if ( ! $this->verify_referer() ) {
