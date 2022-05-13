@@ -35,10 +35,7 @@ class WP_UnitTestCase_PageWithPopups extends WP_UnitTestCase {
 
 		Newspack_Popups_Model::set_popup_options(
 			self::$popup_id,
-			[
-				'frequency'    => 'daily',
-				'dismiss_text' => Newspack_Popups::get_default_dismiss_text(),
-			]
+			[ 'frequency' => 'daily' ]
 		);
 	}
 

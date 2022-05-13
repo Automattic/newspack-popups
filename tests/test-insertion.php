@@ -23,11 +23,6 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 			'Includes the popup content.'
 		);
 		self::assertContains(
-			Newspack_Popups::get_default_dismiss_text(),
-			$popup_text_content,
-			'Includes the dismissal text.'
-		);
-		self::assertContains(
 			self::$raw_post_content,
 			self::$post_content,
 			'Includes the original post content.'
@@ -277,11 +272,6 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 			self::$popup_content,
 			self::$post_content,
 			'Does include the popup content.'
-		);
-		self::assertNotContains(
-			Newspack_Popups::get_default_dismiss_text(),
-			self::$post_content,
-			'Does not include the dismissal text.'
 		);
 		update_option( 'newspack_popups_non_interative_mode', false );
 	}
