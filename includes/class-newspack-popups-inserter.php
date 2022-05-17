@@ -755,7 +755,7 @@ final class Newspack_Popups_Inserter {
 			[
 				'post_id'    => esc_attr( get_the_ID() ),
 				'categories' => esc_attr( $category_ids ),
-				'is_post'    => is_single(),
+				'is_post'    => is_singular(),
 			]
 		);
 		if ( isset( $_GET['newspack-campaigns-debug'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized

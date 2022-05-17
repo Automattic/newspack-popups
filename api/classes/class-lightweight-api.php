@@ -39,6 +39,14 @@ class Lightweight_API {
 	];
 
 	/**
+	 * Event types which are temporary and purgeable.
+	 */
+	private $temporary_event_types = [
+		'article_view',
+		'page_view',
+	];
+
+	/**
 	 * Constructor.
 	 *
 	 * @codeCoverageIgnore
@@ -169,7 +177,7 @@ class Lightweight_API {
 	public function get_transient( $name ) {
 		global $wpdb;
 		$name       = '_transient_' . $name;
-		$table_name = Segmentation::get_transients_table_name();
+		$table_name = Segmentation::get_readers_table_name();
 		$value      = wp_cache_get( $name, 'newspack-popups' );
 
 		if ( false === $value ) {
@@ -198,7 +206,7 @@ class Lightweight_API {
 	 */
 	public function set_transient( $name, $value ) {
 		global $wpdb;
-		$table_name       = Segmentation::get_transients_table_name();
+		$table_name       = Segmentation::get_readers_table_name();
 		$name             = '_transient_' . $name;
 		$serialized_value = maybe_serialize( $value );
 		wp_cache_set( $name, $serialized_value, 'newspack-popups' );
@@ -215,7 +223,7 @@ class Lightweight_API {
 	public function delete_transient( $name ) {
 		global $wpdb;
 		$name       = '_transient_' . $name;
-		$table_name = Segmentation::get_transients_table_name();
+		$table_name = Segmentation::get_readers_table_name();
 
 		wp_cache_delete( $name );
 		$wpdb->delete( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
@@ -265,12 +273,97 @@ class Lightweight_API {
 	}
 
 	/**
+	 * Given an array of reader events, only return those with the matching $event_type.
+	 * If $event_type is null, simply return the events array as-is.
+	 *
+	 * @param array       $events Array of reader events.
+	 * @param string|null $event_type Type of event to filter by.
+	 *
+	 * @return array Filtered array of events.
+	 */
+	public function filter_events_by_type( $events, $event_type = null ) {
+		if ( null === $event_type ) {
+			return $events;
+		}
+
+		return array_values(
+			array_filter(
+				$events,
+				function( $event ) use ( $event_type ) {
+					return $event_type === $event['type'];
+				}
+			)
+		);
+	}
+
+	/**
+	 * Retrieve events for a specific reader.
+	 *
+	 * @param string      $client_id Client ID of the reader.
+	 * @param string|null $event_type Type of event to retrieve.
+	 *                                If null, retrieve all events for the given reader.
+	 * @param boolean     $ignore_cache If true, skip the WP cache and retrieve data from the DB.
+	 */
+	public function get_reader_events( $client_id, $event_type = null, $ignore_cache = false ) {
+		$events = [];
+
+		// Check the cache first.
+		if ( ! $ignore_cache ) {
+			$events = wp_cache_get( 'reader_events', $client_id );
+			if ( ! empty( $events ) ) {
+				return $this->filter_events_by_type( $events, $event_type );
+			}
+		}
+
+		// If ignoring cache or there are no cached events, retrieve from the DB.
+		global $wpdb;
+		$events_table_name = Segmentation::get_events_table_name();
+		$event_type_filter = $event_type ? " AND type = '$event_type'" : '';
+		$events_from_db    = $wpdb->prepare(
+			"SELECT * from $events_table_name WHERE client_id = %s$event_type_filter", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			$client_id
+		);
+		$events            = array_merge( $events, $events_from_db );
+
+		// Rebuild cache.
+		if ( ! empty( $events ) ) {
+			wp_cache_set( 'reader_events', $events, $client_id );
+		}
+
+		return $this->filter_events_by_type( $events, $event_type );
+	}
+
+	/**
+	 * Save reader events to the cache.
+	 *
+	 * @param array $events Array of reader events to log.
+	 *                     ['client_id'] Client ID associated with the event.
+	 *                     ['date_created'] Timestamp of the event. Optional.
+	 *                     ['event_type'] Type of event.
+	 *                     ['event_value'] Data associated with the event.
+	 *
+	 * @return boolean True if saved to the cache, false if not.
+	 */
+	public function cache_reader_events( $events ) {
+		if ( ! isset( $event['client_id'] ) ) {
+			return false;
+		}
+		$existing_events = $this->get_client_events( $event['client_id'] );
+		return wp_cache_set(
+			'reader_events',
+			array_merge( $existing_events, $events ),
+			$event['client_id']
+		);
+	}
+
+	/**
 	 * Retrieve client data.
+	 * TODO: Retrieve client data and events.
 	 *
 	 * @param string $client_id Client ID.
 	 * @param bool   $do_not_rebuild Whether to rebuild cache if not found.
 	 */
-	public function get_client_data( $client_id, $do_not_rebuild = false ) {
+	public function get_client_data_legacy( $client_id, $do_not_rebuild = false ) {
 		$data = $this->get_transient( $client_id );
 
 		// If no client data found, try the legacy transient name.
@@ -293,7 +386,7 @@ class Lightweight_API {
 
 		// Rebuild cache, it might've been purged or it's the first time.
 		global $wpdb;
-		$events_table_name       = Segmentation::get_events_table_name();
+		$events_table_name       = Segmentation::get_events_table_name_legacy();
 		$client_post_read_events = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare( "SELECT * FROM $events_table_name WHERE client_id = %s AND type = 'post_read'", $client_id ) // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		);
@@ -349,6 +442,7 @@ class Lightweight_API {
 
 	/**
 	 * Save client data.
+	 * TODO: Update client data and events.
 	 *
 	 * @param string $client_id Client ID.
 	 * @param string $client_data_update Client data.

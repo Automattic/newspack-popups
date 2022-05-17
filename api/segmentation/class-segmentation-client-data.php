@@ -134,6 +134,7 @@ class Segmentation_Client_Data extends Lightweight_API {
 			}
 		}
 
+		// TODO: Update client data and events.
 		if ( ! empty( $client_data_update ) ) {
 			$this->save_client_data( $client_id, $client_data_update );
 		}

@@ -15,10 +15,10 @@ class SegmentationTest extends WP_UnitTestCase {
 
 	public function setUp() { // phpcs:ignore Squiz.Commenting.FunctionComment.Missing
 		global $wpdb;
-		$events_table_name     = Segmentation::get_events_table_name();
-		$transients_table_name = Segmentation::get_transients_table_name();
+		$events_table_name  = Segmentation::get_events_table_name();
+		$readers_table_name = Segmentation::get_readers_table_name();
 		$wpdb->query( "DELETE FROM $events_table_name;" ); // phpcs:ignore
-		$wpdb->query( "DELETE FROM $transients_table_name;" ); // phpcs:ignore
+		$wpdb->query( "DELETE FROM $readers_table_name;" ); // phpcs:ignore
 		if ( file_exists( Segmentation::get_log_file_path() ) ) {
 			unlink( Segmentation::get_log_file_path() ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_unlink
 		}
@@ -211,7 +211,7 @@ class SegmentationTest extends WP_UnitTestCase {
 	 */
 	public function test_data_pruning() {
 		global $wpdb;
-		$transients_table_name = Segmentation::get_transients_table_name();
+		$readers_table_name = Segmentation::get_readers_table_name();
 
 		$api_campaign_handler = new Maybe_Show_Campaign();
 
@@ -230,7 +230,7 @@ class SegmentationTest extends WP_UnitTestCase {
 				'email_subscriptions' => [ 'address' => 'test@testing.com' ],
 			]
 		);
-		$wpdb->query( "UPDATE $transients_table_name SET `date` = '2020-04-29 15:39:13' WHERE `option_name` = '_transient_test-subcriber';" ); // phpcs:ignore
+		$wpdb->query( "UPDATE $readers_table_name SET `date` = '2020-04-29 15:39:13' WHERE `option_name` = '_transient_test-subcriber';" ); // phpcs:ignore
 
 		// Add and backdate the one time reader client data.
 		$api_campaign_handler->save_client_data(
@@ -257,9 +257,9 @@ class SegmentationTest extends WP_UnitTestCase {
 				],
 			]
 		);
-		$wpdb->query( "UPDATE $transients_table_name SET `date` = '2020-04-29 15:39:13' WHERE `option_name` = '_transient_test-one-time-reader-backdated';" ); // phpcs:ignore
+		$wpdb->query( "UPDATE $readers_table_name SET `date` = '2020-04-29 15:39:13' WHERE `option_name` = '_transient_test-one-time-reader-backdated';" ); // phpcs:ignore
 
-		$all_readers_rows = $wpdb->get_results( "SELECT option_name FROM $transients_table_name" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$all_readers_rows = $wpdb->get_results( "SELECT option_name FROM $readers_table_name" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		self::assertEquals(
 			4,
 			count( $all_readers_rows ),
@@ -269,7 +269,7 @@ class SegmentationTest extends WP_UnitTestCase {
 		// Prune the data.
 		Newspack_Popups_Segmentation::prune_data();
 
-		$all_readers_rows = $wpdb->get_results( "SELECT option_name FROM $transients_table_name" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$all_readers_rows = $wpdb->get_results( "SELECT option_name FROM $readers_table_name" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		self::assertEquals(
 			[
 				// Donor was not removed.

@@ -37,40 +37,37 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			$view_as_spec = Segmentation::parse_view_as( json_decode( $_REQUEST['view_as'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		}
 
-		if ( $visit['is_post'] && ( ! defined( 'DISABLE_CAMPAIGN_EVENT_LOGGING' ) || true !== DISABLE_CAMPAIGN_EVENT_LOGGING ) ) {
+		// Log an article or page view event.
+		if ( $visit && ( ! defined( 'DISABLE_CAMPAIGN_EVENT_LOGGING' ) || true !== DISABLE_CAMPAIGN_EVENT_LOGGING ) ) {
 			// Update the cache.
-			$posts_read        = $this->get_client_data( $client_id )['posts_read'];
-			$already_read_post = count(
+			$event_type   = $visit['is_post'] ? 'article_view' : 'page_view';
+			$read_event   = [
+				'client_id'    => $client_id,
+				'date_created' => gmdate( 'Y-m-d H:i:s' ),
+				'event_type'   => $event_type,
+				'event_value'  => [
+					'post_id'      => $visit['post_id'],
+					'category_ids' => $visit['categories'],
+				],
+			];
+			$read_events  = $this->get_reader_events( $client_id, $event_type );
+			$already_read = count(
 				array_filter(
-					$posts_read,
-					function ( $post_data ) use ( $visit ) {
-						return $post_data['post_id'] == $visit['post_id'];
+					$read_events,
+					function ( $event ) use ( $visit ) {
+						if ( ! isset( $event['event_value'] ) || ! isset( $event['event_value']['post_id'] ) ) {
+							return false;
+						}
+						return $event['event_value']['post_id'] == $visit['post_id'];
 					}
 				)
 			) > 0;
 
-			if ( false === $already_read_post ) {
-				$posts_read[] = [
-					'post_id'      => $visit['post_id'],
-					'category_ids' => $visit['categories'],
-					'created_at'   => gmdate( 'Y-m-d H:i:s' ),
-				];
-				$this->save_client_data(
-					$client_id,
-					[
-						'posts_read' => $posts_read,
-					]
-				);
+			// Save read event if not already read within the past hour.
+			if ( false === $already_read ) {
+				$this->cache_reader_events( [ $read_event ] );
+				Segmentation_Report::log_reader_event( $read_event );
 			}
-
-			Segmentation_Report::log_single_visit(
-				array_merge(
-					[
-						'clientId' => $client_id,
-					],
-					$visit
-				)
-			);
 		}
 
 		$referer_url                   = filter_input( INPUT_SERVER, 'HTTP_REFERER', FILTER_SANITIZE_STRING );
@@ -294,6 +291,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		}
 
 		// Handle frequency.
+		// TODO: Log a prompt seen event.
 		$frequency = $campaign->f;
 		if ( ! empty( array_diff( $init_campaign_data, $campaign_data ) ) ) {
 			$updated_campaign_data = [

@@ -311,52 +311,65 @@ final class Newspack_Popups_Segmentation {
 	 */
 	public static function create_database_table() {
 		global $wpdb;
-		$events_table_name     = Segmentation::get_events_table_name();
-		$transients_table_name = Segmentation::get_transients_table_name();
+		$events_table_name  = Segmentation::get_events_table_name();
+		$readers_table_name = Segmentation::get_readers_table_name();
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $events_table_name ) ) != $events_table_name ) {
 			$charset_collate = $wpdb->get_charset_collate();
 
 			$sql = "CREATE TABLE $events_table_name (
-				id bigint(20) NOT NULL AUTO_INCREMENT,
-				created_at datetime NOT NULL,
-				-- type of event
-				type varchar(20) NOT NULL,
-				-- Unique id of a device/browser pair
+				-- Unique client ID.
 				client_id varchar(100) NOT NULL,
-				-- Article ID
-				post_id bigint(20),
-				-- Article categories IDs
-				category_ids varchar(100),
-				UNIQUE KEY client_id_post_id (client_id, post_id),
-				KEY client_id_type (client_id, type),
-				PRIMARY KEY  (id)
+				-- Timestamp of the event.
+				date_created datetime NOT NULL,
+				-- Type of event: article_view, page_view, subscription, donation, prompt_seen, etc.
+				type varchar(20) NOT NULL,
+				-- Data related to this event.
+				event_value longtext,
+				PRIMARY KEY (client_id),
+				KEY (type),
+				KEY (date_created)
 			) $charset_collate;";
 
 			require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 			dbDelta( $sql ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.dbDelta_dbdelta
-		} elseif ( 'date' === $wpdb->get_var( $wpdb->prepare( "SHOW COLUMNS FROM {$events_table_name} LIKE %s", 'created_at' ), 1 ) ) { // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-			$wpdb->query( "ALTER TABLE {$events_table_name} CHANGE `created_at` `created_at` DATETIME NOT NULL" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		}
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $transients_table_name ) ) != $transients_table_name ) {
+		if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $readers_table_name ) ) != $readers_table_name ) {
 			$charset_collate = $wpdb->get_charset_collate();
 
-			$sql = "CREATE TABLE $transients_table_name (
-				option_id bigint(20) unsigned NOT NULL auto_increment,
-				option_name varchar(191) NOT NULL default '',
-				option_value longtext NOT NULL,
-				date datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			$sql = "CREATE TABLE $readers_table_name (
+				-- Unique client ID.
+				client_id varchar(100) NOT NULL,
+				-- Date created.
+				date_created datetime NOT NULL,
 				-- Date of the last update.
-				PRIMARY KEY  (option_id),
-				UNIQUE KEY option_name (option_name)
+				date_modified datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+				-- If the reader originates from a preview request.
+				is_preview bool,
+				-- If the reader has a known WP user account, the user ID.
+				user_id bigint(20),
+				-- Total number of singular pages or posts viewed.
+				article_views bigint(20) NOT NULL,
+				-- Total number of non-singular pages viewed.
+				page_views bigint(20) NOT NULL,
+				-- Categories of articles read by this reader.
+				categories_read longtext,
+				PRIMARY KEY  (client_id),
+				KEY (is_preview),
+				KEY (user_id),
+				KEY (date_modified),
+				KEY (date_created)
 			) $charset_collate;";
 
 			require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 			dbDelta( $sql ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.dbDelta_dbdelta
-			$wpdb->query( $wpdb->prepare( "INSERT INTO `{$transients_table_name}` (option_name, option_value) SELECT option_name, option_value FROM `{$wpdb->options}` WHERE option_name LIKE %s", "_transient%-popup%" ) ); // phpcs:ignore
 		}
+
+		// If legacy tables exist and are empty, drop them.
+		$legacy_readers_table_name = Segmentation::get_readers_table_name_legacy();
+		$legacy_events_table_name  = Segmentation::get_readers_table_name_legacy();
 	}
 
 	/**
@@ -638,16 +651,16 @@ final class Newspack_Popups_Segmentation {
 	 */
 	public static function prune_data() {
 		global $wpdb;
-		$transients_table_name = Segmentation::get_transients_table_name();
+		$readers_table_name = Segmentation::get_readers_table_name();
 
 		// Remove reader data if not containing donations nor subscriptions, and not updated in 30 days.
 		$removed_rows_count_transients = $wpdb->query( // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
-			"DELETE FROM $transients_table_name WHERE `option_value` LIKE '%\"donations\";a:0%' AND `option_value` LIKE '%\"email_subscriptions\";a:0%' AND date < now() - interval 30 DAY" // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			"DELETE FROM $readers_table_name WHERE `option_value` LIKE '%\"donations\";a:0%' AND `option_value` LIKE '%\"email_subscriptions\";a:0%' AND date < now() - interval 30 DAY" // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		);
 
 		// Remove all preview sessions data.
 		$removed_rows_count_previews_transients = $wpdb->query( // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
-			"DELETE FROM $transients_table_name WHERE option_name LIKE '%preview%'" // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			"DELETE FROM $readers_table_name WHERE option_name LIKE '%preview%'" // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		);
 
 		// Events, like post read, don't need to stick around for more than 30 days.
@@ -663,7 +676,7 @@ final class Newspack_Popups_Segmentation {
 		$byte_size_limit               = 10000;
 		$removed_rows_large_transients = $wpdb->query( // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
 			$wpdb->prepare(
-				"DELETE FROM $transients_table_name WHERE length(`option_value`) > %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				"DELETE FROM $readers_table_name WHERE length(`option_value`) > %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 				$byte_size_limit
 			)
 		);
@@ -692,10 +705,10 @@ final class Newspack_Popups_Segmentation {
 			return;
 		}
 
-		error_log( 'Newspack Campaigns: Data pruning – removed ' . $removed_rows_count_transients . ' rows from ' . $transients_table_name . ' table.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-		error_log( 'Newspack Campaigns: Data pruning – removed ' . $removed_rows_count_previews_transients . ' preview session rows from ' . $transients_table_name . ' table.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+		error_log( 'Newspack Campaigns: Data pruning – removed ' . $removed_rows_count_transients . ' rows from ' . $readers_table_name . ' table.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+		error_log( 'Newspack Campaigns: Data pruning – removed ' . $removed_rows_count_previews_transients . ' preview session rows from ' . $readers_table_name . ' table.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 		error_log( 'Newspack Campaigns: Data pruning – removed ' . $removed_rows_count_events . ' rows from ' . $events_table_name . ' table.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-		error_log( 'Newspack Campaigns: Data pruning – removed ' . $removed_rows_large_transients . ' rows from ' . $transients_table_name . ' table with data larger than ' . $byte_size_limit . ' bytes.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+		error_log( 'Newspack Campaigns: Data pruning – removed ' . $removed_rows_large_transients . ' rows from ' . $readers_table_name . ' table with data larger than ' . $byte_size_limit . ' bytes.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 		error_log( 'Newspack Campaigns: Data pruning – removed ' . $removed_rows_with_many_events . ' rows from ' . $events_table_name . ' table with more than ' . $event_count_limit . ' events.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 	}
 }

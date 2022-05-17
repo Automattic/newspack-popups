@@ -54,6 +54,7 @@ class Report_Campaign_Data extends Lightweight_API {
 		}
 
 		// Update prompts data.
+		// TODO: Log an email signup event.
 		$client_data_update['prompts'] = [ "$campaign_id" => $campaign_data ];
 		$this->save_client_data( $client_id, $client_data_update );
 	}
