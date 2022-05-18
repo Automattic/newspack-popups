@@ -748,16 +748,21 @@ final class Newspack_Popups_Inserter {
 			(object) []
 		);
 
+		$visit = [ 'is_post' => false ];
+
+		if ( is_singular() ) {
+			$visit['is_post']    = true;
+			$visit['post_id']    = get_the_ID();
+			$visit['categories'] = esc_attr( $category_ids );
+		} else {
+			global $wp;
+			$visit['post_id'] = $wp->request;
+		}
+
 		$popups_access_provider['authorization'] .= '&ref=DOCUMENT_REFERRER';
 		$popups_access_provider['authorization'] .= '&popups=' . wp_json_encode( $popups_configs );
 		$popups_access_provider['authorization'] .= '&settings=' . wp_json_encode( $settings );
-		$popups_access_provider['authorization'] .= '&visit=' . wp_json_encode(
-			[
-				'post_id'    => esc_attr( get_the_ID() ),
-				'categories' => esc_attr( $category_ids ),
-				'is_post'    => is_singular(),
-			]
-		);
+		$popups_access_provider['authorization'] .= '&visit=' . wp_json_encode( $visit );
 		if ( isset( $_GET['newspack-campaigns-debug'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 			$popups_access_provider['authorization'] .= '&debug';
 		}

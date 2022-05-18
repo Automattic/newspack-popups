@@ -34,13 +34,15 @@ class Segmentation_Client_Data extends Lightweight_API {
 	}
 
 	/**
-	 * Handle reporting client data – e.g. views, dismissals.
+	 * Handle reporting client data – e.g. views, subscriptions, donations.
 	 *
 	 * @param object $request A request.
 	 */
 	public function report_client_data( $request ) {
-		$client_id          = $this->get_request_param( 'client_id', $request );
-		$client_data_update = [];
+		$client_id   = $this->get_request_param( 'client_id', $request );
+		$now         = gmdate( 'Y-m-d H:i:s' );
+		$events      = [];
+		$reader_data = [];
 
 		// Add a donation to client.
 		$donation = $this->get_request_param( 'donation', $request );
@@ -48,24 +50,60 @@ class Segmentation_Client_Data extends Lightweight_API {
 			if ( 'string' === gettype( $donation ) ) {
 				$donation = (array) json_decode( $donation );
 			}
-			$client_data_update['donations'][] = $donation;
+			$events[] = [
+				'client_id'    => $client_id,
+				'date_created' => $now,
+				'type'         => 'donation',
+				'event_value'  => $donation,
+			];
 		}
 
 		// Add a subscription to client.
 		$email_subscription = $this->get_request_param( 'email_subscription', $request );
+		$email_address      = false;
 		if ( $email_subscription ) {
-			$client_data_update['email_subscriptions'][] = $email_subscription;
+			if ( 'string' === gettype( $email_subscription ) ) {
+				$email_subscription = (array) json_decode( $email_subscription );
+			}
+
+			if ( isset( $email_subscription['email'] ) ) {
+				$email_address = $email_subscription['email'];
+			} elseif ( isset( $email_subscription['address'] ) ) {
+				$email_address = $email_subscription['address'];
+			}
+		}
+		if ( $email_address ) {
+			$events[] = [
+				'client_id'    => $client_id,
+				'date_created' => $now,
+				'type'         => 'subscription',
+				'event_value'  => [ 'email' => $email_address ],
+			];
 		}
 
-		// Get user ID if they are logged in.
+		// Get user ID if they have a user account.
 		$user_id = $this->get_request_param( 'user_id', $request );
 		if ( $user_id ) {
-			$client_data_update['user_id'] = $user_id;
+			$reader_data['user_id'] = $user_id;
 		}
 		// Add donations data from WC orders.
 		$orders = $this->get_request_param( 'orders', $request );
 		if ( $orders ) {
-			$client_data_update['donations'] = json_decode( $orders );
+			if ( 'string' === gettype( $orders ) ) {
+				$orders = (array) json_decode( $orders );
+			}
+			$order_events = array_map(
+				function( $order ) {
+					return [
+						'client_id'    => $client_id,
+						'date_created' => $now,
+						'type'         => 'donation',
+						'event_value'  => $order,
+					];
+				},
+				$orders
+			);
+			$events       = array_merge( $events, $order_events );
 		}
 
 		// Fetch Mailchimp data.
@@ -86,9 +124,12 @@ class Segmentation_Client_Data extends Lightweight_API {
 					$members = $mc->get( "/lists/$list_id/members", [ 'unique_email_id' => $mailchimp_subscriber_id ] )['members'];
 
 					if ( ! empty( $members ) ) {
-						$subscriber                                  = $members[0];
-						$client_data_update['email_subscriptions'][] = [
-							'email' => $subscriber['email_address'],
+						$subscriber = $members[0];
+						$events[]   = [
+							'client_id'    => $client_id,
+							'date_created' => $now,
+							'type'         => 'subscription',
+							'event_value'  => [ 'email' => $subscriber['email_address'] ],
 						];
 
 						if ( ! isset( $subscriber['merge_fields'] ) ) {
@@ -125,8 +166,11 @@ class Segmentation_Client_Data extends Lightweight_API {
 						);
 
 						if ( $has_donated_according_to_mailchimp ) {
-							$client_data_update['donations'][] = [
-								'mailchimp_has_donated' => true,
+							$events[] = [
+								'client_id'    => $client_id,
+								'date_created' => $now,
+								'type'         => 'donation',
+								'event_value'  => [ 'mailchimp_has_donated' => true ],
 							];
 						}
 					}
@@ -134,9 +178,12 @@ class Segmentation_Client_Data extends Lightweight_API {
 			}
 		}
 
-		// TODO: Update client data and events.
-		if ( ! empty( $client_data_update ) ) {
-			$this->save_client_data( $client_id, $client_data_update );
+		// Update client data and events.
+		if ( ! empty( $events ) ) {
+			$this->save_reader_events( $client_id, $events );
+		}
+		if ( ! empty( $reader_data ) ) {
+			$this->save_reader_data( $client_id, $reader_data );
 		}
 	}
 }

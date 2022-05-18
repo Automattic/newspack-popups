@@ -26,7 +26,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		if ( ! isset( $_REQUEST['popups'], $_REQUEST['settings'], $_REQUEST['cid'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			return;
 		}
-		$campaigns = json_decode( $_REQUEST['popups'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$popups    = json_decode( $_REQUEST['popups'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		$settings  = json_decode( $_REQUEST['settings'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		$visit     = (array) json_decode( $_REQUEST['visit'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.InputNotValidated
 		$response  = [];
@@ -37,36 +37,86 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			$view_as_spec = Segmentation::parse_view_as( json_decode( $_REQUEST['view_as'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		}
 
+		$reader_data   = $this->get_reader_data( $client_id );
+		$reader_events = $this->get_reader_events( $client_id );
+
 		// Log an article or page view event.
 		if ( $visit && ( ! defined( 'DISABLE_CAMPAIGN_EVENT_LOGGING' ) || true !== DISABLE_CAMPAIGN_EVENT_LOGGING ) ) {
 			// Update the cache.
-			$event_type   = $visit['is_post'] ? 'article_view' : 'page_view';
-			$read_event   = [
+			$event_type = $visit['is_post'] ? 'article_view' : 'page_view';
+			$read_event = [
 				'client_id'    => $client_id,
 				'date_created' => gmdate( 'Y-m-d H:i:s' ),
-				'event_type'   => $event_type,
-				'event_value'  => [
-					'post_id'      => $visit['post_id'],
-					'category_ids' => $visit['categories'],
-				],
+				'type'         => $event_type,
 			];
-			$read_events  = $this->get_reader_events( $client_id, $event_type );
-			$already_read = count(
+			if ( isset( $visit['post_id'] ) || isset( $visit['categories'] ) ) {
+				$read_event['event_value'] = [];
+			}
+			if ( isset( $visit['post_id'] ) ) {
+				$read_event['event_value']['post_id'] = $visit['post_id'];
+			}
+			if ( isset( $visit['categories'] ) ) {
+				$read_event['event_value']['categories'] = $visit['categories'];
+			}
+
+			$read_events           = $this->get_reader_events( $client_id, $event_type );
+			$this->debug['visit']  = $visit;
+			$this->debug['events'] = array_merge( $this->debug['events'], $read_events );
+			$event_value           = isset( $read_event['event_value'] ) ? $read_event['event_value'] : null;
+			$already_read          = count(
 				array_filter(
 					$read_events,
-					function ( $event ) use ( $visit ) {
-						if ( ! isset( $event['event_value'] ) || ! isset( $event['event_value']['post_id'] ) ) {
-							return false;
+					function ( $read ) use ( $event_value ) {
+						if ( $event_value ) {
+							if (
+								isset( $event_value['post_id'] ) &&
+								isset( $read['event_value'] ) &&
+								isset( $read['event_value']['post_id'] ) &&
+								$event_value['post_id'] == $read['event_value']['post_id']
+							) {
+								return true;
+							}
 						}
-						return $event['event_value']['post_id'] == $visit['post_id'];
+
+						return false;
 					}
 				)
 			) > 0;
 
+			$this->debug['already_read'] = $already_read;
+
 			// Save read event if not already read within the past hour.
 			if ( false === $already_read ) {
-				$this->cache_reader_events( [ $read_event ] );
-				Segmentation_Report::log_reader_event( $read_event );
+				$reader_data_update = [];
+				$article_views      = (int) $reader_data['article_views'];
+				$page_views         = (int) $reader_data['page_views'];
+				$categories_read    = is_array( $reader_data['categories_read'] ) ? $reader_data['categories_read'] : [];
+
+				// Increment article/page view counts and add category data.
+				if ( $visit['is_post'] ) {
+					$reader_data_update['article_views'] = $article_views + 1;
+				} else {
+					$reader_data_update['page_views'] = $page_views + 1;
+				}
+
+				if ( isset( $visit['categories'] ) ) {
+					$visit_categories = explode( ',', $visit['categories'] );
+					foreach ( $visit_categories as $category_id ) {
+						if ( isset( $categories_read[ $category_id ] ) ) {
+							$categories_read[ $category_id ] ++;
+						} else {
+							$categories_read[ $category_id ] = 1;
+						}
+					}
+
+					$reader_data_update['categories_read'] = $categories_read;
+				}
+
+				if ( ! empty( $reader_data_update ) ) {
+					$this->save_reader_data( $client_id, $reader_data_update );
+				}
+
+				$this->save_reader_events( $client_id, [ $read_event ] );
 			}
 		}
 
@@ -82,11 +132,11 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			$this->debug['matching_segment']    = $settings->best_priority_segment_id;
 		}
 
-		// Check each matching campaign against other global factors.
-		foreach ( $campaigns as $campaign ) {
-			$campaign_should_be_shown = $this->should_campaign_be_shown(
+		// Check each matching popup against other global factors.
+		foreach ( $popups as $popup ) {
+			$popup_should_be_shown = $this->should_popup_be_shown(
 				$client_id,
-				$campaign,
+				$popup,
 				$settings,
 				$referer_url,
 				$page_referer_url,
@@ -95,17 +145,17 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			);
 
 			// If an overlay is already able to be shown, pick the one that has the higher priority.
-			if ( $campaign_should_be_shown && 'o' === $campaign->t ) {
+			if ( $popup_should_be_shown && 'o' === $popup->t ) {
 				if ( empty( $overlay_to_maybe_display ) ) {
-					$overlay_to_maybe_display = $campaign;
+					$overlay_to_maybe_display = $popup;
 				} else {
-					$higher_priority_item = self::get_higher_priority_item( $overlay_to_maybe_display, $campaign, $all_segments );
+					$higher_priority_item = self::get_higher_priority_item( $overlay_to_maybe_display, $popup, $all_segments );
 
 					// If the previous overlay already has a higher priority, only show that one. Otherwise, show this one instead.
 					$response[ $overlay_to_maybe_display->id ] = $overlay_to_maybe_display->id === $higher_priority_item->id;
-					$campaign_should_be_shown                  = $campaign->id === $higher_priority_item->id;
-					if ( false === $campaign_should_be_shown ) {
-						self::add_suppression_reason( $campaign->id, __( 'Another overlay prompt already displayed.', 'newspack-popups' ) );
+					$popup_should_be_shown                     = $popup->id === $higher_priority_item->id;
+					if ( false === $popup_should_be_shown ) {
+						self::add_suppression_reason( $popup->id, __( 'Another overlay prompt already displayed.', 'newspack-popups' ) );
 					}
 					$overlay_to_maybe_display = $higher_priority_item;
 				}
@@ -114,17 +164,17 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			// TODO: the conditions below should not apply to manually-placed prompts.
 
 			// If an above-header is already able to be shown, pick the one that has the higher priority.
-			if ( $campaign_should_be_shown && 'a' === $campaign->t ) {
+			if ( $popup_should_be_shown && 'a' === $popup->t ) {
 				if ( empty( $above_header_to_maybe_display ) ) {
-					$above_header_to_maybe_display = $campaign;
+					$above_header_to_maybe_display = $popup;
 				} else {
-					$higher_priority_item = self::get_higher_priority_item( $above_header_to_maybe_display, $campaign, $all_segments );
+					$higher_priority_item = self::get_higher_priority_item( $above_header_to_maybe_display, $popup, $all_segments );
 
 					// If the previous above-header already has a higher priority, only show that one. Otherwise, show this one instead.
 					$response[ $above_header_to_maybe_display->id ] = $above_header_to_maybe_display->id === $higher_priority_item->id;
-					$campaign_should_be_shown                       = $campaign->id === $higher_priority_item->id;
-					if ( false === $campaign_should_be_shown ) {
-						self::add_suppression_reason( $campaign->id, __( 'Another above-header prompt already displayed.', 'newspack-popups' ) );
+					$popup_should_be_shown                          = $popup->id === $higher_priority_item->id;
+					if ( false === $popup_should_be_shown ) {
+						self::add_suppression_reason( $popup->id, __( 'Another above-header prompt already displayed.', 'newspack-popups' ) );
 					}
 					$above_header_to_maybe_display = $higher_priority_item;
 				}
@@ -132,24 +182,24 @@ class Maybe_Show_Campaign extends Lightweight_API {
 
 			// Handle custom placements: Only one prompt should be shown per placement block.
 			// "Everyone" prompts should only be shown if the reader doesn't match any segments.
-			if ( $campaign_should_be_shown && ! empty( $campaign->c ) ) {
-				if ( ! isset( $custom_placements_displayed[ $campaign->c ] ) ) {
-					$custom_placements_displayed[ $campaign->c ] = $campaign;
+			if ( $popup_should_be_shown && ! empty( $popup->c ) ) {
+				if ( ! isset( $custom_placements_displayed[ $popup->c ] ) ) {
+					$custom_placements_displayed[ $popup->c ] = $popup;
 				} else {
-					$previous_item        = $custom_placements_displayed[ $campaign->c ];
-					$higher_priority_item = self::get_higher_priority_item( $previous_item, $campaign, $all_segments );
+					$previous_item        = $custom_placements_displayed[ $popup->c ];
+					$higher_priority_item = self::get_higher_priority_item( $previous_item, $popup, $all_segments );
 
 					// If the previous prompt in this custom placement already has a higher priority, only show that one. Otherwise, show this one instead.
 					$response[ $previous_item->id ] = $previous_item->id === $higher_priority_item->id;
-					$campaign_should_be_shown       = $campaign->id === $higher_priority_item->id;
-					if ( false === $campaign_should_be_shown ) {
-						self::add_suppression_reason( $campaign->id, __( 'Prompt in this custom placement already displayed.', 'newspack-popups' ) );
+					$popup_should_be_shown          = $popup->id === $higher_priority_item->id;
+					if ( false === $popup_should_be_shown ) {
+						self::add_suppression_reason( $popup->id, __( 'Prompt in this custom placement already displayed.', 'newspack-popups' ) );
 					}
-					$custom_placements_displayed[ $campaign->c ] = $higher_priority_item;
+					$custom_placements_displayed[ $popup->c ] = $higher_priority_item;
 				}
 			}
 
-			$response[ $campaign->id ] = $campaign_should_be_shown;
+			$response[ $popup->id ] = $popup_should_be_shown;
 		}
 
 		$this->response = $response;
@@ -173,16 +223,18 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			return $view_as_spec['segment'];
 		}
 
-		$client_data              = $this->get_client_data( $client_id );
 		$best_segment_priority    = PHP_INT_MAX;
 		$best_priority_segment_id = null;
 
 		foreach ( $all_segments as $segment_id => $segment ) {
 			// Determine whether the client matches the segment criteria.
+			$reader_data            = $this->get_reader_data( $client_id );
+			$reader_events          = $this->get_reader_events( $client_id );
 			$segment                = Campaign_Data_Utils::canonize_segment( $segment );
-			$client_matches_segment = Campaign_Data_Utils::does_client_match_segment(
+			$client_matches_segment = Campaign_Data_Utils::does_reader_match_segment(
 				$segment,
-				$client_data,
+				$reader_data,
+				$reader_events,
 				$referer_url,
 				$page_referer_url
 			);
@@ -214,7 +266,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 	 * Primary prompt visibility logic.
 	 *
 	 * @param string $client_id Client ID.
-	 * @param object $campaign Prompt.
+	 * @param object $popup Prompt.
 	 * @param object $settings Settings.
 	 * @param string $referer_url URL of the page performing the API request.
 	 * @param string $page_referer_url URL of the referrer of the frontend page that is making the API request.
@@ -222,35 +274,33 @@ class Maybe_Show_Campaign extends Lightweight_API {
 	 * @param string $now Current timestamp.
 	 * @return bool Whether prompt should be shown.
 	 */
-	public function should_campaign_be_shown( $client_id, $campaign, $settings, $referer_url = '', $page_referer_url = '', $view_as_spec = false, $now = false ) {
+	public function should_popup_be_shown( $client_id, $popup, $settings, $referer_url = '', $page_referer_url = '', $view_as_spec = false, $now = false ) {
 		if ( false === $now ) {
 			$now = time();
 		}
 
-		$client_data        = $this->get_client_data( $client_id );
-		$campaign_data      = $this->get_campaign_data( $client_id, $campaign->id );
-		$init_campaign_data = $campaign_data;
-		$should_display     = true;
+		$seen_events    = $this->get_reader_events( $client_id, 'prompt_seen' );
+		$should_display = true;
 
 		// Handle referer-based conditions.
 		if ( ! empty( $referer_url ) ) {
 			// Suppressing based on UTM Source parameter in the URL.
-			$utm_suppression = ! empty( $campaign->utm ) ? urldecode( $campaign->utm ) : null;
+			$utm_suppression = ! empty( $popup->utm ) ? urldecode( $popup->utm ) : null;
 			if ( $utm_suppression && stripos( urldecode( $referer_url ), 'utm_source=' . $utm_suppression ) ) {
 				$should_display = false;
-				self::add_suppression_reason( $campaign->id, __( 'utm_source from prompt settings matched.', 'newspack-popups' ) );
+				self::add_suppression_reason( $popup->id, __( 'utm_source from prompt settings matched.', 'newspack-popups' ) );
 			}
 		}
 
 		// Handle segmentation.
-		$campaign_segment_ids = ! empty( $campaign->s ) ? explode( ',', $campaign->s ) : [];
+		$popup_segment_ids = ! empty( $popup->s ) ? explode( ',', $popup->s ) : [];
 
 		// Using "view as" feature.
 		if ( $view_as_spec ) {
 			$should_display = false;
 			if ( isset( $view_as_spec['segment'] ) && $view_as_spec['segment'] ) {
 				// Show prompts with matching segments, or "everyone". Don't show any prompts that don't match the previewed segment.
-				if ( in_array( $view_as_spec['segment'], $campaign_segment_ids ) || empty( $campaign->s ) ) {
+				if ( in_array( $view_as_spec['segment'], $popup_segment_ids ) || empty( $popup->s ) ) {
 					$should_display = true;
 				}
 
@@ -259,55 +309,57 @@ class Maybe_Show_Campaign extends Lightweight_API {
 					$should_display = true;
 				}
 			}
-		} elseif ( ! empty( $campaign_segment_ids ) ) {
+		} elseif ( ! empty( $popup_segment_ids ) ) {
 			// $settings->best_priority_segment_id should always be present, but in case it's not (e.g. in a unit test), we can fetch it here.
 			$best_priority_segment_id = isset( $settings->best_priority_segment_id ) ?
 				$settings->best_priority_segment_id :
 				$this->get_best_priority_segment_id( $settings->all_segments, $client_id, $referer_url, $page_referer_url, $view_as_spec );
 
 			// Only factor in the best=priority segment.
-			$is_best_priority = ! empty( $best_priority_segment_id ) ? in_array( $best_priority_segment_id, $campaign_segment_ids ) : false;
-			$campaign_segment = $is_best_priority ?
+			$is_best_priority = ! empty( $best_priority_segment_id ) ? in_array( $best_priority_segment_id, $popup_segment_ids ) : false;
+			$popup_segment    = $is_best_priority ?
 				$settings->all_segments->{$best_priority_segment_id} :
 				[];
 
-			$campaign_segment = Campaign_Data_Utils::canonize_segment( $campaign_segment );
+			$popup_segment = Campaign_Data_Utils::canonize_segment( $popup_segment );
+			$reader_data   = $this->get_reader_data( $client_id );
+			$reader_events = $this->get_reader_events( $client_id );
 
 			// Check whether client matches the prompt's segment.
-			$segment_matches = Campaign_Data_Utils::does_client_match_segment(
-				$campaign_segment,
-				$client_data,
+			$segment_matches = Campaign_Data_Utils::does_reader_match_segment(
+				$popup_segment,
+				$reader_data,
+				$reader_events,
 				$referer_url,
 				$page_referer_url
 			);
 			$should_display  = $is_best_priority && $segment_matches;
 			if ( false === $should_display ) {
 				if ( $segment_matches ) {
-					self::add_suppression_reason( $campaign->id, __( 'Segment matches, but another segment has higher priority.', 'newspack-popups' ) );
+					self::add_suppression_reason( $popup->id, __( 'Segment matches, but another segment has higher priority.', 'newspack-popups' ) );
 				} else {
-					self::add_suppression_reason( $campaign->id, __( 'Segment does not match.', 'newspack-popups' ) );
+					self::add_suppression_reason( $popup->id, __( 'Segment does not match.', 'newspack-popups' ) );
 				}
 			}
 		}
 
 		// Handle frequency.
 		// TODO: Log a prompt seen event.
-		$frequency = $campaign->f;
-		if ( ! empty( array_diff( $init_campaign_data, $campaign_data ) ) ) {
-			$updated_campaign_data = [
-				'prompts' => [
-					"$campaign->id" => $campaign_data,
-				],
-			];
-			$this->save_client_data( $client_id, $updated_campaign_data );
-		}
-		if ( 'once' === $frequency && $campaign_data['count'] >= 1 ) {
+		$frequency = $popup->f;
+		if ( 'once' === $frequency && count( $seen_events ) >= 1 ) {
 			$should_display = false;
-			self::add_suppression_reason( $campaign->id, __( 'Prompt already seen once.', 'newspack-popups' ) );
+			self::add_suppression_reason( $popup->id, __( 'Prompt already seen once.', 'newspack-popups' ) );
 		}
-		if ( 'daily' === $frequency && $campaign_data['last_viewed'] >= strtotime( '-1 day', $now ) ) {
+
+		$last_seen = false;
+		if ( 0 < count( $seen_events ) ) {
+			$last_seen_event = $seen_events[0];
+			$last_seen       = strtotime( $last_seen_event['date_created'] );
+		}
+
+		if ( 'daily' === $frequency && $last_seen && $last_seen >= strtotime( '-1 day', $now ) ) {
 			$should_display = false;
-			self::add_suppression_reason( $campaign->id, __( 'Daily prompt already seen today.', 'newspack-popups' ) );
+			self::add_suppression_reason( $popup->id, __( 'Daily prompt already seen today.', 'newspack-popups' ) );
 		}
 
 		return $should_display;
@@ -317,20 +369,20 @@ class Maybe_Show_Campaign extends Lightweight_API {
 	 * Compare two campaign objects and return the one with the higher segment priority (lower priority index).
 	 * If both have equal priority, just return the first one.
 	 *
-	 * @param object $campaign_a First campaign to compare.
-	 * @param object $campaign_b Second campaign to compare.
+	 * @param object $popup_a First campaign to compare.
+	 * @param object $popup_b Second campaign to compare.
 	 * @param array  $segments   Array of segments, to extract priority values from.
 	 * @return integer The campaign with the higher priority.
 	 */
-	public function get_higher_priority_item( $campaign_a, $campaign_b, $segments ) {
-		$priority_a = ! empty( $segments->{$campaign_a->s}->priority ) ? $segments->{$campaign_a->s}->priority : PHP_INT_MAX;
-		$priority_b = ! empty( $segments->{$campaign_b->s}->priority ) ? $segments->{$campaign_b->s}->priority : PHP_INT_MAX;
+	public function get_higher_priority_item( $popup_a, $popup_b, $segments ) {
+		$priority_a = ! empty( $segments->{$popup_a->s}->priority ) ? $segments->{$popup_a->s}->priority : PHP_INT_MAX;
+		$priority_b = ! empty( $segments->{$popup_b->s}->priority ) ? $segments->{$popup_b->s}->priority : PHP_INT_MAX;
 
 		if ( $priority_a <= $priority_b ) {
-			return $campaign_a;
+			return $popup_a;
 		}
 
-		return $campaign_b;
+		return $popup_b;
 	}
 }
 new Maybe_Show_Campaign();

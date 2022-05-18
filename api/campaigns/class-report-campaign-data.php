@@ -31,32 +31,34 @@ class Report_Campaign_Data extends Lightweight_API {
 	}
 
 	/**
-	 * Handle reporting campaign data – e.g. views, dismissals.
+	 * Handle reporting campaign data – views and subscriptions.
 	 *
 	 * @param object $request A request.
 	 */
 	public function report_campaign( $request ) {
-		$client_id          = $this->get_request_param( 'cid', $request );
-		$campaign_id        = $this->get_request_param( 'popup_id', $request );
-		$campaign_data      = $this->get_campaign_data( $client_id, $campaign_id );
-		$client_data_update = [];
+		$client_id = $this->get_request_param( 'cid', $request );
+		$popup_id  = $this->get_request_param( 'popup_id', $request );
+		$events    = [
+			[
+				'client_id'    => $client_id,
+				'date_created' => gmdate( 'Y-m-d H:i:s' ),
+				'type'         => 'prompt_seen',
+				'event_value'  => [ 'id' => $popup_id ],
+			],
+		];
 
-		$campaign_data['count']++;
-		$campaign_data['last_viewed'] = time();
-
-		// Add an email subscription to client data.
+		// Log a newsletter subscription event.
 		$email_address = $this->get_request_param( 'email', $request );
 		if ( $email_address ) {
-			// This is an array, so it's possible to collect data for separate lists in the future.
-			$client_data_update['email_subscriptions'][] = [
-				'email' => $email_address,
+			$events[] = [
+				'client_id'    => $client_id,
+				'date_created' => gmdate( 'Y-m-d H:i:s' ),
+				'type'         => 'subscription',
+				'event_value'  => [ 'email' => $email_address ],
 			];
 		}
 
-		// Update prompts data.
-		// TODO: Log an email signup event.
-		$client_data_update['prompts'] = [ "$campaign_id" => $campaign_data ];
-		$this->save_client_data( $client_id, $client_data_update );
+		$this->save_reader_events( $client_id, $events );
 	}
 }
 new Report_Campaign_Data();

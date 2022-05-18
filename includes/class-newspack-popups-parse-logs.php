@@ -99,7 +99,7 @@ final class Newspack_Popups_Parse_Logs {
 		$sql = $wpdb->prepare( "$query ", $values ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
 
 		// Update the event if a the duplicate has a different date.
-		$sql .= ' ON DUPLICATE KEY UPDATE created_at = VALUES(created_at)';
+		$sql .= ' ON DUPLICATE KEY UPDATE date_created = VALUES(date_created)';
 
 		$wpdb->query( $sql ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
 	}
@@ -109,7 +109,6 @@ final class Newspack_Popups_Parse_Logs {
 	 */
 	public static function parse_events_logs() {
 		global $wpdb;
-
 
 		if ( ! file_exists( Segmentation::get_log_file_path() ) ) {
 			return;
@@ -131,14 +130,14 @@ final class Newspack_Popups_Parse_Logs {
 			$events_rows = [];
 
 			foreach ( $lines as $line ) {
-				$result     = explode( ';', $line );
-				$event_type = $result[0];
-				$client_id  = $result[1];
-				$date       = $result[2];
-				$post_id    = $result[3];
-				$categories = $result[4];
+				$result       = explode( '|', $line );
+				$client_id    = $result[0];
+				$date_created = $result[1];
+				$event_type   = $result[2];
+				$event_value  = $result[3];
+				$is_preview   = $result[4];
 
-				$events_rows[] = [ $event_type, $client_id, $date, $post_id, $categories ];
+				$events_rows[] = [ $client_id, $date_created, $event_type, $event_value, $is_preview ];
 			}
 
 			try {
@@ -146,11 +145,11 @@ final class Newspack_Popups_Parse_Logs {
 					Segmentation::get_events_table_name(),
 					$events_rows,
 					[
-						'type',
 						'client_id',
-						'created_at',
-						'post_id',
-						'category_ids',
+						'date_created',
+						'type',
+						'event_value',
+						'is_preview',
 					],
 					'( %s, %s, %s, %s, %s )'
 				);

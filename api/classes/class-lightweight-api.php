@@ -26,7 +26,29 @@ class Lightweight_API {
 	public $debug;
 
 	/**
-	 * Default client data.
+	 * If true, get all reader data from the DB instead of the object cache.
+	 *
+	 * @var ignore_cache
+	 */
+	public $ignore_cache = false;
+
+	/**
+	 * Default reader data.
+	 *
+	 * @var reader_data_blueprint
+	 */
+	private $reader_data_blueprint = [
+		'date_created'    => null,
+		'date_modified'   => null,
+		'is_preview'      => false,
+		'user_id'         => null,
+		'article_views'   => 0,
+		'page_views'      => 0,
+		'categories_read' => [],
+	];
+
+	/**
+	 * Default client data (LEGACY).
 	 *
 	 * @var client_data_blueprint
 	 */
@@ -36,14 +58,6 @@ class Lightweight_API {
 		'email_subscriptions' => [],
 		'user_id'             => false,
 		'prompts'             => [],
-	];
-
-	/**
-	 * Event types which are temporary and purgeable.
-	 */
-	private $temporary_event_types = [
-		'article_view',
-		'page_view',
 	];
 
 	/**
@@ -70,7 +84,13 @@ class Lightweight_API {
 			'end_time'               => null,
 			'duration'               => null,
 			'suppression'            => [],
+			'events'                 => [],
 		];
+
+		// If we don't have a persistent object cache, we can't rely on it across page views.
+		if ( ! class_exists( 'Memcache' ) ) {
+			$this->ignore_cache = true;
+		}
 	}
 
 	/**
@@ -114,21 +134,6 @@ class Lightweight_API {
 			return true;
 		}
 		return ! empty( $http_referer ) && ! empty( $server_name ) && in_array( strtolower( $server_name ), $valid_referers, true );
-	}
-
-	/**
-	 * LEGACY FORMAT - one transient per reader per prompt.
-	 * Get transient name.
-	 *
-	 * @param string $client_id Client ID.
-	 * @param string $popup_id Popup ID.
-	 */
-	public function get_transient_name_legacy( $client_id, $popup_id = null ) {
-		if ( null === $popup_id ) {
-			// For data about popups in general.
-			return sprintf( '%s-popups', $client_id );
-		}
-		return sprintf( '%s-%s-popup', $client_id, $popup_id );
 	}
 
 	/**
@@ -177,7 +182,7 @@ class Lightweight_API {
 	public function get_transient( $name ) {
 		global $wpdb;
 		$name       = '_transient_' . $name;
-		$table_name = Segmentation::get_readers_table_name();
+		$table_name = Segmentation::get_readers_table_name_legacy();
 		$value      = wp_cache_get( $name, 'newspack-popups' );
 
 		if ( false === $value ) {
@@ -206,7 +211,7 @@ class Lightweight_API {
 	 */
 	public function set_transient( $name, $value ) {
 		global $wpdb;
-		$table_name       = Segmentation::get_readers_table_name();
+		$table_name       = Segmentation::get_readers_table_name_legacy();
 		$name             = '_transient_' . $name;
 		$serialized_value = maybe_serialize( $value );
 		wp_cache_set( $name, $serialized_value, 'newspack-popups' );
@@ -223,7 +228,7 @@ class Lightweight_API {
 	public function delete_transient( $name ) {
 		global $wpdb;
 		$name       = '_transient_' . $name;
-		$table_name = Segmentation::get_readers_table_name();
+		$table_name = Segmentation::get_readers_table_name_legacy();
 
 		wp_cache_delete( $name );
 		$wpdb->delete( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
@@ -232,18 +237,6 @@ class Lightweight_API {
 		);
 
 		$this->debug['delete_query_count'] += 1;
-	}
-
-	/**
-	 * LEGACY FORMAT - one row per reader per prompt.
-	 * Retrieve prompt data.
-	 *
-	 * @param string $client_id Client ID.
-	 * @param string $campaign_id Prompt ID.
-	 * @return object Prompt data.
-	 */
-	public function get_campaign_data_legacy( $client_id, $campaign_id ) {
-		return $this->get_transient( $this->get_transient_name_legacy( $client_id, $campaign_id ) );
 	}
 
 	/**
@@ -260,10 +253,6 @@ class Lightweight_API {
 		if ( $data && isset( $data['prompts'] ) && isset( $data['prompts'][ $campaign_id ] ) ) {
 			// NEW FORMAT - one row per reader.
 			$prompt = $data['prompts'][ $campaign_id ];
-		} else {
-			// LEGACY FORMAT - one row per reader per prompt.
-			$prompt = $this->get_campaign_data_legacy( $client_id, $campaign_id );
-			$this->delete_transient( $this->get_transient_name_legacy( $client_id, $campaign_id ) ); // Clean up legacy data.
 		}
 
 		return [
@@ -297,33 +286,106 @@ class Lightweight_API {
 	}
 
 	/**
+	 * Determine if the given client ID originated in a preview.
+	 *
+	 * @param string $client_id Client ID to check.
+	 *
+	 * @return boolean True if a preview.
+	 */
+	public function is_preview( $client_id ) {
+		return 'preview' === substr( $client_id, 0, 7 );
+	}
+
+	/**
+	 * Get data for a specific reader.
+	 *
+	 * @param string $client_id Client ID.
+	 *
+	 * @return array Reader data.
+	 */
+	public function get_reader_data( $client_id ) {
+		$reader_data = $this->reader_data_blueprint;
+
+		// Check the cache first.
+		if ( ! $this->ignore_cache ) {
+			$cached_reader_data = wp_cache_get( 'reader_data', $client_id );
+			if ( ! empty( $cached_reader_data ) ) {
+				return $cached_reader_data;
+			}
+		}
+
+		// If ignoring cache or there's no cached reader data, retrieve from the DB.
+		global $wpdb;
+		$readers_table_name  = Segmentation::get_readers_table_name();
+		$reader_data_from_db = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->prepare(
+				"SELECT * from $readers_table_name WHERE client_id = %s", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				$client_id
+			)
+		);
+
+		// If there's no reader data in the DB, create it.
+		if ( empty( $reader_data_from_db ) ) {
+			$this->save_reader_data( $client_id, [] );
+		} else {
+			$reader_data_from_db = reset( $reader_data_from_db );
+			$reader_data_from_db = (array) $reader_data_from_db;
+
+			// Unserialize data.
+			foreach ( $reader_data_from_db as $column => $value ) {
+				$reader_data_from_db[ $column ] = maybe_unserialize( $value );
+			}
+
+			$reader_data = wp_parse_args( $reader_data_from_db, $reader_data );
+		}
+
+		$this->debug['reader'] = $reader_data_from_db;
+
+		// Rebuild cache.
+		wp_cache_set( 'reader_data', $reader_data, $client_id );
+
+		return $reader_data;
+	}
+
+	/**
 	 * Retrieve events for a specific reader.
 	 *
 	 * @param string      $client_id Client ID of the reader.
 	 * @param string|null $event_type Type of event to retrieve.
 	 *                                If null, retrieve all events for the given reader.
-	 * @param boolean     $ignore_cache If true, skip the WP cache and retrieve data from the DB.
 	 */
-	public function get_reader_events( $client_id, $event_type = null, $ignore_cache = false ) {
+	public function get_reader_events( $client_id, $event_type = null ) {
 		$events = [];
 
 		// Check the cache first.
-		if ( ! $ignore_cache ) {
-			$events = wp_cache_get( 'reader_events', $client_id );
-			if ( ! empty( $events ) ) {
-				return $this->filter_events_by_type( $events, $event_type );
+		if ( ! $this->ignore_cache ) {
+			$cached_events = wp_cache_get( 'reader_events', $client_id );
+			if ( ! empty( $cached_events ) ) {
+				return $this->filter_events_by_type( $cached_events, $event_type );
 			}
 		}
 
 		// If ignoring cache or there are no cached events, retrieve from the DB.
 		global $wpdb;
 		$events_table_name = Segmentation::get_events_table_name();
-		$event_type_filter = $event_type ? " AND type = '$event_type'" : '';
-		$events_from_db    = $wpdb->prepare(
-			"SELECT * from $events_table_name WHERE client_id = %s$event_type_filter", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-			$client_id
+		$events_from_db    = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->prepare(
+				"SELECT * from $events_table_name WHERE client_id = %s ORDER BY date_created DESC", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				$client_id
+			)
 		);
-		$events            = array_merge( $events, $events_from_db );
+
+		if ( $events_from_db ) {
+			$events_from_db = array_map(
+				function( $item ) {
+					$item                = (array) $item;
+					$item['event_value'] = (array) maybe_unserialize( $item['event_value'] );
+					return $item;
+				},
+				$events_from_db
+			);
+			$events         = array_merge( $events, $events_from_db );
+		}
 
 		// Rebuild cache.
 		if ( ! empty( $events ) ) {
@@ -334,26 +396,174 @@ class Lightweight_API {
 	}
 
 	/**
-	 * Save reader events to the cache.
+	 * Save reader events.
 	 *
-	 * @param array $events Array of reader events to log.
+	 * @param string $client_id Client ID of the reader.
+	 * @param array  $events Array of reader events to log.
 	 *                     ['client_id'] Client ID associated with the event.
 	 *                     ['date_created'] Timestamp of the event. Optional.
-	 *                     ['event_type'] Type of event.
+	 *                     ['type'] Type of event.
 	 *                     ['event_value'] Data associated with the event.
 	 *
-	 * @return boolean True if saved to the cache, false if not.
+	 * @return boolean True if saved, false if not.
 	 */
-	public function cache_reader_events( $events ) {
-		if ( ! isset( $event['client_id'] ) ) {
-			return false;
+	public function save_reader_events( $client_id, $events ) {
+		$existing_events = $this->get_reader_events( $client_id );
+		$is_preview      = $this->is_preview( $client_id );
+
+		// Add is_preview value for preview requests.
+		if ( $is_preview ) {
+			$events = array_map(
+				function( $event ) {
+					$event['is_preview'] = true;
+					return $event;
+				},
+				$events
+			);
 		}
-		$existing_events = $this->get_client_events( $event['client_id'] );
+
+		// If ignoring cache, write directly to DB.
+		if ( $this->ignore_cache ) {
+			global $wpdb;
+			$columns = [
+				'client_id',
+				'date_created',
+				'type',
+				'event_value',
+			];
+
+			if ( $is_preview ) {
+				$columns[] = 'is_preview';
+			}
+
+			$placeholders = array_reduce(
+				$events,
+				function( $acc, $event ) {
+					$placeholder = array_map(
+						function() {
+							return '%s';
+						},
+						array_values( $event )
+					);
+
+					$placeholder = implode( ', ', $placeholder );
+					$acc[]       = "( $placeholder )";
+
+					return $acc;
+				},
+				[]
+			);
+
+			$values = array_reduce(
+				$events,
+				function( $acc, $event ) {
+					$values = array_values( $event );
+					return array_merge(
+						$acc,
+						array_map(
+							function( $value ) {
+								return maybe_serialize( $value );
+							},
+							$values
+						)
+					);
+				},
+				[]
+			);
+
+			$columns           = implode( ', ', $columns );
+			$placeholders      = implode( ', ', $placeholders );
+			$events_table_name = Segmentation::get_events_table_name();
+			$write_result      = $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+				$wpdb->prepare(
+					"INSERT INTO $events_table_name ($columns) VALUES $placeholders", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+					$values
+				)
+			);
+
+			// If DB write was successful, rebuild cache.
+			if ( $write_result ) {
+				$this->debug['write_query_count'] += 1;
+			} else {
+				$this->debug['write_error'] = "Error writing to $events_table_name.";
+				return false;
+			}
+		} else {
+			// Write events to the flat file to be parsed to the DB at a later point.
+			Segmentation_Report::log_reader_events( $events );
+		}
+
+		// Rebuild cache.
+		$existing_events = $this->get_reader_events( $client_id );
+		$all_events      = array_merge( $existing_events, $events );
+
 		return wp_cache_set(
 			'reader_events',
-			array_merge( $existing_events, $events ),
-			$event['client_id']
+			$all_events,
+			$client_id
 		);
+	}
+
+	/**
+	 * Upsert reader data to DB and save to cache.
+	 *
+	 * @param string $client_id Client ID of the reader.
+	 * @param array  $reader_data Data to save.
+	 *
+	 * @return boolean True if updated., false if not.
+	 */
+	public function save_reader_data( $client_id, $reader_data ) {
+		global $wpdb;
+		$reader_data['client_id'] = $client_id;
+		$readers_table_name       = Segmentation::get_readers_table_name();
+		$is_preview               = $this->is_preview( $client_id );
+
+		if ( $is_preview ) {
+			$reader_data['is_preview'] = true;
+		}
+
+		$placeholders      = [];
+		$columns_to_update = array_keys( $reader_data );
+		$values_to_update  = array_map(
+			function( $value_to_update ) use ( &$placeholders ) {
+				$placeholders[] = '%s';
+				return maybe_serialize( $value_to_update );
+			},
+			array_values( $reader_data )
+		);
+		$columns_to_update = implode( ', ', $columns_to_update );
+		$placeholders      = implode( ', ', $placeholders );
+
+		// If a row with this client ID already exists, update the existing row.
+		$duplicate_placeholders = [];
+		foreach ( $reader_data as $column => $value ) {
+			$duplicate_placeholders[] = "$column = %s";
+			$values_to_update[]       = maybe_serialize( $value ); // Duplicate the values for the second part of the query.
+		}
+		$duplicate_placeholders = implode( ', ', $duplicate_placeholders );
+
+		// Write to the DB.
+		$write_result = $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->prepare(
+				"INSERT INTO $readers_table_name ($columns_to_update, date_created) VALUES ($placeholders, current_timestamp()) ON DUPLICATE KEY UPDATE $duplicate_placeholders", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				$values_to_update
+			)
+		);
+
+		// If DB write was successful, rebuild cache.
+		if ( $write_result ) {
+			$this->debug['write_query_count'] += 1;
+			$cached_reader_data                = $this->get_reader_data( $client_id );
+
+			return wp_cache_set(
+				'reader_data',
+				wp_parse_args( $reader_data, $cached_reader_data ),
+				$client_id
+			);
+		}
+
+		$this->debug['write_error'] = "Error writing to $readers_table_name.";
+		return false;
 	}
 
 	/**
@@ -365,13 +575,6 @@ class Lightweight_API {
 	 */
 	public function get_client_data_legacy( $client_id, $do_not_rebuild = false ) {
 		$data = $this->get_transient( $client_id );
-
-		// If no client data found, try the legacy transient name.
-		if ( empty( $data ) ) {
-			$data = $this->get_transient( $this->get_transient_name_legacy( $client_id ) );
-			$this->delete_transient( $this->get_transient_name_legacy( $client_id ) );
-		}
-
 		if ( $data ) {
 			// Handle legacy data which might not have some default keys.
 			return array_merge(
@@ -396,7 +599,7 @@ class Lightweight_API {
 			return $this->client_data_blueprint;
 		}
 
-		$this->save_client_data(
+		$this->save_client_data_legacy(
 			$client_id,
 			[
 				'posts_read' => array_map(
@@ -420,7 +623,7 @@ class Lightweight_API {
 	 *
 	 * @return array All clients' data.
 	 */
-	public function get_all_clients_data() {
+	public function get_all_clients_data_legacy() {
 		global $wpdb;
 		$events_table_name = Segmentation::get_events_table_name();
 
@@ -432,7 +635,7 @@ class Lightweight_API {
 			function ( $acc, $row ) use ( $api ) {
 				// Disregard client data created during previewing.
 				if ( false === strpos( $row->client_id, 'preview' ) ) {
-					$acc[] = $api->get_client_data( $row->client_id, true );
+					$acc[] = $api->get_client_data_legacy( $row->client_id, true );
 				}
 				return $acc;
 			},
@@ -447,8 +650,8 @@ class Lightweight_API {
 	 * @param string $client_id Client ID.
 	 * @param string $client_data_update Client data.
 	 */
-	public function save_client_data( $client_id, $client_data_update ) {
-		$existing_client_data = $this->get_client_data( $client_id, true );
+	public function save_client_data_legacy( $client_id, $client_data_update ) {
+		$existing_client_data = $this->get_client_data_legacy( $client_id, true );
 
 		// Update prompts data: new data should replace existing data.
 		if ( isset( $client_data_update['prompts'] ) && ! empty( $existing_client_data['prompts'] ) ) {

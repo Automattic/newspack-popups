@@ -21,6 +21,11 @@ final class Newspack_Popups_Segmentation {
 	protected static $instance = null;
 
 	/**
+	 * Installed version number of the custom table.
+	 */
+	const TABLE_VERSION = '1.0';
+
+	/**
 	 * Name of the Client ID, to be used by amp-analytics.
 	 */
 	const NEWSPACK_SEGMENTATION_CID_NAME = 'newspack-cid';
@@ -68,7 +73,7 @@ final class Newspack_Popups_Segmentation {
 
 		add_action( 'newspack_popups_segmentation_data_prune', [ __CLASS__, 'prune_data' ] );
 		if ( ! wp_next_scheduled( 'newspack_popups_segmentation_data_prune' ) ) {
-			wp_schedule_event( time(), 'daily', 'newspack_popups_segmentation_data_prune' );
+			wp_schedule_event( time(), 'hourly', 'newspack_popups_segmentation_data_prune' );
 		}
 	}
 
@@ -318,7 +323,8 @@ final class Newspack_Popups_Segmentation {
 			$charset_collate = $wpdb->get_charset_collate();
 
 			$sql = "CREATE TABLE $events_table_name (
-				-- Unique client ID.
+				event_id bigint(20) NOT NULL AUTO_INCREMENT,
+				-- Client ID.
 				client_id varchar(100) NOT NULL,
 				-- Timestamp of the event.
 				date_created datetime NOT NULL,
@@ -326,9 +332,13 @@ final class Newspack_Popups_Segmentation {
 				type varchar(20) NOT NULL,
 				-- Data related to this event.
 				event_value longtext,
-				PRIMARY KEY (client_id),
+				-- If the reader originates from a preview request.
+				is_preview bool,
+				PRIMARY KEY  (event_id),
+				KEY (client_id),
 				KEY (type),
-				KEY (date_created)
+				KEY (date_created),
+				KEY (is_preview)
 			) $charset_collate;";
 
 			require_once ABSPATH . 'wp-admin/includes/upgrade.php';
@@ -367,7 +377,7 @@ final class Newspack_Popups_Segmentation {
 			dbDelta( $sql ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.dbDelta_dbdelta
 		}
 
-		// If legacy tables exist and are empty, drop them.
+		// TODO: If legacy tables exist and are empty, drop them.
 		$legacy_readers_table_name = Segmentation::get_readers_table_name_legacy();
 		$legacy_events_table_name  = Segmentation::get_readers_table_name_legacy();
 	}
@@ -647,69 +657,119 @@ final class Newspack_Popups_Segmentation {
 	}
 
 	/**
+	 * Run the given query with chunks of up to 1000 rows, sleeping in between chunks.
+	 *
+	 * @param string $query The query string to execute.
+	 * @param array  $values If $query contains %s or %d placeholders, an array of values replace them.
+	 */
+	public static function query_with_sleep( $query, $values = [] ) {
+		global $wpdb;
+		$total     = 0;
+		$processed = PHP_INT_MAX;
+		$max_rows  = 1000; // Max number of records to process at once.
+
+		if ( ! empty( $values ) ) {
+			$sql = $wpdb->prepare(
+				"$query LIMIT $max_rows", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				$values
+			);
+		} else {
+			$sql = $wpdb->prepare( "$query LIMIT %d", $max_rows ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		}
+
+		while ( $processed > 0 ) {
+			$start     = microtime( true );
+			$processed = $wpdb->query( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
+			$took      = microtime( true ) - $start;
+			$total    += $processed;
+
+			// Convert from float seconds to int microseconds.
+			$sleep = round( $took * 1000000 );
+
+			// Sleep 2x the time it took for the query to run.
+			usleep( $sleep * 2 );
+		}
+
+		return $total;
+	}
+
+	/**
 	 * Remove unneeded data so the DB does not blow up.
 	 */
 	public static function prune_data() {
 		global $wpdb;
 		$readers_table_name = Segmentation::get_readers_table_name();
-
-		// Remove reader data if not containing donations nor subscriptions, and not updated in 30 days.
-		$removed_rows_count_transients = $wpdb->query( // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
-			"DELETE FROM $readers_table_name WHERE `option_value` LIKE '%\"donations\";a:0%' AND `option_value` LIKE '%\"email_subscriptions\";a:0%' AND date < now() - interval 30 DAY" // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		);
+		$events_table_name  = Segmentation::get_events_table_name();
 
 		// Remove all preview sessions data.
-		$removed_rows_count_previews_transients = $wpdb->query( // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
-			"DELETE FROM $readers_table_name WHERE option_name LIKE '%preview%'" // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		);
+		$removed_preview_readers = self::query_with_sleep( "DELETE FROM $readers_table_name WHERE is_preview = 1 ORDER BY date_created ASC" );
+		$removed_preview_events  = self::query_with_sleep( "DELETE FROM $events_table_name WHERE is_preview = 1 ORDER BY date_created ASC" );
 
-		// Events, like post read, don't need to stick around for more than 30 days.
-		$events_table_name         = Segmentation::get_events_table_name();
-		$removed_rows_count_events = $wpdb->query( // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
+		// Remove reader data if not containing donations nor subscriptions, and not updated in n days.
+		$days                     = 30;
+		$removed_old_readers      = 0;
+		$removed_old_events       = 0;
+		$old_client_ids           = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
 			$wpdb->prepare(
-				"DELETE FROM $events_table_name WHERE type = %s AND created_at < now() - interval 30 DAY", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-				'post_read'
+				"SELECT SQL_CALC_FOUND_ROWS `client_id` FROM $readers_table_name WHERE date_modified < now() - interval %d DAY", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				$days
 			)
 		);
-
-		// Guard against data that grows past a certain size.
-		$byte_size_limit               = 10000;
-		$removed_rows_large_transients = $wpdb->query( // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
-			$wpdb->prepare(
-				"DELETE FROM $readers_table_name WHERE length(`option_value`) > %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-				$byte_size_limit
-			)
-		);
-
-		// Guard against user agents that generate many events: delete all rows older than 1 day when the total number of rows for that user exceeds $event_count_limit.
-		$event_count_limit           = 70;
-		$client_ids_with_many_events = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
-			$wpdb->prepare(
-				"SELECT SQL_CALC_FOUND_ROWS `client_id` FROM $events_table_name GROUP BY `client_id` HAVING COUNT(`client_id`) > %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-				$event_count_limit
-			)
-		);
-
-		$removed_rows_with_many_events = 0;
-		foreach ( $client_ids_with_many_events as $row ) {
-			$removed_rows_with_many_events += $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
+		$old_client_ids_to_delete = [];
+		foreach ( $old_client_ids as $row ) {
+			$subscribe_or_donate_events = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
 				$wpdb->prepare(
-					"DELETE FROM $events_table_name WHERE `client_id` = %s AND type = %s AND created_at < now() - interval 1 DAY", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-					$row->client_id,
-					'post_read'
+					"SELECT SQL_CALC_FOUND_ROWS `client_id` FROM $events_table_name WHERE client_id = %s AND ( type = 'donation' OR type = 'subscription' ) ORDER BY date_created", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+					$row->client_id
 				)
 			);
+
+			if ( 0 === count( $subscribe_or_donate_events ) ) {
+				$old_client_ids_to_delete[] = $row->client_id;
+			}
 		}
+		if ( 0 < count( $old_client_ids_to_delete ) ) {
+			$client_id_placeholders = array_map(
+				function() {
+					return '%s';
+				},
+				$old_client_ids_to_delete
+			);
+			$client_id_placeholders = implode( ', ', $client_id_placeholders );
+			$removed_old_readers    = self::query_with_sleep(
+				"DELETE FROM $readers_table_name WHERE client_id IN ( $client_id_placeholders )",
+				$old_client_ids_to_delete
+			);
+			$removed_old_events     = self::query_with_sleep(
+				"DELETE FROM $events_table_name WHERE client_id IN ( $client_id_placeholders )",
+				$old_client_ids_to_delete
+			);
+		}
+
+		// Events like article or page views don't need to stick around for more than 1 hour.
+		$removed_rows_count_events = self::query_with_sleep(
+			"DELETE FROM $events_table_name WHERE ( type = 'article_view' OR type = 'page_view' ) AND date_created < now() - interval 1 HOUR"
+		);
 
 		if ( defined( 'IS_TEST_ENV' ) && IS_TEST_ENV ) {
 			return;
 		}
 
-		error_log( 'Newspack Campaigns: Data pruning – removed ' . $removed_rows_count_transients . ' rows from ' . $readers_table_name . ' table.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-		error_log( 'Newspack Campaigns: Data pruning – removed ' . $removed_rows_count_previews_transients . ' preview session rows from ' . $readers_table_name . ' table.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-		error_log( 'Newspack Campaigns: Data pruning – removed ' . $removed_rows_count_events . ' rows from ' . $events_table_name . ' table.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-		error_log( 'Newspack Campaigns: Data pruning – removed ' . $removed_rows_large_transients . ' rows from ' . $readers_table_name . ' table with data larger than ' . $byte_size_limit . ' bytes.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-		error_log( 'Newspack Campaigns: Data pruning – removed ' . $removed_rows_with_many_events . ' rows from ' . $events_table_name . ' table with more than ' . $event_count_limit . ' events.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+		if ( $removed_preview_readers ) {
+			error_log( 'Newspack Campaigns: Data pruning – removed ' . $removed_preview_readers . ' preview session rows from ' . $readers_table_name . ' table.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+		}
+		if ( $removed_preview_events ) {
+			error_log( 'Newspack Campaigns: Data pruning – removed ' . $removed_preview_events . ' preview session rows from ' . $events_table_name . ' table.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+		}
+		if ( $removed_old_readers ) {
+			error_log( 'Newspack Campaigns: Data pruning – removed ' . $removed_old_readers . ' old rows from ' . $readers_table_name . ' table.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+		}
+		if ( $removed_old_events ) {
+			error_log( 'Newspack Campaigns: Data pruning – removed ' . $removed_old_events . ' old rows from ' . $events_table_name . ' table.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+		}
+		if ( $removed_rows_count_events ) {
+			error_log( 'Newspack Campaigns: Data pruning – removed ' . $removed_rows_count_events . ' temporary rows from ' . $events_table_name . ' table.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+		}
 	}
 }
 Newspack_Popups_Segmentation::instance();

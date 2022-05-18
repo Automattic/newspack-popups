@@ -10,30 +10,44 @@
  */
 class Campaign_Data_Utils {
 	/**
-	 * Is client a subscriber?
+	 * Is reader a newsletter subscriber?
 	 *
-	 * @param object $client_data Client data.
+	 * @param object $reader_events Reader events.
 	 */
-	public static function is_subscriber( $client_data ) {
-		return ! empty( $client_data['email_subscriptions'] );
+	public static function is_subscriber( $reader_events ) {
+		return 0 < count(
+			array_filter(
+				$reader_events,
+				function( $event ) {
+					return 'subscription' === $event['type'];
+				}
+			)
+		);
 	}
 
 	/**
-	 * Is client a donor?
+	 * Is reader a donor?
 	 *
-	 * @param object $client_data Client data.
+	 * @param object $reader_events Reader events.
 	 */
-	public static function is_donor( $client_data ) {
-		return ! empty( $client_data['donations'] );
+	public static function is_donor( $reader_events ) {
+		return 0 < count(
+			array_filter(
+				$reader_events,
+				function( $event ) {
+					return 'donation' === $event['type'];
+				}
+			)
+		);
 	}
 
 	/**
-	 * Is client logged in?
+	 * Does reader have a WP user account?
 	 *
-	 * @param object $client_data Client data.
+	 * @param object $reader_data Reader data.
 	 */
-	public static function is_logged_in( $client_data ) {
-		return ! empty( $client_data['user_id'] );
+	public static function has_user_account( $reader_data ) {
+		return ! empty( $reader_data['user_id'] );
 	}
 
 	/**
@@ -83,68 +97,52 @@ class Campaign_Data_Utils {
 	 * Given a segment and client data, decide if the prompt should be shown.
 	 *
 	 * @param object $campaign_segment Segment data.
-	 * @param object $client_data Client data.
+	 * @param string $reader_data Reader data for the given client ID.
+	 * @param string $reader_events Reader events for the given client ID.
 	 * @param string $referer_url URL of the page performing the API request.
 	 * @param string $page_referrer_url URL of the referrer of the frontend page that is making the API request.
 	 * @return bool Whether the prompt should be shown.
 	 */
-	public static function does_client_match_segment( $campaign_segment, $client_data, $referer_url = '', $page_referrer_url = '' ) {
-		$should_display = true;
-		// Posts read.
-		$posts_read_count = count( $client_data['posts_read'] );
-		// Posts read in the current session.
-		$session_start            = strtotime( '-45 minutes', time() );
-		$posts_read_count_session = count(
+	public static function does_reader_match_segment( $campaign_segment, $reader_data, $reader_events, $referer_url = '', $page_referrer_url = '' ) {
+		$should_display              = true;
+		$is_subscriber               = self::is_subscriber( $reader_events );
+		$is_donor                    = self::is_donor( $reader_events );
+		$has_user_account            = self::has_user_account( $reader_data );
+		$campaign_segment            = self::canonize_segment( $campaign_segment );
+		$article_views_count         = $reader_data['article_views'];
+		$article_views_count_session = count(
 			array_filter(
-				$client_data['posts_read'],
-				function ( $post_data ) use ( $session_start ) {
-					if ( ! isset( $post_data['created_at'] ) ) {
-						return false;
-					}
-					return strtotime( $post_data['created_at'] ) > $session_start;
+				$reader_events,
+				function ( $event ) {
+					return 'article_view' === $event['type'];
 				}
 			)
 		);
-		$is_subscriber            = self::is_subscriber( $client_data );
-		$is_donor                 = self::is_donor( $client_data );
-		$is_logged_in             = self::is_logged_in( $client_data );
-		$campaign_segment         = self::canonize_segment( $campaign_segment );
 
 		// Read counts for categories.
-		$categories_read_counts = array_reduce(
-			$client_data['posts_read'],
-			function ( $read_counts, $read_post ) {
-				foreach ( explode( ',', $read_post['category_ids'] ) as $cat_id ) {
-					if ( isset( $read_counts[ $cat_id ] ) ) {
-						$read_counts[ $cat_id ]++;
-					} else {
-						$read_counts[ $cat_id ] = 1;
-					}
-				}
-				return $read_counts;
-			},
-			[]
-		);
-		arsort( $categories_read_counts );
-		$favorite_category_matches_segment = in_array( key( $categories_read_counts ), $campaign_segment->favorite_categories );
+		if ( $reader_data['categories_read'] ) {
+			$categories_read_counts = $reader_data['categories_read'];
+			arsort( $categories_read_counts );
+			$favorite_category_matches_segment = in_array( key( $categories_read_counts ), $campaign_segment->favorite_categories );
+		}
 
 		/**
-		 * By posts read count.
+		 * By article view count.
 		 */
-		if ( $campaign_segment->min_posts > 0 && $campaign_segment->min_posts > $posts_read_count ) {
+		if ( $campaign_segment->min_posts > 0 && $campaign_segment->min_posts > $posts_rearticle_views_countad_count ) {
 			$should_display = false;
 		}
-		if ( $campaign_segment->max_posts > 0 && $campaign_segment->max_posts < $posts_read_count ) {
+		if ( $campaign_segment->max_posts > 0 && $campaign_segment->max_posts < $article_views_count ) {
 			$should_display = false;
 		}
 
 		/**
-		 * By posts read in session count.
+		 * By article views in past hour.
 		 */
-		if ( $campaign_segment->min_session_posts > 0 && $campaign_segment->min_session_posts > $posts_read_count_session ) {
+		if ( $campaign_segment->min_session_posts > 0 && $campaign_segment->min_session_posts > $article_views_count_session ) {
 			$should_display = false;
 		}
-		if ( $campaign_segment->max_session_posts > 0 && $campaign_segment->max_session_posts < $posts_read_count_session ) {
+		if ( $campaign_segment->max_session_posts > 0 && $campaign_segment->max_session_posts < $article_views_count_session ) {
 			$should_display = false;
 		}
 
@@ -171,10 +169,10 @@ class Campaign_Data_Utils {
 		/**
 		 * By login status.
 		 */
-		if ( $campaign_segment->is_logged_in && ! $is_logged_in ) {
+		if ( $campaign_segment->is_logged_in && ! $has_user_account ) {
 			$should_display = false;
 		}
-		if ( $campaign_segment->is_not_logged_in && $is_logged_in ) {
+		if ( $campaign_segment->is_not_logged_in && $has_user_account ) {
 			$should_display = false;
 		}
 
