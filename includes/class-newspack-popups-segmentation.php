@@ -670,7 +670,7 @@ final class Newspack_Popups_Segmentation {
 
 		if ( ! empty( $values ) ) {
 			$sql = $wpdb->prepare(
-				"$query LIMIT $max_rows", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				"$query LIMIT $max_rows", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
 				$values
 			);
 		} else {
@@ -679,7 +679,7 @@ final class Newspack_Popups_Segmentation {
 
 		while ( $processed > 0 ) {
 			$start     = microtime( true );
-			$processed = $wpdb->query( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
+			$processed = $wpdb->query( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.PreparedSQL.NotPrepared
 			$took      = microtime( true ) - $start;
 			$total    += $processed;
 
