@@ -1836,6 +1836,7 @@ class APITest extends WP_UnitTestCase {
 			$api->is_a_web_crawler(),
 			'Return true if the user agent is of a web crawler.'
 		);
+		$_SERVER['HTTP_USER_AGENT'] = 'Test'; // phpcs:ignore
 	}
 
 	/**
