@@ -6,6 +6,8 @@
  * @phpcs:disable WordPress.DB.RestrictedClasses.mysql__PDO
  */
 
+require_once dirname( __FILE__ ) . '/../segmentation/class-segmentation-report.php';
+
 /**
  * API endpoints
  */
@@ -37,7 +39,7 @@ class Lightweight_API {
 	 *
 	 * @var reader_data_blueprint
 	 */
-	private $reader_data_blueprint = [
+	public $reader_data_blueprint = [
 		'date_created'    => null,
 		'date_modified'   => null,
 		'is_preview'      => false,
@@ -88,7 +90,7 @@ class Lightweight_API {
 		];
 
 		// If we don't have a persistent object cache, we can't rely on it across page views.
-		if ( ! class_exists( 'Memcache' ) ) {
+		if ( ! class_exists( 'Memcache' ) || ( defined( 'IS_TEST_ENV' ) && IS_TEST_ENV ) ) {
 			$this->ignore_cache = true;
 		}
 	}
@@ -262,24 +264,28 @@ class Lightweight_API {
 	}
 
 	/**
-	 * Given an array of reader events, only return those with the matching $event_type.
-	 * If $event_type is null, simply return the events array as-is.
+	 * Given an array of reader events, only return those with matching $event_types.
+	 * If $event_types is null, simply return the events array as-is.
 	 *
-	 * @param array       $events Array of reader events.
-	 * @param string|null $event_type Type of event to filter by.
+	 * @param array             $events Array of reader events.
+	 * @param string|array|null $event_types Event type or array of event types to filter by.
 	 *
 	 * @return array Filtered array of events.
 	 */
-	public function filter_events_by_type( $events, $event_type = null ) {
-		if ( null === $event_type ) {
+	public function filter_events_by_type( $events, $event_types = null ) {
+		if ( null === $event_types ) {
 			return $events;
+		}
+
+		if ( ! is_array( $event_types ) ) {
+			$event_types = [ $event_types ];
 		}
 
 		return array_values(
 			array_filter(
 				$events,
-				function( $event ) use ( $event_type ) {
-					return $event_type === $event['type'];
+				function( $event ) use ( $event_types ) {
+					return in_array( $event['type'], $event_types, true );
 				}
 			)
 		);
@@ -325,9 +331,7 @@ class Lightweight_API {
 		);
 
 		// If there's no reader data in the DB, create it.
-		if ( empty( $reader_data_from_db ) ) {
-			$this->save_reader_data( $client_id, [] );
-		} else {
+		if ( ! empty( $reader_data_from_db ) ) {
 			$reader_data_from_db = reset( $reader_data_from_db );
 			$reader_data_from_db = (array) $reader_data_from_db;
 
@@ -339,11 +343,10 @@ class Lightweight_API {
 			$reader_data = wp_parse_args( $reader_data_from_db, $reader_data );
 		}
 
-		$this->debug['reader'] = $reader_data_from_db;
-
 		// Rebuild cache.
 		wp_cache_set( 'reader_data', $reader_data, $client_id );
 
+		$this->debug['reader'] = $reader_data;
 		return $reader_data;
 	}
 
@@ -370,7 +373,7 @@ class Lightweight_API {
 		$events_table_name = Segmentation::get_events_table_name();
 		$events_from_db    = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"SELECT * from $events_table_name WHERE client_id = %s ORDER BY date_created DESC", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				"SELECT client_id, type, date_created, event_value, is_preview from $events_table_name WHERE client_id = %s ORDER BY date_created DESC", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 				$client_id
 			)
 		);
@@ -410,6 +413,31 @@ class Lightweight_API {
 	public function save_reader_events( $client_id, $events ) {
 		$existing_events = $this->get_reader_events( $client_id );
 		$is_preview      = $this->is_preview( $client_id );
+		$already_read    = array_column(
+			array_column(
+				$existing_events,
+				'event_value'
+			),
+			'post_id'
+		);
+
+		// Deduplicate article and page views from the past hour.
+		$events = array_values(
+			array_filter(
+				$events,
+				function( $event ) use ( $already_read, &$view_events ) {
+					if (
+						( 'article_view' === $event['type'] || 'page_view' === $event['type'] ) &&
+						isset( $event['event_value'] ) &&
+						isset( $event['event_value']['post_id'] )
+					) {
+						return ! in_array( $event['event_value']['post_id'], $already_read, true );
+					}
+
+					return true;
+				}
+			)
+		);
 
 		// Add is_preview value for preview requests.
 		if ( $is_preview ) {
@@ -420,6 +448,12 @@ class Lightweight_API {
 				},
 				$events
 			);
+		}
+
+		// If no new events to save, return false.
+		if ( empty( $events ) ) {
+			$this->debug['already_read'] = true;
+			return false;
 		}
 
 		// If ignoring cache, write directly to DB.
@@ -493,9 +527,71 @@ class Lightweight_API {
 			Segmentation_Report::log_reader_events( $events );
 		}
 
+		// Rebuild reader data if there were any article or page views.
+		$article_view_events = array_filter(
+			$events,
+			function( $event ) {
+				return 'article_view' === $event['type'];
+			}
+		);
+		$page_view_events    = array_filter(
+			$events,
+			function( $event ) {
+				return 'page_view' === $event['type'];
+			}
+		);
+
+		if ( 0 < count( $article_view_events ) || 0 < count( $page_view_events ) ) {
+			$reader_data        = $this->get_reader_data( $client_id );
+			$reader_data_update = [];
+			$article_views      = (int) $reader_data['article_views'];
+			$page_views         = (int) $reader_data['page_views'];
+			$categories_read    = is_array( $reader_data['categories_read'] ) ? $reader_data['categories_read'] : [];
+			$viewed_categories  = array_column(
+				array_column(
+					$article_view_events,
+					'event_value'
+				),
+				'categories'
+			);
+			$viewed_categories  = array_reduce(
+				$viewed_categories,
+				function( $acc, $categories ) {
+					if ( $categories ) {
+						foreach ( explode( ',', $categories ) as $category ) {
+							if ( ! isset( $acc[ $category ] ) ) {
+								$acc[ $category ] = 0;
+							}
+							$acc[ $category ] ++;
+						}
+					}
+					return $acc;
+				},
+				[]
+			);
+
+			// Increment article/page view counts and add category data.
+			$reader_data_update['article_views'] = $article_views + count( $article_view_events );
+			$reader_data_update['page_views']    = $page_views + count( $page_view_events );
+
+			if ( ! empty( $viewed_categories ) ) {
+				foreach ( $viewed_categories as $category_id => $view_count ) {
+					if ( ! isset( $categories_read[ $category_id ] ) ) {
+						$categories_read[ $category_id ] = 0;
+					}
+					$categories_read[ $category_id ] += $view_count;
+				}
+				$reader_data_update['categories_read'] = $categories_read;
+			}
+
+			if ( ! empty( $reader_data_update ) ) {
+				$this->save_reader_data( $client_id, $reader_data_update );
+			}
+		}
+
 		// Rebuild cache.
-		$existing_events = $this->get_reader_events( $client_id );
-		$all_events      = array_merge( $existing_events, $events );
+		$all_events            = array_merge( $existing_events, $events );
+		$this->debug['events'] = array_merge( $this->debug['events'], $all_events );
 
 		return wp_cache_set(
 			'reader_events',
@@ -512,8 +608,17 @@ class Lightweight_API {
 	 *
 	 * @return boolean True if updated., false if not.
 	 */
-	public function save_reader_data( $client_id, $reader_data ) {
+	public function save_reader_data( $client_id, $reader_data = [] ) {
 		global $wpdb;
+
+		// Ensure that we're only updating valid columns.
+		$valid_columns = array_keys( $this->reader_data_blueprint );
+		foreach ( $reader_data as $key => $value ) {
+			if ( ! in_array( $key, $valid_columns, true ) ) {
+				unset( $reader_data[ $key ] );
+			}
+		}
+
 		$reader_data['client_id'] = $client_id;
 		$readers_table_name       = Segmentation::get_readers_table_name();
 		$is_preview               = $this->is_preview( $client_id );

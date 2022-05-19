@@ -120,6 +120,7 @@ class Campaign_Data_Utils {
 		);
 
 		// Read counts for categories.
+		$favorite_category_matches_segment = false;
 		if ( $reader_data['categories_read'] ) {
 			$categories_read_counts = $reader_data['categories_read'];
 			arsort( $categories_read_counts );
@@ -167,12 +168,18 @@ class Campaign_Data_Utils {
 		}
 
 		/**
-		 * By login status.
+		 * By login status. is_logged_in and is_not_logged_in are legacy option names
+		 * that have been renamed has_user_account and no_user_account, for clarity.
 		 */
-		if ( ( $campaign_segment->has_user_account || $campaign_segment->is_logged_in ) && ! $has_user_account ) {
+		$segment_has_user_account = ( isset( $campaign_segment->has_user_account ) && $campaign_segment->has_user_account ) ||
+			( isset( $campaign_segment->is_logged_in ) && $campaign_segment->is_logged_in );
+		$segment_no_user_account  = ( isset( $campaign_segment->no_user_account ) && $campaign_segment->no_user_account ) ||
+		( isset( $campaign_segment->is_not_logged_in ) && $campaign_segment->is_not_logged_in );
+
+		if ( $segment_has_user_account && ! $has_user_account ) {
 			$should_display = false;
 		}
-		if ( ( $campaign_segment->no_user_account || $campaign_segment->is_not_logged_in ) && $has_user_account ) {
+		if ( $segment_no_user_account && $has_user_account ) {
 			$should_display = false;
 		}
 

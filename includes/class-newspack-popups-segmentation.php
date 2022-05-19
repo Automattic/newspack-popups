@@ -677,6 +677,8 @@ final class Newspack_Popups_Segmentation {
 
 	/**
 	 * Run the given query with chunks of up to 1000 rows, sleeping in between chunks.
+	 * This helps avoid replication lag from deleting many records at once.
+	 * See: https://opengrok.a8c.com/source/xref/wpcom/wp-content/lib/jetpack-pit/class.jetpack-sync-postmeta-cleanup.php?r=5dbfee70#211
 	 *
 	 * @param string $query The query string to execute.
 	 * @param array  $values If $query contains %s or %d placeholders, an array of values replace them.
@@ -724,7 +726,7 @@ final class Newspack_Popups_Segmentation {
 		$removed_preview_readers = self::query_with_sleep( "DELETE FROM $readers_table_name WHERE is_preview = 1 ORDER BY date_created ASC" );
 		$removed_preview_events  = self::query_with_sleep( "DELETE FROM $events_table_name WHERE is_preview = 1 ORDER BY date_created ASC" );
 
-		// Remove reader data if not containing donations nor subscriptions, and not updated in n days.
+		// Remove reader data if not containing donations nor subscriptions, and not updated in $days days.
 		$days                     = 30;
 		$removed_old_readers      = 0;
 		$removed_old_events       = 0;
@@ -765,9 +767,14 @@ final class Newspack_Popups_Segmentation {
 			);
 		}
 
-		// Events like article or page views don't need to stick around for more than 1 hour.
-		$removed_rows_count_events = self::query_with_sleep(
+		// Remove article_view and page_view events older than 1 hour.
+		$removed_rows_count_page_view_events = self::query_with_sleep(
 			"DELETE FROM $events_table_name WHERE ( type = 'article_view' OR type = 'page_view' ) AND date_created < now() - interval 1 HOUR"
+		);
+
+		// Remove prompt_seen events older than $days days.
+		$removed_row_counts_prompt_seen_events = self::query_with_sleep(
+			"DELETE FROM $events_table_name WHERE type = 'prompt_seen' AND date_created < now() - interval $days DAY"
 		);
 
 		if ( defined( 'IS_TEST_ENV' ) && IS_TEST_ENV ) {
@@ -786,8 +793,11 @@ final class Newspack_Popups_Segmentation {
 		if ( $removed_old_events ) {
 			error_log( 'Newspack Campaigns: Data pruning – removed ' . $removed_old_events . ' old rows from ' . $events_table_name . ' table.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 		}
-		if ( $removed_rows_count_events ) {
-			error_log( 'Newspack Campaigns: Data pruning – removed ' . $removed_rows_count_events . ' temporary rows from ' . $events_table_name . ' table.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+		if ( $removed_rows_count_page_view_events ) {
+			error_log( 'Newspack Campaigns: Data pruning – removed ' . $removed_rows_count_page_view_events . ' article/page view events from ' . $events_table_name . ' table.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+		}
+		if ( $removed_row_counts_prompt_seen_events ) {
+			error_log( 'Newspack Campaigns: Data pruning – removed ' . $removed_row_counts_prompt_seen_events . ' prompt seen events from ' . $events_table_name . ' table.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 		}
 	}
 }

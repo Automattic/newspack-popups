@@ -120,14 +120,15 @@ class APITest extends WP_UnitTestCase {
 		];
 	}
 
-	public static function create_read_post( $id, $created_at = false, $category_ids = '' ) { // phpcs:ignore Squiz.Commenting.FunctionComment.Missing
-		if ( false === $created_at ) {
-			$created_at = gmdate( 'Y-m-d H:i:s' );
+	public static function create_event( $event_value = [], $date_created = false, $type = 'article_view' ) { // phpcs:ignore Squiz.Commenting.FunctionComment.Missing
+		if ( false === $date_created ) {
+			$date_created = gmdate( 'Y-m-d H:i:s' );
 		}
 		return [
-			'post_id'      => $id,
-			'category_ids' => $category_ids,
-			'created_at'   => $created_at,
+			'client_id'    => self::$client_id,
+			'date_created' => $date_created,
+			'type'         => $type,
+			'event_value'  => $event_value,
 		];
 	}
 
@@ -145,23 +146,22 @@ class APITest extends WP_UnitTestCase {
 		);
 
 		self::assertFalse(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
 			'Assert not shown if client matches no assigned segments.'
 		);
 
-		// Report 2 articles read.
-		self::$maybe_show_campaign->save_client_data(
+		// Report 3 articles read.
+		self::$maybe_show_campaign->save_reader_events(
 			self::$client_id,
 			[
-				'posts_read' => [
-					self::create_read_post( 1 ),
-					self::create_read_post( 2 ),
-				],
+				self::create_event( [ 'post_id' => 1 ] ),
+				self::create_event( [ 'post_id' => 2 ] ),
+				self::create_event( [ 'post_id' => 3 ] ),
 			]
 		);
 
 		self::assertTrue(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
 			'Assert shown if client’s highest-priority matching segment is assigned.'
 		);
 	}
@@ -204,7 +204,7 @@ class APITest extends WP_UnitTestCase {
 		$test_popup = self::create_test_popup( [ 'frequency' => 'once' ] );
 
 		self::assertTrue(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
 			'Assert initially visible.'
 		);
 
@@ -217,7 +217,7 @@ class APITest extends WP_UnitTestCase {
 		);
 
 		self::assertFalse(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
 			'Assert not shown after a single reported view.'
 		);
 	}
@@ -229,7 +229,7 @@ class APITest extends WP_UnitTestCase {
 		$test_popup = self::create_test_popup( [ 'frequency' => 'daily' ] );
 
 		self::assertTrue(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
 			'Assert initially visible.'
 		);
 
@@ -242,12 +242,12 @@ class APITest extends WP_UnitTestCase {
 		);
 
 		self::assertFalse(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
 			'Assert not shown after a single reported view.'
 		);
 
 		self::assertTrue(
-			self::$maybe_show_campaign->should_campaign_be_shown(
+			self::$maybe_show_campaign->should_popup_be_shown(
 				self::$client_id,
 				$test_popup['payload'],
 				self::$settings,
@@ -273,12 +273,12 @@ class APITest extends WP_UnitTestCase {
 		);
 
 		self::assertTrue(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_a['payload'], self::$settings ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup_a['payload'], self::$settings ),
 			'Assert visible without referer.'
 		);
 
 		self::assertTrue(
-			self::$maybe_show_campaign->should_campaign_be_shown(
+			self::$maybe_show_campaign->should_popup_be_shown(
 				self::$client_id,
 				$test_popup_a['payload'],
 				self::$settings,
@@ -288,7 +288,7 @@ class APITest extends WP_UnitTestCase {
 		);
 
 		self::assertFalse(
-			self::$maybe_show_campaign->should_campaign_be_shown(
+			self::$maybe_show_campaign->should_popup_be_shown(
 				self::$client_id,
 				$test_popup_a['payload'],
 				self::$settings,
@@ -298,7 +298,7 @@ class APITest extends WP_UnitTestCase {
 		);
 
 		self::assertTrue(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_a['payload'], self::$settings ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup_a['payload'], self::$settings ),
 			'Assert shown on a subsequent visit, without the UTM source in the URL.'
 		);
 
@@ -311,7 +311,7 @@ class APITest extends WP_UnitTestCase {
 		);
 
 		self::assertFalse(
-			self::$maybe_show_campaign->should_campaign_be_shown(
+			self::$maybe_show_campaign->should_popup_be_shown(
 				self::$client_id,
 				$test_popup_b['payload'],
 				self::$settings,
@@ -328,61 +328,66 @@ class APITest extends WP_UnitTestCase {
 		$api = new Lightweight_API();
 
 		self::assertEquals(
-			$api->get_client_data( self::$client_id ),
-			[
-				'posts_read'          => [],
-				'email_subscriptions' => [],
-				'donations'           => [],
-				'user_id'             => false,
-				'prompts'             => [],
-			],
+			$api->get_reader_data( self::$client_id ),
+			$api->reader_data_blueprint,
 			'Returns expected data blueprint in absence of saved data.'
 		);
 
-		$posts_read = [
-			[
-				'post_id'      => '142',
-				'category_ids' => '',
-			],
+		$read_post = [
+			'post_id'    => '142',
+			'categories' => '12,13',
 		];
 
-		$api->save_client_data(
+		$api->save_reader_events(
 			self::$client_id,
-			[
-				'posts_read' => $posts_read,
-			]
+			[ self::create_event( $read_post ) ]
 		);
 
+		$reader_data = $api->get_reader_data( self::$client_id );
+		unset( $reader_data['date_created'] );
+		unset( $reader_data['date_modified'] );
+
 		self::assertEquals(
-			$api->get_client_data( self::$client_id ),
+			$reader_data,
 			[
-				'posts_read'          => $posts_read,
-				'email_subscriptions' => [],
-				'donations'           => [],
-				'user_id'             => false,
-				'prompts'             => [],
+				'is_preview'      => null,
+				'user_id'         => null,
+				'article_views'   => '1',
+				'page_views'      => '0',
+				'categories_read' => [
+					'12' => 1,
+					'13' => 1,
+				],
+				'client_id'       => self::$client_id,
 			],
 			'Returns data with saved post after an article reading was reported.'
 		);
 
-		$api->save_client_data(
+		$api->save_reader_data(
 			self::$client_id,
 			[
 				'some_other_data' => 42,
 			]
 		);
 
+		$reader_data = $api->get_reader_data( self::$client_id );
+		unset( $reader_data['date_created'] );
+		unset( $reader_data['date_modified'] );
+
 		self::assertEquals(
-			$api->get_client_data( self::$client_id ),
+			$reader_data,
 			[
-				'posts_read'          => $posts_read,
-				'email_subscriptions' => [],
-				'some_other_data'     => 42,
-				'donations'           => [],
-				'user_id'             => false,
-				'prompts'             => [],
+				'is_preview'      => null,
+				'user_id'         => null,
+				'article_views'   => '1',
+				'page_views'      => '0',
+				'categories_read' => [
+					'12' => '1',
+					'13' => '1',
+				],
+				'client_id'       => self::$client_id,
 			],
-			'Returns data without overwriting the existing data.'
+			'Only valid keys are saved and returned.'
 		);
 	}
 
@@ -392,26 +397,23 @@ class APITest extends WP_UnitTestCase {
 	public function test_client_data_rebuild() {
 		$api       = new Lightweight_API();
 		$client_id = 'client_' . uniqid();
-		global $wpdb;
-		$events_table_name = Segmentation::get_events_table_name();
-		$wpdb->query( $wpdb->prepare( "INSERT INTO `$events_table_name` (`type`, `client_id`, `post_id`) VALUES (%s, %s, %s)", 'post_read', $client_id, '42' ) ); // phpcs:ignore
+
+		// Report 3 articles read.
+		$api->save_reader_events(
+			$client_id,
+			[
+				self::create_event( [ 'post_id' => 1 ] ),
+				self::create_event( [ 'post_id' => 2 ] ),
+				self::create_event( [ 'post_id' => 3 ] ),
+			]
+		);
+
+		$reader_data = $api->get_reader_data( $client_id );
 
 		self::assertEquals(
-			$api->get_client_data( $client_id ),
-			[
-				'posts_read'          => [
-					[
-						'post_id'      => '42',
-						'category_ids' => null,
-						'created_at'   => '0000-00-00 00:00:00',
-					],
-				],
-				'email_subscriptions' => [],
-				'donations'           => [],
-				'user_id'             => false,
-				'prompts'             => [],
-			],
-			'Returns expected data based on events table.'
+			$reader_data['article_views'],
+			3,
+			'Returns expected data after saving new events.'
 		);
 	}
 
@@ -632,7 +634,7 @@ class APITest extends WP_UnitTestCase {
 		);
 
 		self::assertFalse(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
 			'Assert initially not visible.'
 		);
 
@@ -647,7 +649,7 @@ class APITest extends WP_UnitTestCase {
 		);
 
 		self::assertTrue(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
 			'Assert shown after reader has subscribed.'
 		);
 	}
@@ -665,7 +667,7 @@ class APITest extends WP_UnitTestCase {
 		);
 
 		self::assertTrue(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
 			'Assert initially visible.'
 		);
 
@@ -680,7 +682,7 @@ class APITest extends WP_UnitTestCase {
 		);
 
 		self::assertFalse(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
 			'Assert not shown after reader has subscribed.'
 		);
 	}
@@ -698,7 +700,7 @@ class APITest extends WP_UnitTestCase {
 		);
 
 		self::assertTrue(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings ),
 			'Assert visible.'
 		);
 	}
@@ -716,7 +718,7 @@ class APITest extends WP_UnitTestCase {
 		);
 
 		self::assertFalse(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings ),
 			'Assert initially not visible.'
 		);
 
@@ -725,14 +727,14 @@ class APITest extends WP_UnitTestCase {
 			self::$client_id,
 			[
 				'posts_read' => [
-					self::create_read_post( 1 ),
-					self::create_read_post( 2 ),
+					self::create_event( [ 'post_id' => 1 ] ),
+					self::create_event( [ 'post_id' => 2 ] ),
 				],
 			]
 		);
 
 		self::assertTrue(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings ),
 			'Assert shown when a third article is read.'
 		);
 
@@ -741,16 +743,16 @@ class APITest extends WP_UnitTestCase {
 			self::$client_id,
 			[
 				'posts_read' => [
-					self::create_read_post( 3 ),
-					self::create_read_post( 4 ),
-					self::create_read_post( 5 ),
-					self::create_read_post( 6 ),
+					self::create_event( [ 'post_id' => 3 ] ),
+					self::create_event( [ 'post_id' => 4 ] ),
+					self::create_event( [ 'post_id' => 5 ] ),
+					self::create_event( [ 'post_id' => 6 ] ),
 				],
 			]
 		);
 
 		self::assertFalse(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings ),
 			'Assert not shown when more than five articles were read.'
 		);
 	}
@@ -768,7 +770,7 @@ class APITest extends WP_UnitTestCase {
 		);
 
 		self::assertFalse(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings ),
 			'Assert initially not visible.'
 		);
 
@@ -777,14 +779,14 @@ class APITest extends WP_UnitTestCase {
 			self::$client_id,
 			[
 				'posts_read' => [
-					self::create_read_post( 1 ),
-					self::create_read_post( 2 ),
+					self::create_event( [ 'post_id' => 1 ] ),
+					self::create_event( [ 'post_id' => 2 ] ),
 				],
 			]
 		);
 
 		self::assertTrue(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings ),
 			'Assert shown when a third article is read.'
 		);
 
@@ -797,7 +799,7 @@ class APITest extends WP_UnitTestCase {
 		);
 
 		self::assertFalse(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings ),
 			'Assert not shown after it has been shown once.'
 		);
 	}
@@ -815,7 +817,7 @@ class APITest extends WP_UnitTestCase {
 		);
 
 		self::assertFalse(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings ),
 			'Assert initially not visible.'
 		);
 
@@ -824,14 +826,14 @@ class APITest extends WP_UnitTestCase {
 			self::$client_id,
 			[
 				'posts_read' => [
-					self::create_read_post( 1 ),
-					self::create_read_post( 2 ),
+					self::create_event( [ 'post_id' => 1 ] ),
+					self::create_event( [ 'post_id' => 2 ] ),
 				],
 			]
 		);
 
 		self::assertTrue(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings ),
 			'Assert shown when a third article is read.'
 		);
 
@@ -844,7 +846,7 @@ class APITest extends WP_UnitTestCase {
 		);
 
 		self::assertFalse(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings ),
 			'Assert not shown after it has been shown once.'
 		);
 	}
@@ -862,7 +864,7 @@ class APITest extends WP_UnitTestCase {
 		);
 
 		self::assertFalse(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings ),
 			'Assert not visible initially.'
 		);
 
@@ -884,14 +886,14 @@ class APITest extends WP_UnitTestCase {
 			self::$client_id,
 			[
 				'posts_read' => [
-					self::create_read_post( 1, gmdate( 'Y-m-d H:i:s', strtotime( '-1 day', time() ) ) ),
-					self::create_read_post( 2, gmdate( 'Y-m-d H:i:s', strtotime( '-1 day', time() ) ) ),
+					self::create_event( [ 'post_id' => 1 ], gmdate( 'Y-m-d H:i:s', strtotime( '-1 day', time() ) ) ),
+					self::create_event( [ 'post_id' => 2 ], gmdate( 'Y-m-d H:i:s', strtotime( '-1 day', time() ) ) ),
 				],
 			]
 		);
 
 		self::assertFalse(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings ),
 			'Assert not visible initially, still.'
 		);
 
@@ -900,14 +902,14 @@ class APITest extends WP_UnitTestCase {
 			self::$client_id,
 			[
 				'posts_read' => [
-					self::create_read_post( 1 ),
-					self::create_read_post( 2 ),
+					self::create_event( [ 'post_id' => 1 ] ),
+					self::create_event( [ 'post_id' => 2 ] ),
 				],
 			]
 		);
 
 		self::assertTrue(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings ),
 			'Assert shown when a third article is read.'
 		);
 
@@ -916,16 +918,16 @@ class APITest extends WP_UnitTestCase {
 			self::$client_id,
 			[
 				'posts_read' => [
-					self::create_read_post( 3 ),
-					self::create_read_post( 4 ),
-					self::create_read_post( 5 ),
-					self::create_read_post( 6 ),
+					self::create_event( [ 'post_id' => 3 ] ),
+					self::create_event( [ 'post_id' => 4 ] ),
+					self::create_event( [ 'post_id' => 5 ] ),
+					self::create_event( [ 'post_id' => 6 ] ),
 				],
 			]
 		);
 
 		self::assertFalse(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings ),
 			'Assert not shown when more than five articles were read.'
 		);
 	}
@@ -945,23 +947,23 @@ class APITest extends WP_UnitTestCase {
 		self::$settings->best_priority_segment_id = self::$segment_ids['segmentWithReferrers'];
 
 		self::assertTrue(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings, '', 'http://foobar.com' ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings, '', 'http://foobar.com' ),
 			'Assert visible if first referrer matches.'
 		);
 		self::assertTrue(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings, '', 'https://newspack.pub' ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings, '', 'https://newspack.pub' ),
 			'Assert visible if second referrer matches.'
 		);
 		self::assertTrue(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings, '', 'https://sub.newspack.pub' ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings, '', 'https://sub.newspack.pub' ),
 			'Assert visible if referrer with subdomain matches.'
 		);
 		self::assertTrue(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings, '', 'https://www.foobar.com' ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings, '', 'https://www.foobar.com' ),
 			'Assert visible if referrer matches, with a www subdomain.'
 		);
 		self::assertFalse(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings, '', 'https://google.com' ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings, '', 'https://google.com' ),
 			'Assert not visible if referrer does not match.'
 		);
 	}
@@ -981,19 +983,19 @@ class APITest extends WP_UnitTestCase {
 		self::$settings->best_priority_segment_id = self::$segment_ids['segmentWithNegativeReferrer'];
 
 		self::assertTrue(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings ),
 			'Assert visible without referrer.'
 		);
 		self::assertFalse(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings, '', 'http://baz.com' ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings, '', 'http://baz.com' ),
 			'Assert not visible if referrer matches.'
 		);
 		self::assertFalse(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings, '', 'https://www.baz.com' ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings, '', 'https://www.baz.com' ),
 			'Assert not visible if referrer matches, with a www subdomain.'
 		);
 		self::assertTrue(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings, '', 'https://google.com' ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings, '', 'https://google.com' ),
 			'Assert visible if referrer does not match.'
 		);
 	}
@@ -1013,7 +1015,7 @@ class APITest extends WP_UnitTestCase {
 		self::$settings->best_priority_segment_id = self::$segment_ids['segmentFavCategory42'];
 
 		self::assertFalse(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
 			'Assert invisible initially.'
 		);
 
@@ -1022,13 +1024,13 @@ class APITest extends WP_UnitTestCase {
 			self::$client_id,
 			[
 				'posts_read' => [
-					self::create_read_post( 1 ),
+					self::create_event( [ 'post_id' => 1 ] ),
 				],
 			]
 		);
 
 		self::assertFalse(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
 			'Assert invisible with a single category-less article read.'
 		);
 
@@ -1037,14 +1039,24 @@ class APITest extends WP_UnitTestCase {
 			self::$client_id,
 			[
 				'posts_read' => [
-					self::create_read_post( 2, false, self::$category_ids[0] ),
-					self::create_read_post( 3, false, implode( ',', self::$category_ids ) ),
+					self::create_event(
+						[
+							'post_id'      => 2,
+							'category_ids' => self::$category_ids[0],
+						]
+					),
+					self::create_event(
+						[
+							'post_id'      => 3,
+							'category_ids' => implode( ',', self::$category_ids ),
+						]
+					),
 				],
 			]
 		);
 
 		self::assertTrue(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
 			'Assert visible after favourite category matches.'
 		);
 	}
@@ -1062,7 +1074,7 @@ class APITest extends WP_UnitTestCase {
 		);
 
 		self::assertTrue(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
 			'Assert visible, since there is no such segment.'
 		);
 	}
@@ -1080,11 +1092,11 @@ class APITest extends WP_UnitTestCase {
 		);
 
 		self::assertFalse(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
 			'Assert not visible, as the client is not a subscriber.'
 		);
 		self::assertTrue(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', '', [ 'segment' => self::$segment_ids['segmentSubscribers'] ] ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', '', [ 'segment' => self::$segment_ids['segmentSubscribers'] ] ),
 			'Assert visible when viewing as a segment member.'
 		);
 	}
@@ -1102,11 +1114,11 @@ class APITest extends WP_UnitTestCase {
 		);
 
 		self::assertFalse(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
 			'Assert not visible, as the client is not logged in.'
 		);
 		self::assertTrue(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', '', [ 'segment' => self::$segment_ids['segmentLoggedIn'] ] ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', '', [ 'segment' => self::$segment_ids['segmentLoggedIn'] ] ),
 			'Assert visible when viewing as a segment member.'
 		);
 	}
@@ -1129,15 +1141,15 @@ class APITest extends WP_UnitTestCase {
 			self::$client_id,
 			[
 				'posts_read' => [
-					self::create_read_post( 1, false, '42' ),
-					self::create_read_post( 2, false, '42' ),
-					self::create_read_post( 3, false, '42' ),
+					self::create_event( [ 'post_id' => 1 ], false, '42' ),
+					self::create_event( [ 'post_id' => 2 ], false, '42' ),
+					self::create_event( [ 'post_id' => 3 ], false, '42' ),
 				],
 			]
 		);
 
 		self::assertFalse(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', '', [ 'segment' => self::$segment_ids['segmentWithReferrers'] ] ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', '', [ 'segment' => self::$segment_ids['segmentWithReferrers'] ] ),
 			'Assert campaign with read count not visible when viewing as a different segment.'
 		);
 
@@ -1150,7 +1162,7 @@ class APITest extends WP_UnitTestCase {
 		);
 
 		self::assertFalse(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_2['payload'], self::$settings, '', '', [ 'segment' => self::$segment_ids['segmentWithReferrers'] ] ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup_2['payload'], self::$settings, '', '', [ 'segment' => self::$segment_ids['segmentWithReferrers'] ] ),
 			'Assert campaign with fav. categories segment not visible when viewing as a different segment.'
 		);
 	}
@@ -1168,11 +1180,11 @@ class APITest extends WP_UnitTestCase {
 		);
 
 		self::assertFalse(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
 			'Assert not visible, as the client does not have the appropriate read count.'
 		);
 		self::assertTrue(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', '', [ 'segment' => self::$segment_ids['segmentBetween3And5'] ] ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', '', [ 'segment' => self::$segment_ids['segmentBetween3And5'] ] ),
 			'Assert visible when viewing as a segment member.'
 		);
 	}
@@ -1190,19 +1202,19 @@ class APITest extends WP_UnitTestCase {
 		);
 
 		self::assertFalse(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
 			'Assert not visible without referrer.'
 		);
 		self::assertTrue(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', '', [ 'segment' => self::$segment_ids['segmentWithReferrers'] ] ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', '', [ 'segment' => self::$segment_ids['segmentWithReferrers'] ] ),
 			'Assert visible when viewing as a segment member.'
 		);
 		self::assertTrue(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', 'https://newspack.pub', [ 'segment' => self::$segment_ids['segmentWithReferrers'] ] ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', 'https://newspack.pub', [ 'segment' => self::$segment_ids['segmentWithReferrers'] ] ),
 			'Assert visible when viewing as a segment member, with a referrer.'
 		);
 		self::assertFalse(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', 'https://twitter.com', [ 'segment' => self::$segment_ids['anotherSegmentWithReferrers'] ] ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', 'https://twitter.com', [ 'segment' => self::$segment_ids['anotherSegmentWithReferrers'] ] ),
 			'Assert not visible when viewing as a different segment with a referrer.'
 		);
 	}
@@ -1222,15 +1234,15 @@ class APITest extends WP_UnitTestCase {
 		self::$settings->best_priority_segment_id = self::$segment_ids['segmentWithNegativeReferrer'];
 
 		self::assertTrue(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
 			'Assert visible without referrer.'
 		);
 		self::assertTrue(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', '', [ 'segment' => self::$segment_ids['segmentWithNegativeReferrer'] ] ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', '', [ 'segment' => self::$segment_ids['segmentWithNegativeReferrer'] ] ),
 			'Assert visible when viewing as a segment member.'
 		);
 		self::assertTrue(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', 'https://newspack.pub', [ 'segment' => self::$segment_ids['segmentWithNegativeReferrer'] ] ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', 'https://newspack.pub', [ 'segment' => self::$segment_ids['segmentWithNegativeReferrer'] ] ),
 			'Assert visible when viewing as a segment member, with a referrer.'
 		);
 	}
@@ -1248,7 +1260,7 @@ class APITest extends WP_UnitTestCase {
 		);
 
 		self::assertTrue(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', '', [ 'segment' => self::$segment_ids['segmentFavCategory42'] ] ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', '', [ 'segment' => self::$segment_ids['segmentFavCategory42'] ] ),
 			'Assert visible when viewing as a segment member.'
 		);
 	}
@@ -1266,11 +1278,11 @@ class APITest extends WP_UnitTestCase {
 		);
 
 		self::assertTrue(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
 			'Assert visible, a non-existent segment is disregarded.'
 		);
 		self::assertTrue(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', '', [ 'segment' => 'not-a-segment' ] ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup['payload'], self::$settings, '', '', [ 'segment' => 'not-a-segment' ] ),
 			'Assert visible, a non-existent segment is disregarded.'
 		);
 	}
@@ -1295,11 +1307,11 @@ class APITest extends WP_UnitTestCase {
 		);
 
 		self::assertFalse(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings, '', '', [ 'segment' => 'everyone' ] ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings, '', '', [ 'segment' => 'everyone' ] ),
 			'Assert prompt with a segment is not visible when previewing "everyone" segment.'
 		);
 		self::assertTrue(
-			self::$maybe_show_campaign->should_campaign_be_shown( self::$client_id, $test_popup_everyone['payload'], self::$settings, '', '', [ 'segment' => 'everyone' ] ),
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup_everyone['payload'], self::$settings, '', '', [ 'segment' => 'everyone' ] ),
 			'Assert prompt with no segment is visible when previewing "everyone" segment.'
 		);
 	}

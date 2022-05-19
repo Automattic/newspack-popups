@@ -46,7 +46,6 @@ final class Newspack_Popups_Parse_Logs {
 		}
 	}
 
-
 	/**
 	 * Add a CRON interval of one minute.
 	 *

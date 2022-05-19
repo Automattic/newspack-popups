@@ -9,8 +9,6 @@
  * Extend the base Lightweight_API class.
  */
 require_once dirname( __FILE__ ) . '/../classes/class-lightweight-api.php';
-
-require_once dirname( __FILE__ ) . '/../segmentation/class-segmentation-report.php';
 require_once dirname( __FILE__ ) . '/class-campaign-data-utils.php';
 
 /**
@@ -37,12 +35,8 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			$view_as_spec = Segmentation::parse_view_as( json_decode( $_REQUEST['view_as'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		}
 
-		$reader_data   = $this->get_reader_data( $client_id );
-		$reader_events = $this->get_reader_events( $client_id );
-
 		// Log an article or page view event.
 		if ( $visit && ( ! defined( 'DISABLE_CAMPAIGN_EVENT_LOGGING' ) || true !== DISABLE_CAMPAIGN_EVENT_LOGGING ) ) {
-			// Update the cache.
 			$event_type = $visit['is_post'] ? 'article_view' : 'page_view';
 			$read_event = [
 				'client_id'    => $client_id,
@@ -59,65 +53,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 				$read_event['event_value']['categories'] = $visit['categories'];
 			}
 
-			$read_events           = $this->get_reader_events( $client_id, $event_type );
-			$this->debug['visit']  = $visit;
-			$this->debug['events'] = array_merge( $this->debug['events'], $read_events );
-			$event_value           = isset( $read_event['event_value'] ) ? $read_event['event_value'] : null;
-			$already_read          = count(
-				array_filter(
-					$read_events,
-					function ( $read ) use ( $event_value ) {
-						if ( $event_value ) {
-							if (
-								isset( $event_value['post_id'] ) &&
-								isset( $read['event_value'] ) &&
-								isset( $read['event_value']['post_id'] ) &&
-								$event_value['post_id'] == $read['event_value']['post_id']
-							) {
-								return true;
-							}
-						}
-
-						return false;
-					}
-				)
-			) > 0;
-
-			$this->debug['already_read'] = $already_read;
-
-			// Save read event if not already read within the past hour.
-			if ( false === $already_read ) {
-				$reader_data_update = [];
-				$article_views      = (int) $reader_data['article_views'];
-				$page_views         = (int) $reader_data['page_views'];
-				$categories_read    = is_array( $reader_data['categories_read'] ) ? $reader_data['categories_read'] : [];
-
-				// Increment article/page view counts and add category data.
-				if ( $visit['is_post'] ) {
-					$reader_data_update['article_views'] = $article_views + 1;
-				} else {
-					$reader_data_update['page_views'] = $page_views + 1;
-				}
-
-				if ( isset( $visit['categories'] ) ) {
-					$visit_categories = explode( ',', $visit['categories'] );
-					foreach ( $visit_categories as $category_id ) {
-						if ( isset( $categories_read[ $category_id ] ) ) {
-							$categories_read[ $category_id ] ++;
-						} else {
-							$categories_read[ $category_id ] = 1;
-						}
-					}
-
-					$reader_data_update['categories_read'] = $categories_read;
-				}
-
-				if ( ! empty( $reader_data_update ) ) {
-					$this->save_reader_data( $client_id, $reader_data_update );
-				}
-
-				$this->save_reader_events( $client_id, [ $read_event ] );
-			}
+			$this->save_reader_events( $client_id, [ $read_event ] );
 		}
 
 		$referer_url                   = filter_input( INPUT_SERVER, 'HTTP_REFERER', FILTER_SANITIZE_STRING );
