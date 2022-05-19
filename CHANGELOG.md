@@ -1,3 +1,10 @@
+# [1.53.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.52.2...v1.53.0-alpha.1) (2022-05-19)
+
+
+### Features
+
+* **api:** improve web crawler handling ([#863](https://github.com/Automattic/newspack-popups/issues/863)) ([a0a43e9](https://github.com/Automattic/newspack-popups/commit/a0a43e924264feadc8d5ab4cf1ea3511a2b7d7e8))
+
 ## [1.52.2](https://github.com/Automattic/newspack-popups/compare/v1.52.1...v1.52.2) (2022-05-10)
 
 
