@@ -344,7 +344,6 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		}
 
 		// Handle frequency.
-		// TODO: Log a prompt seen event.
 		$frequency = $popup->f;
 		if ( 'once' === $frequency && count( $seen_events ) >= 1 ) {
 			$should_display = false;

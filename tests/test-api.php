@@ -58,8 +58,8 @@ class APITest extends WP_UnitTestCase {
 				'priority'          => 3,
 			],
 			'segmentLoggedIn'                     => [
-				'is_logged_in' => true,
-				'priority'     => 4,
+				'has_user_account' => true,
+				'priority'         => 4,
 			],
 			'segmentWithReferrers'                => [
 				'referrers' => 'foobar.com, newspack.pub',

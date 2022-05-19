@@ -71,10 +71,20 @@ final class Newspack_Popups_Segmentation {
 			add_action( 'wp_footer', [ __CLASS__, 'insert_gtag_amp_analytics' ] );
 		}
 
+		register_deactivation_hook( NEWSPACK_POPUPS_PLUGIN_FILE, [ __CLASS__, 'cron_deactivate' ] );
 		add_action( 'newspack_popups_segmentation_data_prune', [ __CLASS__, 'prune_data' ] );
-		if ( ! wp_next_scheduled( 'newspack_popups_segmentation_data_prune' ) ) {
+		$next = wp_next_scheduled( 'newspack_popups_segmentation_data_prune' );
+		if ( ! $next || 3600 < $next - time() ) {
+			self::cron_deactivate(); // To avoid duplicate execution when transitioning from daily to hourly schedule.
 			wp_schedule_event( time(), 'hourly', 'newspack_popups_segmentation_data_prune' );
 		}
+	}
+
+	/**
+	 * Clear the cron job when this plugin is deactivated.
+	 */
+	public static function cron_deactivate() {
+		wp_clear_scheduled_hook( 'newspack_popups_segmentation_data_prune' );
 	}
 
 	/**
@@ -504,7 +514,16 @@ final class Newspack_Popups_Segmentation {
 		$segment['updated_at'] = gmdate( 'Y-m-d' );
 		foreach ( $segments as &$_segment ) {
 			if ( $_segment['id'] === $segment['id'] ) {
-				$_segment['name']          = $segment['name'];
+				$_segment['name'] = $segment['name'];
+
+				// Deprecate is_logged_in and is_not_logged_in option names in favor of has_user_account and no_user_account.
+				if ( isset( $segment['is_logged_in'] ) ) {
+					unset( $segment['is_logged_in'] );
+				}
+				if ( isset( $segment['is_not_logged_in'] ) ) {
+					unset( $segment['is_not_logged_in'] );
+				}
+
 				$_segment['configuration'] = $segment['configuration'];
 			}
 		}
@@ -562,7 +581,7 @@ final class Newspack_Popups_Segmentation {
 		$all_client_data = wp_cache_get( 'newspack_popups_all_clients_data', 'newspack-popups' );
 		if ( false === $all_client_data ) {
 			$api             = new Lightweight_API();
-			$all_client_data = $api->get_all_clients_data();
+			$all_client_data = $api->get_all_clients_data_legacy();
 			wp_cache_set( 'newspack_popups_all_clients_data', $all_client_data, 'newspack-popups' );
 		}
 

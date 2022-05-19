@@ -83,8 +83,8 @@ class Campaign_Data_Utils {
 				'is_not_subscribed'   => false,
 				'is_donor'            => false,
 				'is_not_donor'        => false,
-				'is_logged_in'        => false,
-				'is_not_logged_in'    => false,
+				'has_user_account'    => false,
+				'no_user_account'     => false,
 				'referrers'           => '',
 				'favorite_categories' => [],
 				'priority'            => PHP_INT_MAX,
@@ -109,7 +109,7 @@ class Campaign_Data_Utils {
 		$is_donor                    = self::is_donor( $reader_events );
 		$has_user_account            = self::has_user_account( $reader_data );
 		$campaign_segment            = self::canonize_segment( $campaign_segment );
-		$article_views_count         = $reader_data['article_views'];
+		$article_views_count         = (int) $reader_data['article_views'];
 		$article_views_count_session = count(
 			array_filter(
 				$reader_events,
@@ -129,7 +129,7 @@ class Campaign_Data_Utils {
 		/**
 		 * By article view count.
 		 */
-		if ( $campaign_segment->min_posts > 0 && $campaign_segment->min_posts > $posts_rearticle_views_countad_count ) {
+		if ( $campaign_segment->min_posts > 0 && $campaign_segment->min_posts > $article_views_count ) {
 			$should_display = false;
 		}
 		if ( $campaign_segment->max_posts > 0 && $campaign_segment->max_posts < $article_views_count ) {
@@ -169,10 +169,10 @@ class Campaign_Data_Utils {
 		/**
 		 * By login status.
 		 */
-		if ( $campaign_segment->is_logged_in && ! $has_user_account ) {
+		if ( ( $campaign_segment->has_user_account || $campaign_segment->is_logged_in ) && ! $has_user_account ) {
 			$should_display = false;
 		}
-		if ( $campaign_segment->is_not_logged_in && $has_user_account ) {
+		if ( ( $campaign_segment->no_user_account || $campaign_segment->is_not_logged_in ) && $has_user_account ) {
 			$should_display = false;
 		}
 
