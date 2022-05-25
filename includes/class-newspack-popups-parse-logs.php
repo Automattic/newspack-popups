@@ -129,12 +129,27 @@ final class Newspack_Popups_Parse_Logs {
 			$events_rows = [];
 
 			foreach ( $lines as $line ) {
-				$result       = explode( '|', $line );
-				$client_id    = $result[0];
-				$date_created = $result[1];
-				$event_type   = $result[2];
-				$event_value  = $result[3];
-				$is_preview   = $result[4];
+				$result = explode( '|', $line );
+				if ( isset( $result[1] ) ) {
+					$client_id    = $result[0];
+					$date_created = $result[1];
+					$event_type   = $result[2];
+					$event_value  = $result[3];
+					$is_preview   = $result[4];
+				} else {
+					// Handle legacy format.
+					$result       = explode( ';', $line );
+					$client_id    = $result[1];
+					$date_created = $result[2];
+					$event_type   = 'article_view';
+					$event_value  = maybe_serialize(
+						[
+							'post_id'    => $result[3],
+							'categories' => $result[4],
+						]
+					);
+					$is_preview   = 'preview' === substr( $client_id, 0, 7 );
+				}
 
 				$events_rows[] = [ $client_id, $date_created, $event_type, $event_value, $is_preview ];
 			}
