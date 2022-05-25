@@ -242,6 +242,15 @@ $size__large: 1264px;
 	&.newspack-lightbox-placement-center_left {
 		justify-content: flex-start;
 	}
+
+	/* Background */
+	&.newspack-lightbox-no-overlay {
+		pointer-events: none;
+
+		.newspack-popup-wrapper {
+			pointer-events: all;
+		}
+	}
 }
 
 // Alignment

@@ -29,6 +29,7 @@ final class Newspack_Popups {
 		'overlay_color'                  => 'n_oc',
 		'overlay_opacity'                => 'n_oo',
 		'overlay_size'                   => 'n_os',
+		'no_overlay_background'          => 'n_bg',
 		'placement'                      => 'n_pl',
 		'trigger_type'                   => 'n_tt',
 		'trigger_delay'                  => 'n_td',
@@ -282,6 +283,19 @@ final class Newspack_Popups {
 				'object_subtype' => self::NEWSPACK_POPUPS_CPT,
 				'show_in_rest'   => true,
 				'type'           => 'string',
+				'single'         => true,
+				'auth_callback'  => '__return_true',
+			]
+		);
+
+		\register_meta(
+			'post',
+			'no_overlay_background',
+			[
+				'object_subtype' => self::NEWSPACK_POPUPS_CPT,
+				'show_in_rest'   => true,
+				'type'           => 'boolean',
+				'default'        => false,
 				'single'         => true,
 				'auth_callback'  => '__return_true',
 			]
@@ -739,6 +753,7 @@ final class Newspack_Popups {
 		update_post_meta( $post_id, 'overlay_color', '#000000' );
 		update_post_meta( $post_id, 'overlay_opacity', 30 );
 		update_post_meta( $post_id, 'overlay_size', $overlay_size );
+		update_post_meta( $post_id, 'no_overlay_background', true );
 		update_post_meta( $post_id, 'placement', $placement );
 		update_post_meta( $post_id, 'trigger_type', $trigger_type );
 		update_post_meta( $post_id, 'trigger_delay', 3 );
