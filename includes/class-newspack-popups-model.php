@@ -232,6 +232,7 @@ final class Newspack_Popups_Model {
 				'overlay_color'                  => filter_input( INPUT_GET, 'n_oc', FILTER_SANITIZE_STRING ),
 				'overlay_opacity'                => filter_input( INPUT_GET, 'n_oo', FILTER_SANITIZE_STRING ),
 				'overlay_size'                   => filter_input( INPUT_GET, 'n_os', FILTER_SANITIZE_STRING ),
+				'no_overlay_background'          => filter_input( INPUT_GET, 'n_bg', FILTER_SANITIZE_STRING ),
 				'placement'                      => filter_input( INPUT_GET, 'n_pl', FILTER_SANITIZE_STRING ),
 				'trigger_type'                   => filter_input( INPUT_GET, 'n_tt', FILTER_SANITIZE_STRING ),
 				'trigger_delay'                  => filter_input( INPUT_GET, 'n_td', FILTER_SANITIZE_STRING ),
@@ -355,6 +356,7 @@ final class Newspack_Popups_Model {
 			'overlay_color'                  => get_post_meta( $id, 'overlay_color', true ),
 			'overlay_opacity'                => get_post_meta( $id, 'overlay_opacity', true ),
 			'overlay_size'                   => get_post_meta( $id, 'overlay_size', true ),
+			'no_overlay_background'          => get_post_meta( $id, 'no_overlay_background', true ),
 			'placement'                      => get_post_meta( $id, 'placement', true ),
 			'trigger_type'                   => get_post_meta( $id, 'trigger_type', true ),
 			'trigger_delay'                  => get_post_meta( $id, 'trigger_delay', true ),
@@ -396,6 +398,7 @@ final class Newspack_Popups_Model {
 				'overlay_color'                  => '#000000',
 				'overlay_opacity'                => 30,
 				'overlay_size'                   => 'medium',
+				'no_overlay_background'          => false,
 				'placement'                      => 'inline',
 				'trigger_type'                   => 'time',
 				'trigger_delay'                  => 0,
@@ -1193,12 +1196,14 @@ final class Newspack_Popups_Model {
 		$overlay_opacity        = absint( $popup['options']['overlay_opacity'] ) / 100;
 		$overlay_color          = $popup['options']['overlay_color'];
 		$overlay_size           = $popup['options']['overlay_size'];
+		$no_overlay_background  = $popup['options']['no_overlay_background'];
 		$hidden_fields          = self::get_hidden_fields( $popup );
 		$is_newsletter_prompt   = self::has_newsletter_prompt( $popup );
 		$classes                = array( 'newspack-lightbox', 'newspack-popup', 'newspack-lightbox-placement-' . $popup['options']['placement'], 'newspack-lightbox-size-' . $overlay_size );
 		$classes[]              = ( ! empty( $popup['title'] ) && $display_title ) ? 'newspack-lightbox-has-title' : null;
 		$classes[]              = $hide_border ? 'newspack-lightbox-no-border' : null;
 		$classes[]              = $is_newsletter_prompt ? 'newspack-newsletter-prompt-overlay' : null;
+		$classes[]              = $no_overlay_background ? 'newspack-lightbox-no-overlay' : null;
 		$wrapper_classes        = [ 'newspack-popup-wrapper' ];
 		$wrapper_classes[]      = 'publish' !== $popup['status'] ? 'newspack-inactive-popup-status' : null;
 		$is_scroll_triggered    = 'scroll' === $popup['options']['trigger_type'];
@@ -1240,13 +1245,15 @@ final class Newspack_Popups_Model {
 					</form>
 				</div>
 			</div>
-			<form class="popup-dismiss-form <?php echo esc_attr( self::get_form_class( 'dismiss', $element_id ) ); ?> popup-action-form <?php echo esc_attr( self::get_form_class( 'action', $element_id ) ); ?>"
-				method="POST"
-				action-xhr="<?php echo esc_url( $endpoint ); ?>"
-				target="_top">
-				<?php echo $hidden_fields; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-				<button style="opacity: <?php echo floatval( $overlay_opacity ); ?>;background-color:<?php echo esc_attr( $overlay_color ); ?>;" class="newspack-lightbox-shim" on="tap:<?php echo esc_attr( $element_id ); ?>.hide"></button>
-			</form>
+			<?php if ( ! $no_overlay_background ) : ?>
+				<form class="popup-dismiss-form <?php echo esc_attr( self::get_form_class( 'dismiss', $element_id ) ); ?> popup-action-form <?php echo esc_attr( self::get_form_class( 'action', $element_id ) ); ?>"
+					method="POST"
+					action-xhr="<?php echo esc_url( $endpoint ); ?>"
+					target="_top">
+					<?php echo $hidden_fields; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					<button style="opacity: <?php echo floatval( $overlay_opacity ); ?>;background-color:<?php echo esc_attr( $overlay_color ); ?>;" class="newspack-lightbox-shim" on="tap:<?php echo esc_attr( $element_id ); ?>.hide"></button>
+				</form>
+			<?php endif; ?>
 		</amp-layout>
 		<?php if ( $is_scroll_triggered ) : ?>
 			<div id="page-position-marker" style="position: absolute; top: <?php echo esc_attr( $popup['options']['trigger_scroll_progress'] ); ?>%"></div>
