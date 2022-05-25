@@ -1,15 +1,17 @@
 <?php
 /**
- * Newspack Campaigns lightweight API
+ * Newspack Campaigns lightweight API.
  *
  * @package Newspack
- * @phpcs:disable WordPress.DB.RestrictedClasses.mysql__PDO
  */
 
+/**
+ * Create the base Lightweight_API class.
+ */
 require_once dirname( __FILE__ ) . '/../segmentation/class-segmentation-report.php';
 
 /**
- * API endpoints
+ * API endpoints.
  */
 class Lightweight_API {
 
