@@ -29,7 +29,7 @@ class Segmentation_Report {
 					isset( $event['date_created'] ) ? $event['date_created'] : gmdate( 'Y-m-d H:i:s', time() ),
 					$event['type'],
 					isset( $event['event_value'] ) ? maybe_serialize( $event['event_value'] ) : '',
-					isset( $event['is_preview'] ) ? 1 : 0,
+					isset( $event['is_preview'] ) && $event['is_preview'] ? 1 : 0,
 				]
 			);
 

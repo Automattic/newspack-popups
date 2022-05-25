@@ -418,9 +418,9 @@ class APITest extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Updating prompts in client data.
+	 * Updating prompts in events data.
 	 */
-	public function test_client_data_prompts() {
+	public function test_event_data_prompts() {
 		$api       = new Lightweight_API();
 		$client_id = 'client_' . uniqid();
 		$popup_id  = Newspack_Popups_Model::canonize_popup_id( uniqid() );
@@ -432,21 +432,20 @@ class APITest extends WP_UnitTestCase {
 				'popup_id' => $popup_id,
 			]
 		);
-		$expected_popup_data = [
-			'count'       => 1,
-			'last_viewed' => time(),
-		];
-		self::assertEquals(
-			$api->get_client_data( $client_id )['prompts'],
-			[
-				"$popup_id" => $expected_popup_data,
+		$seen_event = [
+			'client_id'    => $client_id,
+			'date_created' => gmdate( 'Y-m-d H:i:s' ),
+			'type'         => 'prompt_seen',
+			'event_value'  => [
+				'id' => $popup_id,
 			],
-			'Returns data with prompt data after a prompt is reported.'
-		);
+			'is_preview'   => null,
+		];
+
 		self::assertEquals(
-			$api->get_campaign_data( $client_id, $popup_id ),
-			$expected_popup_data,
-			'Returns prompt data.'
+			$api->get_reader_events( $client_id, 'prompt_seen' ),
+			[ $seen_event ],
+			'Returns prompt data after a prompt is reported.'
 		);
 
 		// Report another view of the same prompt.
@@ -456,27 +455,21 @@ class APITest extends WP_UnitTestCase {
 				'popup_id' => $popup_id,
 			]
 		);
-		$expected_popup_data = [
-			'count'       => 2,
-			'last_viewed' => time(),
-		];
-		self::assertEquals(
-			$api->get_campaign_data( $client_id, $popup_id ),
-			$expected_popup_data,
-			'Returns prompt data.'
-		);
-		self::assertEquals(
-			$api->get_client_data( $client_id ),
-			[
-				'posts_read'          => [],
-				'email_subscriptions' => [],
-				'donations'           => [],
-				'user_id'             => false,
-				'prompts'             => [
-					"$popup_id" => $expected_popup_data,
-				],
+
+		$new_seen_event = [
+			'client_id'    => $client_id,
+			'date_created' => gmdate( 'Y-m-d H:i:s' ),
+			'type'         => 'prompt_seen',
+			'event_value'  => [
+				'id' => $popup_id,
 			],
-			'Returns data in expected shape.'
+			'is_preview'   => null,
+		];
+
+		self::assertEquals(
+			$api->get_reader_events( $client_id, 'prompt_seen' ),
+			[ $seen_event, $new_seen_event ],
+			'Returns prompt data.'
 		);
 
 		// Report another view of a diffrent prompt.
@@ -491,23 +484,18 @@ class APITest extends WP_UnitTestCase {
 				'popup_id' => $new_popup_id,
 			]
 		);
-		self::assertEquals(
-			$api->get_campaign_data( $client_id, $new_popup_id ),
-			$expected_new_popup_data,
-			'Returns prompt data.'
-		);
-		self::assertEquals(
-			$api->get_client_data( $client_id ),
-			[
-				'posts_read'          => [],
-				'email_subscriptions' => [],
-				'donations'           => [],
-				'user_id'             => false,
-				'prompts'             => [
-					"$popup_id"     => $expected_popup_data,
-					"$new_popup_id" => $expected_new_popup_data,
-				],
+		$third_seen_event = [
+			'client_id'    => $client_id,
+			'date_created' => gmdate( 'Y-m-d H:i:s' ),
+			'type'         => 'prompt_seen',
+			'event_value'  => [
+				'id' => $new_popup_id,
 			],
+			'is_preview'   => null,
+		];
+		self::assertEquals(
+			$api->get_reader_events( $client_id, 'prompt_seen' ),
+			[ $seen_event, $new_seen_event, $third_seen_event ],
 			'Returns data in expected shape.'
 		);
 	}
@@ -531,17 +519,10 @@ class APITest extends WP_UnitTestCase {
 				'donation'  => $donation_1,
 			]
 		);
-		// Add a duplicate to ensure it will not be added.
-		self::$report_client_data->report_client_data(
-			[
-				'client_id' => $client_id,
-				'donation'  => $donation_1,
-			]
-		);
 		// Add another donation, JSON-encoded.
 		$donation_2 = [
 			'date'   => '2020-11-28',
-			'amount' => '180.00',
+			'amount' => '120.00',
 		];
 		self::$report_client_data->report_client_data(
 			[
@@ -550,15 +531,25 @@ class APITest extends WP_UnitTestCase {
 			]
 		);
 
+		$donate_event_1 = [
+			'client_id'    => $client_id,
+			'date_created' => gmdate( 'Y-m-d H:i:s' ),
+			'type'         => 'donation',
+			'event_value'  => $donation_1,
+			'is_preview'   => null,
+		];
+
+		$donate_event_2 = [
+			'client_id'    => $client_id,
+			'date_created' => gmdate( 'Y-m-d H:i:s' ),
+			'type'         => 'donation',
+			'event_value'  => $donation_2,
+			'is_preview'   => null,
+		];
+
 		self::assertEquals(
-			$api->get_client_data( $client_id ),
-			[
-				'posts_read'          => [],
-				'email_subscriptions' => [],
-				'donations'           => [ $donation_1, $donation_2 ],
-				'user_id'             => false,
-				'prompts'             => [],
-			],
+			$api->get_reader_events( $client_id, 'donation' ),
+			[ $donate_event_1, $donate_event_2 ],
 			'Returns data with donation data after a donation is reported.'
 		);
 	}
@@ -576,15 +567,9 @@ class APITest extends WP_UnitTestCase {
 		);
 
 		self::assertEquals(
-			self::$report_campaign_data->get_client_data( self::$client_id ),
-			[
-				'posts_read'          => [],
-				'email_subscriptions' => [],
-				'donations'           => [],
-				'user_id'             => false,
-				'prompts'             => [],
-			],
-			'The initial client data has expected shape.'
+			self::$report_campaign_data->get_reader_data( self::$client_id ),
+			self::$report_campaign_data->reader_data_blueprint,
+			'The initial reader data has expected shape.'
 		);
 
 		$email_address = 'foo@bar.com';
@@ -600,24 +585,20 @@ class APITest extends WP_UnitTestCase {
 			]
 		);
 
-		$api                       = new Lightweight_API();
-		$prompt_data               = [];
-		$prompt_data[ $prompt_id ] = $api->get_campaign_data( self::$client_id, $prompt_id );
+		$subscribe_event = [
+			'client_id'    => self::$client_id,
+			'date_created' => gmdate( 'Y-m-d H:i:s' ),
+			'type'         => 'subscription',
+			'event_value'  => [
+				'email' => $email_address,
+			],
+			'is_preview'   => null,
+		];
 
 		self::assertEquals(
-			self::$report_campaign_data->get_client_data( self::$client_id ),
-			[
-				'posts_read'          => [],
-				'donations'           => [],
-				'email_subscriptions' => [
-					[
-						'email' => $email_address,
-					],
-				],
-				'user_id'             => false,
-				'prompts'             => $prompt_data,
-			],
-			'The client data after a subscription contains the provided email address.'
+			self::$report_campaign_data->get_reader_events( self::$client_id, 'subscription' ),
+			[ $subscribe_event ],
+			'The events data after a subscription contains the provided email address.'
 		);
 	}
 
@@ -722,14 +703,13 @@ class APITest extends WP_UnitTestCase {
 			'Assert initially not visible.'
 		);
 
-		// Report 2 articles read.
-		self::$maybe_show_campaign->save_client_data(
+		// Report 3 articles read.
+		self::$maybe_show_campaign->save_reader_events(
 			self::$client_id,
 			[
-				'posts_read' => [
-					self::create_event( [ 'post_id' => 1 ] ),
-					self::create_event( [ 'post_id' => 2 ] ),
-				],
+				self::create_event( [ 'post_id' => 1 ] ),
+				self::create_event( [ 'post_id' => 2 ] ),
+				self::create_event( [ 'post_id' => 3 ] ),
 			]
 		);
 
@@ -739,15 +719,12 @@ class APITest extends WP_UnitTestCase {
 		);
 
 		// Report more than 5 articles read.
-		self::$maybe_show_campaign->save_client_data(
+		self::$maybe_show_campaign->save_reader_events(
 			self::$client_id,
 			[
-				'posts_read' => [
-					self::create_event( [ 'post_id' => 3 ] ),
-					self::create_event( [ 'post_id' => 4 ] ),
-					self::create_event( [ 'post_id' => 5 ] ),
-					self::create_event( [ 'post_id' => 6 ] ),
-				],
+				self::create_event( [ 'post_id' => 4 ] ),
+				self::create_event( [ 'post_id' => 5 ] ),
+				self::create_event( [ 'post_id' => 6 ] ),
 			]
 		);
 
@@ -774,14 +751,13 @@ class APITest extends WP_UnitTestCase {
 			'Assert initially not visible.'
 		);
 
-		// Report 2 articles read.
-		self::$maybe_show_campaign->save_client_data(
+		// Report 3 articles read.
+		self::$maybe_show_campaign->save_reader_events(
 			self::$client_id,
 			[
-				'posts_read' => [
-					self::create_event( [ 'post_id' => 1 ] ),
-					self::create_event( [ 'post_id' => 2 ] ),
-				],
+				self::create_event( [ 'post_id' => 1 ] ),
+				self::create_event( [ 'post_id' => 2 ] ),
+				self::create_event( [ 'post_id' => 3 ] ),
 			]
 		);
 
@@ -790,7 +766,7 @@ class APITest extends WP_UnitTestCase {
 			'Assert shown when a third article is read.'
 		);
 
-		// Report a view.
+		// Report a prompt view.
 		self::$report_campaign_data->report_campaign(
 			[
 				'cid'      => self::$client_id,
@@ -821,14 +797,13 @@ class APITest extends WP_UnitTestCase {
 			'Assert initially not visible.'
 		);
 
-		// Report 2 articles read.
-		self::$maybe_show_campaign->save_client_data(
+		// Report 3 articles read.
+		self::$maybe_show_campaign->save_reader_events(
 			self::$client_id,
 			[
-				'posts_read' => [
-					self::create_event( [ 'post_id' => 1 ] ),
-					self::create_event( [ 'post_id' => 2 ] ),
-				],
+				self::create_event( [ 'post_id' => 1 ] ),
+				self::create_event( [ 'post_id' => 2 ] ),
+				self::create_event( [ 'post_id' => 3 ] ),
 			]
 		);
 
@@ -868,27 +843,12 @@ class APITest extends WP_UnitTestCase {
 			'Assert not visible initially.'
 		);
 
-		// Ensure legacy post read data format is handled gracefully.
-		self::$maybe_show_campaign->save_client_data(
-			self::$client_id,
-			[
-				'posts_read' => [
-					[
-						'post_id'      => 1,
-						'category_ids' => '',
-					],
-				],
-			]
-		);
-
 		// Report 2 articles read before current session.
-		self::$maybe_show_campaign->save_client_data(
+		self::$maybe_show_campaign->save_reader_events(
 			self::$client_id,
 			[
-				'posts_read' => [
-					self::create_event( [ 'post_id' => 1 ], gmdate( 'Y-m-d H:i:s', strtotime( '-1 day', time() ) ) ),
-					self::create_event( [ 'post_id' => 2 ], gmdate( 'Y-m-d H:i:s', strtotime( '-1 day', time() ) ) ),
-				],
+				self::create_event( [ 'post_id' => 1 ], gmdate( 'Y-m-d H:i:s', strtotime( '-1 day', time() ) ) ),
+				self::create_event( [ 'post_id' => 2 ], gmdate( 'Y-m-d H:i:s', strtotime( '-1 day', time() ) ) ),
 			]
 		);
 
@@ -897,14 +857,13 @@ class APITest extends WP_UnitTestCase {
 			'Assert not visible initially, still.'
 		);
 
-		// Report 2 articles read in the session.
-		self::$maybe_show_campaign->save_client_data(
+		// Report 3 articles read in the session.
+		self::$maybe_show_campaign->save_reader_events(
 			self::$client_id,
 			[
-				'posts_read' => [
-					self::create_event( [ 'post_id' => 1 ] ),
-					self::create_event( [ 'post_id' => 2 ] ),
-				],
+				self::create_event( [ 'post_id' => 3 ] ),
+				self::create_event( [ 'post_id' => 4 ] ),
+				self::create_event( [ 'post_id' => 5 ] ),
 			]
 		);
 
@@ -914,15 +873,13 @@ class APITest extends WP_UnitTestCase {
 		);
 
 		// Report more than 5 articles read in the session.
-		self::$maybe_show_campaign->save_client_data(
+		self::$maybe_show_campaign->save_reader_events(
 			self::$client_id,
 			[
-				'posts_read' => [
-					self::create_event( [ 'post_id' => 3 ] ),
-					self::create_event( [ 'post_id' => 4 ] ),
-					self::create_event( [ 'post_id' => 5 ] ),
-					self::create_event( [ 'post_id' => 6 ] ),
-				],
+				self::create_event( [ 'post_id' => 6 ] ),
+				self::create_event( [ 'post_id' => 7 ] ),
+				self::create_event( [ 'post_id' => 8 ] ),
+				self::create_event( [ 'post_id' => 9 ] ),
 			]
 		);
 
@@ -1020,12 +977,10 @@ class APITest extends WP_UnitTestCase {
 		);
 
 		// Report an article read.
-		self::$maybe_show_campaign->save_client_data(
+		self::$maybe_show_campaign->save_reader_events(
 			self::$client_id,
 			[
-				'posts_read' => [
-					self::create_event( [ 'post_id' => 1 ] ),
-				],
+				self::create_event( [ 'post_id' => 1 ] ),
 			]
 		);
 
@@ -1035,23 +990,21 @@ class APITest extends WP_UnitTestCase {
 		);
 
 		// Report 2 articles from the favorite category read.
-		self::$maybe_show_campaign->save_client_data(
+		self::$maybe_show_campaign->save_reader_events(
 			self::$client_id,
 			[
-				'posts_read' => [
-					self::create_event(
-						[
-							'post_id'      => 2,
-							'category_ids' => self::$category_ids[0],
-						]
-					),
-					self::create_event(
-						[
-							'post_id'      => 3,
-							'category_ids' => implode( ',', self::$category_ids ),
-						]
-					),
-				],
+				self::create_event(
+					[
+						'post_id'    => 2,
+						'categories' => self::$category_ids[0],
+					]
+				),
+				self::create_event(
+					[
+						'post_id'    => 3,
+						'categories' => implode( ',', self::$category_ids ),
+					]
+				),
 			]
 		);
 
@@ -1137,14 +1090,12 @@ class APITest extends WP_UnitTestCase {
 			]
 		);
 
-		$api->save_client_data(
+		$api->save_reader_events(
 			self::$client_id,
 			[
-				'posts_read' => [
-					self::create_event( [ 'post_id' => 1 ], false, '42' ),
-					self::create_event( [ 'post_id' => 2 ], false, '42' ),
-					self::create_event( [ 'post_id' => 3 ], false, '42' ),
-				],
+				self::create_event( [ 'post_id' => 1 ], false, '42' ),
+				self::create_event( [ 'post_id' => 2 ], false, '42' ),
+				self::create_event( [ 'post_id' => 3 ], false, '42' ),
 			]
 		);
 

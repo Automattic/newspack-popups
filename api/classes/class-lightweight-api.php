@@ -383,6 +383,7 @@ class Lightweight_API {
 				function( $item ) {
 					$item                = (array) $item;
 					$item['event_value'] = (array) maybe_unserialize( $item['event_value'] );
+					$item['is_preview']  = (bool) $item['is_preview'];
 					return $item;
 				},
 				$events_from_db

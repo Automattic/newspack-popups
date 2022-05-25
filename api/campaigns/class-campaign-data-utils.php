@@ -114,7 +114,9 @@ class Campaign_Data_Utils {
 			array_filter(
 				$reader_events,
 				function ( $event ) {
-					return 'article_view' === $event['type'];
+					$hour_ago   = strtotime( '-1 hour', time() );
+					$event_time = strtotime( $event['date_created'] );
+					return 'article_view' === $event['type'] && $event_time > $hour_ago;
 				}
 			)
 		);

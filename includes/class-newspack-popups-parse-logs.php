@@ -144,7 +144,7 @@ final class Newspack_Popups_Parse_Logs {
 					$event_type   = 'article_view';
 					$event_value  = maybe_serialize(
 						[
-							'post_id'    => $result[3],
+							'post_id'    => (int) $result[3],
 							'categories' => $result[4],
 						]
 					);
