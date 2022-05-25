@@ -11,9 +11,6 @@ export const optionsFieldsSelector = select => {
 	const {
 		background_color,
 		frequency,
-		undismissible_prompt,
-		dismiss_text,
-		dismiss_text_alignment,
 		display_title,
 		hide_border,
 		overlay_color,
@@ -39,9 +36,6 @@ export const optionsFieldsSelector = select => {
 
 	return {
 		background_color,
-		undismissible_prompt,
-		dismiss_text,
-		dismiss_text_alignment,
 		display_title,
 		hide_border,
 		frequency,
