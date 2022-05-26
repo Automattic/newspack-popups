@@ -78,17 +78,15 @@ class Lightweight_API {
 			$this->error( 'invalid_referer' );
 		}
 		$this->debug = [
-			'read_query_count'       => 0,
-			'write_query_count'      => 0,
-			'delete_query_count'     => 0,
-			'cache_count'            => 0,
-			'read_empty_transients'  => 0,
-			'write_read_query_count' => 0,
-			'start_time'             => microtime( true ),
-			'end_time'               => null,
-			'duration'               => null,
-			'suppression'            => [],
-			'events'                 => [],
+			'read_query_count'   => 0,
+			'write_query_count'  => 0,
+			'delete_query_count' => 0,
+			'cache_count'        => 0,
+			'start_time'         => microtime( true ),
+			'end_time'           => null,
+			'duration'           => null,
+			'suppression'        => [],
+			'events'             => [],
 		];
 
 		// If we don't have a persistent object cache, we can't rely on it across page views.
@@ -183,45 +181,22 @@ class Lightweight_API {
 	 *
 	 * @param string $name The transient's name.
 	 */
-	public function get_transient( $name ) {
+	public function get_transient_legacy( $name ) {
 		global $wpdb;
-		$name       = '_transient_' . $name;
-		$table_name = Segmentation::get_readers_table_name_legacy();
-		$value      = wp_cache_get( $name, 'newspack-popups' );
+		$name         = '_transient_' . $name;
+		$table_name   = Segmentation::get_readers_table_name_legacy();
+		$table_exists = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table_name ) ) == $table_name; // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
-		if ( false === $value ) {
-			$this->debug['read_query_count'] += 1;
-
-			$value = $wpdb->get_var( $wpdb->prepare( "SELECT option_value FROM `$table_name` WHERE option_name = %s LIMIT 1", $name ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-			if ( $value ) {
-				// Transient found; cache value.
-				wp_cache_set( $name, $value, 'newspack-popups' );
-			} else {
-				// No transient and no DB entry found.
-				return null;
-			}
-		} else {
-			$this->debug['cache_count'] += 1;
+		// Bail if legacy table doesn't exist.
+		if ( ! $table_exists ) {
+			return null;
 		}
 
-		return maybe_unserialize( $value );
-	}
+		$this->debug['read_query_count'] += 1;
 
-	/**
-	 * Upsert transient.
-	 *
-	 * @param string $name The transient's name.
-	 * @param string $value THe transient's value.
-	 */
-	public function set_transient( $name, $value ) {
-		global $wpdb;
-		$table_name       = Segmentation::get_readers_table_name_legacy();
-		$name             = '_transient_' . $name;
-		$serialized_value = maybe_serialize( $value );
-		wp_cache_set( $name, $serialized_value, 'newspack-popups' );
-		$result           = $wpdb->query( $wpdb->prepare( "INSERT INTO `$table_name` (`option_name`, `option_value`, `date`) VALUES (%s, %s, current_timestamp()) ON DUPLICATE KEY UPDATE `option_name` = VALUES(`option_name`), `option_value` = VALUES(`option_value`), `date` = VALUES(`date`)", $name, $serialized_value ) ); // phpcs:ignore
+		$value = $wpdb->get_var( $wpdb->prepare( "SELECT option_value FROM `$table_name` WHERE option_name = %s LIMIT 1", $name ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
-		$this->debug['write_query_count'] += 1;
+		return $value ? maybe_unserialize( $value ) : null;
 	}
 
 	/**
@@ -229,7 +204,7 @@ class Lightweight_API {
 	 *
 	 * @param string $name The transient's name.
 	 */
-	public function delete_transient( $name ) {
+	public function delete_transient_legacy( $name ) {
 		global $wpdb;
 		$name       = '_transient_' . $name;
 		$table_name = Segmentation::get_readers_table_name_legacy();
@@ -241,28 +216,6 @@ class Lightweight_API {
 		);
 
 		$this->debug['delete_query_count'] += 1;
-	}
-
-	/**
-	 * Retrieve prompt data.
-	 *
-	 * @param string $client_id Client ID.
-	 * @param string $campaign_id Prompt ID.
-	 * @return object Prompt data.
-	 */
-	public function get_campaign_data( $client_id, $campaign_id ) {
-		$prompt = [];
-		$data   = $this->get_transient( $client_id );
-
-		if ( $data && isset( $data['prompts'] ) && isset( $data['prompts'][ $campaign_id ] ) ) {
-			// NEW FORMAT - one row per reader.
-			$prompt = $data['prompts'][ $campaign_id ];
-		}
-
-		return [
-			'count'       => ! empty( $prompt['count'] ) ? (int) $prompt['count'] : 0,
-			'last_viewed' => ! empty( $prompt['last_viewed'] ) ? (int) $prompt['last_viewed'] : 0,
-		];
 	}
 
 	/**
@@ -332,7 +285,9 @@ class Lightweight_API {
 			)
 		);
 
-		// If there's no reader data in the DB, create it.
+		$this->debug['read_query_count'] += 1;
+
+		// Rebuild the cache.
 		if ( ! empty( $reader_data_from_db ) ) {
 			$reader_data_from_db = reset( $reader_data_from_db );
 			$reader_data_from_db = (array) $reader_data_from_db;
@@ -379,6 +334,8 @@ class Lightweight_API {
 				$client_id
 			)
 		);
+
+		$this->debug['read_query_count'] += 1;
 
 		if ( $events_from_db ) {
 			$events_from_db = array_map(
@@ -622,6 +579,43 @@ class Lightweight_API {
 			}
 		}
 
+		// First, check the legacy transients table for existing reader data.
+		$legacy_reader_data = self::get_transient_legacy( $client_id );
+
+		// If there's data for this reader in the legacy transients table, recreate or update it in the new table.
+		if ( ! empty( $legacy_reader_data ) ) {
+			$this->debug['legacy_data'] = $legacy_reader_data;
+
+			// Add posts_read data to article views count.
+			if ( isset( $legacy_reader_data['posts_read'] ) && 0 < count( $legacy_reader_data ) ) {
+				if ( ! isset( $reader_data['article_views'] ) ) {
+					$reader_data['article_views'] = 0;
+				}
+				$reader_data['article_views'] += count( $legacy_reader_data['posts_read'] );
+
+				// Add read categories data.
+				$categories_read = ! empty( $reader_data['categories_read'] ) ? $reader_data['categories_read'] : [];
+				foreach ( $legacy_reader_data['posts_read'] as $article_view ) {
+					if ( ! empty( $article_view['category_ids'] ) ) {
+						$category_ids = explode( ',', $article_view['category_ids'] );
+
+						foreach ( $category_ids as $category_id ) {
+							if ( ! isset( $categories_read[ $category_id ] ) ) {
+								$categories_read[ $category_id ] = 0;
+							}
+							$categories_read[ $category_id ] ++;
+						}
+					}
+				}
+				$reader_data['categories_read'] = $categories_read;
+			}
+
+			// Add known user accounts.
+			if ( empty( $reader_data['user_id'] ) && ! empty( $legacy_reader_data['user_id'] ) ) {
+				$reader_data['user_id'] = $legacy_reader_data['user_id'];
+			}
+		}
+
 		$reader_data['client_id'] = $client_id;
 		$readers_table_name       = Segmentation::get_readers_table_name();
 		$is_preview               = $this->is_preview( $client_id );
@@ -658,6 +652,47 @@ class Lightweight_API {
 			)
 		);
 
+		// If there's data for this reader in the legacy transients table, add events to the new events table.
+		// This must be done AFTER a row exists in the readers table to avoid an infinite loop.
+		if ( $write_result && $legacy_reader_data ) {
+			$legacy_events = [];
+
+			// Add prior donations.
+			if ( ! empty( $legacy_reader_data['donations'] ) ) {
+				foreach ( $legacy_reader_data['donations'] as $donation ) {
+					$donation_date   = isset( $donation['date'] ) ? strtotime( $donation['date'] ) : time();
+					$legacy_events[] = [
+						'client_id'    => $client_id,
+						'date_created' => gmdate( 'Y-m-d H:i:s', $donation_date ),
+						'type'         => 'donation',
+						'event_value'  => $donation,
+					];
+				}
+			}
+
+			// Add prior newsletter subscriptions.
+			if ( ! empty( $legacy_reader_data['email_subscriptions'] ) ) {
+				foreach ( $legacy_reader_data['email_subscriptions'] as $subscription ) {
+					$legacy_events[] = [
+						'client_id'    => $client_id,
+						'date_created' => gmdate( 'Y-m-d H:i:s' ),
+						'type'         => 'subscription',
+						'event_value'  => [
+							'email' => $subscription['email'] ?? $subscription['address'],
+						],
+					];
+				}
+			}
+
+			// Save legacy events to new events table.
+			if ( ! empty( $legacy_events ) ) {
+				self::save_reader_events( $client_id, $legacy_events );
+			}
+
+			// If we were able to save the legacy data, clean up old transients data.
+			self::delete_transient_legacy( $client_id );
+		}
+
 		// If DB write was successful, rebuild cache.
 		if ( $write_result ) {
 			$this->debug['write_query_count'] += 1;
@@ -675,115 +710,27 @@ class Lightweight_API {
 	}
 
 	/**
-	 * Retrieve client data.
-	 * TODO: Retrieve client data and events.
-	 *
-	 * @param string $client_id Client ID.
-	 * @param bool   $do_not_rebuild Whether to rebuild cache if not found.
-	 */
-	public function get_client_data_legacy( $client_id, $do_not_rebuild = false ) {
-		$data = $this->get_transient( $client_id );
-		if ( $data ) {
-			// Handle legacy data which might not have some default keys.
-			return array_merge(
-				$this->client_data_blueprint,
-				$data
-			);
-		}
-
-		if ( $do_not_rebuild ) {
-			return $this->client_data_blueprint;
-		}
-
-		// Rebuild cache, it might've been purged or it's the first time.
-		global $wpdb;
-		$events_table_name       = Segmentation::get_events_table_name_legacy();
-		$client_post_read_events = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-			$wpdb->prepare( "SELECT * FROM $events_table_name WHERE client_id = %s AND type = 'post_read'", $client_id ) // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		);
-
-		// If there is no relevant client data in the events table, do not save any data.
-		if ( 0 === count( $client_post_read_events ) ) {
-			return $this->client_data_blueprint;
-		}
-
-		$this->save_client_data_legacy(
-			$client_id,
-			[
-				'posts_read' => array_map(
-					function ( $item ) {
-						return [
-							'post_id'      => $item->post_id,
-							'category_ids' => $item->category_ids,
-							'created_at'   => $item->created_at,
-						];
-					},
-					$client_post_read_events
-				),
-			]
-		);
-
-		return $this->get_transient( $client_id );
-	}
-
-	/**
-	 * Retrieve all clients' data.
+	 * Retrieve a large sample of reader' data.
 	 *
 	 * @return array All clients' data.
 	 */
-	public function get_all_clients_data_legacy() {
+	public function get_all_readers_data() {
 		global $wpdb;
-		$events_table_name = Segmentation::get_events_table_name();
+		$raders_table_name = Segmentation::get_readers_table_name();
 
 		// Results are limited to the 1000 most recent rows for performance reasons.
-		$all_client_ids_rows = $wpdb->get_results( "SELECT DISTINCT client_id,id FROM $events_table_name ORDER BY id DESC LIMIT 1000" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$all_client_ids_rows = $wpdb->get_results( "SELECT DISTINCT client_id,date_modified FROM $readers_table_name ORDER BY date_modified DESC LIMIT 1000" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$api                 = new Lightweight_API();
 		return array_reduce(
 			$all_client_ids_rows,
 			function ( $acc, $row ) use ( $api ) {
 				// Disregard client data created during previewing.
-				if ( false === strpos( $row->client_id, 'preview' ) ) {
-					$acc[] = $api->get_client_data_legacy( $row->client_id, true );
+				if ( ! $this->is_preview( $row->client_id ) ) {
+					$acc[] = $row->client_id;
 				}
 				return $acc;
 			},
 			[]
-		);
-	}
-
-	/**
-	 * Save client data.
-	 * TODO: Update client data and events.
-	 *
-	 * @param string $client_id Client ID.
-	 * @param string $client_data_update Client data.
-	 */
-	public function save_client_data_legacy( $client_id, $client_data_update ) {
-		$existing_client_data = $this->get_client_data_legacy( $client_id, true );
-
-		// Update prompts data: new data should replace existing data.
-		if ( isset( $client_data_update['prompts'] ) && ! empty( $existing_client_data['prompts'] ) ) {
-			$client_data_update['prompts']   = array_replace_recursive(
-				$existing_client_data['prompts'],
-				$client_data_update['prompts']
-			);
-			$existing_client_data['prompts'] = []; // Unset old client data to avoid data duplication on array_merge_recursive below.
-		}
-
-		// Update client data: merge data so we don't lose historical read, subscription, or donation data.
-		$updated_client_data                        = array_merge_recursive(
-			$existing_client_data,
-			$client_data_update
-		);
-		$updated_client_data['posts_read']          = array_unique( $updated_client_data['posts_read'], SORT_REGULAR );
-		$updated_client_data['email_subscriptions'] = array_unique( $updated_client_data['email_subscriptions'], SORT_REGULAR );
-		$updated_client_data['donations']           = array_unique( $updated_client_data['donations'], SORT_REGULAR );
-		if ( isset( $client_data_update['user_id'] ) ) {
-			$updated_client_data['user_id'] = $client_data_update['user_id'];
-		}
-		return $this->set_transient(
-			$client_id,
-			$updated_client_data
 		);
 	}
 

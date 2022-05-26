@@ -352,8 +352,8 @@ class APITest extends WP_UnitTestCase {
 			[
 				'is_preview'      => null,
 				'user_id'         => null,
-				'article_views'   => '1',
-				'page_views'      => '0',
+				'article_views'   => 1,
+				'page_views'      => 0,
 				'categories_read' => [
 					'12' => 1,
 					'13' => 1,
@@ -379,11 +379,11 @@ class APITest extends WP_UnitTestCase {
 			[
 				'is_preview'      => null,
 				'user_id'         => null,
-				'article_views'   => '1',
-				'page_views'      => '0',
+				'article_views'   => 1,
+				'page_views'      => 0,
 				'categories_read' => [
-					'12' => '1',
-					'13' => '1',
+					'12' => 1,
+					'13' => 1,
 				],
 				'client_id'       => self::$client_id,
 			],

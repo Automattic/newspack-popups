@@ -386,10 +386,6 @@ final class Newspack_Popups_Segmentation {
 			require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 			dbDelta( $sql ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.dbDelta_dbdelta
 		}
-
-		// TODO: If legacy tables exist and are empty, drop them.
-		$legacy_readers_table_name = Segmentation::get_readers_table_name_legacy();
-		$legacy_events_table_name  = Segmentation::get_readers_table_name_legacy();
 	}
 
 	/**
@@ -581,16 +577,17 @@ final class Newspack_Popups_Segmentation {
 		$all_client_data = wp_cache_get( 'newspack_popups_all_clients_data', 'newspack-popups' );
 		if ( false === $all_client_data ) {
 			$api             = new Lightweight_API();
-			$all_client_data = $api->get_all_clients_data_legacy();
+			$all_client_data = $api->get_all_readers_data();
 			wp_cache_set( 'newspack_popups_all_clients_data', $all_client_data, 'newspack-popups' );
 		}
 
 		$client_in_segment = array_filter(
 			$all_client_data,
-			function ( $client_data ) use ( $segment_config ) {
-				return Campaign_Data_Utils::does_client_match_segment(
+			function ( $client_id ) use ( $api, $segment_config ) {
+				return Campaign_Data_Utils::does_reader_match_segment(
 					$segment_config,
-					$client_data
+					$api->get_reader_data( $client_id ),
+					$api->get_reader_events( $client_id )
 				);
 			}
 		);
