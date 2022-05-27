@@ -1,3 +1,20 @@
+# [2.0.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.53.0-alpha.1...v2.0.0-alpha.1) (2022-05-27)
+
+
+### Features
+
+* new option to not display an overlay background ([#867](https://github.com/Automattic/newspack-popups/issues/867)) ([6a7fb47](https://github.com/Automattic/newspack-popups/commit/6a7fb474d0e2b25d1a9d70a6721821d2e6ab2109))
+* remove permanent suppression features ([#866](https://github.com/Automattic/newspack-popups/issues/866)) ([1477205](https://github.com/Automattic/newspack-popups/commit/1477205b2ad04fd61e4e2c145e0a22bd7bc3647c))
+
+
+### BREAKING CHANGES
+
+* Removes permanent suppression options. All prompts will be displayed to all readers who meet both segmentation and frequency requirements for the prompt, even if those prompts were previously dismissed by those readers. Prompts containing newsletter signup or donation blocks will no longer be suppressed automatically under any circumstances.
+
+* feat: remove permanent suppression features
+
+* test: remove tests related to permanent suppression
+
 # [1.53.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.52.2...v1.53.0-alpha.1) (2022-05-19)
 
 
