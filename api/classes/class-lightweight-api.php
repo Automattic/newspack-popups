@@ -647,7 +647,7 @@ class Lightweight_API {
 		// Write to the DB.
 		$write_result = $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"INSERT INTO $readers_table_name ($columns_to_update, date_created) VALUES ($placeholders, current_timestamp()) ON DUPLICATE KEY UPDATE $duplicate_placeholders", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
+				"INSERT INTO $readers_table_name ($columns_to_update, date_created) VALUES ($placeholders, current_timestamp()) ON DUPLICATE KEY UPDATE $duplicate_placeholders, date_modified = current_timestamp()", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
 				$values_to_update
 			)
 		);
