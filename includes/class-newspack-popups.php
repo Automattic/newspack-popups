@@ -753,7 +753,7 @@ final class Newspack_Popups {
 		update_post_meta( $post_id, 'overlay_color', '#000000' );
 		update_post_meta( $post_id, 'overlay_opacity', 30 );
 		update_post_meta( $post_id, 'overlay_size', $overlay_size );
-		update_post_meta( $post_id, 'no_overlay_background', true );
+		update_post_meta( $post_id, 'no_overlay_background', false );
 		update_post_meta( $post_id, 'placement', $placement );
 		update_post_meta( $post_id, 'trigger_type', $trigger_type );
 		update_post_meta( $post_id, 'trigger_delay', 3 );
