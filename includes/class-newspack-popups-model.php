@@ -229,7 +229,7 @@ final class Newspack_Popups_Model {
 				'overlay_color'                  => filter_input( INPUT_GET, 'n_oc', FILTER_SANITIZE_STRING ),
 				'overlay_opacity'                => filter_input( INPUT_GET, 'n_oo', FILTER_SANITIZE_STRING ),
 				'overlay_size'                   => filter_input( INPUT_GET, 'n_os', FILTER_SANITIZE_STRING ),
-				'no_overlay_background'          => filter_input( INPUT_GET, 'n_bg', FILTER_SANITIZE_STRING ),
+				'no_overlay_background'          => filter_input( INPUT_GET, 'n_bg', FILTER_VALIDATE_BOOLEAN ),
 				'placement'                      => filter_input( INPUT_GET, 'n_pl', FILTER_SANITIZE_STRING ),
 				'trigger_type'                   => filter_input( INPUT_GET, 'n_tt', FILTER_SANITIZE_STRING ),
 				'trigger_delay'                  => filter_input( INPUT_GET, 'n_td', FILTER_SANITIZE_STRING ),
