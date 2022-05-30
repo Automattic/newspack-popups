@@ -675,7 +675,6 @@ final class Newspack_Popups_Segmentation {
 	/**
 	 * Run the given query with chunks of up to 1000 rows, sleeping in between chunks.
 	 * This helps avoid replication lag from deleting many records at once.
-	 * See: https://opengrok.a8c.com/source/xref/wpcom/wp-content/lib/jetpack-pit/class.jetpack-sync-postmeta-cleanup.php?r=5dbfee70#211
 	 *
 	 * @param string $query The query string to execute.
 	 * @param array  $values If $query contains %s or %d placeholders, an array of values replace them.
@@ -771,7 +770,7 @@ final class Newspack_Popups_Segmentation {
 
 		// Remove prompt_seen events older than $days days.
 		$removed_row_counts_prompt_seen_events = self::query_with_sleep(
-			"DELETE FROM $events_table_name WHERE type = 'prompt_seen' AND date_created < now() - interval $days DAY"
+			"DELETE FROM $events_table_name WHERE ( type = 'prompt_seen' OR type = 'prompt_dismissed' ) AND date_created < now() - interval $days DAY"
 		);
 
 		if ( defined( 'IS_TEST_ENV' ) && IS_TEST_ENV ) {
