@@ -1036,7 +1036,6 @@ final class Newspack_Popups_Model {
 		$endpoint             = self::get_reader_endpoint();
 		$display_title        = $popup['options']['display_title'];
 		$hide_border          = $popup['options']['hide_border'];
-		$hidden_fields        = self::get_hidden_fields( $popup );
 		$is_newsletter_prompt = self::has_newsletter_prompt( $popup );
 		$classes              = [ 'newspack-popup' ];
 		$classes[]            = 'above_header' === $popup['options']['placement'] ? 'newspack-above-header-popup' : null;
@@ -1322,6 +1321,11 @@ final class Newspack_Popups_Model {
 			name="is_newsletter_popup"
 			type="hidden"
 			value="<?php echo esc_attr( self::has_newsletter_prompt( $popup ) ); ?>"
+		/>
+		<input
+			name="dismiss"
+			type="hidden"
+			value="1"
 		/>
 		<?php
 		return ob_get_clean();

@@ -38,11 +38,12 @@ class Report_Campaign_Data extends Lightweight_API {
 	public function report_campaign( $request ) {
 		$client_id = $this->get_request_param( 'cid', $request );
 		$popup_id  = $this->get_request_param( 'popup_id', $request );
+		$action    = $this->get_request_param( 'dismiss', $request ) ? 'prompt_dismissed' : 'prompt_seen';
 		$events    = [
 			[
 				'client_id'    => $client_id,
 				'date_created' => gmdate( 'Y-m-d H:i:s' ),
-				'type'         => 'prompt_seen',
+				'type'         => $action,
 				'event_value'  => [ 'id' => $popup_id ],
 			],
 		];
