@@ -371,7 +371,7 @@ class Lightweight_API {
 	 * @return boolean True if saved, false if not.
 	 */
 	public function save_reader_events( $client_id, $events ) {
-		if ( empty( $client_id ) || is_string( $client_id ) || empty( $events ) ) {
+		if ( empty( $client_id ) || ! is_string( $client_id ) || empty( $events ) ) {
 			return false;
 		}
 
@@ -582,7 +582,7 @@ class Lightweight_API {
 	 * @return boolean True if updated., false if not.
 	 */
 	public function save_reader_data( $client_id, $reader_data = [] ) {
-		if ( empty( $client_id ) || is_string( $client_id ) || empty( $reader_data ) ) {
+		if ( empty( $client_id ) || ! is_string( $client_id ) || empty( $reader_data ) ) {
 			return false;
 		}
 
