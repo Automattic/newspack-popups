@@ -288,7 +288,8 @@ final class Newspack_Popups_Segmentation {
 		}
 
 		// If visiting the donor landing page, mark the visitor as donor.
-		if ( intval( Newspack_Popups_Settings::donor_landing_page() ) === get_queried_object_id() ) {
+		$donor_landing_page = intval( Newspack_Popups_Settings::donor_landing_page() );
+		if ( ! empty( $donor_landing_page ) && get_queried_object_id() === $donor_landing_page ) {
 			$initial_client_report_url_params['donation'] = wp_json_encode(
 				[
 					'offsite_has_donated' => true,
