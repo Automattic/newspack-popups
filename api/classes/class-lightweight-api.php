@@ -347,12 +347,14 @@ class Lightweight_API {
 				},
 				$events_from_db
 			);
+			$events         = array_diff( $events, $events_from_db );
 			$events         = array_merge( $events, $events_from_db );
 		}
 
 		// Rebuild cache.
 		if ( ! empty( $events ) ) {
 			wp_cache_set( 'reader_events', $events, $client_id );
+			$this->debug['events'] = $events;
 		}
 
 		return $this->filter_events_by_type( $events, $event_type );
@@ -563,8 +565,7 @@ class Lightweight_API {
 		}
 
 		// Rebuild cache.
-		$all_events            = array_merge( $existing_events, $events );
-		$this->debug['events'] = array_merge( $this->debug['events'], $all_events );
+		$all_events = array_merge( $existing_events, $events );
 
 		return wp_cache_set(
 			'reader_events',
