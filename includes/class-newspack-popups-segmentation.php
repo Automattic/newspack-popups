@@ -720,8 +720,8 @@ final class Newspack_Popups_Segmentation {
 		$events_table_name  = Segmentation::get_events_table_name();
 
 		// Remove all preview sessions data.
-		$removed_preview_readers = self::query_with_sleep( "DELETE FROM $readers_table_name WHERE is_preview = 1 ORDER BY date_created ASC" );
-		$removed_preview_events  = self::query_with_sleep( "DELETE FROM $events_table_name WHERE is_preview = 1 ORDER BY date_created ASC" );
+		$removed_preview_readers = self::query_with_sleep( "DELETE FROM $readers_table_name WHERE is_preview = 1" );
+		$removed_preview_events  = self::query_with_sleep( "DELETE FROM $events_table_name WHERE is_preview = 1" );
 
 		// Remove reader data if not containing donations nor subscriptions, and not updated in $days days.
 		$days                     = 30;
