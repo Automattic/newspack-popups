@@ -1,3 +1,10 @@
+## [2.0.1-alpha.1](https://github.com/Automattic/newspack-popups/compare/v2.0.0...v2.0.1-alpha.1) (2022-06-02)
+
+
+### Bug Fixes
+
+* overlays should have a background by default ([#875](https://github.com/Automattic/newspack-popups/issues/875)) ([fbc181c](https://github.com/Automattic/newspack-popups/commit/fbc181cf3df50e8fc4fbd65369898243d8c66bc9))
+
 # [2.0.0](https://github.com/Automattic/newspack-popups/compare/v1.52.2...v2.0.0) (2022-05-30)
 
 
