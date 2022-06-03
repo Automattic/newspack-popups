@@ -1166,41 +1166,24 @@ final class Newspack_Popups {
 
 	/**
 	 * Disable prompts by default if the given post ID is a protected page,
-	 * e.g. My Account, Donate, Privacy Policy, etc.
+	 * e.g. My Account, Donate, Privacy Policy, etc. other than the homepage or blog page.
 	 * Protected pages are defined in the \Newspack\Patches class.
 	 */
 	public static function disable_prompts_for_protected_pages() {
 		if ( class_exists( '\Newspack\Patches' ) ) {
 			$protected_page_ids = \Newspack\Patches::get_protected_page_ids();
+			$front_page_id      = intval( get_option( 'page_on_front', -1 ) );
+			$blog_posts_id      = intval( get_option( 'page_for_posts', -1 ) );
 			foreach ( $protected_page_ids as $page_id ) {
-				if ( ! in_array( 'newspack_popups_has_disabled_popups', array_keys( get_post_meta( $page_id ) ), true ) ) {
+				if (
+					$page_id !== $front_page_id &&
+					$page_id !== $blog_posts_id &&
+					! in_array( 'newspack_popups_has_disabled_popups', array_keys( get_post_meta( $page_id ) ), true )
+				) {
 					update_post_meta( $page_id, 'newspack_popups_has_disabled_popups', true );
 				}
 			}
 		}
-	}
-
-	/**
-	 * Check whether
-	 *
-	 * @param int $post_id Post ID to check.
-	 *
-	 * @return boolean True if the current post is a protected page,
-	 *                 false if not or if the Newspack plugin isn't active.
-	 */
-	public static function is_protected_page( $post_id = null ) {
-		$is_protected_page = false;
-
-		if ( class_exists( '\Newspack\Patches' ) ) {
-			if ( null === $post_id ) {
-				$post_id = get_the_ID();
-			}
-
-			$protected_page_ids = \Newspack\Patches::get_protected_page_ids();
-			$is_protected_page  = in_array( $post_id, $protected_page_ids, true );
-		}
-
-		return $is_protected_page;
 	}
 }
 Newspack_Popups::instance();
