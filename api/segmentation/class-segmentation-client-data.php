@@ -40,8 +40,6 @@ class Segmentation_Client_Data extends Lightweight_API {
 	 */
 	public function report_client_data( $request ) {
 		$client_id   = $this->get_request_param( 'client_id', $request );
-		$now         = gmdate( 'Y-m-d H:i:s' );
-		$events      = [];
 		$reader_data = [];
 
 		// Add a donation to client.
@@ -50,11 +48,10 @@ class Segmentation_Client_Data extends Lightweight_API {
 			if ( 'string' === gettype( $donation ) ) {
 				$donation = (array) json_decode( $donation );
 			}
-			$events[] = [
-				'client_id'    => $client_id,
-				'date_created' => $now,
-				'type'         => 'donation',
-				'event_value'  => $donation,
+			$reader_data[] = [
+				'client_id' => $client_id,
+				'type'      => 'donation',
+				'value'     => $donation,
 			];
 		}
 
@@ -73,11 +70,10 @@ class Segmentation_Client_Data extends Lightweight_API {
 			}
 		}
 		if ( $email_address ) {
-			$events[] = [
-				'client_id'    => $client_id,
-				'date_created' => $now,
-				'type'         => 'subscription',
-				'event_value'  => [ 'email' => $email_address ],
+			$reader_data[] = [
+				'client_id' => $client_id,
+				'type'      => 'subscription',
+				'value'     => [ 'email' => $email_address ],
 			];
 		}
 
@@ -95,15 +91,15 @@ class Segmentation_Client_Data extends Lightweight_API {
 			$order_events = array_map(
 				function( $order ) {
 					return [
-						'client_id'    => $client_id,
-						'date_created' => $now,
-						'type'         => 'donation',
-						'event_value'  => $order,
+						'client_id' => $client_id,
+						'type'      => 'donation',
+						'context'   => 'woocommerce',
+						'value'     => $order,
 					];
 				},
 				$orders
 			);
-			$events       = array_merge( $events, $order_events );
+			$reader_data  = array_merge( $reader_data, $order_events );
 		}
 
 		// Fetch Mailchimp data.
@@ -124,12 +120,12 @@ class Segmentation_Client_Data extends Lightweight_API {
 					$members = $mc->get( "/lists/$list_id/members", [ 'unique_email_id' => $mailchimp_subscriber_id ] )['members'];
 
 					if ( ! empty( $members ) ) {
-						$subscriber = $members[0];
-						$events[]   = [
-							'client_id'    => $client_id,
-							'date_created' => $now,
-							'type'         => 'subscription',
-							'event_value'  => [ 'email' => $subscriber['email_address'] ],
+						$subscriber    = $members[0];
+						$reader_data[] = [
+							'client_id' => $client_id,
+							'type'      => 'subscription',
+							'context'   => 'mailchimp',
+							'value'     => [ 'email' => $subscriber['email_address'] ],
 						];
 
 						if ( ! isset( $subscriber['merge_fields'] ) ) {
@@ -166,11 +162,11 @@ class Segmentation_Client_Data extends Lightweight_API {
 						);
 
 						if ( $has_donated_according_to_mailchimp ) {
-							$events[] = [
-								'client_id'    => $client_id,
-								'date_created' => $now,
-								'type'         => 'donation',
-								'event_value'  => [ 'mailchimp_has_donated' => true ],
+							$reader_data[] = [
+								'client_id' => $client_id,
+								'type'      => 'donation',
+								'context'   => 'mailchimp',
+								'value'     => [ 'mailchimp_has_donated' => true ],
 							];
 						}
 					}
@@ -178,10 +174,7 @@ class Segmentation_Client_Data extends Lightweight_API {
 			}
 		}
 
-		// Update client data and events.
-		if ( ! empty( $events ) ) {
-			$this->save_reader_events( $client_id, $events );
-		}
+		// Update client data.
 		if ( ! empty( $reader_data ) ) {
 			$this->save_reader_data( $client_id, $reader_data );
 		}

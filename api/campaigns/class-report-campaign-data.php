@@ -32,19 +32,20 @@ class Report_Campaign_Data extends Lightweight_API {
 
 	/**
 	 * Handle reporting campaign data – views and subscriptions.
+	 * TODO: Rethink this model to concatenate views/dismissals by prompt id to avoid creating new rows for each interaction.
 	 *
 	 * @param object $request A request.
 	 */
 	public function report_campaign( $request ) {
 		$client_id = $this->get_request_param( 'cid', $request );
 		$popup_id  = $this->get_request_param( 'popup_id', $request );
-		$action    = $this->get_request_param( 'dismiss', $request ) ? 'prompt_dismissed' : 'prompt_seen';
+		$action    = $this->get_request_param( 'dismiss', $request ) ? 'dismissed' : 'seen';
 		$events    = [
 			[
-				'client_id'    => $client_id,
-				'date_created' => gmdate( 'Y-m-d H:i:s' ),
-				'type'         => $action,
-				'event_value'  => [ 'id' => $popup_id ],
+				'client_id' => $client_id,
+				'type'      => 'prompt',
+				'context'   => $action,
+				'value'     => [ 'id' => $popup_id ],
 			],
 		];
 
@@ -52,14 +53,13 @@ class Report_Campaign_Data extends Lightweight_API {
 		$email_address = $this->get_request_param( 'email', $request );
 		if ( $email_address ) {
 			$events[] = [
-				'client_id'    => $client_id,
-				'date_created' => gmdate( 'Y-m-d H:i:s' ),
-				'type'         => 'subscription',
-				'event_value'  => [ 'email' => $email_address ],
+				'client_id' => $client_id,
+				'type'      => 'subscription',
+				'value'     => [ 'email' => $email_address ],
 			];
 		}
 
-		$this->save_reader_events( $client_id, $events );
+		$this->save_reader_data( $client_id, $events );
 	}
 }
 new Report_Campaign_Data();

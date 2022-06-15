@@ -748,15 +748,32 @@ final class Newspack_Popups_Inserter {
 			(object) []
 		);
 
-		$visit = [ 'is_post' => false ];
-
 		if ( is_singular() ) {
-			$visit['is_post']    = true;
+			$visit['post_type']  = get_post_type();
 			$visit['post_id']    = get_the_ID();
 			$visit['categories'] = esc_attr( $category_ids );
 		} else {
 			global $wp;
-			$visit['post_id'] = $wp->request;
+			$non_singular_query_type = 'unknown';
+
+			if ( is_archive() ) {
+				$non_singular_query_type = 'archive';
+			}
+			if ( is_search() ) {
+				$non_singular_query_type = 'search';
+			}
+			if ( is_feed() ) {
+				$non_singular_query_type = 'feed';
+			}
+			if ( is_home() ) {
+				$non_singular_query_type = 'posts_page';
+			}
+			if ( is_404() ) {
+				$non_singular_query_type = '404';
+			}
+
+			$visit['post_id']   = $wp->request; // TODO: populate with search query if a search
+			$visit['post_type'] = $non_singular_query_type;
 		}
 
 		$popups_access_provider['authorization'] .= '&ref=DOCUMENT_REFERRER';

@@ -12,14 +12,14 @@ class Campaign_Data_Utils {
 	/**
 	 * Is reader a newsletter subscriber?
 	 *
-	 * @param object $reader_events Reader events.
+	 * @param object $reader_data Reader data.
 	 */
-	public static function is_subscriber( $reader_events ) {
+	public static function is_subscriber( $reader_data ) {
 		return 0 < count(
 			array_filter(
-				$reader_events,
-				function( $event ) {
-					return 'subscription' === $event['type'];
+				$reader_data,
+				function( $item ) {
+					return 'subscription' === $item['type'];
 				}
 			)
 		);
@@ -28,14 +28,14 @@ class Campaign_Data_Utils {
 	/**
 	 * Is reader a donor?
 	 *
-	 * @param object $reader_events Reader events.
+	 * @param object $reader_data Reader data.
 	 */
-	public static function is_donor( $reader_events ) {
+	public static function is_donor( $reader_data ) {
 		return 0 < count(
 			array_filter(
-				$reader_events,
-				function( $event ) {
-					return 'donation' === $event['type'];
+				$reader_data,
+				function( $item ) {
+					return 'donation' === $item['type'];
 				}
 			)
 		);
@@ -47,7 +47,14 @@ class Campaign_Data_Utils {
 	 * @param object $reader_data Reader data.
 	 */
 	public static function has_user_account( $reader_data ) {
-		return ! empty( $reader_data['user_id'] );
+		return 0 < count(
+			array_filter(
+				$reader_data,
+				function( $item ) {
+					return 'user_id' === $item['type'];
+				}
+			)
+		);
 	}
 
 	/**
@@ -64,6 +71,27 @@ class Campaign_Data_Utils {
 			array_map( 'trim', explode( ',', $referrers_list_string ) )
 		);
 		return $referrer_matches;
+	}
+
+	/**
+	 * Given a reader's data, get the total view count of posts with post_type = `post`.
+	 * Posts are articles in Newspack sites.
+	 *
+	 * @param array $reader_data Array of reader data as returned by Lightweight_Api::get_reader_data.
+	 *
+	 * @return int Total view count of posts with post_type = `post`.
+	 */
+	public static function get_post_view_count( $reader_data ) {
+		return array_reduce(
+			$reader_data,
+			function( $acc, $item ) {
+				if ( 'view_count' === $item['type'] && 'post' === $item['context'] && isset( $item['value']['count'] ) ) {
+					$acc += (int) $item['value']['count'];
+				}
+				return $acc;
+			},
+			0
+		);
 	}
 
 	/**
@@ -98,33 +126,40 @@ class Campaign_Data_Utils {
 	 *
 	 * @param object $campaign_segment Segment data.
 	 * @param string $reader_data Reader data for the given client ID.
-	 * @param string $reader_events Reader events for the given client ID.
 	 * @param string $referer_url URL of the page performing the API request.
 	 * @param string $page_referrer_url URL of the referrer of the frontend page that is making the API request.
 	 * @return bool Whether the prompt should be shown.
 	 */
-	public static function does_reader_match_segment( $campaign_segment, $reader_data, $reader_events, $referer_url = '', $page_referrer_url = '' ) {
+	public static function does_reader_match_segment( $campaign_segment, $reader_data, $referer_url = '', $page_referrer_url = '' ) {
 		$should_display              = true;
-		$is_subscriber               = self::is_subscriber( $reader_events );
-		$is_donor                    = self::is_donor( $reader_events );
+		$is_subscriber               = self::is_subscriber( $reader_data );
+		$is_donor                    = self::is_donor( $reader_data );
 		$has_user_account            = self::has_user_account( $reader_data );
 		$campaign_segment            = self::canonize_segment( $campaign_segment );
-		$article_views_count         = (int) $reader_data['article_views'];
+		$article_views_count         = self::get_post_view_count( $reader_data );
 		$article_views_count_session = count(
 			array_filter(
-				$reader_events,
-				function ( $event ) {
-					$hour_ago   = strtotime( '-1 hour', time() );
-					$event_time = strtotime( $event['date_created'] );
-					return 'article_view' === $event['type'] && $event_time > $hour_ago;
+				$reader_data,
+				function ( $item ) {
+					$hour_ago  = strtotime( '-1 hour', time() );
+					$item_time = strtotime( $item['date_created'] );
+					return 'view' === $item['type'] && 'post' === $item['context'] && $item_time > $hour_ago;
 				}
 			)
 		);
 
 		// Read counts for categories.
 		$favorite_category_matches_segment = false;
-		if ( $reader_data['categories_read'] ) {
-			$categories_read_counts = $reader_data['categories_read'];
+		$categories_read_counts            = array_reduce(
+			$reader_data,
+			function( $acc, $item ) {
+				if ( 'term_count' === $item['type'] && 'category' === $item['context'] ) {
+					$acc = $item['value'];
+				}
+			},
+			false
+		);
+		if ( $categories_read_counts ) {
 			arsort( $categories_read_counts );
 			$favorite_category_matches_segment = in_array( key( $categories_read_counts ), $campaign_segment->favorite_categories );
 		}

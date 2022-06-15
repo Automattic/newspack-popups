@@ -15,9 +15,9 @@ class SegmentationTest extends WP_UnitTestCase {
 
 	public function setUp() { // phpcs:ignore Squiz.Commenting.FunctionComment.Missing
 		global $wpdb;
-		$events_table_name  = Segmentation::get_events_table_name();
-		$readers_table_name = Segmentation::get_readers_table_name();
-		$wpdb->query( "DELETE FROM $events_table_name;" ); // phpcs:ignore
+		$reader_data_table_name = Segmentation::get_reader_data_table_name();
+		$readers_table_name     = Segmentation::get_readers_table_name();
+		$wpdb->query( "DELETE FROM $reader_data_table_name;" ); // phpcs:ignore
 		$wpdb->query( "DELETE FROM $readers_table_name;" ); // phpcs:ignore
 		if ( file_exists( Segmentation::get_log_file_path() ) ) {
 			unlink( Segmentation::get_log_file_path() ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_unlink
@@ -109,7 +109,7 @@ class SegmentationTest extends WP_UnitTestCase {
 		Newspack_Popups_Parse_Logs::parse_events_logs();
 
 		self::assertEquals(
-			$api->get_reader_events( self::$post_read_payload['client_id'] ),
+			$api->get_reader_data( self::$post_read_payload['client_id'] ),
 			[
 				self::$post_read_payload,
 				$second_event,
@@ -143,7 +143,7 @@ class SegmentationTest extends WP_UnitTestCase {
 			)
 		);
 		$maybe_show_campaign = new Maybe_Show_Campaign();
-		$read_posts          = $maybe_show_campaign->get_reader_events( self::$post_read_payload['client_id'], 'article_view' );
+		$read_posts          = $maybe_show_campaign->get_reader_data( self::$post_read_payload['client_id'], 'article_view' );
 
 		self::assertEquals(
 			1,
@@ -169,7 +169,7 @@ class SegmentationTest extends WP_UnitTestCase {
 			)
 		);
 		$maybe_show_campaign = new Maybe_Show_Campaign();
-		$read_posts          = $maybe_show_campaign->get_reader_events( self::$post_read_payload['client_id'], 'article_view' );
+		$read_posts          = $maybe_show_campaign->get_reader_data( self::$post_read_payload['client_id'], 'article_view' );
 
 		self::assertEquals(
 			2,
@@ -190,8 +190,8 @@ class SegmentationTest extends WP_UnitTestCase {
 		);
 
 		$maybe_show_campaign = new Maybe_Show_Campaign();
-		$read_posts          = $maybe_show_campaign->get_reader_events( self::$post_read_payload['client_id'], 'article_view' );
-		$page_views          = $maybe_show_campaign->get_reader_events( self::$post_read_payload['client_id'], 'page_view' );
+		$read_posts          = $maybe_show_campaign->get_reader_data( self::$post_read_payload['client_id'], 'article_view' );
+		$page_views          = $maybe_show_campaign->get_reader_data( self::$post_read_payload['client_id'], 'page_view' );
 
 		self::assertEquals(
 			2,
@@ -253,8 +253,8 @@ class SegmentationTest extends WP_UnitTestCase {
 		$wpdb->query( "DELETE FROM $readers_table_name;" ); // phpcs:ignore
 
 		// Add the donor client data.
-		$api_campaign_handler->save_reader_data( 'test-donor' );
-		$api_campaign_handler->save_reader_events(
+		$api_campaign_handler->save_reader( 'test-donor' );
+		$api_campaign_handler->save_reader_data(
 			'test-donor',
 			[
 				[
@@ -269,8 +269,8 @@ class SegmentationTest extends WP_UnitTestCase {
 		);
 
 		// Add and backdate the subscriber client data.
-		$api_campaign_handler->save_reader_data( 'test-subscriber' );
-		$api_campaign_handler->save_reader_events(
+		$api_campaign_handler->save_reader( 'test-subscriber' );
+		$api_campaign_handler->save_reader_data(
 			'test-subscriber',
 			[
 				[
@@ -286,8 +286,8 @@ class SegmentationTest extends WP_UnitTestCase {
 		$wpdb->query( "UPDATE $readers_table_name SET `date_modified` = '2020-04-29 15:39:13' WHERE `client_id` = 'test-subscriber';" ); // phpcs:ignore
 
 		// Add the one time reader client data.
-		$api_campaign_handler->save_reader_data( 'test-one-time-reader' );
-		$api_campaign_handler->save_reader_events(
+		$api_campaign_handler->save_reader( 'test-one-time-reader' );
+		$api_campaign_handler->save_reader_data(
 			'test-one-time-reader',
 			[
 				[
@@ -303,8 +303,8 @@ class SegmentationTest extends WP_UnitTestCase {
 		);
 
 		// Add and backdate the one time reader client data.
-		$api_campaign_handler->save_reader_data( 'test-one-time-reader-backdated' );
-		$api_campaign_handler->save_reader_events(
+		$api_campaign_handler->save_reader( 'test-one-time-reader-backdated' );
+		$api_campaign_handler->save_reader_data(
 			'test-one-time-reader-backdated',
 			[
 				[

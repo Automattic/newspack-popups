@@ -60,51 +60,8 @@ final class Newspack_Popups_Parse_Logs {
 	}
 
 	/**
-	 * Insert multiple rows in one DB transaction.
-	 *
-	 * @param string $table_name Table name.
-	 * @param array  $rows Rows to insert.
-	 * @param array  $column_names Names of the columns.
-	 * @param array  $placeholder Row placeholder for wpdb->prepare (e.g. `(%s, %s)`).
-	 */
-	public static function bulk_db_insert( $table_name, $rows, $column_names, $placeholder ) {
-		if ( 0 === count( $rows ) ) {
-			return;
-		}
-
-		global $wpdb;
-
-		$column_names = implode( ', ', $column_names );
-		$query        = "INSERT INTO $table_name ($column_names) VALUES ";
-		$query       .= implode(
-			', ',
-			array_map(
-				function( $row ) use ( $placeholder ) {
-					return $placeholder;
-				},
-				$rows
-			)
-		);
-
-		// Flatten the rows two-dimensional array.
-		$values = array_reduce(
-			$rows,
-			function( $acc, $arr ) {
-				return array_merge( $acc, $arr );
-			},
-			[]
-		);
-
-		$sql = $wpdb->prepare( "$query ", $values ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
-
-		// Update the event if a the duplicate has a different date.
-		$sql .= ' ON DUPLICATE KEY UPDATE date_created = VALUES(date_created)';
-
-		$wpdb->query( $sql ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
-	}
-
-	/**
 	 * Parse the log file, write data to the DB, and remove the file.
+	 * TODO: reformat rows with context and id
 	 */
 	public static function parse_events_logs() {
 		global $wpdb;
@@ -155,8 +112,8 @@ final class Newspack_Popups_Parse_Logs {
 			}
 
 			try {
-				self::bulk_db_insert(
-					Segmentation::get_events_table_name(),
+				Segmentation::bulk_db_insert(
+					Segmentation::get_reader_data_table_name(),
 					$events_rows,
 					[
 						'client_id',

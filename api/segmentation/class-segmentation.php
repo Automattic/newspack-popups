@@ -51,11 +51,11 @@ class Segmentation {
 	}
 
 	/**
-	 * Get events table name.
+	 * Get reader data table name.
 	 */
-	public static function get_events_table_name() {
+	public static function get_reader_data_table_name() {
 		global $wpdb;
-		return $wpdb->prefix . 'newspack_campaigns_reader_events';
+		return $wpdb->prefix . 'newspack_campaigns_reader_data';
 	}
 
 	/**

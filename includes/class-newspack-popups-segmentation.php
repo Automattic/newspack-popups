@@ -21,11 +21,6 @@ final class Newspack_Popups_Segmentation {
 	protected static $instance = null;
 
 	/**
-	 * Installed version number of the custom table.
-	 */
-	const TABLE_VERSION = '1.0';
-
-	/**
 	 * Name of the Client ID, to be used by amp-analytics.
 	 */
 	const NEWSPACK_SEGMENTATION_CID_NAME = 'newspack-cid';
@@ -327,29 +322,29 @@ final class Newspack_Popups_Segmentation {
 	 */
 	public static function create_database_table() {
 		global $wpdb;
-		$events_table_name  = Segmentation::get_events_table_name();
-		$readers_table_name = Segmentation::get_readers_table_name();
+		$reader_data_table_name = Segmentation::get_reader_data_table_name();
+		$readers_table_name     = Segmentation::get_readers_table_name();
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $events_table_name ) ) != $events_table_name ) {
+		if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $reader_data_table_name ) ) != $reader_data_table_name ) {
 			$charset_collate = $wpdb->get_charset_collate();
 
-			$sql = "CREATE TABLE $events_table_name (
-				event_id bigint(20) NOT NULL AUTO_INCREMENT,
+			$sql = "CREATE TABLE $reader_data_table_name (
+				id bigint(20) NOT NULL AUTO_INCREMENT,
 				-- Client ID.
 				client_id varchar(100) NOT NULL,
 				-- Timestamp of the event.
-				date_created datetime NOT NULL,
-				-- Type of event: article_view, page_view, subscription, donation, prompt_seen, etc.
+				date_created datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+				-- Date of the last update.
+				date_modified datetime NOT NULL,
+				-- Type of event: view, subscription, donation, prompt, etc.
 				type varchar(20) NOT NULL,
-				-- Data related to this event.
-				event_value longtext,
-				-- If the reader originates from a preview request.
-				is_preview bool,
-				PRIMARY KEY  (event_id),
-				KEY (client_id),
-				KEY (type),
-				KEY (date_created),
-				KEY (is_preview)
+				-- Context of event: post type slug, ESP or donation platform, prompt action, etc.
+				context varchar(20) NOT NULL,
+				-- Data related to this event in JSON format.
+				value longtext,
+				PRIMARY KEY  (id),
+				KEY client_id (client_id, type, context),
+				KEY (date_created)
 			) $charset_collate;";
 
 			require_once ABSPATH . 'wp-admin/includes/upgrade.php';
@@ -364,24 +359,14 @@ final class Newspack_Popups_Segmentation {
 				-- Unique client ID.
 				client_id varchar(100) NOT NULL,
 				-- Date created.
-				date_created datetime NOT NULL,
+				date_created datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
 				-- Date of the last update.
-				date_modified datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+				date_modified datetime NOT NULL,
 				-- If the reader originates from a preview request.
 				is_preview bool,
-				-- If the reader has a known WP user account, the user ID.
-				user_id bigint(20),
-				-- Total number of singular pages or posts viewed.
-				article_views bigint(20) NOT NULL,
-				-- Total number of non-singular pages viewed.
-				page_views bigint(20) NOT NULL,
-				-- Categories of articles read by this reader.
-				categories_read longtext,
 				PRIMARY KEY  (client_id),
 				KEY (is_preview),
-				KEY (user_id),
-				KEY (date_modified),
-				KEY (date_created)
+				KEY (date_modified)
 			) $charset_collate;";
 
 			require_once ABSPATH . 'wp-admin/includes/upgrade.php';
@@ -587,8 +572,8 @@ final class Newspack_Popups_Segmentation {
 			function ( $client_id ) use ( $api, $segment_config ) {
 				return Campaign_Data_Utils::does_reader_match_segment(
 					$segment_config,
-					$api->get_reader_data( $client_id ),
-					$api->get_reader_events( $client_id )
+					$api->get_reader( $client_id ),
+					$api->get_reader_data( $client_id )
 				);
 			}
 		);
@@ -716,12 +701,12 @@ final class Newspack_Popups_Segmentation {
 	 */
 	public static function prune_data() {
 		global $wpdb;
-		$readers_table_name = Segmentation::get_readers_table_name();
-		$events_table_name  = Segmentation::get_events_table_name();
+		$readers_table_name     = Segmentation::get_readers_table_name();
+		$reader_data_table_name = Segmentation::get_reader_data_table_name();
 
 		// Remove all preview sessions data.
 		$removed_preview_readers = self::query_with_sleep( "DELETE FROM $readers_table_name WHERE is_preview = 1" );
-		$removed_preview_events  = self::query_with_sleep( "DELETE FROM $events_table_name WHERE is_preview = 1" );
+		$removed_preview_events  = self::query_with_sleep( "DELETE FROM $reader_data_table_name WHERE is_preview = 1" );
 
 		// Remove reader data if not containing donations nor subscriptions, and not updated in $days days.
 		$days                     = 30;
@@ -737,7 +722,7 @@ final class Newspack_Popups_Segmentation {
 		foreach ( $old_client_ids as $row ) {
 			$subscribe_or_donate_events = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
 				$wpdb->prepare(
-					"SELECT SQL_CALC_FOUND_ROWS `client_id` FROM $events_table_name WHERE client_id = %s AND ( type = 'donation' OR type = 'subscription' ) ORDER BY date_created", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+					"SELECT SQL_CALC_FOUND_ROWS `client_id` FROM $reader_data_table_name WHERE client_id = %s AND ( type = 'donation' OR type = 'subscription' ) ORDER BY date_created", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 					$row->client_id
 				)
 			);
@@ -759,19 +744,19 @@ final class Newspack_Popups_Segmentation {
 				$old_client_ids_to_delete
 			);
 			$removed_old_events     = self::query_with_sleep(
-				"DELETE FROM $events_table_name WHERE client_id IN ( $client_id_placeholders )",
+				"DELETE FROM $reader_data_table_name WHERE client_id IN ( $client_id_placeholders )",
 				$old_client_ids_to_delete
 			);
 		}
 
 		// Remove article_view and page_view events older than 1 hour.
 		$removed_rows_count_page_view_events = self::query_with_sleep(
-			"DELETE FROM $events_table_name WHERE ( type = 'article_view' OR type = 'page_view' ) AND date_created < now() - interval 1 HOUR"
+			"DELETE FROM $reader_data_table_name WHERE ( type = 'view' ) AND date_created < now() - interval 1 HOUR"
 		);
 
 		// Remove prompt_seen events older than $days days.
 		$removed_row_counts_prompt_seen_events = self::query_with_sleep(
-			"DELETE FROM $events_table_name WHERE ( type = 'prompt_seen' OR type = 'prompt_dismissed' ) AND date_created < now() - interval $days DAY"
+			"DELETE FROM $reader_data_table_name WHERE ( type = 'prompt' ) AND date_created < now() - interval $days DAY"
 		);
 
 		if ( defined( 'IS_TEST_ENV' ) && IS_TEST_ENV ) {
@@ -782,19 +767,19 @@ final class Newspack_Popups_Segmentation {
 			error_log( 'Newspack Campaigns: Data pruning – removed ' . $removed_preview_readers . ' preview session rows from ' . $readers_table_name . ' table.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 		}
 		if ( $removed_preview_events ) {
-			error_log( 'Newspack Campaigns: Data pruning – removed ' . $removed_preview_events . ' preview session rows from ' . $events_table_name . ' table.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+			error_log( 'Newspack Campaigns: Data pruning – removed ' . $removed_preview_events . ' preview session rows from ' . $reader_data_table_name . ' table.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 		}
 		if ( $removed_old_readers ) {
 			error_log( 'Newspack Campaigns: Data pruning – removed ' . $removed_old_readers . ' old rows from ' . $readers_table_name . ' table.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 		}
 		if ( $removed_old_events ) {
-			error_log( 'Newspack Campaigns: Data pruning – removed ' . $removed_old_events . ' old rows from ' . $events_table_name . ' table.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+			error_log( 'Newspack Campaigns: Data pruning – removed ' . $removed_old_events . ' old rows from ' . $reader_data_table_name . ' table.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 		}
 		if ( $removed_rows_count_page_view_events ) {
-			error_log( 'Newspack Campaigns: Data pruning – removed ' . $removed_rows_count_page_view_events . ' article/page view events from ' . $events_table_name . ' table.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+			error_log( 'Newspack Campaigns: Data pruning – removed ' . $removed_rows_count_page_view_events . ' article/page view events from ' . $reader_data_table_name . ' table.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 		}
 		if ( $removed_row_counts_prompt_seen_events ) {
-			error_log( 'Newspack Campaigns: Data pruning – removed ' . $removed_row_counts_prompt_seen_events . ' prompt seen events from ' . $events_table_name . ' table.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+			error_log( 'Newspack Campaigns: Data pruning – removed ' . $removed_row_counts_prompt_seen_events . ' prompt seen events from ' . $reader_data_table_name . ' table.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 		}
 	}
 }

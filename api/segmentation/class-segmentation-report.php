@@ -22,6 +22,7 @@ class Segmentation_Report {
 		$lines = '';
 		foreach ( $events as $event ) {
 			// Add line to log file.
+			// TODO: reformat rows with context and id
 			$line = implode(
 				'|',
 				[
