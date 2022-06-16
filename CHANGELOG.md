@@ -1,3 +1,15 @@
+# [2.1.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v2.0.1-alpha.1...v2.1.0-alpha.1) (2022-06-16)
+
+
+### Bug Fixes
+
+* non-AMP signup forms ([#876](https://github.com/Automattic/newspack-popups/issues/876)) ([31e13e3](https://github.com/Automattic/newspack-popups/commit/31e13e36aea95e1407225c7e34d40435c2df3315))
+
+
+### Features
+
+* disable prompts by default for protected pages ([#879](https://github.com/Automattic/newspack-popups/issues/879)) ([410ec3e](https://github.com/Automattic/newspack-popups/commit/410ec3ee2199eb4ed32947813d6c882f26a625bd))
+
 ## [2.0.1-alpha.1](https://github.com/Automattic/newspack-popups/compare/v2.0.0...v2.0.1-alpha.1) (2022-06-02)
 
 
