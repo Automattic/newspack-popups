@@ -51,7 +51,7 @@ class Campaign_Data_Utils {
 			array_filter(
 				$reader_data,
 				function( $item ) {
-					return 'user_id' === $item['type'];
+					return 'user_account' === $item['type'];
 				}
 			)
 		);

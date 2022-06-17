@@ -53,13 +53,13 @@ class APITest extends WP_UnitTestCase {
 				'is_subscribed' => true,
 				'priority'      => 2,
 			],
-			'segmentNonSubscribers'               => [
-				'is_not_subscribed' => true,
-				'priority'          => 3,
-			],
 			'segmentLoggedIn'                     => [
 				'has_user_account' => true,
-				'priority'         => 4,
+				'priority'         => 3,
+			],
+			'segmentNonSubscribers'               => [
+				'is_not_subscribed' => true,
+				'priority'          => 4,
 			],
 			'segmentWithReferrers'                => [
 				'referrers' => 'foobar.com, newspack.pub',
@@ -687,6 +687,37 @@ class APITest extends WP_UnitTestCase {
 		self::assertTrue(
 			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings ),
 			'Assert visible.'
+		);
+	}
+
+	/**
+	 * User account segment.
+	 */
+	public function test_segment_user_account() {
+		$test_popup = self::create_test_popup(
+			[
+				'placement'           => 'inline',
+				'frequency'           => 'always',
+				'selected_segment_id' => self::$segment_ids['segmentLoggedIn'],
+			]
+		);
+
+		self::assertFalse(
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
+			'Assert not visible, since user has no account.'
+		);
+
+		// Report a login.
+		self::$report_client_data->report_client_data(
+			[
+				'client_id' => self::$client_id,
+				'user_id'   => 123,
+			]
+		);
+
+		self::assertTrue(
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
+			'Assert visible, since user has an account.'
 		);
 	}
 
