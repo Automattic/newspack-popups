@@ -120,7 +120,7 @@ class APITest extends WP_UnitTestCase {
 		];
 	}
 
-	public static function create_event( $event_value = [], $date_created = false, $type = 'article_view' ) { // phpcs:ignore Squiz.Commenting.FunctionComment.Missing
+	public static function create_event( $value = [], $date_created = false, $type = 'view', $context = 'post' ) { // phpcs:ignore Squiz.Commenting.FunctionComment.Missing
 		if ( false === $date_created ) {
 			$date_created = gmdate( 'Y-m-d H:i:s' );
 		}
@@ -128,7 +128,8 @@ class APITest extends WP_UnitTestCase {
 			'client_id'    => self::$client_id,
 			'date_created' => $date_created,
 			'type'         => $type,
-			'event_value'  => $event_value,
+			'context'      => $context,
+			'value'        => $value,
 		];
 	}
 
@@ -325,11 +326,14 @@ class APITest extends WP_UnitTestCase {
 	 * Client data saving and retrieval.
 	 */
 	public function test_client_data() {
-		$api = new Lightweight_API();
+		$api       = new Lightweight_API();
+		$blueprint = $api->reader_blueprint;
+
+		$blueprint['client_id'] = self::$client_id;
 
 		self::assertEquals(
 			$api->get_reader( self::$client_id ),
-			$api->reader_blueprint,
+			$blueprint,
 			'Returns expected data blueprint in absence of saved data.'
 		);
 
@@ -343,24 +347,31 @@ class APITest extends WP_UnitTestCase {
 			[ self::create_event( $read_post ) ]
 		);
 
-		$reader_data = $api->get_reader( self::$client_id );
-		unset( $reader_data['date_created'] );
-		unset( $reader_data['date_modified'] );
+		$reader_data = $api->get_reader_data_persistent( self::$client_id );
 
-		self::assertEquals(
-			$reader_data,
+		self::assertArraySubset(
 			[
-				'is_preview'      => null,
-				'user_id'         => null,
-				'article_views'   => 1,
-				'page_views'      => 0,
-				'categories_read' => [
+				'client_id' => self::$client_id,
+				'type'      => 'view_count',
+				'context'   => 'post',
+				'value'     => [ 'count' => 1 ],
+			],
+			$reader_data[0],
+			'Returns view count after a post view was reported.'
+		);
+
+		self::assertArraySubset(
+			[
+				'client_id' => self::$client_id,
+				'type'      => 'term_count',
+				'context'   => 'category',
+				'value'     => [
 					'12' => 1,
 					'13' => 1,
 				],
-				'client_id'       => self::$client_id,
 			],
-			'Returns data with saved post after an article reading was reported.'
+			$reader_data[1],
+			'Returns category view count after a post view was reported.'
 		);
 
 		$api->save_reader(
@@ -370,23 +381,14 @@ class APITest extends WP_UnitTestCase {
 			]
 		);
 
-		$reader_data = $api->get_reader( self::$client_id );
-		unset( $reader_data['date_created'] );
-		unset( $reader_data['date_modified'] );
+		$reader = $api->get_reader( self::$client_id );
 
-		self::assertEquals(
-			$reader_data,
+		self::assertArraySubset(
 			[
-				'is_preview'      => null,
-				'user_id'         => null,
-				'article_views'   => 1,
-				'page_views'      => 0,
-				'categories_read' => [
-					'12' => 1,
-					'13' => 1,
-				],
-				'client_id'       => self::$client_id,
+				'client_id'  => self::$client_id,
+				'is_preview' => null,
 			],
+			$reader,
 			'Only valid keys are saved and returned.'
 		);
 	}
@@ -408,10 +410,10 @@ class APITest extends WP_UnitTestCase {
 			]
 		);
 
-		$reader_data = $api->get_reader( $client_id );
+		$reader_data = $api->get_reader_data( $client_id, 'view_count', 'post' );
 
 		self::assertEquals(
-			$reader_data['article_views'],
+			$reader_data[0]['value']['count'],
 			3,
 			'Returns expected data after saving new events.'
 		);
@@ -433,18 +435,17 @@ class APITest extends WP_UnitTestCase {
 			]
 		);
 		$seen_event = [
-			'client_id'    => $client_id,
-			'date_created' => gmdate( 'Y-m-d H:i:s' ),
-			'type'         => 'prompt_seen',
-			'event_value'  => [
-				'id' => $popup_id,
-			],
-			'is_preview'   => null,
+			'client_id'     => $client_id,
+			'date_created'  => gmdate( 'Y-m-d H:i:s' ),
+			'date_modified' => gmdate( 'Y-m-d H:i:s' ),
+			'type'          => 'prompt_seen',
+			'context'       => $popup_id,
+			'value'         => [],
 		];
 
-		self::assertEquals(
-			$api->get_reader_data( $client_id, 'prompt_seen' ),
-			[ $seen_event ],
+		self::assertArraySubset(
+			$seen_event,
+			$api->get_reader_data( $client_id, 'prompt_seen' )[0],
 			'Returns prompt data after a prompt is reported.'
 		);
 
@@ -457,22 +458,21 @@ class APITest extends WP_UnitTestCase {
 		);
 
 		$new_seen_event = [
-			'client_id'    => $client_id,
-			'date_created' => gmdate( 'Y-m-d H:i:s' ),
-			'type'         => 'prompt_seen',
-			'event_value'  => [
-				'id' => $popup_id,
-			],
-			'is_preview'   => null,
+			'client_id'     => $client_id,
+			'date_created'  => gmdate( 'Y-m-d H:i:s' ),
+			'date_modified' => gmdate( 'Y-m-d H:i:s' ),
+			'type'          => 'prompt_seen',
+			'context'       => $popup_id,
+			'value'         => [],
 		];
 
-		self::assertEquals(
-			$api->get_reader_data( $client_id, 'prompt_seen' ),
-			[ $seen_event, $new_seen_event ],
+		self::assertArraySubset(
+			$new_seen_event,
+			$api->get_reader_data( $client_id, 'prompt_seen' )[1],
 			'Returns prompt data.'
 		);
 
-		// Report another view of a diffrent prompt.
+		// Report another view of a different prompt.
 		$new_popup_id            = Newspack_Popups_Model::canonize_popup_id( uniqid() );
 		$expected_new_popup_data = [
 			'count'       => 1,
@@ -485,17 +485,17 @@ class APITest extends WP_UnitTestCase {
 			]
 		);
 		$third_seen_event = [
-			'client_id'    => $client_id,
-			'date_created' => gmdate( 'Y-m-d H:i:s' ),
-			'type'         => 'prompt_seen',
-			'event_value'  => [
-				'id' => $new_popup_id,
-			],
-			'is_preview'   => null,
+			'client_id'     => $client_id,
+			'date_created'  => gmdate( 'Y-m-d H:i:s' ),
+			'date_modified' => gmdate( 'Y-m-d H:i:s' ),
+			'type'          => 'prompt_seen',
+			'context'       => $new_popup_id,
+			'value'         => [],
 		];
-		self::assertEquals(
-			$api->get_reader_data( $client_id, 'prompt_seen' ),
-			[ $seen_event, $new_seen_event, $third_seen_event ],
+
+		self::assertArraySubset(
+			$third_seen_event,
+			$api->get_reader_data( $client_id, 'prompt_seen' )[2],
 			'Returns data in expected shape.'
 		);
 	}
@@ -532,24 +532,26 @@ class APITest extends WP_UnitTestCase {
 		);
 
 		$donate_event_1 = [
-			'client_id'    => $client_id,
-			'date_created' => gmdate( 'Y-m-d H:i:s' ),
-			'type'         => 'donation',
-			'event_value'  => $donation_1,
-			'is_preview'   => null,
+			'client_id' => $client_id,
+			'type'      => 'donation',
+			'value'     => $donation_1,
 		];
 
 		$donate_event_2 = [
-			'client_id'    => $client_id,
-			'date_created' => gmdate( 'Y-m-d H:i:s' ),
-			'type'         => 'donation',
-			'event_value'  => $donation_2,
-			'is_preview'   => null,
+			'client_id' => $client_id,
+			'type'      => 'donation',
+			'value'     => $donation_2,
 		];
 
-		self::assertEquals(
-			$api->get_reader_data( $client_id, 'donation' ),
-			[ $donate_event_1, $donate_event_2 ],
+		self::assertArraySubset(
+			$donate_event_1,
+			$api->get_reader_data( $client_id, 'donation' )[0],
+			'Returns data with donation data after a donation is reported.'
+		);
+
+		self::assertArraySubset(
+			$donate_event_2,
+			$api->get_reader_data( $client_id, 'donation' )[1],
 			'Returns data with donation data after a donation is reported.'
 		);
 	}
@@ -566,9 +568,12 @@ class APITest extends WP_UnitTestCase {
 			'<!-- wp:jetpack/mailchimp --><!-- wp:jetpack/button {"element":"button","uniqueId":"mailchimp-widget-id","text":"Join my email list"} /--><!-- /wp:jetpack/mailchimp -->'
 		);
 
+		$blueprint              = self::$report_campaign_data->reader_blueprint;
+		$blueprint['client_id'] = self::$client_id;
+
 		self::assertEquals(
 			self::$report_campaign_data->get_reader( self::$client_id ),
-			self::$report_campaign_data->reader_blueprint,
+			$blueprint,
 			'The initial reader data has expected shape.'
 		);
 
@@ -586,18 +591,17 @@ class APITest extends WP_UnitTestCase {
 		);
 
 		$subscribe_event = [
-			'client_id'    => self::$client_id,
-			'date_created' => gmdate( 'Y-m-d H:i:s' ),
-			'type'         => 'subscription',
-			'event_value'  => [
+			'client_id' => self::$client_id,
+			'type'      => 'subscription',
+			'context'   => '',
+			'value'     => [
 				'email' => $email_address,
 			],
-			'is_preview'   => null,
 		];
 
-		self::assertEquals(
-			self::$report_campaign_data->get_reader_data( self::$client_id, 'subscription' ),
-			[ $subscribe_event ],
+		self::assertArraySubset(
+			$subscribe_event,
+			self::$report_campaign_data->get_reader_data( self::$client_id, 'subscription' )[0],
 			'The events data after a subscription contains the provided email address.'
 		);
 	}

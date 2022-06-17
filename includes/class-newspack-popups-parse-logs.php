@@ -96,6 +96,7 @@ final class Newspack_Popups_Parse_Logs {
 					$value     = $result[4];
 				} else {
 					// Handle legacy format.
+					$id           = '';
 					$result       = explode( ';', $line );
 					$client_id    = $result[1];
 					$date_created = $result[2];

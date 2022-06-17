@@ -53,10 +53,11 @@ class Lightweight_API {
 	 * @var reader_data_blueprint
 	 */
 	public $reader_data_blueprint = [
-		'id'      => null,
-		'type'    => null,
-		'context' => null,
-		'value'   => null,
+		'id'           => null,
+		'date_created' => null,
+		'type'         => null,
+		'context'      => null,
+		'value'        => null,
 	];
 
 	/**
@@ -786,6 +787,10 @@ class Lightweight_API {
 			function( $item ) use ( $client_id, $reader_data_blueprint ) {
 				$item              = wp_parse_args( $item, $reader_data_blueprint );
 				$item['client_id'] = $client_id;
+
+				if ( empty( $item['date_created'] ) ) {
+					$item['date_created'] = gmdate( 'Y-m-d H:i:s' );
+				}
 
 				if ( isset( $item['value'] ) ) {
 					$item['value'] = wp_json_encode( $item['value'] );

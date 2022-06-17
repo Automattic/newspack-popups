@@ -23,14 +23,13 @@ class SegmentationTest extends WP_UnitTestCase {
 			unlink( Segmentation::get_log_file_path() ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_unlink
 		}
 		self::$post_read_payload = [
-			'client_id'    => 'test-' . uniqid(),
-			'date_created' => gmdate( 'Y-m-d H:i:s' ),
-			'type'         => 'article_view',
-			'event_value'  => [
+			'client_id' => 'test-' . uniqid(),
+			'type'      => 'view',
+			'context'   => 'post',
+			'value'     => [
 				'post_id'    => 42,
 				'categories' => '5,6',
 			],
-			'is_preview'   => false,
 		];
 		self::$request           = [
 			'cid'      => self::$post_read_payload['client_id'],
@@ -38,9 +37,9 @@ class SegmentationTest extends WP_UnitTestCase {
 			'settings' => wp_json_encode( [] ),
 			'visit'    => wp_json_encode(
 				[
-					'post_id'    => self::$post_read_payload['event_value']['post_id'],
-					'categories' => self::$post_read_payload['event_value']['categories'],
-					'is_post'    => true,
+					'post_id'    => self::$post_read_payload['value']['post_id'],
+					'post_type'  => 'post',
+					'categories' => self::$post_read_payload['value']['categories'],
 					'date'       => gmdate( 'Y-m-d', time() ),
 				]
 			),
@@ -57,11 +56,11 @@ class SegmentationTest extends WP_UnitTestCase {
 		$expected_log_line = implode(
 			'|',
 			[
+				'',
 				self::$post_read_payload['client_id'],
-				self::$post_read_payload['date_created'],
 				self::$post_read_payload['type'],
-				maybe_serialize( self::$post_read_payload['event_value'] ),
-				0,
+				self::$post_read_payload['context'],
+				wp_json_encode( self::$post_read_payload['value'] ),
 			]
 		);
 
@@ -72,23 +71,22 @@ class SegmentationTest extends WP_UnitTestCase {
 		);
 
 		$second_event    = [
-			'client_id'    => self::$post_read_payload['client_id'],
-			'date_created' => self::$post_read_payload['date_created'],
-			'type'         => 'article_view',
-			'event_value'  => [
+			'client_id' => self::$post_read_payload['client_id'],
+			'type'      => 'view',
+			'context'   => 'post',
+			'value'     => [
 				'post_id'    => 43,
 				'categories' => '7,8',
 			],
-			'is_preview'   => false,
 		];
 		$legacy_log_line = implode(
 			';',
 			[
 				'post_read',
 				self::$post_read_payload['client_id'],
-				self::$post_read_payload['date_created'],
-				$second_event['event_value']['post_id'],
-				$second_event['event_value']['categories'],
+				gmdate( 'Y-m-d', time() ),
+				$second_event['value']['post_id'],
+				$second_event['value']['categories'],
 			]
 		) . "\n";
 
@@ -108,12 +106,12 @@ class SegmentationTest extends WP_UnitTestCase {
 
 		Newspack_Popups_Parse_Logs::parse_events_logs();
 
-		self::assertEquals(
-			$api->get_reader_data( self::$post_read_payload['client_id'] ),
+		self::assertArraySubset(
 			[
 				self::$post_read_payload,
 				$second_event,
 			],
+			$api->get_reader_data( self::$post_read_payload['client_id'] ),
 			'Both new and legacy formats are parsed into events.'
 		);
 	}
@@ -143,7 +141,7 @@ class SegmentationTest extends WP_UnitTestCase {
 			)
 		);
 		$maybe_show_campaign = new Maybe_Show_Campaign();
-		$read_posts          = $maybe_show_campaign->get_reader_data( self::$post_read_payload['client_id'], 'article_view' );
+		$read_posts          = $maybe_show_campaign->get_reader_data( self::$post_read_payload['client_id'], 'view', 'post' );
 
 		self::assertEquals(
 			1,
@@ -151,7 +149,7 @@ class SegmentationTest extends WP_UnitTestCase {
 			'The read posts array is of expected length – the duplicates were not inserted.'
 		);
 
-		self::assertEquals(
+		self::assertArraySubset(
 			self::$post_read_payload,
 			$read_posts[0],
 			'The read posts array contains the reported post.'
@@ -169,7 +167,7 @@ class SegmentationTest extends WP_UnitTestCase {
 			)
 		);
 		$maybe_show_campaign = new Maybe_Show_Campaign();
-		$read_posts          = $maybe_show_campaign->get_reader_data( self::$post_read_payload['client_id'], 'article_view' );
+		$read_posts          = $maybe_show_campaign->get_reader_data( self::$post_read_payload['client_id'], 'view', 'post' );
 
 		self::assertEquals(
 			2,
@@ -183,15 +181,15 @@ class SegmentationTest extends WP_UnitTestCase {
 			array_merge(
 				(array) json_decode( self::$request['visit'] ),
 				[
-					'post_id' => '12345',
-					'is_post' => false,
+					'post_id'   => '12345',
+					'post_type' => 'page',
 				]
 			)
 		);
 
 		$maybe_show_campaign = new Maybe_Show_Campaign();
-		$read_posts          = $maybe_show_campaign->get_reader_data( self::$post_read_payload['client_id'], 'article_view' );
-		$page_views          = $maybe_show_campaign->get_reader_data( self::$post_read_payload['client_id'], 'page_view' );
+		$read_posts          = $maybe_show_campaign->get_reader_data( self::$post_read_payload['client_id'], 'view', 'post' );
+		$page_views          = $maybe_show_campaign->get_reader_data( self::$post_read_payload['client_id'], 'view', 'page' );
 
 		self::assertEquals(
 			2,
@@ -199,16 +197,15 @@ class SegmentationTest extends WP_UnitTestCase {
 			'The read posts array is not updated after a non-post visit was made.'
 		);
 
-		self::assertEquals(
+		self::assertArraySubset(
 			[
-				'client_id'    => self::$post_read_payload['client_id'],
-				'date_created' => self::$post_read_payload['date_created'],
-				'type'         => 'page_view',
-				'event_value'  => [
+				'client_id' => self::$post_read_payload['client_id'],
+				'type'      => 'view',
+				'context'   => 'page',
+				'value'     => [
 					'post_id'    => '12345',
 					'categories' => '5,6',
 				],
-				'is_preview'   => false,
 			],
 			$page_views[0],
 			'Non-article visits are logged as page views.'
@@ -258,10 +255,9 @@ class SegmentationTest extends WP_UnitTestCase {
 			'test-donor',
 			[
 				[
-					'client_id'    => 'test-donor',
-					'date_created' => gmdate( 'Y-m-d H:i:s' ),
-					'type'         => 'donation',
-					'event_value'  => [
+					'client_id' => 'test-donor',
+					'type'      => 'donation',
+					'value'     => [
 						'amount' => 100,
 					],
 				],
@@ -274,10 +270,9 @@ class SegmentationTest extends WP_UnitTestCase {
 			'test-subscriber',
 			[
 				[
-					'client_id'    => 'test-subscriber',
-					'date_created' => gmdate( 'Y-m-d H:i:s' ),
-					'type'         => 'subscription',
-					'event_value'  => [
+					'client_id' => 'test-subscriber',
+					'type'      => 'subscription',
+					'value'     => [
 						'email' => 'test@testing.com',
 					],
 				],
@@ -291,10 +286,10 @@ class SegmentationTest extends WP_UnitTestCase {
 			'test-one-time-reader',
 			[
 				[
-					'client_id'    => 'test-one-time-reader',
-					'date_created' => gmdate( 'Y-m-d H:i:s' ),
-					'type'         => 'article_view',
-					'event_value'  => [
+					'client_id' => 'test-one-time-reader',
+					'type'      => 'view',
+					'context'   => 'post',
+					'value'     => [
 						'post_id'    => '142',
 						'categories' => '',
 					],
@@ -308,10 +303,10 @@ class SegmentationTest extends WP_UnitTestCase {
 			'test-one-time-reader-backdated',
 			[
 				[
-					'client_id'    => 'test-one-time-reader-backdated',
-					'date_created' => gmdate( 'Y-m-d H:i:s' ),
-					'type'         => 'article_view',
-					'event_value'  => [
+					'client_id' => 'test-one-time-reader-backdated',
+					'type'      => 'view',
+					'context'   => 'post',
+					'value'     => [
 						'post_id'    => '142',
 						'categories' => '',
 					],

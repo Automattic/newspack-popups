@@ -24,6 +24,10 @@ class Segmentation_Report {
 		foreach ( $events as $event ) {
 			// Add line to log file.
 			if ( ! empty( $event['client_id'] ) ) {
+				$value = '';
+				if ( isset( $event['value'] ) ) {
+					$value = is_array( $event['value'] ) ? wp_json_encode( $event['value'] ) : $event['value'];
+				}
 				$line = implode(
 					'|',
 					[
@@ -31,7 +35,7 @@ class Segmentation_Report {
 						$event['client_id'],
 						isset( $event['type'] ) ? $event['type'] : '',
 						isset( $event['context'] ) ? $event['context'] : '',
-						isset( $event['value'] ) ? $event['value'] : '',
+						$value,
 					]
 				);
 
