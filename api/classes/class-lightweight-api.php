@@ -273,7 +273,7 @@ class Lightweight_API {
 		$query                  = $this->get_sql( $reader_data_table_name, $data );
 
 		// Write to the DB.
-		$write_result = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$write_result = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
 
 		if ( ! $write_result ) {
 			$this->debug['write_error'] = "Error writing to $reader_data_table_name.";
@@ -496,7 +496,7 @@ class Lightweight_API {
 		$query = $this->get_sql( $readers_table_name, [ $reader ] );
 
 		// Write to the DB.
-		$write_result = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$write_result = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
 
 		// If DB write was successful, rebuild cache.
 		if ( $write_result ) {
@@ -728,7 +728,7 @@ class Lightweight_API {
 				// Update term views. Eventually this could be extended to other taxonomies, but currently we only handle categories.
 				if ( isset( $read_event['value']['categories'] ) ) {
 					$taxonomy               = 'category';
-					$term_count             = isset( $term_count_updates[ $taxonomy ] ) ? $term_count_updates[ $taxonomy ] : [];
+					$term_count             = isset( $term_count_updates[ $taxonomy ] ) ? $term_count_updates[ $taxonomy ]['value'] : [];
 					$existing_term_count    = $this->get_reader_data( $client_id, 'term_count', $taxonomy );
 					$existing_term_count_id = null;
 
@@ -750,11 +750,13 @@ class Lightweight_API {
 
 					// Increment taxonomy term counts.
 					foreach ( explode( ',', $read_event['value']['categories'] ) as $term_id ) {
-						if ( ! isset( $term_count[ $term_id ] ) ) {
-							$term_count[ $term_id ] = 0;
-						}
+						if ( ! empty( $term_id ) ) {
+							if ( ! isset( $term_count[ $term_id ] ) ) {
+								$term_count[ $term_id ] = 0;
+							}
 
-						$term_count[ $term_id ] ++;
+							$term_count[ $term_id ] ++;
+						}
 					}
 
 					if ( ! isset( $term_count_updates[ $taxonomy ] ) ) {
@@ -764,11 +766,15 @@ class Lightweight_API {
 						];
 					}
 
+					$term_count_updates[ $taxonomy ] = [
+						'type'    => 'term_count',
+						'context' => $taxonomy,
+						'value'   => $term_count,
+					];
+
 					if ( ! empty( $existing_term_count_id ) ) {
 						$term_count_updates[ $taxonomy ]['id'] = $existing_term_count_id;
 					}
-
-					$term_count_updates[ $taxonomy ]['value'] = $term_count;
 				}
 			}
 

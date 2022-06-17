@@ -150,15 +150,12 @@ class Campaign_Data_Utils {
 
 		// Read counts for categories.
 		$favorite_category_matches_segment = false;
-		$categories_read_counts            = array_reduce(
-			$reader_data,
-			function( $acc, $item ) {
-				if ( 'term_count' === $item['type'] && 'category' === $item['context'] ) {
-					$acc = $item['value'];
-				}
-			},
-			false
-		);
+		$categories_read_counts            = false;
+		foreach ( $reader_data as $item ) {
+			if ( 'term_count' === $item['type'] && 'category' === $item['context'] ) {
+				$categories_read_counts = $item['value'];
+			}
+		}
 		if ( $categories_read_counts ) {
 			arsort( $categories_read_counts );
 			$favorite_category_matches_segment = in_array( key( $categories_read_counts ), $campaign_segment->favorite_categories );
