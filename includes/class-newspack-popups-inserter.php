@@ -755,12 +755,14 @@ final class Newspack_Popups_Inserter {
 		} else {
 			global $wp;
 			$non_singular_query_type = 'unknown';
+			$param                   = $wp->request;
 
 			if ( is_archive() ) {
 				$non_singular_query_type = 'archive';
 			}
 			if ( is_search() ) {
 				$non_singular_query_type = 'search';
+				$param                   = get_search_query();
 			}
 			if ( is_feed() ) {
 				$non_singular_query_type = 'feed';
@@ -772,8 +774,8 @@ final class Newspack_Popups_Inserter {
 				$non_singular_query_type = '404';
 			}
 
-			$visit['post_id']   = $wp->request; // TODO: populate with search query if a search
-			$visit['post_type'] = $non_singular_query_type;
+			$visit['request']      = $param;
+			$visit['request_type'] = $non_singular_query_type;
 		}
 
 		$popups_access_provider['authorization'] .= '&ref=DOCUMENT_REFERRER';

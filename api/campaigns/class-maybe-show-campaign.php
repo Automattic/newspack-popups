@@ -46,11 +46,14 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			if ( isset( $visit['post_id'] ) ) {
 				$read_event['value']['post_id'] = $visit['post_id'];
 			}
+			if ( isset( $visit['request'] ) ) {
+				$read_event['value']['request'] = $visit['request'];
+			}
 			if ( isset( $visit['categories'] ) ) {
 				$read_event['value']['categories'] = $visit['categories'];
 			}
-			if ( isset( $visit['post_type'] ) ) {
-				$read_event['context'] = $visit['post_type'];
+			if ( isset( $visit['post_type'] ) || isset( $visit['request_type'] ) ) {
+				$read_event['context'] = isset( $visit['post_type'] ) ? $visit['post_type'] : $visit['request_type'];
 			}
 
 			$reader = $this->get_reader( $client_id );

@@ -653,6 +653,8 @@ class Lightweight_API {
 		}
 
 		// Deduplicate views from the past hour.
+		// TODO: Should repeat views of things like archives and search results be deduplicated?
+		// TODO: Should non-post singular views be considered article views? If not, that's changing behavior of "articles viewed" segmentation factors.
 		$existing_data = $this->get_reader_data( $client_id );
 		$already_read  = $this->filter_data_by_type( $existing_data, 'view' );
 		$already_read  = array_column(
