@@ -60,6 +60,19 @@ class Lightweight_API {
 	];
 
 	/**
+	 * Reader data can be temporary (purged periodically) or persistent depending on the type.
+	 * The following `type` values are considered persistent data.
+	 *
+	 * @var reader_data_persistent_types
+	 */
+	public $reader_data_persistent_types = [
+		'view_count',
+		'term_count',
+		'subscription',
+		'donation',
+	];
+
+	/**
 	 * Constructor.
 	 *
 	 * @codeCoverageIgnore
@@ -357,9 +370,8 @@ class Lightweight_API {
 					foreach ( $legacy_reader_data['donations'] as $donation ) {
 						$donation_date = isset( $donation['date'] ) ? strtotime( $donation['date'] ) : time();
 						$donation_data = [
-							'date_created' => gmdate( 'Y-m-d H:i:s', $donation_date ),
-							'type'         => 'donation',
-							'value'        => $donation,
+							'type'  => 'donation',
+							'value' => $donation,
 						];
 
 						if ( isset( $donation['order_id'] ) ) {
@@ -501,6 +513,7 @@ class Lightweight_API {
 	 *
 	 * @param array             $items Array of reader data items.
 	 * @param string|array|null $types Data type or array of data types to filter by.
+	 *                                 If not given, will only retrieve temporary data types.
 	 * @param string|array|null $contexts Data context or array of data contexts to filter by.
 	 *
 	 * @return array Filtered array of data items.
@@ -517,14 +530,19 @@ class Lightweight_API {
 			$contexts = [ $contexts ];
 		}
 
+		$persistent_types = $this->reader_data_persistent_types;
+
 		return array_values(
 			array_filter(
 				$items,
-				function( $item ) use ( $types, $contexts ) {
+				function( $item ) use ( $types, $contexts, $persistent_types ) {
 					$matches = true;
-					if ( null !== $types ) {
+					if ( null === $types ) {
+						$matches = ! in_array( $item['type'], $persistent_types, true );
+					} else {
 						$matches = in_array( $item['type'], $types, true );
 					}
+
 					if ( null !== $contexts ) {
 						$matches = $matches && in_array( $item['context'], $contexts, true );
 					}
@@ -535,47 +553,61 @@ class Lightweight_API {
 	}
 
 	/**
-	 * Retrieve data for a specific reader.
+	 * Get all reader data from the DB.
 	 *
-	 * @param string      $client_id Client ID of the reader.
-	 * @param string|null $type Type of data to retrieve.
-	 * @param string|null $context Context of data to retrieve.
+	 * @param string $client_id Client ID of the reader.
+	 *
+	 * @return array Array of reader data for the given client ID.
 	 */
-	public function get_reader_data( $client_id, $type = null, $context = null ) {
-		$data = [];
-
-		// Check the cache first.
-		if ( ! $this->ignore_cache ) {
-			$cached_data = wp_cache_get( 'reader_data', $client_id );
-			if ( ! empty( $cached_data ) ) {
-				return $this->filter_data_by_type( $cached_data, $type, $context );
-			}
-		}
-
-		// If ignoring cache or there are no cached items, retrieve from the DB.
+	public function get_reader_data_from_db( $client_id ) {
 		global $wpdb;
 		$reader_data_table_name = Segmentation::get_reader_data_table_name();
-		$data_from_db           = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$data                   = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"SELECT * from $reader_data_table_name WHERE client_id = %s", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				"SELECT * from $reader_data_table_name WHERE client_id = %s ORDER BY date_modified DESC", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 				$client_id
 			)
 		);
 
 		$this->debug['read_query_count'] += 1;
 
-		if ( $data_from_db ) {
-			$data_from_db = array_map(
+		if ( ! empty( $data ) ) {
+			$data = array_map(
 				function( $item ) {
 					$item          = (array) $item;
 					$item['value'] = (array) json_decode( $item['value'] );
 					return $item;
 				},
-				$data_from_db
+				$data
 			);
-			$data         = array_diff( $data, $data_from_db );
-			$data         = array_merge( $data, $data_from_db );
 		}
+
+		return $data;
+	}
+
+	/**
+	 * Retrieve data for a specific reader from the cache or DB.
+	 *
+	 * @param string            $client_id Client ID of the reader.
+	 * @param string|array|null $type Type or types of data to retrieve.
+	 *                                If not given, only return temporary data types.
+	 * @param string|array|null $context Context or contexts of data to retrieve.
+	 *
+	 * @return array Array of reader data, optionally filtered by $type and $context.
+	 */
+	public function get_reader_data( $client_id, $type = null, $context = null ) {
+		$data = [];
+
+		// Check the cache first.
+		if ( ! $this->ignore_cache ) {
+			$data = wp_cache_get( 'reader_data', $client_id );
+			if ( ! empty( $data ) ) {
+				return $this->filter_data_by_type( $data, $type, $context );
+			}
+		}
+
+		// If no data in the cache, get it from the DB.
+		$data = $this->get_reader_data_from_db( $client_id );
 
 		// Rebuild cache.
 		if ( ! empty( $data ) ) {
@@ -587,10 +619,25 @@ class Lightweight_API {
 	}
 
 	/**
+	 * Retrieve only persistent data for a specific reader.
+	 * Persistent data types are defined in the $get_reader_data_persistent class variable.
+	 *
+	 * @param string $client_id Client ID of the reader.
+	 */
+	public function get_reader_data_persistent( $client_id ) {
+		$persistent_data = $this->get_reader_data( $client_id, $this->reader_data_persistent_types );
+
+		$this->debug['reader_data_persistent'] = $persistent_data;
+
+		return $persistent_data;
+	}
+
+	/**
 	 * Save reader data.
 	 *
 	 * @param string $client_id Client ID of the reader.
 	 * @param array  $data Array of reader data rows to log.
+	 *                     ['id'] Unique ID of persistent data row to update.
 	 *                     ['date_created'] Timestamp of the data insertion.
 	 *                     ['date_modified'] Timestamp of the update.
 	 *                     ['type'] Type of data. Required.
@@ -627,7 +674,7 @@ class Lightweight_API {
 						return ! in_array( $item['value']['post_id'], $already_read, true );
 					}
 
-					return ! empty( $item['type'] ) && ! empty( $item['value'] );
+					return ! empty( $item['type'] );
 				}
 			)
 		);
@@ -643,10 +690,11 @@ class Lightweight_API {
 		if ( ! empty( $new_views ) ) {
 			$view_count_updates = [];
 			$term_count_updates = [];
+
 			foreach ( $new_views as $read_event ) {
 				$post_type              = $read_event['context'];
-				$view_count             = isset( $view_count_updates[ $post_type ] ) ? $view_count_updates[ $post_type ]['value']['count'] : 0;
-				$existing_view_count    = $this->filter_data_by_type( $existing_data, 'view_count', $post_type );
+				$view_count             = 0;
+				$existing_view_count    = $this->get_reader_data( $client_id, 'view_count', $post_type );
 				$existing_view_count_id = null;
 
 				if ( ! empty( $existing_view_count ) ) {
@@ -658,40 +706,29 @@ class Lightweight_API {
 					if ( isset( $existing_view_count['id'] ) ) {
 						$existing_view_count_id = $existing_view_count['id'];
 					}
-
-					// If a view count already existed for this context, deduplicate it from cache.
-					$existing_data = array_values(
-						array_filter(
-							$existing_data,
-							function( $item ) use ( $post_type ) {
-								if ( 'view_count' === $item['type'] && $post_type === $item['context'] ) {
-									return false;
-								}
-								return true;
-							}
-						)
-					);
 				}
 
 				// Increment the view count.
 				$view_count ++;
-				$view_count_update = [
-					'type'    => 'view_count',
-					'context' => $post_type,
-					'value'   => [ 'count' => $view_count ],
-				];
 
-				if ( ! empty( $existing_view_count_id ) ) {
-					$view_count_update['id'] = $existing_view_count_id;
+				if ( ! isset( $view_count_updates[ $post_type ] ) ) {
+					$view_count_updates[ $post_type ] = [
+						'type'    => 'view_count',
+						'context' => $post_type,
+						'value'   => [ 'count' => 0 ],
+					];
 				}
 
-				$view_count_updates[ $post_type ] = $view_count_update;
+				$view_count_updates[ $post_type ]['value']['count'] += $view_count;
+				if ( ! empty( $existing_view_count_id ) ) {
+					$view_count_updates[ $post_type ]['id'] = $existing_view_count_id;
+				}
 
 				// Update term views. Eventually this could be extended to other taxonomies, but currently we only handle categories.
 				if ( isset( $read_event['value']['categories'] ) ) {
 					$taxonomy               = 'category';
 					$term_count             = isset( $term_count_updates[ $taxonomy ] ) ? $term_count_updates[ $taxonomy ] : [];
-					$existing_term_count    = $this->filter_data_by_type( $existing_data, 'term_count', $taxonomy );
+					$existing_term_count    = $this->get_reader_data( $client_id, 'term_count', $taxonomy );
 					$existing_term_count_id = null;
 
 					if ( ! empty( $existing_term_count ) ) {
@@ -708,19 +745,6 @@ class Lightweight_API {
 								$term_count[ $term_id ] += (int) $count;
 							}
 						}
-
-						// If a term count already existed for this taxonomy, deduplicate it from cache.
-						$existing_data = array_values(
-							array_filter(
-								$existing_data,
-								function( $item ) use ( $taxonomy ) {
-									if ( 'term_count' === $item['type'] && $taxonomy === $item['context'] ) {
-										return false;
-									}
-									return true;
-								}
-							)
-						);
 					}
 
 					// Increment taxonomy term counts.
@@ -732,24 +756,20 @@ class Lightweight_API {
 						$term_count[ $term_id ] ++;
 					}
 
-					$term_count_update = [
-						'type'    => 'term_count',
-						'context' => $taxonomy,
-						'value'   => $term_count,
-					];
-
-					if ( ! empty( $existing_term_count_id ) ) {
-						$term_count_update['id'] = $existing_term_count_id;
+					if ( ! isset( $term_count_updates[ $taxonomy ] ) ) {
+						$term_count_updates[ $taxonomy ] = [
+							'type'    => 'term_count',
+							'context' => $taxonomy,
+						];
 					}
 
-					$term_count_updates[ $taxonomy ] = $term_count_update;
+					if ( ! empty( $existing_term_count_id ) ) {
+						$term_count_updates[ $taxonomy ]['id'] = $existing_term_count_id;
+					}
+
+					$term_count_updates[ $taxonomy ]['value'] = $term_count;
 				}
 			}
-
-			$this->debug['view_counts'] = [
-				'views' => $view_count_updates,
-				'terms' => $term_count_updates,
-			];
 
 			// Add update objects to data to be saved.
 			if ( $view_count_updates ) {
@@ -758,8 +778,6 @@ class Lightweight_API {
 			if ( $term_count_updates ) {
 				$data = array_merge( $data, array_values( $term_count_updates ) );
 			}
-
-			$this->debug['data'] = $data;
 		}
 
 		// Ensure client ID exists and keys match across all items.

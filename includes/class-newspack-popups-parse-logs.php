@@ -8,6 +8,7 @@
 defined( 'ABSPATH' ) || exit;
 
 require_once dirname( __FILE__ ) . '/../api/segmentation/class-segmentation.php';
+require_once dirname( __FILE__ ) . '/../api/classes/class-lightweight-api.php';
 
 /**
  * Main Newspack Segmentation Plugin Class.
@@ -82,50 +83,46 @@ final class Newspack_Popups_Parse_Logs {
 				}
 			}
 
-			$lines       = array_unique( $lines );
-			$events_rows = [];
+			$lines = array_unique( $lines );
+			$items = [];
 
 			foreach ( $lines as $line ) {
 				$result = explode( '|', $line );
 				if ( isset( $result[1] ) ) {
-					$client_id    = $result[0];
-					$date_created = $result[1];
-					$event_type   = $result[2];
-					$event_value  = $result[3];
-					$is_preview   = $result[4];
+					$id        = $result[0];
+					$client_id = $result[1];
+					$type      = $result[2];
+					$context   = $result[3];
+					$value     = $result[4];
 				} else {
 					// Handle legacy format.
 					$result       = explode( ';', $line );
 					$client_id    = $result[1];
 					$date_created = $result[2];
-					$event_type   = 'article_view';
-					$event_value  = maybe_serialize(
+					$type         = 'view';
+					$context      = 'post';
+					$value        = wp_json_encode(
 						[
 							'post_id'    => (int) $result[3],
 							'categories' => $result[4],
 						]
 					);
-					$is_preview   = 'preview' === substr( $client_id, 0, 7 );
 				}
 
-				$events_rows[] = [ $client_id, $date_created, $event_type, $event_value, $is_preview ];
+				$items[] = [
+					'id'        => $id,
+					'client_id' => $client_id,
+					'type'      => $type,
+					'context'   => $context,
+					'value'     => $value,
+				];
 			}
 
 			try {
-				Segmentation::bulk_db_insert(
-					Segmentation::get_reader_data_table_name(),
-					$events_rows,
-					[
-						'client_id',
-						'date_created',
-						'type',
-						'event_value',
-						'is_preview',
-					],
-					'( %s, %s, %s, %s, %s )'
-				);
+				$api = new Lightweight_Api();
+				$api->bulk_db_insert( $items );
 			} catch ( \Exception $e ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch
-				// An error will be thrown for rows violating the UNIQUE constraint.
+				error_log( $e->getMessage() ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 			}
 
 			flock( $log_file, LOCK_UN ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_flock

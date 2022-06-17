@@ -698,6 +698,7 @@ final class Newspack_Popups_Segmentation {
 
 	/**
 	 * Remove unneeded data so the DB does not blow up.
+	 * TODO: Ensure that client IDs on single-prompt previews are tagged as preview sessions.
 	 */
 	public static function prune_data() {
 		global $wpdb;
@@ -705,8 +706,27 @@ final class Newspack_Popups_Segmentation {
 		$reader_data_table_name = Segmentation::get_reader_data_table_name();
 
 		// Remove all preview sessions data.
-		$removed_preview_readers = self::query_with_sleep( "DELETE FROM $readers_table_name WHERE is_preview = 1" );
-		$removed_preview_events  = self::query_with_sleep( "DELETE FROM $reader_data_table_name WHERE is_preview = 1" );
+		$removed_preview_readers = 0;
+		$removed_preview_events  = 0;
+		$preview_client_ids      = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
+			"SELECT client_id FROM $readers_table_name WHERE is_preview = 1" // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		);
+		if ( 0 < count( $preview_client_ids ) ) {
+			$preview_client_ids      = implode(
+				',',
+				array_map(
+					function( $row ) {
+						return "'$row->client_id'";
+					},
+					$preview_client_ids
+				)
+			);
+			$removed_preview_readers = self::query_with_sleep( "DELETE FROM $readers_table_name WHERE is_preview = 1" );
+			$removed_preview_events  = self::query_with_sleep(
+				"DELETE FROM $reader_data_table_name WHERE client_id IN ( $preview_client_ids )",
+				$old_client_ids_to_delete
+			);
+		}
 
 		// Remove reader data if not containing donations nor subscriptions, and not updated in $days days.
 		$days                     = 30;
@@ -754,9 +774,9 @@ final class Newspack_Popups_Segmentation {
 			"DELETE FROM $reader_data_table_name WHERE ( type = 'view' ) AND date_created < now() - interval 1 HOUR"
 		);
 
-		// Remove prompt_seen events older than $days days.
+		// Remove prompt interaction events older than $days days.
 		$removed_row_counts_prompt_seen_events = self::query_with_sleep(
-			"DELETE FROM $reader_data_table_name WHERE ( type = 'prompt' ) AND date_created < now() - interval $days DAY"
+			"DELETE FROM $reader_data_table_name WHERE ( type = 'prompt_seen' OR type = 'prompt_dismissed' ) AND date_created < now() - interval $days DAY"
 		);
 
 		if ( defined( 'IS_TEST_ENV' ) && IS_TEST_ENV ) {

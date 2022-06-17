@@ -16,25 +16,27 @@ class Segmentation_Report {
 	 *              ['client_id'] Client ID associated with the event.
 	 *              ['date_created'] Timestamp of the event. Optional.
 	 *              ['type'] Type of event.
-	 *              ['event_value'] Data associated with the event.
+	 *              ['context'] Context of event.
+	 *              ['value'] Data associated with the event.
 	 */
 	public static function log_reader_events( $events ) {
 		$lines = '';
 		foreach ( $events as $event ) {
 			// Add line to log file.
-			// TODO: reformat rows with context and id
-			$line = implode(
-				'|',
-				[
-					$event['client_id'],
-					isset( $event['date_created'] ) ? $event['date_created'] : gmdate( 'Y-m-d H:i:s', time() ),
-					$event['type'],
-					isset( $event['event_value'] ) ? maybe_serialize( $event['event_value'] ) : '',
-					isset( $event['is_preview'] ) && $event['is_preview'] ? 1 : 0,
-				]
-			);
+			if ( ! empty( $event['client_id'] ) ) {
+				$line = implode(
+					'|',
+					[
+						isset( $event['id'] ) ? $event['id'] : '',
+						$event['client_id'],
+						isset( $event['type'] ) ? $event['type'] : '',
+						isset( $event['context'] ) ? $event['context'] : '',
+						isset( $event['value'] ) ? $event['value'] : '',
+					]
+				);
 
-			$lines .= $line . PHP_EOL;
+				$lines .= $line . PHP_EOL;
+			}
 		}
 
 		file_put_contents( // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_file_put_contents

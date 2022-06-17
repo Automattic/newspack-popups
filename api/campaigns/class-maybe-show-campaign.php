@@ -217,7 +217,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			$now = time();
 		}
 
-		$seen_events    = $this->get_reader_data( $client_id, 'prompt', 'seen' );
+		$seen_events    = $this->get_reader_data( $client_id, 'prompt_seen', $popup->id );
 		$should_display = true;
 
 		// Handle referer-based conditions.
@@ -260,12 +260,11 @@ class Maybe_Show_Campaign extends Lightweight_API {
 				[];
 
 			$popup_segment = Campaign_Data_Utils::canonize_segment( $popup_segment );
-			$reader_data   = $this->get_reader_data( $client_id );
 
 			// Check whether client matches the prompt's segment.
 			$segment_matches = Campaign_Data_Utils::does_reader_match_segment(
 				$popup_segment,
-				$reader_data,
+				$this->get_reader_data( $client_id ),
 				$referer_url,
 				$page_referer_url
 			);
