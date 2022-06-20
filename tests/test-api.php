@@ -759,7 +759,7 @@ class APITest extends WP_UnitTestCase {
 			[
 				self::create_event( [ 'post_id' => 4 ] ),
 				self::create_event( [ 'post_id' => 5 ] ),
-				self::create_event( [ 'post_id' => 6 ] ),
+				self::create_event( [ 'post_id' => 6 ], false, 'view', 'page' ), // All singular post types are counted as articles.
 			]
 		);
 

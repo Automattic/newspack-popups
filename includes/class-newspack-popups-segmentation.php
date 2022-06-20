@@ -560,9 +560,9 @@ final class Newspack_Popups_Segmentation {
 		require_once dirname( __FILE__ ) . '/../api/campaigns/class-campaign-data-utils.php';
 		require_once dirname( __FILE__ ) . '/../api/classes/class-lightweight-api.php';
 
+		$api             = new Lightweight_API();
 		$all_client_data = wp_cache_get( 'newspack_popups_all_clients_data', 'newspack-popups' );
 		if ( false === $all_client_data ) {
-			$api             = new Lightweight_API();
 			$all_client_data = $api->get_all_readers_data();
 			wp_cache_set( 'newspack_popups_all_clients_data', $all_client_data, 'newspack-popups' );
 		}

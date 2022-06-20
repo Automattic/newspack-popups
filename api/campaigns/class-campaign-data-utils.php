@@ -10,6 +10,18 @@
  */
 class Campaign_Data_Utils {
 	/**
+	 * Array of non-singular view contexts.
+	 */
+	const NON_SINGULAR_VIEW_CONTEXTS = [
+		'unknown',
+		'archive',
+		'search',
+		'feed',
+		'posts_page',
+		'404',
+	];
+
+	/**
 	 * Is reader a newsletter subscriber?
 	 *
 	 * @param object $reader_data Reader data.
@@ -74,23 +86,46 @@ class Campaign_Data_Utils {
 	}
 
 	/**
-	 * Given a reader's data, get the total view count of posts with post_type = `post`.
-	 * Posts are articles in Newspack sites.
+	 * Given a reader's data, get the total view count of singular posts.
+	 * Articles are any singular post type in Newspack sites.
 	 *
 	 * @param array $reader_data Array of reader data as returned by Lightweight_Api::get_reader_data.
 	 *
-	 * @return int Total view count of posts with post_type = `post`.
+	 * @return int Total view count of singular posts.
 	 */
 	public static function get_post_view_count( $reader_data ) {
+		$non_singular_contexts = self::NON_SINGULAR_VIEW_CONTEXTS;
 		return array_reduce(
 			$reader_data,
-			function( $acc, $item ) {
-				if ( 'view_count' === $item['type'] && 'post' === $item['context'] && isset( $item['value']['count'] ) ) {
+			function( $acc, $item ) use ( $non_singular_contexts ) {
+				if ( 'view_count' === $item['type'] && ! in_array( $item['context'], $non_singular_contexts, true ) && isset( $item['value']['count'] ) ) {
 					$acc += (int) $item['value']['count'];
 				}
 				return $acc;
 			},
 			0
+		);
+	}
+
+	/**
+	 * Given a reader's data, get the view count of singular posts in the current session.
+	 * A session is considered one hour.
+	 *
+	 * @param array $reader_data Array of reader data as returned by Lightweight_Api::get_reader_data.
+	 *
+	 * @return int View count of singular posts in current session.
+	 */
+	public static function get_post_view_count_session( $reader_data ) {
+		$non_singular_contexts = self::NON_SINGULAR_VIEW_CONTEXTS;
+		return count(
+			array_filter(
+				$reader_data,
+				function ( $item ) use ( $non_singular_contexts ) {
+					$hour_ago  = strtotime( '-1 hour', time() );
+					$item_time = strtotime( $item['date_created'] );
+					return 'view' === $item['type'] && ! in_array( $item['context'], $non_singular_contexts, true ) && $item_time > $hour_ago;
+				}
+			)
 		);
 	}
 
@@ -137,16 +172,7 @@ class Campaign_Data_Utils {
 		$has_user_account            = self::has_user_account( $reader_data );
 		$campaign_segment            = self::canonize_segment( $campaign_segment );
 		$article_views_count         = self::get_post_view_count( $reader_data );
-		$article_views_count_session = count(
-			array_filter(
-				$reader_data,
-				function ( $item ) {
-					$hour_ago  = strtotime( '-1 hour', time() );
-					$item_time = strtotime( $item['date_created'] );
-					return 'view' === $item['type'] && 'post' === $item['context'] && $item_time > $hour_ago;
-				}
-			)
-		);
+		$article_views_count_session = self::get_post_view_count_session( $reader_data );
 
 		// Read counts for categories.
 		$favorite_category_matches_segment = false;

@@ -749,20 +749,22 @@ final class Newspack_Popups_Inserter {
 		);
 
 		if ( is_singular() ) {
-			$visit['post_type']  = get_post_type();
-			$visit['post_id']    = get_the_ID();
-			$visit['categories'] = esc_attr( $category_ids );
+			$visit['post_type'] = get_post_type();
+			$visit['post_id']   = get_the_ID();
+
+			if ( ! empty( $category_ids ) ) {
+				$visit['categories'] = esc_attr( $category_ids );
+			}
 		} else {
 			global $wp;
 			$non_singular_query_type = 'unknown';
-			$param                   = $wp->request;
+			$request                 = wp_json_encode( $wp->query_vars );
 
 			if ( is_archive() ) {
 				$non_singular_query_type = 'archive';
 			}
 			if ( is_search() ) {
 				$non_singular_query_type = 'search';
-				$param                   = get_search_query();
 			}
 			if ( is_feed() ) {
 				$non_singular_query_type = 'feed';
@@ -774,7 +776,7 @@ final class Newspack_Popups_Inserter {
 				$non_singular_query_type = '404';
 			}
 
-			$visit['request']      = $param;
+			$visit['request']      = $request;
 			$visit['request_type'] = $non_singular_query_type;
 		}
 

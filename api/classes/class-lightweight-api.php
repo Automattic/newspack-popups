@@ -241,7 +241,6 @@ class Lightweight_API {
 
 	/**
 	 * Upsert multiple rows in one DB transaction.
-	 * TODO: Rewrite this to handle a single arg (a simple array of data items) and to both insert and update.
 	 *
 	 * @param array $data Array of data items to save.
 	 *
@@ -253,20 +252,6 @@ class Lightweight_API {
 		if ( 0 === count( $data ) ) {
 			return $write_result;
 		}
-
-		$data_to_create = [];
-		$data_to_update = [];
-
-		// If the item has an `id` value, it will be used to update an existing row (if exists).
-		foreach ( $data as $item ) {
-			if ( isset( $item['id'] ) ) {
-				$data_to_update[] = $item;
-			} else {
-				$data_to_create[] = $item;
-			}
-		}
-		$this->debug['create'] = $data_to_create;
-		$this->debug['update'] = $data_to_update;
 
 		global $wpdb;
 		$reader_data_table_name = Segmentation::get_reader_data_table_name();
@@ -297,6 +282,7 @@ class Lightweight_API {
 		if ( ! $this->ignore_cache ) {
 			$cached_reader_data = wp_cache_get( 'reader', $client_id );
 			if ( ! empty( $cached_reader_data ) ) {
+				$this->debug['reader'] = $cached_reader_data;
 				return $cached_reader_data;
 			}
 		}
@@ -413,7 +399,7 @@ class Lightweight_API {
 		}
 
 		// Rebuild cache.
-		wp_cache_set( 'reader', $client_id, $client_id );
+		wp_cache_set( 'reader', $reader, $client_id );
 
 		$this->debug['reader'] = $reader;
 		return $reader;
@@ -519,7 +505,19 @@ class Lightweight_API {
 	 *
 	 * @return array Filtered array of data items.
 	 */
-	public function filter_data_by_type( $items, $types = null, $contexts = null ) {
+	public function filter_data_by_type( $items = [], $types = null, $contexts = null ) {
+		if ( ! empty( $items ) ) {
+			$items = array_map(
+				function( $item ) {
+					if ( ! empty( $item['value'] ) && ! is_array( $item['value'] ) ) {
+						$item['value'] = (array) json_decode( $item['value'] );
+					}
+					return $item;
+				},
+				$items
+			);
+		}
+
 		if ( null === $types && null === $contexts ) {
 			return $items;
 		}
@@ -575,8 +573,7 @@ class Lightweight_API {
 		if ( ! empty( $data ) ) {
 			$data = array_map(
 				function( $item ) {
-					$item          = (array) $item;
-					$item['value'] = (array) json_decode( $item['value'] );
+					$item = (array) $item;
 					return $item;
 				},
 				$data
@@ -603,6 +600,7 @@ class Lightweight_API {
 		if ( ! $this->ignore_cache ) {
 			$data = wp_cache_get( 'reader_data', $client_id );
 			if ( ! empty( $data ) ) {
+				$this->debug['reader_data'] = $data;
 				return $this->filter_data_by_type( $data, $type, $context );
 			}
 		}
@@ -613,9 +611,9 @@ class Lightweight_API {
 		// Rebuild cache.
 		if ( ! empty( $data ) ) {
 			wp_cache_set( 'reader_data', $data, $client_id );
-			$this->debug['reader_data'] = $data;
 		}
 
+		$this->debug['reader_data'] = $data;
 		return $this->filter_data_by_type( $data, $type, $context );
 	}
 
@@ -653,28 +651,32 @@ class Lightweight_API {
 		}
 
 		// Deduplicate views from the past hour.
-		// TODO: Should repeat views of things like archives and search results be deduplicated?
-		// TODO: Should non-post singular views be considered article views? If not, that's changing behavior of "articles viewed" segmentation factors.
 		$existing_data = $this->get_reader_data( $client_id );
 		$already_read  = $this->filter_data_by_type( $existing_data, 'view' );
-		$already_read  = array_column(
+
+		$already_read_singular    = array_column(
 			array_column(
 				$already_read,
 				'value'
 			),
 			'post_id'
 		);
+		$already_read_nonsingular = array_column(
+			array_column(
+				$already_read,
+				'value'
+			),
+			'request'
+		);
+		$already_read             = array_merge( $already_read_singular, $already_read_nonsingular );
 
 		$data = array_values(
 			array_filter(
 				$data,
 				function( $item ) use ( $already_read ) {
-					if (
-						isset( $item['type'] ) &&
-						'view' === $item['type'] &&
-						isset( $item['value']['post_id'] )
-					) {
-						return ! in_array( $item['value']['post_id'], $already_read, true );
+					if ( isset( $item['type'] ) && 'view' === $item['type'] && isset( $item['context'] ) && isset( $item['value'] ) ) {
+						$current_page = isset( $item['value']['post_id'] ) ? $item['value']['post_id'] : $item['value']['request'];
+						return ! in_array( $current_page, $already_read, true );
 					}
 
 					return ! empty( $item['type'] );
@@ -689,6 +691,7 @@ class Lightweight_API {
 		}
 
 		// Create or update view_count and term_count rows.
+		// TODO: This is not working for sites with persistent cache. For those sites, the term_count and view_count rows get written to the log as separate rows without id values, resulting in those rows being inserted separately.
 		$new_views = $this->filter_data_by_type( $data, 'view' );
 		if ( ! empty( $new_views ) ) {
 			$view_count_updates = [];
@@ -810,8 +813,7 @@ class Lightweight_API {
 		);
 
 		// Rebuild cache.
-		$all_data                   = array_merge( $existing_data, $data );
-		$this->debug['reader_data'] = $data;
+		$all_data = array_merge( $existing_data, $data );
 
 		// If ignoring cache, write directly to DB.
 		if ( $this->ignore_cache ) {
