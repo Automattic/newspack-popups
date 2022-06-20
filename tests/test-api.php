@@ -440,7 +440,7 @@ class APITest extends WP_UnitTestCase {
 			'date_modified' => gmdate( 'Y-m-d H:i:s' ),
 			'type'          => 'prompt_seen',
 			'context'       => $popup_id,
-			'value'         => [],
+			'value'         => '',
 		];
 
 		self::assertArraySubset(
@@ -463,7 +463,7 @@ class APITest extends WP_UnitTestCase {
 			'date_modified' => gmdate( 'Y-m-d H:i:s' ),
 			'type'          => 'prompt_seen',
 			'context'       => $popup_id,
-			'value'         => [],
+			'value'         => '',
 		];
 
 		self::assertArraySubset(
@@ -490,7 +490,7 @@ class APITest extends WP_UnitTestCase {
 			'date_modified' => gmdate( 'Y-m-d H:i:s' ),
 			'type'          => 'prompt_seen',
 			'context'       => $new_popup_id,
-			'value'         => [],
+			'value'         => '',
 		];
 
 		self::assertArraySubset(
