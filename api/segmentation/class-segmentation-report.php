@@ -31,7 +31,6 @@ class Segmentation_Report {
 				$line = implode(
 					'|',
 					[
-						isset( $event['id'] ) ? $event['id'] : '',
 						$event['client_id'],
 						isset( $event['type'] ) ? $event['type'] : '',
 						isset( $event['context'] ) ? $event['context'] : '',

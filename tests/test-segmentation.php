@@ -15,9 +15,9 @@ class SegmentationTest extends WP_UnitTestCase {
 
 	public function setUp() { // phpcs:ignore Squiz.Commenting.FunctionComment.Missing
 		global $wpdb;
-		$reader_data_table_name = Segmentation::get_reader_data_table_name();
-		$readers_table_name     = Segmentation::get_readers_table_name();
-		$wpdb->query( "DELETE FROM $reader_data_table_name;" ); // phpcs:ignore
+		$reader_events_table_name = Segmentation::get_reader_events_table_name();
+		$readers_table_name       = Segmentation::get_readers_table_name();
+		$wpdb->query( "DELETE FROM $reader_events_table_name;" ); // phpcs:ignore
 		$wpdb->query( "DELETE FROM $readers_table_name;" ); // phpcs:ignore
 		if ( file_exists( Segmentation::get_log_file_path() ) ) {
 			unlink( Segmentation::get_log_file_path() ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_unlink
@@ -56,7 +56,6 @@ class SegmentationTest extends WP_UnitTestCase {
 		$expected_log_line = implode(
 			'|',
 			[
-				'',
 				self::$post_read_payload['client_id'],
 				self::$post_read_payload['type'],
 				self::$post_read_payload['context'],
@@ -111,7 +110,7 @@ class SegmentationTest extends WP_UnitTestCase {
 				self::$post_read_payload,
 				$second_event,
 			],
-			$api->get_reader_data( self::$post_read_payload['client_id'] ),
+			$api->get_reader_events( self::$post_read_payload['client_id'] ),
 			'Both new and legacy formats are parsed into events.'
 		);
 	}
@@ -141,7 +140,7 @@ class SegmentationTest extends WP_UnitTestCase {
 			)
 		);
 		$maybe_show_campaign = new Maybe_Show_Campaign();
-		$read_posts          = $maybe_show_campaign->get_reader_data( self::$post_read_payload['client_id'], 'view', 'post' );
+		$read_posts          = $maybe_show_campaign->get_reader_events( self::$post_read_payload['client_id'], 'view', 'post' );
 
 		self::assertEquals(
 			1,
@@ -167,7 +166,7 @@ class SegmentationTest extends WP_UnitTestCase {
 			)
 		);
 		$maybe_show_campaign = new Maybe_Show_Campaign();
-		$read_posts          = $maybe_show_campaign->get_reader_data( self::$post_read_payload['client_id'], 'view', 'post' );
+		$read_posts          = $maybe_show_campaign->get_reader_events( self::$post_read_payload['client_id'], 'view', 'post' );
 
 		self::assertEquals(
 			2,
@@ -188,8 +187,8 @@ class SegmentationTest extends WP_UnitTestCase {
 		);
 
 		$maybe_show_campaign = new Maybe_Show_Campaign();
-		$read_posts          = $maybe_show_campaign->get_reader_data( self::$post_read_payload['client_id'], 'view', 'post' );
-		$page_views          = $maybe_show_campaign->get_reader_data( self::$post_read_payload['client_id'], 'view', 'page' );
+		$read_posts          = $maybe_show_campaign->get_reader_events( self::$post_read_payload['client_id'], 'view', 'post' );
+		$page_views          = $maybe_show_campaign->get_reader_events( self::$post_read_payload['client_id'], 'view', 'page' );
 
 		self::assertEquals(
 			2,
@@ -251,7 +250,7 @@ class SegmentationTest extends WP_UnitTestCase {
 
 		// Add the donor client data.
 		$api_campaign_handler->save_reader( 'test-donor' );
-		$api_campaign_handler->save_reader_data(
+		$api_campaign_handler->save_reader_events(
 			'test-donor',
 			[
 				[
@@ -266,7 +265,7 @@ class SegmentationTest extends WP_UnitTestCase {
 
 		// Add and backdate the subscriber client data.
 		$api_campaign_handler->save_reader( 'test-subscriber' );
-		$api_campaign_handler->save_reader_data(
+		$api_campaign_handler->save_reader_events(
 			'test-subscriber',
 			[
 				[
@@ -282,7 +281,7 @@ class SegmentationTest extends WP_UnitTestCase {
 
 		// Add the one time reader client data.
 		$api_campaign_handler->save_reader( 'test-one-time-reader' );
-		$api_campaign_handler->save_reader_data(
+		$api_campaign_handler->save_reader_events(
 			'test-one-time-reader',
 			[
 				[
@@ -299,7 +298,7 @@ class SegmentationTest extends WP_UnitTestCase {
 
 		// Add and backdate the one time reader client data.
 		$api_campaign_handler->save_reader( 'test-one-time-reader-backdated' );
-		$api_campaign_handler->save_reader_data(
+		$api_campaign_handler->save_reader_events(
 			'test-one-time-reader-backdated',
 			[
 				[

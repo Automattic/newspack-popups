@@ -24,12 +24,12 @@ class Campaign_Data_Utils {
 	/**
 	 * Is reader a newsletter subscriber?
 	 *
-	 * @param object $reader_data Reader data.
+	 * @param object $reader_events Reader data.
 	 */
-	public static function is_subscriber( $reader_data ) {
+	public static function is_subscriber( $reader_events ) {
 		return 0 < count(
 			array_filter(
-				$reader_data,
+				$reader_events,
 				function( $item ) {
 					return 'subscription' === $item['type'];
 				}
@@ -40,12 +40,12 @@ class Campaign_Data_Utils {
 	/**
 	 * Is reader a donor?
 	 *
-	 * @param object $reader_data Reader data.
+	 * @param object $reader_events Reader data.
 	 */
-	public static function is_donor( $reader_data ) {
+	public static function is_donor( $reader_events ) {
 		return 0 < count(
 			array_filter(
-				$reader_data,
+				$reader_events,
 				function( $item ) {
 					return 'donation' === $item['type'];
 				}
@@ -56,12 +56,12 @@ class Campaign_Data_Utils {
 	/**
 	 * Does reader have a WP user account?
 	 *
-	 * @param object $reader_data Reader data.
+	 * @param object $reader_events Reader data.
 	 */
-	public static function has_user_account( $reader_data ) {
+	public static function has_user_account( $reader_events ) {
 		return 0 < count(
 			array_filter(
-				$reader_data,
+				$reader_events,
 				function( $item ) {
 					return 'user_account' === $item['type'];
 				}
@@ -89,37 +89,38 @@ class Campaign_Data_Utils {
 	 * Given a reader's data, get the total view count of singular posts.
 	 * Articles are any singular post type in Newspack sites.
 	 *
-	 * @param array $reader_data Array of reader data as returned by Lightweight_Api::get_reader_data.
+	 * @param array $reader Reader data.
 	 *
 	 * @return int Total view count of singular posts.
 	 */
-	public static function get_post_view_count( $reader_data ) {
+	public static function get_post_view_count( $reader ) {
+		$total_view_count      = 0;
 		$non_singular_contexts = self::NON_SINGULAR_VIEW_CONTEXTS;
-		return array_reduce(
-			$reader_data,
-			function( $acc, $item ) use ( $non_singular_contexts ) {
-				if ( 'view_count' === $item['type'] && ! in_array( $item['context'], $non_singular_contexts, true ) && isset( $item['value']['count'] ) ) {
-					$acc += (int) $item['value']['count'];
+
+		if ( isset( $reader['reader_data']['views'] ) ) {
+			foreach ( $reader['reader_data']['views'] as $post_type => $count ) {
+				if ( ! in_array( $post_type, $non_singular_contexts, true ) ) {
+					$total_view_count += (int) $count;
 				}
-				return $acc;
-			},
-			0
-		);
+			}
+		}
+
+		return $total_view_count;
 	}
 
 	/**
-	 * Given a reader's data, get the view count of singular posts in the current session.
+	 * Given a reader's recent events, get the view count of singular posts in the current session.
 	 * A session is considered one hour.
 	 *
-	 * @param array $reader_data Array of reader data as returned by Lightweight_Api::get_reader_data.
+	 * @param array $reader_events Array of reader data as returned by Lightweight_Api::get_reader_events.
 	 *
 	 * @return int View count of singular posts in current session.
 	 */
-	public static function get_post_view_count_session( $reader_data ) {
+	public static function get_post_view_count_session( $reader_events ) {
 		$non_singular_contexts = self::NON_SINGULAR_VIEW_CONTEXTS;
 		return count(
 			array_filter(
-				$reader_data,
+				$reader_events,
 				function ( $item ) use ( $non_singular_contexts ) {
 					$hour_ago  = strtotime( '-1 hour', time() );
 					$item_time = strtotime( $item['date_created'] );
@@ -127,6 +128,18 @@ class Campaign_Data_Utils {
 				}
 			)
 		);
+	}
+
+	/**
+	 * Given a reader's data, get the view counts of each term of the given taxonomy.
+	 *
+	 * @param array  $reader Reader data.
+	 * @param string $taxonomy Taxonomy to look for. Defaults to 'category'.
+	 *
+	 * @return int View counts of the given taxonomy.
+	 */
+	public static function get_term_view_counts( $reader, $taxonomy = 'category' ) {
+		return isset( $reader['reader_data'][ $taxonomy ] ) ? $reader['reader_data'][ $taxonomy ] : false;
 	}
 
 	/**
@@ -160,31 +173,27 @@ class Campaign_Data_Utils {
 	 * Given a segment and client data, decide if the prompt should be shown.
 	 *
 	 * @param object $campaign_segment Segment data.
-	 * @param string $reader_data Reader data for the given client ID.
+	 * @param string $reader Reader data for the given client ID.
+	 * @param string $reader_events Reader data for the given client ID.
 	 * @param string $referer_url URL of the page performing the API request.
 	 * @param string $page_referrer_url URL of the referrer of the frontend page that is making the API request.
 	 * @return bool Whether the prompt should be shown.
 	 */
-	public static function does_reader_match_segment( $campaign_segment, $reader_data, $referer_url = '', $page_referrer_url = '' ) {
+	public static function does_reader_match_segment( $campaign_segment, $reader, $reader_events, $referer_url = '', $page_referrer_url = '' ) {
 		$should_display              = true;
-		$is_subscriber               = self::is_subscriber( $reader_data );
-		$is_donor                    = self::is_donor( $reader_data );
-		$has_user_account            = self::has_user_account( $reader_data );
+		$is_subscriber               = self::is_subscriber( $reader_events );
+		$is_donor                    = self::is_donor( $reader_events );
+		$has_user_account            = self::has_user_account( $reader_events );
 		$campaign_segment            = self::canonize_segment( $campaign_segment );
-		$article_views_count         = self::get_post_view_count( $reader_data );
-		$article_views_count_session = self::get_post_view_count_session( $reader_data );
+		$article_views_count         = self::get_post_view_count( $reader );
+		$article_views_count_session = self::get_post_view_count_session( $reader_events );
 
 		// Read counts for categories.
 		$favorite_category_matches_segment = false;
-		$categories_read_counts            = false;
-		foreach ( $reader_data as $item ) {
-			if ( 'term_count' === $item['type'] && 'category' === $item['context'] ) {
-				$categories_read_counts = $item['value'];
-			}
-		}
-		if ( $categories_read_counts ) {
-			arsort( $categories_read_counts );
-			$favorite_category_matches_segment = in_array( key( $categories_read_counts ), $campaign_segment->favorite_categories );
+		$category_view_counts              = self::get_term_view_counts( $reader );
+		if ( $category_view_counts ) {
+			arsort( $category_view_counts );
+			$favorite_category_matches_segment = in_array( key( $category_view_counts ), $campaign_segment->favorite_categories );
 		}
 
 		/**

@@ -38,19 +38,17 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		// Log an article or page view event.
 		if ( $visit && ( ! defined( 'DISABLE_CAMPAIGN_EVENT_LOGGING' ) || true !== DISABLE_CAMPAIGN_EVENT_LOGGING ) ) {
 			$read_event = [
-				'type' => 'view',
+				'type'  => 'view',
+				'value' => [],
 			];
-			if ( isset( $visit['post_id'] ) || isset( $visit['categories'] ) ) {
-				$read_event['value'] = [];
-			}
 			if ( isset( $visit['post_id'] ) ) {
 				$read_event['value']['post_id'] = $visit['post_id'];
 			}
-			if ( isset( $visit['request'] ) ) {
-				$read_event['value']['request'] = $visit['request'];
-			}
 			if ( isset( $visit['categories'] ) ) {
 				$read_event['value']['categories'] = $visit['categories'];
+			}
+			if ( isset( $visit['request'] ) ) {
+				$read_event['value']['request'] = $visit['request'];
 			}
 			if ( isset( $visit['post_type'] ) || isset( $visit['request_type'] ) ) {
 				$read_event['context'] = isset( $visit['post_type'] ) ? $visit['post_type'] : $visit['request_type'];
@@ -59,7 +57,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			$reader = $this->get_reader( $client_id );
 
 			if ( isset( $reader['client_id'] ) ) {
-				$this->save_reader_data( $client_id, [ $read_event ] );
+				$this->save_reader_events( $client_id, [ $read_event ] );
 			}
 		}
 
@@ -166,7 +164,8 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			return $view_as_spec['segment'];
 		}
 
-		$reader_data              = $this->get_reader_data( $client_id );
+		$reader                   = $this->get_reader( $client_id );
+		$reader_events            = $this->get_reader_events( $client_id );
 		$best_segment_priority    = PHP_INT_MAX;
 		$best_priority_segment_id = null;
 
@@ -175,7 +174,8 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			$segment                = Campaign_Data_Utils::canonize_segment( $segment );
 			$client_matches_segment = Campaign_Data_Utils::does_reader_match_segment(
 				$segment,
-				$reader_data,
+				$reader,
+				$reader_events,
 				$referer_url,
 				$page_referer_url
 			);
@@ -220,7 +220,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			$now = time();
 		}
 
-		$seen_events    = $this->get_reader_data( $client_id, 'prompt_seen', $popup->id );
+		$seen_events    = $this->get_reader_events( $client_id, 'prompt_seen', $popup->id );
 		$should_display = true;
 
 		// Handle referer-based conditions.
@@ -267,7 +267,8 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			// Check whether client matches the prompt's segment.
 			$segment_matches = Campaign_Data_Utils::does_reader_match_segment(
 				$popup_segment,
-				$this->get_reader_data( $client_id ),
+				$this->get_reader( $client_id ),
+				$this->get_reader_events( $client_id ),
 				$referer_url,
 				$page_referer_url
 			);

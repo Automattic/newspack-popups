@@ -39,8 +39,8 @@ class Segmentation_Client_Data extends Lightweight_API {
 	 * @param object $request A request.
 	 */
 	public function report_client_data( $request ) {
-		$client_id   = $this->get_request_param( 'client_id', $request );
-		$reader_data = [];
+		$client_id     = $this->get_request_param( 'client_id', $request );
+		$reader_events = [];
 
 		// Add a donation to client.
 		$donation = $this->get_request_param( 'donation', $request );
@@ -48,7 +48,7 @@ class Segmentation_Client_Data extends Lightweight_API {
 			if ( 'string' === gettype( $donation ) ) {
 				$donation = (array) json_decode( $donation );
 			}
-			$reader_data[] = [
+			$reader_events[] = [
 				'client_id' => $client_id,
 				'type'      => 'donation',
 				'value'     => $donation,
@@ -70,7 +70,7 @@ class Segmentation_Client_Data extends Lightweight_API {
 			}
 		}
 		if ( $email_address ) {
-			$reader_data[] = [
+			$reader_events[] = [
 				'client_id' => $client_id,
 				'type'      => 'subscription',
 				'value'     => [ 'email' => $email_address ],
@@ -80,7 +80,7 @@ class Segmentation_Client_Data extends Lightweight_API {
 		// Get user ID if they have a user account.
 		$user_id = $this->get_request_param( 'user_id', $request );
 		if ( $user_id ) {
-			$existing_user_accounts = $this->get_reader_data( $client_id, 'user_account', 'wp' );
+			$existing_user_accounts = $this->get_reader_events( $client_id, 'user_account', 'wp' );
 			$add_user_account       = true;
 
 			// Only add a new user account if it hasn't already been logged for this client.
@@ -91,7 +91,7 @@ class Segmentation_Client_Data extends Lightweight_API {
 			}
 
 			if ( $add_user_account ) {
-				$reader_data[] = [
+				$reader_events[] = [
 					'client_id' => $client_id,
 					'type'      => 'user_account',
 					'context'   => 'wp',
@@ -106,7 +106,7 @@ class Segmentation_Client_Data extends Lightweight_API {
 			if ( 'string' === gettype( $orders ) ) {
 				$orders = (array) json_decode( $orders );
 			}
-			$order_events = array_map(
+			$order_events  = array_map(
 				function( $order ) {
 					return [
 						'client_id' => $client_id,
@@ -117,7 +117,7 @@ class Segmentation_Client_Data extends Lightweight_API {
 				},
 				$orders
 			);
-			$reader_data  = array_merge( $reader_data, $order_events );
+			$reader_events = array_merge( $reader_events, $order_events );
 		}
 
 		// Fetch Mailchimp data.
@@ -138,8 +138,8 @@ class Segmentation_Client_Data extends Lightweight_API {
 					$members = $mc->get( "/lists/$list_id/members", [ 'unique_email_id' => $mailchimp_subscriber_id ] )['members'];
 
 					if ( ! empty( $members ) ) {
-						$subscriber    = $members[0];
-						$reader_data[] = [
+						$subscriber      = $members[0];
+						$reader_events[] = [
 							'client_id' => $client_id,
 							'type'      => 'subscription',
 							'context'   => 'mailchimp',
@@ -180,7 +180,7 @@ class Segmentation_Client_Data extends Lightweight_API {
 						);
 
 						if ( $has_donated_according_to_mailchimp ) {
-							$reader_data[] = [
+							$reader_events[] = [
 								'client_id' => $client_id,
 								'type'      => 'donation',
 								'context'   => 'mailchimp',
@@ -193,8 +193,8 @@ class Segmentation_Client_Data extends Lightweight_API {
 		}
 
 		// Update client data.
-		if ( ! empty( $reader_data ) ) {
-			$this->save_reader_data( $client_id, $reader_data );
+		if ( ! empty( $reader_events ) ) {
+			$this->save_reader_events( $client_id, $reader_events );
 		}
 	}
 }

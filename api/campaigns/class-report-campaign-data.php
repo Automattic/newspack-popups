@@ -57,7 +57,7 @@ class Report_Campaign_Data extends Lightweight_API {
 			];
 		}
 
-		$this->save_reader_data( $client_id, $data );
+		$this->save_reader_events( $client_id, $data );
 	}
 }
 new Report_Campaign_Data();

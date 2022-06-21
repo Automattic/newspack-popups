@@ -89,14 +89,12 @@ final class Newspack_Popups_Parse_Logs {
 			foreach ( $lines as $line ) {
 				$result = explode( '|', $line );
 				if ( isset( $result[1] ) ) {
-					$id        = $result[0];
-					$client_id = $result[1];
-					$type      = $result[2];
-					$context   = $result[3];
-					$value     = $result[4];
+					$client_id = $result[0];
+					$type      = $result[1];
+					$context   = $result[2];
+					$value     = $result[3];
 				} else {
 					// Handle legacy format.
-					$id           = '';
 					$result       = explode( ';', $line );
 					$client_id    = $result[1];
 					$date_created = $result[2];
@@ -111,7 +109,6 @@ final class Newspack_Popups_Parse_Logs {
 				}
 
 				$items[] = [
-					'id'        => $id,
 					'client_id' => $client_id,
 					'type'      => $type,
 					'context'   => $context,

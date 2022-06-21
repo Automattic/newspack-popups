@@ -14,7 +14,6 @@ require_once dirname( __FILE__ ) . '/../segmentation/class-segmentation-report.p
  * API endpoints.
  */
 class Lightweight_API {
-
 	/**
 	 * Response object.
 	 *
@@ -30,7 +29,7 @@ class Lightweight_API {
 	public $debug;
 
 	/**
-	 * If true, get all reader data from the DB instead of the object cache.
+	 * If true, get all reader events from the DB instead of the object cache.
 	 *
 	 * @var ignore_cache
 	 */
@@ -44,16 +43,16 @@ class Lightweight_API {
 	public $reader_blueprint = [
 		'date_created'  => null,
 		'date_modified' => null,
+		'reader_data'   => [],
 		'is_preview'    => false,
 	];
 
 	/**
-	 * Default reader data item.
+	 * Default reader event item.
 	 *
-	 * @var reader_data_blueprint
+	 * @var reader_events_blueprint
 	 */
-	public $reader_data_blueprint = [
-		'id'           => null,
+	public $reader_events_blueprint = [
 		'date_created' => null,
 		'type'         => null,
 		'context'      => null,
@@ -61,14 +60,12 @@ class Lightweight_API {
 	];
 
 	/**
-	 * Reader data can be temporary (purged periodically) or persistent depending on the type.
+	 * Reader events can be temporary (purged periodically) or persistent depending on the type.
 	 * The following `type` values are considered persistent data.
 	 *
-	 * @var reader_data_persistent_types
+	 * @var reader_events_persistent_types
 	 */
-	public $reader_data_persistent_types = [
-		'view_count',
-		'term_count',
+	public $reader_events_persistent_types = [
 		'subscription',
 		'donation',
 	];
@@ -96,7 +93,7 @@ class Lightweight_API {
 			'duration'           => null,
 			'suppression'        => [],
 			'reader'             => null,
-			'reader_data'        => [],
+			'reader_events'      => [],
 		];
 
 		// If we don't have a persistent object cache, we can't rely on it across page views.
@@ -242,37 +239,37 @@ class Lightweight_API {
 	/**
 	 * Upsert multiple rows in one DB transaction.
 	 *
-	 * @param array $data Array of data items to save.
+	 * @param array $events Array of reader events to save.
 	 *
 	 * @return boolean Result of the write query: true if successful, otherwise false.
 	 */
-	public function bulk_db_insert( $data ) {
+	public function bulk_db_insert( $events ) {
 		$write_result = false;
 
-		if ( 0 === count( $data ) ) {
+		if ( 0 === count( $events ) ) {
 			return $write_result;
 		}
 
 		global $wpdb;
-		$reader_data_table_name = Segmentation::get_reader_data_table_name();
-		$query                  = $this->get_sql( $reader_data_table_name, $data );
+		$reader_events_table_name = Segmentation::get_reader_events_table_name();
+		$query                    = $this->get_sql( $reader_events_table_name, $events );
 
 		// Write to the DB.
 		$write_result = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
 
 		if ( ! $write_result ) {
-			$this->debug['write_error'] = "Error writing to $reader_data_table_name.";
+			$this->debug['write_error'] = "Error writing to $reader_events_table_name.";
 		}
 
 		return $write_result;
 	}
 
 	/**
-	 * Get data for a specific reader.
+	 * Get a specific reader.
 	 *
 	 * @param string $client_id Client ID.
 	 *
-	 * @return array Reader data.
+	 * @return array Reader object.
 	 */
 	public function get_reader( $client_id ) {
 		$reader              = $this->reader_blueprint;
@@ -280,14 +277,14 @@ class Lightweight_API {
 
 		// Check the cache first.
 		if ( ! $this->ignore_cache ) {
-			$cached_reader_data = wp_cache_get( 'reader', $client_id );
-			if ( ! empty( $cached_reader_data ) ) {
-				$this->debug['reader'] = $cached_reader_data;
-				return $cached_reader_data;
+			$cached_reader = wp_cache_get( 'reader', $client_id );
+			if ( ! empty( $cached_reader ) ) {
+				$this->debug['reader'] = $cached_reader;
+				return $cached_reader;
 			}
 		}
 
-		// If ignoring cache or there's no cached reader data, retrieve from the DB.
+		// If ignoring cache or there's no cached reader, retrieve from the DB.
 		global $wpdb;
 		$readers_table_name = Segmentation::get_readers_table_name();
 		$reader_from_db     = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -301,27 +298,22 @@ class Lightweight_API {
 
 		// If there's no reader for this client ID in the DB, create it.
 		if ( empty( $reader_from_db ) ) {
-			$this->save_reader( $client_id );
+			$reader_events = [];
 
-			// Check the legacy transients table for existing reader data.
-			$legacy_reader_data = $this->get_transient_legacy( $client_id );
+			// Check the legacy transients table for existing reader.
+			$legacy_reader = $this->get_transient_legacy( $client_id );
 
 			// If there's data for this reader in the legacy transients table, recreate it in the new table.
-			if ( ! empty( $legacy_reader_data ) ) {
-				$this->debug['legacy_data'] = $legacy_reader_data;
-				$reader_data                = [];
+			if ( ! empty( $legacy_reader ) ) {
+				$this->debug['legacy_reader'] = $legacy_reader;
 
 				// Add posts_read data to views count.
-				if ( isset( $legacy_reader_data['posts_read'] ) && 0 < count( $legacy_reader_data ) ) {
-					$reader_data[] = [
-						'type'    => 'view_count',
-						'context' => 'post',
-						'value'   => [ 'count' => count( $legacy_reader_data['posts_read'] ) ],
-					];
+				if ( isset( $legacy_reader['posts_read'] ) && 0 < count( $legacy_reader['posts_read'] ) ) {
+					$reader['reader_data']['views'] = [ 'post' => count( $legacy_reader['posts_read'] ) ];
 
 					// Add read categories data.
-					$categories_read = ! empty( $reader_data['categories_read'] ) ? $reader_data['categories_read'] : [];
-					foreach ( $legacy_reader_data['posts_read'] as $article_view ) {
+					$categories_read = ! empty( $reader['reader_data']['category'] ) ? $reader['reader_data']['category'] : [];
+					foreach ( $legacy_reader['posts_read'] as $article_view ) {
 						if ( ! empty( $article_view['category_ids'] ) ) {
 							$category_ids = explode( ',', $article_view['category_ids'] );
 
@@ -335,26 +327,22 @@ class Lightweight_API {
 					}
 
 					if ( ! empty( $categories_read ) ) {
-						$reader_data[] = [
-							'type'    => 'term_count',
-							'context' => 'category',
-							'value'   => $categories_read,
-						];
+						$reader['reader_data']['category'] = $categories_read;
 					}
 				}
 
 				// Add known user accounts.
-				if ( ! empty( $legacy_reader_data['user_id'] ) ) {
-					$reader_data[] = [
-						'type'    => 'user_id',
+				if ( ! empty( $legacy_reader['user_id'] ) ) {
+					$reader_events[] = [
+						'type'    => 'user_account',
 						'context' => 'wp',
-						'value'   => [ 'user_id' => $legacy_reader_data['user_id'] ],
+						'value'   => [ 'user_id' => $legacy_reader['user_id'] ],
 					];
 				}
 
 				// Add prior donations.
-				if ( ! empty( $legacy_reader_data['donations'] ) ) {
-					foreach ( $legacy_reader_data['donations'] as $donation ) {
+				if ( ! empty( $legacy_reader['donations'] ) ) {
+					foreach ( $legacy_reader['donations'] as $donation ) {
 						$donation_date = isset( $donation['date'] ) ? strtotime( $donation['date'] ) : time();
 						$donation_data = [
 							'type'  => 'donation',
@@ -368,14 +356,14 @@ class Lightweight_API {
 							$donation_data['context'] = 'stripe';
 						}
 
-						$reader_data[] = $donation_data;
+						$reader_events[] = $donation_data;
 					}
 				}
 
 				// Add prior newsletter subscriptions.
-				if ( ! empty( $legacy_reader_data['email_subscriptions'] ) ) {
-					foreach ( $legacy_reader_data['email_subscriptions'] as $subscription ) {
-						$reader_data[] = [
+				if ( ! empty( $legacy_reader['email_subscriptions'] ) ) {
+					foreach ( $legacy_reader['email_subscriptions'] as $subscription ) {
+						$reader_events[] = [
 							'type'  => 'subscription',
 							'value' => [
 								'email' => $subscription['email'] ?? $subscription['address'],
@@ -384,18 +372,25 @@ class Lightweight_API {
 					}
 				}
 
-				if ( ! empty( $reader_data ) ) {
-					$this->save_reader_data( $reader_data );
+				if ( ! empty( $reader_events ) ) {
+					$this->save_reader_events( $client_id, $reader_events );
 				}
 
 				// If we were able to save the legacy data, clean up old transients data.
 				$this->delete_transient_legacy( $client_id );
 			}
+
+			$this->save_reader( $client_id, $reader['reader_data'] );
 		} else {
 			// Rebuild the cache.
 			$reader_from_db = reset( $reader_from_db );
 			$reader_from_db = (array) $reader_from_db;
 			$reader         = wp_parse_args( $reader_from_db, $reader );
+		}
+
+		// Unserialize reader_data value.
+		if ( isset( $reader['reader_data'] ) && ! is_array( $reader['reader_data'] ) ) {
+			$reader['reader_data'] = json_decode( $reader['reader_data'], true );
 		}
 
 		// Rebuild cache.
@@ -425,10 +420,25 @@ class Lightweight_API {
 		$columns                = array_keys( $data[0] );
 		$values                 = [];
 		$duplicate_placeholders = [];
-		$columns[]              = 'date_modified';
+		$is_readers_table       = Segmentation::get_readers_table_name() === $table_name;
+
+		// If updating the readers table, add date_modified timestamp.
+		if ( $is_readers_table ) {
+			$columns[] = 'date_modified';
+		}
 
 		foreach ( $data as $item ) {
-			$item['date_modified'] = gmdate( 'Y-m-d H:i:s' );
+			if ( $is_readers_table ) {
+				$item['date_modified'] = gmdate( 'Y-m-d H:i:s' );
+			}
+
+			// Serialize value strings.
+			if ( isset( $item['reader_data'] ) ) {
+				$item['reader_data'] = wp_json_encode( $item['reader_data'] );
+			}
+			if ( isset( $item['value'] ) ) {
+				$item['value'] = wp_json_encode( $item['value'] );
+			}
 
 			$placeholder = [];
 			$item_values = array_map(
@@ -463,17 +473,22 @@ class Lightweight_API {
 	 * Upsert reader to DB and save to cache.
 	 *
 	 * @param string $client_id Client ID of the reader.
+	 * @param array  $data Data for the reader to be updated.
 	 *
 	 * @return boolean True if updated., false if not.
 	 */
-	public function save_reader( $client_id ) {
+	public function save_reader( $client_id, $data = [] ) {
 		if ( empty( $client_id ) || ! is_string( $client_id ) ) {
 			return false;
 		}
 
 		global $wpdb;
-		$reader             = [ 'client_id' => $client_id ];
 		$readers_table_name = Segmentation::get_readers_table_name();
+		$reader             = [ 'client_id' => $client_id ];
+
+		if ( ! empty( $data ) ) {
+			$reader['reader_data'] = $data;
+		}
 
 		if ( $this->is_preview( $client_id ) ) {
 			$reader['is_preview'] = true;
@@ -487,7 +502,7 @@ class Lightweight_API {
 		// If DB write was successful, rebuild cache.
 		if ( $write_result ) {
 			$this->debug['write_query_count'] += 1;
-			return wp_cache_set( 'reader', $client_id, $client_id );
+			return wp_cache_set( 'reader', $reader, $client_id );
 		}
 
 		$this->debug['write_error'] = "Error writing to $readers_table_name.";
@@ -505,12 +520,13 @@ class Lightweight_API {
 	 *
 	 * @return array Filtered array of data items.
 	 */
-	public function filter_data_by_type( $items = [], $types = null, $contexts = null ) {
+	public function filter_events_by_type( $items = [], $types = null, $contexts = null ) {
+		// Unserialize event values.
 		if ( ! empty( $items ) ) {
 			$items = array_map(
 				function( $item ) {
 					if ( ! empty( $item['value'] ) && ! is_array( $item['value'] ) ) {
-						$item['value'] = (array) json_decode( $item['value'] );
+						$item['value'] = json_decode( $item['value'], true );
 					}
 					return $item;
 				},
@@ -529,7 +545,7 @@ class Lightweight_API {
 			$contexts = [ $contexts ];
 		}
 
-		$persistent_types = $this->reader_data_persistent_types;
+		$persistent_types = $this->reader_events_persistent_types;
 
 		return array_values(
 			array_filter(
@@ -558,29 +574,34 @@ class Lightweight_API {
 	 *
 	 * @return array Array of reader data for the given client ID.
 	 */
-	public function get_reader_data_from_db( $client_id ) {
+	public function get_reader_events_from_db( $client_id ) {
 		global $wpdb;
-		$reader_data_table_name = Segmentation::get_reader_data_table_name();
-		$data                   = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$reader_events_table_name = Segmentation::get_reader_events_table_name();
+		$events                   = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"SELECT * from $reader_data_table_name WHERE client_id = %s ORDER BY date_modified DESC", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				"SELECT client_id, date_created, type, context, value from $reader_events_table_name WHERE client_id = %s ORDER BY date_created DESC", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 				$client_id
 			)
 		);
 
 		$this->debug['read_query_count'] += 1;
 
-		if ( ! empty( $data ) ) {
-			$data = array_map(
-				function( $item ) {
-					$item = (array) $item;
-					return $item;
+		if ( ! empty( $events ) ) {
+			$events = array_map(
+				function( $event ) {
+					$event = (array) $event;
+
+					if ( ! empty( $event['value'] ) && ! is_array( $event['value'] ) ) {
+						$event['value'] = json_decode( $event['value'], true );
+					}
+
+					return $event;
 				},
-				$data
+				$events
 			);
 		}
 
-		return $data;
+		return $events;
 	}
 
 	/**
@@ -593,231 +614,145 @@ class Lightweight_API {
 	 *
 	 * @return array Array of reader data, optionally filtered by $type and $context.
 	 */
-	public function get_reader_data( $client_id, $type = null, $context = null ) {
-		$data = [];
+	public function get_reader_events( $client_id, $type = null, $context = null ) {
+		$events = [];
 
 		// Check the cache first.
 		if ( ! $this->ignore_cache ) {
-			$data = wp_cache_get( 'reader_data', $client_id );
-			if ( ! empty( $data ) ) {
-				$this->debug['reader_data'] = $data;
-				return $this->filter_data_by_type( $data, $type, $context );
+			$events = wp_cache_get( 'reader_events', $client_id );
+			if ( ! empty( $events ) ) {
+				$this->debug['reader_events'] = $events;
+				return $this->filter_events_by_type( $events, $type, $context );
 			}
 		}
 
 		// If no data in the cache, get it from the DB.
-		$data = $this->get_reader_data_from_db( $client_id );
+		$events = $this->get_reader_events_from_db( $client_id );
 
 		// Rebuild cache.
-		if ( ! empty( $data ) ) {
-			wp_cache_set( 'reader_data', $data, $client_id );
+		if ( ! empty( $events ) ) {
+			wp_cache_set( 'reader_events', $events, $client_id );
 		}
 
-		$this->debug['reader_data'] = $data;
-		return $this->filter_data_by_type( $data, $type, $context );
+		$this->debug['reader_events'] = $events;
+		return $this->filter_events_by_type( $events, $type, $context );
 	}
 
 	/**
 	 * Retrieve only persistent data for a specific reader.
-	 * Persistent data types are defined in the $get_reader_data_persistent class variable.
+	 * Persistent event types are defined in the $get_reader_events_persistent class variable.
 	 *
 	 * @param string $client_id Client ID of the reader.
 	 */
-	public function get_reader_data_persistent( $client_id ) {
-		$persistent_data = $this->get_reader_data( $client_id, $this->reader_data_persistent_types );
+	public function get_reader_events_persistent( $client_id ) {
+		$persistent_events = $this->get_reader_events( $client_id, $this->reader_events_persistent_types );
 
-		$this->debug['reader_data_persistent'] = $persistent_data;
+		$this->debug['reader_events_persistent'] = $persistent_events;
 
-		return $persistent_data;
+		return $persistent_events;
 	}
 
 	/**
 	 * Save reader data.
 	 *
 	 * @param string $client_id Client ID of the reader.
-	 * @param array  $data Array of reader data rows to log.
-	 *                     ['id'] Unique ID of persistent data row to update.
-	 *                     ['date_created'] Timestamp of the data insertion.
-	 *                     ['date_modified'] Timestamp of the update.
-	 *                     ['type'] Type of data. Required.
-	 *                     ['context'] Context of data.
-	 *                     ['value'] Value of the data to save. Required.
+	 * @param array  $events Array of reader data rows to log.
+	 *                       ['date_created'] Timestamp of the data insertion.
+	 *                       ['date_modified'] Timestamp of the update.
+	 *                       ['type'] Type of data. Required.
+	 *                       ['context'] Context of data.
+	 *                       ['value'] Value of the data to save. Required.
 	 *
 	 * @return boolean True if saved, false if not.
 	 */
-	public function save_reader_data( $client_id, $data ) {
-		if ( empty( $client_id ) || ! is_string( $client_id ) || empty( $data ) ) {
+	public function save_reader_events( $client_id, $events ) {
+		if ( empty( $client_id ) || empty( $events ) ) {
 			return false;
 		}
 
 		// Deduplicate views from the past hour.
-		$existing_data = $this->get_reader_data( $client_id );
-		$already_read  = $this->filter_data_by_type( $existing_data, 'view' );
-
-		$already_read_singular    = array_column(
-			array_column(
-				$already_read,
-				'value'
-			),
-			'post_id'
+		$existing_events          = $this->get_reader_events( $client_id );
+		$already_read             = $this->filter_events_by_type( $existing_events, 'view' );
+		$event_values             = array_column(
+			$already_read,
+			'value'
 		);
-		$already_read_nonsingular = array_column(
-			array_column(
-				$already_read,
-				'value'
-			),
-			'request'
-		);
+		$already_read_singular    = array_column( $event_values, 'post_id' );
+		$already_read_nonsingular = array_column( $event_values, 'request' );
 		$already_read             = array_merge( $already_read_singular, $already_read_nonsingular );
 
-		$data = array_values(
+		// Filter out recently seen views.
+		$events = array_values(
 			array_filter(
-				$data,
-				function( $item ) use ( $already_read ) {
-					if ( isset( $item['type'] ) && 'view' === $item['type'] && isset( $item['context'] ) && isset( $item['value'] ) ) {
-						$current_page = isset( $item['value']['post_id'] ) ? $item['value']['post_id'] : $item['value']['request'];
+				$events,
+				function( $event ) use ( $already_read ) {
+					if ( 'view' === $event['type'] && isset( $event['context'] ) && isset( $event['value'] ) ) {
+						$current_page = isset( $event['value']['post_id'] ) ? $event['value']['post_id'] : $event['value']['request'];
 						return ! in_array( $current_page, $already_read, true );
 					}
 
-					return ! empty( $item['type'] );
+					return ! empty( $event['type'] );
 				}
 			)
 		);
 
 		// If no new items to save, return false.
-		if ( empty( $data ) ) {
+		if ( empty( $events ) ) {
 			$this->debug['already_read'] = true;
 			return false;
 		}
 
-		// Create or update view_count and term_count rows.
-		// TODO: This is not working for sites with persistent cache. For those sites, the term_count and view_count rows get written to the log as separate rows without id values, resulting in those rows being inserted separately.
-		$new_views = $this->filter_data_by_type( $data, 'view' );
+		// Rebuild reader_data if there were new views.
+		$new_views = $this->filter_events_by_type( $events, 'view' );
 		if ( ! empty( $new_views ) ) {
-			$view_count_updates = [];
-			$term_count_updates = [];
+			$reader      = $this->get_reader( $client_id );
+			$reader_data = isset( $reader['reader_data'] ) ? $reader['reader_data'] : [];
+
+			if ( ! isset( $reader_data['views'] ) ) {
+				$reader_data['views'] = [];
+			}
 
 			foreach ( $new_views as $read_event ) {
-				$post_type              = $read_event['context'];
-				$view_count             = 0;
-				$existing_view_count    = $this->get_reader_data( $client_id, 'view_count', $post_type );
-				$existing_view_count_id = null;
-
-				if ( ! empty( $existing_view_count ) ) {
-					$existing_view_count = reset( $existing_view_count );
-
-					if ( isset( $existing_view_count['value']['count'] ) ) {
-						$view_count += (int) $existing_view_count['value']['count'];
-					}
-					if ( isset( $existing_view_count['id'] ) ) {
-						$existing_view_count_id = $existing_view_count['id'];
-					}
+				if ( ! isset( $reader_data['views'][ $read_event['context'] ] ) ) {
+					$reader_data['views'][ $read_event['context'] ] = 0;
 				}
+				$reader_data['views'][ $read_event['context'] ] ++;
 
-				// Increment the view count.
-				$view_count ++;
-
-				if ( ! isset( $view_count_updates[ $post_type ] ) ) {
-					$view_count_updates[ $post_type ] = [
-						'type'    => 'view_count',
-						'context' => $post_type,
-						'value'   => [ 'count' => 0 ],
-					];
-				}
-
-				$view_count_updates[ $post_type ]['value']['count'] += $view_count;
-				if ( ! empty( $existing_view_count_id ) ) {
-					$view_count_updates[ $post_type ]['id'] = $existing_view_count_id;
-				}
-
-				// Update term views. Eventually this could be extended to other taxonomies, but currently we only handle categories.
 				if ( isset( $read_event['value']['categories'] ) ) {
-					$taxonomy               = 'category';
-					$term_count             = isset( $term_count_updates[ $taxonomy ] ) ? $term_count_updates[ $taxonomy ]['value'] : [];
-					$existing_term_count    = $this->get_reader_data( $client_id, 'term_count', $taxonomy );
-					$existing_term_count_id = null;
-
-					if ( ! empty( $existing_term_count ) ) {
-						$existing_term_count = reset( $existing_term_count );
-
-						if ( isset( $existing_term_count['id'] ) ) {
-							$existing_term_count_id = $existing_term_count['id'];
-						}
-
-						foreach ( $existing_term_count['value'] as $term_id => $count ) {
-							if ( ! isset( $term_count[ $term_id ] ) ) {
-								$term_count[ $term_id ] = (int) $count;
-							} else {
-								$term_count[ $term_id ] += (int) $count;
-							}
-						}
+					$categories = explode( ',', $read_event['value']['categories'] );
+					if ( ! isset( $reader_data['category'] ) ) {
+						$reader_data['category'] = [];
 					}
-
-					// Increment taxonomy term counts.
-					foreach ( explode( ',', $read_event['value']['categories'] ) as $term_id ) {
-						if ( ! empty( $term_id ) ) {
-							if ( ! isset( $term_count[ $term_id ] ) ) {
-								$term_count[ $term_id ] = 0;
-							}
-
-							$term_count[ $term_id ] ++;
+					foreach ( $categories as $term_id ) {
+						if ( ! isset( $reader_data['category'][ $term_id ] ) ) {
+							$reader_data['category'][ $term_id ] = 0;
 						}
-					}
-
-					if ( ! isset( $term_count_updates[ $taxonomy ] ) ) {
-						$term_count_updates[ $taxonomy ] = [
-							'type'    => 'term_count',
-							'context' => $taxonomy,
-						];
-					}
-
-					$term_count_updates[ $taxonomy ] = [
-						'type'    => 'term_count',
-						'context' => $taxonomy,
-						'value'   => $term_count,
-					];
-
-					if ( ! empty( $existing_term_count_id ) ) {
-						$term_count_updates[ $taxonomy ]['id'] = $existing_term_count_id;
+						$reader_data['category'][ $term_id ] ++;
 					}
 				}
 			}
 
-			// Add update objects to data to be saved.
-			if ( $view_count_updates ) {
-				$data = array_merge( $data, array_values( $view_count_updates ) );
-			}
-			if ( $term_count_updates ) {
-				$data = array_merge( $data, array_values( $term_count_updates ) );
-			}
+			$this->save_reader( $client_id, $reader_data );
 		}
 
-		// Ensure client ID exists and keys match across all items.
-		$reader_data_blueprint = $this->reader_data_blueprint;
-		$data                  = array_map(
-			function( $item ) use ( $client_id, $reader_data_blueprint ) {
-				$item              = wp_parse_args( $item, $reader_data_blueprint );
+		// Ensure client ID exists and keys match across all new items.
+		$reader_events_blueprint = $this->reader_events_blueprint;
+		$events                  = array_map(
+			function( $item ) use ( $client_id, $reader_events_blueprint ) {
 				$item['client_id'] = $client_id;
 
 				if ( empty( $item['date_created'] ) ) {
 					$item['date_created'] = gmdate( 'Y-m-d H:i:s' );
 				}
 
-				if ( isset( $item['value'] ) ) {
-					$item['value'] = wp_json_encode( $item['value'] );
-				}
-
-				return wp_parse_args( $item, $this->reader_data_blueprint );
+				return wp_parse_args( $item, $this->reader_events_blueprint );
 			},
-			$data
+			$events
 		);
-
-		// Rebuild cache.
-		$all_data = array_merge( $existing_data, $data );
 
 		// If ignoring cache, write directly to DB.
 		if ( $this->ignore_cache ) {
-			$write_result = $this->bulk_db_insert( $data );
+			$write_result = $this->bulk_db_insert( $events );
 
 			// If DB write was successful, rebuild cache.
 			if ( $write_result ) {
@@ -827,12 +762,15 @@ class Lightweight_API {
 			}
 		} else {
 			// Write items to the flat file to be parsed to the DB at a later point.
-			Segmentation_Report::log_reader_events( $data );
+			Segmentation_Report::log_reader_events( $events );
 		}
 
+		// Rebuild cache.
+		$all_events = array_merge( $existing_events, $events );
+
 		return wp_cache_set(
-			'reader_data',
-			$all_data,
+			'reader_events',
+			$all_events,
 			$client_id
 		);
 	}
@@ -883,7 +821,7 @@ class Lightweight_API {
 			// $_POST contains the payload if the request has FormData.
 			$payload = file_get_contents( 'php://input' ); // phpcs:ignore WordPressVIPMinimum.Performance.FetchingRemoteData.FileGetContentsRemoteFile
 			if ( ! empty( $payload ) ) {
-				$payload = (array) json_decode( $payload );
+				$payload = json_decode( $payload, true );
 			}
 		}
 		if ( null == $payload ) {
