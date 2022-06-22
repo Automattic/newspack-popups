@@ -37,8 +37,29 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			$view_as_spec = Segmentation::parse_view_as( json_decode( $_REQUEST['view_as'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		}
 
+		$referer_url                   = filter_input( INPUT_SERVER, 'HTTP_REFERER', FILTER_SANITIZE_STRING );
+		$page_referer_url              = isset( $_REQUEST['ref'] ) ? $_REQUEST['ref'] : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$all_segments                  = isset( $settings->all_segments ) ? $settings->all_segments : [];
+		$overlay_to_maybe_display      = null;
+		$above_header_to_maybe_display = null;
+		$custom_placements_displayed   = [];
+
 		if ( $visit['is_post'] && ( ! defined( 'DISABLE_CAMPAIGN_EVENT_LOGGING' ) || true !== DISABLE_CAMPAIGN_EVENT_LOGGING ) ) {
 			// Update the cache.
+			$updated_client_data = [];
+
+			// Report Mailchimp data.
+			$mailchimp_campaign_id   = $this->get_url_param( 'mc_cid', $referer_url );
+			$mailchimp_subscriber_id = $this->get_url_param( 'mc_eid', $referer_url );
+			if ( $mailchimp_campaign_id && $mailchimp_subscriber_id ) {
+				$this->report_mailchimp( $client_id, $mailchimp_campaign_id, $mailchimp_subscriber_id );
+			} elseif ( Campaign_Data_Utils::is_url_from_email( $referer_url ) ) {
+				// If reader is coming from a newsletter email, consider them a subscriber.
+				$updated_client_data['email_subscriptions'] = [
+					[ 'source' => 'utm_medium=email' ],
+				];
+			}
+
 			$posts_read        = $this->get_client_data( $client_id )['posts_read'];
 			$already_read_post = count(
 				array_filter(
@@ -50,17 +71,16 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			) > 0;
 
 			if ( false === $already_read_post ) {
-				$posts_read[] = [
+				$posts_read[]                      = [
 					'post_id'      => $visit['post_id'],
 					'category_ids' => $visit['categories'],
 					'created_at'   => gmdate( 'Y-m-d H:i:s' ),
 				];
-				$this->save_client_data(
-					$client_id,
-					[
-						'posts_read' => $posts_read,
-					]
-				);
+				$updated_client_data['posts_read'] = $posts_read;
+			}
+
+			if ( ! empty( $updated_client_data ) ) {
+				$this->save_client_data( $client_id, $updated_client_data );
 			}
 
 			Segmentation_Report::log_single_visit(
@@ -72,13 +92,6 @@ class Maybe_Show_Campaign extends Lightweight_API {
 				)
 			);
 		}
-
-		$referer_url                   = filter_input( INPUT_SERVER, 'HTTP_REFERER', FILTER_SANITIZE_STRING );
-		$page_referer_url              = isset( $_REQUEST['ref'] ) ? $_REQUEST['ref'] : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		$all_segments                  = isset( $settings->all_segments ) ? $settings->all_segments : [];
-		$overlay_to_maybe_display      = null;
-		$above_header_to_maybe_display = null;
-		$custom_placements_displayed   = [];
 
 		if ( $settings ) {
 			$settings->best_priority_segment_id = $this->get_best_priority_segment_id( $all_segments, $client_id, $referer_url, $page_referer_url, $view_as_spec );
