@@ -1,9 +1,12 @@
 <?php
 /**
- * Newspack Campaigns lightweight API
+ * Newspack Campaigns lightweight API.
  *
  * @package Newspack
- * @phpcs:disable WordPress.DB.RestrictedClasses.mysql__PDO
+ */
+
+/**
+ * Create the base Lightweight_API class.
  */
 
 require_once __DIR__ . '/../../vendor/autoload.php';
@@ -11,7 +14,7 @@ require_once __DIR__ . '/../../vendor/autoload.php';
 use \DrewM\MailChimp\MailChimp;
 
 /**
- * API endpoints
+ * API endpoints.
  */
 class Lightweight_API {
 
