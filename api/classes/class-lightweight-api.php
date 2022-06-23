@@ -782,10 +782,10 @@ class Lightweight_API {
 	 */
 	public function get_all_readers_data() {
 		global $wpdb;
-		$raders_table_name = Segmentation::get_readers_table_name();
+		$readers_table_name = Segmentation::get_readers_table_name();
 
 		// Results are limited to the 1000 most recent rows for performance reasons.
-		$all_client_ids_rows = $wpdb->get_results( "SELECT DISTINCT client_id,date_modified FROM $readers_table_name ORDER BY date_modified DESC LIMIT 1000" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$all_client_ids_rows = $wpdb->get_results( "SELECT DISTINCT client_id,date_modified FROM $readers_table_name WHERE is_preview IS NULL ORDER BY date_modified DESC LIMIT 1000" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$api                 = new Lightweight_API();
 		return array_reduce(
 			$all_client_ids_rows,
