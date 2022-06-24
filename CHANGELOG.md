@@ -1,3 +1,10 @@
+# [2.1.0-alpha.2](https://github.com/Automattic/newspack-popups/compare/v2.1.0-alpha.1...v2.1.0-alpha.2) (2022-06-24)
+
+
+### Bug Fixes
+
+* misnamed variable in GA non-AMP config filter ([40ae65b](https://github.com/Automattic/newspack-popups/commit/40ae65b9a24c19b6f0efba4d45a3a2a774c20920))
+
 ## [2.0.1](https://github.com/Automattic/newspack-popups/compare/v2.0.0...v2.0.1) (2022-06-24)
 
 
