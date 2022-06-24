@@ -70,6 +70,7 @@ $size__large: 1264px;
 		background: transparent;
 		margin: 0 auto;
 		max-width: $size__medium;
+		overflow: auto;
 		padding: 32px;
 
 		> *:first-child {
@@ -84,6 +85,16 @@ $size__large: 1264px;
 			> *:last-child {
 				margin-bottom: 0;
 			}
+		}
+	}
+
+	&.newspack-lightbox-no-border {
+		.newspack-popup-wrapper {
+			box-shadow: none;
+		}
+		.newspack-popup {
+			margin: 32px;
+			padding: 0;
 		}
 	}
 
@@ -167,6 +178,9 @@ $size__large: 1264px;
 				width: $size__x-small;
 			}
 		}
+		.newspack-popup {
+			max-height: 50vh;
+		}
 	}
 
 	&.newspack-lightbox-size-small {
@@ -176,6 +190,9 @@ $size__large: 1264px;
 				width: $size__small;
 			}
 		}
+		.newspack-popup {
+			max-height: 60vh;
+		}
 	}
 
 	&.newspack-lightbox-size-medium {
@@ -184,6 +201,9 @@ $size__large: 1264px;
 				min-width: $size__medium;
 				width: $size__medium;
 			}
+		}
+		.newspack-popup {
+			max-height: 80vh;
 		}
 	}
 

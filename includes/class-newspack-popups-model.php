@@ -1167,7 +1167,7 @@ final class Newspack_Popups_Model {
 					action-xhr="<?php echo esc_url( $endpoint ); ?>"
 					target="_top">
 					<?php echo $hidden_fields; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-					<button style="opacity: <?php echo floatval( $overlay_opacity ); ?>;background-color:<?php echo esc_attr( $overlay_color ); ?>;" class="newspack-lightbox-shim" on="tap:<?php echo esc_attr( $element_id ); ?>.hide"></button>
+					<button style="opacity: <?php echo floatval( $overlay_opacity ); ?>; ?>;" class="newspack-lightbox-shim" on="tap:<?php echo esc_attr( $element_id ); ?>.hide"></button>
 				</form>
 			<?php endif; ?>
 		</amp-layout>
@@ -1279,8 +1279,9 @@ final class Newspack_Popups_Model {
 	 * @return string Inline styles attribute.
 	 */
 	public static function container_style( $popup ) {
-		$background_color = $popup['options']['background_color'];
-		$foreground_color = self::foreground_color_for_background( $background_color );
+		$hide_border      = $popup['options']['hide_border'];
+		$background_color = $hide_border ? 'transparent' : $popup['options']['background_color'];
+		$foreground_color = $hide_border ? 'inherit' : self::foreground_color_for_background( $background_color );
 		return 'background-color:' . $background_color . ';color:' . $foreground_color;
 	}
 
