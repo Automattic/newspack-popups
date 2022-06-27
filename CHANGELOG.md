@@ -1,3 +1,10 @@
+# [2.1.0-alpha.3](https://github.com/Automattic/newspack-popups/compare/v2.1.0-alpha.2...v2.1.0-alpha.3) (2022-06-24)
+
+
+### Bug Fixes
+
+* force release ([9eb0b0f](https://github.com/Automattic/newspack-popups/commit/9eb0b0fcb1e81c6bc19ea592634ab7db14068520))
+
 ## [2.0.2](https://github.com/Automattic/newspack-popups/compare/v2.0.1...v2.0.2) (2022-06-24)
 
 
