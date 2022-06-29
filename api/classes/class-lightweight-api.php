@@ -712,14 +712,14 @@ class Lightweight_API {
 				$reader_data['views'] = [];
 			}
 
-			foreach ( $new_views as $read_event ) {
-				if ( ! isset( $reader_data['views'][ $read_event['context'] ] ) ) {
-					$reader_data['views'][ $read_event['context'] ] = 0;
+			foreach ( $new_views as $view_event ) {
+				if ( ! isset( $reader_data['views'][ $view_event['context'] ] ) ) {
+					$reader_data['views'][ $view_event['context'] ] = 0;
 				}
-				$reader_data['views'][ $read_event['context'] ] ++;
+				$reader_data['views'][ $view_event['context'] ] ++;
 
-				if ( isset( $read_event['value']['categories'] ) ) {
-					$categories = explode( ',', $read_event['value']['categories'] );
+				if ( isset( $view_event['value']['categories'] ) ) {
+					$categories = explode( ',', $view_event['value']['categories'] );
 					if ( ! isset( $reader_data['category'] ) ) {
 						$reader_data['category'] = [];
 					}

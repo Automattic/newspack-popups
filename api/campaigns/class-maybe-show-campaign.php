@@ -37,27 +37,27 @@ class Maybe_Show_Campaign extends Lightweight_API {
 
 		// Log an article or page view event.
 		if ( $visit && ( ! defined( 'DISABLE_CAMPAIGN_EVENT_LOGGING' ) || true !== DISABLE_CAMPAIGN_EVENT_LOGGING ) ) {
-			$read_event = [
+			$view_event = [
 				'type'  => 'view',
 				'value' => [],
 			];
 			if ( isset( $visit['post_id'] ) ) {
-				$read_event['value']['post_id'] = $visit['post_id'];
+				$view_event['value']['post_id'] = $visit['post_id'];
 			}
 			if ( isset( $visit['categories'] ) ) {
-				$read_event['value']['categories'] = $visit['categories'];
+				$view_event['value']['categories'] = $visit['categories'];
 			}
 			if ( isset( $visit['request'] ) ) {
-				$read_event['value']['request'] = $visit['request'];
+				$view_event['value']['request'] = $visit['request'];
 			}
 			if ( isset( $visit['post_type'] ) || isset( $visit['request_type'] ) ) {
-				$read_event['context'] = isset( $visit['post_type'] ) ? $visit['post_type'] : $visit['request_type'];
+				$view_event['context'] = isset( $visit['post_type'] ) ? $visit['post_type'] : $visit['request_type'];
 			}
 
 			$reader = $this->get_reader( $client_id );
 
 			if ( isset( $reader['client_id'] ) ) {
-				$this->save_reader_events( $client_id, [ $read_event ] );
+				$this->save_reader_events( $client_id, [ $view_event ] );
 			}
 		}
 
