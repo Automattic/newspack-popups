@@ -314,6 +314,31 @@ class Lightweight_API {
 					// Add read categories data.
 					$categories_read = ! empty( $reader['reader_data']['category'] ) ? $reader['reader_data']['category'] : [];
 					foreach ( $legacy_reader['posts_read'] as $article_view ) {
+
+						// Rebuild recent views as view events.
+						if ( isset( $article_view['created_at'] ) ) {
+							$hour_ago   = strtotime( '-1 hour', time() );
+							$event_time = strtotime( $article_view['created_at'] );
+
+							if ( $event_time > $hour_ago ) {
+								$view_event = [
+									'date_created' => gmdate( 'Y-m-d H:i:s', $event_time ),
+									'type'         => 'view',
+									'context'      => 'post',
+									'value'        => [],
+								];
+
+								if ( isset( $article_view['post_id'] ) ) {
+									$view_event['value']['post_id'] = $article_view['post_id'];
+								}
+								if ( isset( $article_view['categories'] ) ) {
+									$view_event['value']['categories'] = $article_view['categories'];
+								}
+
+								$reader_events[] = $view_event;
+							}
+						}
+
 						if ( ! empty( $article_view['category_ids'] ) ) {
 							$category_ids = explode( ',', $article_view['category_ids'] );
 
@@ -343,10 +368,12 @@ class Lightweight_API {
 				// Add prior donations.
 				if ( ! empty( $legacy_reader['donations'] ) ) {
 					foreach ( $legacy_reader['donations'] as $donation ) {
+						$donation      = (array) $donation;
 						$donation_date = isset( $donation['date'] ) ? strtotime( $donation['date'] ) : time();
 						$donation_data = [
-							'type'  => 'donation',
-							'value' => $donation,
+							'date_created' => gmdate( 'Y-m-d H:i:s', $donation_date ),
+							'type'         => 'donation',
+							'value'        => $donation,
 						];
 
 						if ( isset( $donation['order_id'] ) ) {
@@ -510,32 +537,32 @@ class Lightweight_API {
 	}
 
 	/**
-	 * Given an array of reader data items, only return those with matching $types and/or $contexts.
+	 * Given an array of reader events, only return those with matching $types and/or $contexts.
 	 * If both $types and $contexts are null, simply return the array as-is.
 	 *
-	 * @param array             $items Array of reader data items.
+	 * @param array             $events Array of reader events.
 	 * @param string|array|null $types Data type or array of data types to filter by.
 	 *                                 If not given, will only retrieve temporary data types.
 	 * @param string|array|null $contexts Data context or array of data contexts to filter by.
 	 *
 	 * @return array Filtered array of data items.
 	 */
-	public function filter_events_by_type( $items = [], $types = null, $contexts = null ) {
+	public function filter_events_by_type( $events = [], $types = null, $contexts = null ) {
 		// Unserialize event values.
-		if ( ! empty( $items ) ) {
-			$items = array_map(
-				function( $item ) {
-					if ( ! empty( $item['value'] ) && ! is_array( $item['value'] ) ) {
-						$item['value'] = json_decode( $item['value'], true );
+		if ( ! empty( $events ) ) {
+			$events = array_map(
+				function( $event ) {
+					if ( ! empty( $event['value'] ) && ! is_array( $event['value'] ) ) {
+						$event['value'] = json_decode( $event['value'], true );
 					}
-					return $item;
+					return $event;
 				},
-				$items
+				$events
 			);
 		}
 
 		if ( null === $types && null === $contexts ) {
-			return $items;
+			return $events;
 		}
 
 		if ( ! is_array( $types ) && null !== $types ) {
@@ -549,17 +576,17 @@ class Lightweight_API {
 
 		return array_values(
 			array_filter(
-				$items,
-				function( $item ) use ( $types, $contexts, $persistent_types ) {
+				$events,
+				function( $event ) use ( $types, $contexts, $persistent_types ) {
 					$matches = true;
 					if ( null === $types ) {
-						$matches = ! in_array( $item['type'], $persistent_types, true );
+						$matches = ! in_array( $event['type'], $persistent_types, true );
 					} else {
-						$matches = in_array( $item['type'], $types, true );
+						$matches = in_array( $event['type'], $types, true );
 					}
 
 					if ( null !== $contexts ) {
-						$matches = $matches && in_array( $item['context'], $contexts, true );
+						$matches = $matches && in_array( $event['context'], $contexts, true );
 					}
 					return $matches;
 				}
@@ -735,17 +762,17 @@ class Lightweight_API {
 			$this->save_reader( $client_id, $reader_data );
 		}
 
-		// Ensure client ID exists and keys match across all new items.
+		// Ensure client ID exists and keys match across all new events.
 		$reader_events_blueprint = $this->reader_events_blueprint;
 		$events                  = array_map(
-			function( $item ) use ( $client_id, $reader_events_blueprint ) {
-				$item['client_id'] = $client_id;
+			function( $event ) use ( $client_id, $reader_events_blueprint ) {
+				$event['client_id'] = $client_id;
 
-				if ( empty( $item['date_created'] ) ) {
-					$item['date_created'] = gmdate( 'Y-m-d H:i:s' );
+				if ( empty( $event['date_created'] ) ) {
+					$event['date_created'] = gmdate( 'Y-m-d H:i:s' );
 				}
 
-				return wp_parse_args( $item, $this->reader_events_blueprint );
+				return wp_parse_args( $event, $this->reader_events_blueprint );
 			},
 			$events
 		);

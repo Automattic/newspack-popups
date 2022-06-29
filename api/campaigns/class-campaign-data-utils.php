@@ -30,8 +30,8 @@ class Campaign_Data_Utils {
 		return 0 < count(
 			array_filter(
 				$reader_events,
-				function( $item ) {
-					return 'subscription' === $item['type'];
+				function( $event ) {
+					return 'subscription' === $event['type'];
 				}
 			)
 		);
@@ -46,8 +46,8 @@ class Campaign_Data_Utils {
 		return 0 < count(
 			array_filter(
 				$reader_events,
-				function( $item ) {
-					return 'donation' === $item['type'];
+				function( $event ) {
+					return 'donation' === $event['type'];
 				}
 			)
 		);
@@ -62,8 +62,8 @@ class Campaign_Data_Utils {
 		return 0 < count(
 			array_filter(
 				$reader_events,
-				function( $item ) {
-					return 'user_account' === $item['type'];
+				function( $event ) {
+					return 'user_account' === $event['type'];
 				}
 			)
 		);
@@ -121,10 +121,10 @@ class Campaign_Data_Utils {
 		return count(
 			array_filter(
 				$reader_events,
-				function ( $item ) use ( $non_singular_contexts ) {
-					$hour_ago  = strtotime( '-1 hour', time() );
-					$item_time = strtotime( $item['date_created'] );
-					return 'view' === $item['type'] && ! in_array( $item['context'], $non_singular_contexts, true ) && $item_time > $hour_ago;
+				function ( $event ) use ( $non_singular_contexts ) {
+					$hour_ago   = strtotime( '-1 hour', time() );
+					$event_time = strtotime( $event['date_created'] );
+					return 'view' === $event['type'] && ! in_array( $event['context'], $non_singular_contexts, true ) && $event_time > $hour_ago;
 				}
 			)
 		);
