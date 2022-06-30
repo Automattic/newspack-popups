@@ -1144,8 +1144,8 @@ final class Newspack_Popups_Model {
 			tabindex="0"
 			id="<?php echo esc_attr( $element_id ); ?>"
 		>
-			<div class="<?php echo esc_attr( implode( ' ', $wrapper_classes ) ); ?>" data-popup-status="<?php echo esc_attr( $popup['status'] ); ?>" style="<?php echo esc_attr( self::container_style( $popup ) ); ?>">
-				<div class="newspack-popup">
+			<div class="<?php echo esc_attr( implode( ' ', $wrapper_classes ) ); ?>" data-popup-status="<?php echo esc_attr( $popup['status'] ); ?>" style="<?php echo ! $hide_border ? esc_attr( self::container_style( $popup ) ) : ''; ?>">
+				<div class="newspack-popup" style="<?php echo $hide_border ? esc_attr( self::container_style( $popup ) ) : ''; ?>">
 					<?php if ( ! empty( $popup['title'] ) && $display_title ) : ?>
 						<h1 class="newspack-popup-title"><?php echo esc_html( $popup['title'] ); ?></h1>
 					<?php endif; ?>
@@ -1280,8 +1280,8 @@ final class Newspack_Popups_Model {
 	 */
 	public static function container_style( $popup ) {
 		$hide_border      = $popup['options']['hide_border'];
-		$background_color = $hide_border ? 'transparent' : $popup['options']['background_color'];
-		$foreground_color = $hide_border ? 'inherit' : self::foreground_color_for_background( $background_color );
+		$background_color = $popup['options']['background_color'];
+		$foreground_color = self::foreground_color_for_background( $background_color );
 		return 'background-color:' . $background_color . ';color:' . $foreground_color;
 	}
 

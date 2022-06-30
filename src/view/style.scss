@@ -90,11 +90,12 @@ $size__large: 1264px;
 
 	&.newspack-lightbox-no-border {
 		.newspack-popup-wrapper {
+			background-color: transparent;
 			box-shadow: none;
 		}
 		.newspack-popup {
+			box-shadow: 0 0 1em 0.5em rgba( black, 0.1 );
 			margin: 32px;
-			padding: 0;
 		}
 	}
 
