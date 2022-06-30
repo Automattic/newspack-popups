@@ -64,13 +64,6 @@ class Segmentation_Client_Data extends Lightweight_API {
 			$client_data_update['donations'] = json_decode( $orders );
 		}
 
-		// Fetch Mailchimp data.
-		$mailchimp_campaign_id   = $this->get_request_param( 'mc_cid', $request );
-		$mailchimp_subscriber_id = $this->get_request_param( 'mc_eid', $request );
-		if ( $mailchimp_campaign_id && $mailchimp_subscriber_id ) {
-			$this->get_mailchimp_client_data( $client_id, $mailchimp_campaign_id, $mailchimp_subscriber_id );
-		}
-
 		if ( ! empty( $client_data_update ) ) {
 			$this->save_client_data( $client_id, $client_data_update );
 		}
