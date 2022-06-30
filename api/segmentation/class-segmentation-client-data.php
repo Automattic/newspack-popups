@@ -68,7 +68,7 @@ class Segmentation_Client_Data extends Lightweight_API {
 		$mailchimp_campaign_id   = $this->get_request_param( 'mc_cid', $request );
 		$mailchimp_subscriber_id = $this->get_request_param( 'mc_eid', $request );
 		if ( $mailchimp_campaign_id && $mailchimp_subscriber_id ) {
-			$this->report_mailchimp( $client_id, $mailchimp_campaign_id, $mailchimp_subscriber_id );
+			$this->get_mailchimp_client_data( $client_id, $mailchimp_campaign_id, $mailchimp_subscriber_id );
 		}
 
 		if ( ! empty( $client_data_update ) ) {

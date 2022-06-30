@@ -52,7 +52,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			$mailchimp_campaign_id   = $this->get_url_param( 'mc_cid', $referer_url );
 			$mailchimp_subscriber_id = $this->get_url_param( 'mc_eid', $referer_url );
 			if ( $mailchimp_campaign_id && $mailchimp_subscriber_id ) {
-				$this->report_mailchimp( $client_id, $mailchimp_campaign_id, $mailchimp_subscriber_id );
+				$this->get_mailchimp_client_data( $client_id, $mailchimp_campaign_id, $mailchimp_subscriber_id );
 			} elseif ( Campaign_Data_Utils::is_url_from_email( $referer_url ) ) {
 				// If reader is coming from a newsletter email, consider them a subscriber.
 				$updated_client_data['email_subscriptions'] = [

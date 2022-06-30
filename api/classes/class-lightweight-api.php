@@ -441,13 +441,13 @@ class Lightweight_API {
 	}
 
 	/**
-	 * Report Mailchimp data.
+	 * Get Mailchimp client data via API and sync to reader events.
 	 *
 	 * @param string $client_id Client ID.
 	 * @param string $mailchimp_campaign_id Campaign ID extracted from mc_cid param.
 	 * @param string $mailchimp_subscriber_id Campaign ID extracted from mc_eid param.
 	 */
-	public function report_mailchimp( $client_id, $mailchimp_campaign_id, $mailchimp_subscriber_id ) {
+	public function get_mailchimp_client_data( $client_id, $mailchimp_campaign_id, $mailchimp_subscriber_id ) {
 		$client_data_update                   = [];
 		$mailchimp_api_key_option_name        = 'newspack_mailchimp_api_key';
 		$mailchimp_api_key_option_name_legacy = 'newspack_newsletters_mailchimp_api_key';
