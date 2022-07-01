@@ -627,6 +627,32 @@ class APITest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Suppression of a subscriber-segmented campaign via utm_medium=email param.
+	 */
+	public function test_only_subscriber_via_referer() {
+		$test_popup = self::create_test_popup(
+			[
+				'placement'           => 'inline',
+				'frequency'           => 'always',
+				'selected_segment_id' => self::$segment_ids['segmentSubscribers'],
+			]
+		);
+
+		$url_with_medium = 'https://test-url/?utm_medium=email';
+
+		self::assertFalse(
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
+			'Assert initially not visible.'
+		);
+
+
+		self::assertTrue(
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup['payload'], self::$settings, $url_with_medium ),
+			'Assert shown after with the proper URL param.'
+		);
+	}
+
+	/**
 	 * Suppression of a non-subscriber-segmented campaign.
 	 */
 	public function test_non_subscriber_suppression() {

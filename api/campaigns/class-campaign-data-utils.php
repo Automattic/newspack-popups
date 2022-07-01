@@ -22,12 +22,22 @@ class Campaign_Data_Utils {
 	];
 
 	/**
+	 * Is the URL from a newsletter?
+	 *
+	 * @param string $url A URL.
+	 */
+	public static function is_url_from_email( $url ) {
+		return stripos( $url, 'utm_medium=email' ) !== false;
+	}
+
+	/**
 	 * Is reader a newsletter subscriber?
 	 *
 	 * @param object $reader_events Reader data.
+	 * @param string $url Referrer URL.
 	 */
-	public static function is_subscriber( $reader_events ) {
-		return 0 < count(
+	public static function is_subscriber( $reader_events, $url = '' ) {
+		return self::is_url_from_email( $url ) || 0 < count(
 			array_filter(
 				$reader_events,
 				function( $event ) {
@@ -181,7 +191,7 @@ class Campaign_Data_Utils {
 	 */
 	public static function does_reader_match_segment( $campaign_segment, $reader, $reader_events, $referer_url = '', $page_referrer_url = '' ) {
 		$should_display              = true;
-		$is_subscriber               = self::is_subscriber( $reader_events );
+		$is_subscriber               = self::is_subscriber( $reader_events, $referer_url );
 		$is_donor                    = self::is_donor( $reader_events );
 		$has_user_account            = self::has_user_account( $reader_events );
 		$campaign_segment            = self::canonize_segment( $campaign_segment );
@@ -197,8 +207,8 @@ class Campaign_Data_Utils {
 		}
 
 		/**
-		 * By article view count.
-		 */
+		* By article view count.
+		*/
 		if ( $campaign_segment->min_posts > 0 && $campaign_segment->min_posts > $article_views_count ) {
 			$should_display = false;
 		}
@@ -207,8 +217,8 @@ class Campaign_Data_Utils {
 		}
 
 		/**
-		 * By article views in past hour.
-		 */
+		* By article views in past hour.
+		*/
 		if ( $campaign_segment->min_session_posts > 0 && $campaign_segment->min_session_posts > $article_views_count_session ) {
 			$should_display = false;
 		}
@@ -217,8 +227,8 @@ class Campaign_Data_Utils {
 		}
 
 		/**
-		 * By subscription status.
-		 */
+		* By subscription status.
+		*/
 		if ( $campaign_segment->is_subscribed && ! $is_subscriber ) {
 			$should_display = false;
 		}
@@ -227,8 +237,8 @@ class Campaign_Data_Utils {
 		}
 
 		/**
-		 * By donation status.
-		 */
+		* By donation status.
+		*/
 		if ( $campaign_segment->is_donor && ! $is_donor ) {
 			$should_display = false;
 		}
@@ -237,11 +247,11 @@ class Campaign_Data_Utils {
 		}
 
 		/**
-		 * By login status. is_logged_in and is_not_logged_in are legacy option names
-		 * that have been renamed has_user_account and no_user_account, for clarity.
-		 */
+		* By login status. is_logged_in and is_not_logged_in are legacy option names
+		* that have been renamed has_user_account and no_user_account, for clarity.
+		*/
 		$segment_has_user_account = ( isset( $campaign_segment->has_user_account ) && $campaign_segment->has_user_account ) ||
-			( isset( $campaign_segment->is_logged_in ) && $campaign_segment->is_logged_in );
+		( isset( $campaign_segment->is_logged_in ) && $campaign_segment->is_logged_in );
 		$segment_no_user_account  = ( isset( $campaign_segment->no_user_account ) && $campaign_segment->no_user_account ) ||
 		( isset( $campaign_segment->is_not_logged_in ) && $campaign_segment->is_not_logged_in );
 
@@ -253,8 +263,8 @@ class Campaign_Data_Utils {
 		}
 
 		/**
-		 * By referrer domain.
-		 */
+		* By referrer domain.
+		*/
 		if ( ! empty( $campaign_segment->referrers ) ) {
 			if ( empty( $page_referrer_url ) ) {
 				$should_display = false;
@@ -265,15 +275,15 @@ class Campaign_Data_Utils {
 		}
 
 		/**
-		 * By referrer domain - negative.
-		 */
+		* By referrer domain - negative.
+		*/
 		if ( ! empty( $campaign_segment->referrers_not ) && ! empty( self::does_referrer_match( $page_referrer_url, $campaign_segment->referrers_not ) ) ) {
 			$should_display = false;
 		}
 
 		/**
-		 * By most read category.
-		 */
+		* By most read category.
+		*/
 		if ( count( $campaign_segment->favorite_categories ) > 0 && ! $favorite_category_matches_segment ) {
 			$should_display = false;
 		}

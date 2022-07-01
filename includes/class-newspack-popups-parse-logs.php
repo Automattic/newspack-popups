@@ -83,8 +83,8 @@ final class Newspack_Popups_Parse_Logs {
 				}
 			}
 
-			$lines = array_unique( $lines );
-			$items = [];
+			$lines  = array_unique( $lines );
+			$events = [];
 
 			foreach ( $lines as $line ) {
 				$result = explode( '|', $line );
@@ -108,7 +108,7 @@ final class Newspack_Popups_Parse_Logs {
 					);
 				}
 
-				$items[] = [
+				$events[] = [
 					'client_id' => $client_id,
 					'type'      => $type,
 					'context'   => $context,
@@ -118,7 +118,7 @@ final class Newspack_Popups_Parse_Logs {
 
 			try {
 				$api = new Lightweight_Api();
-				$api->bulk_db_insert( $items );
+				$api->bulk_db_insert( $events );
 			} catch ( \Exception $e ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch
 				error_log( $e->getMessage() ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 			}

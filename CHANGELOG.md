@@ -1,3 +1,85 @@
+# [2.1.0](https://github.com/Automattic/newspack-popups/compare/v2.0.2...v2.1.0) (2022-06-27)
+
+
+### Bug Fixes
+
+* non-AMP signup forms ([#876](https://github.com/Automattic/newspack-popups/issues/876)) ([31e13e3](https://github.com/Automattic/newspack-popups/commit/31e13e36aea95e1407225c7e34d40435c2df3315))
+* overlays should have a background by default ([#875](https://github.com/Automattic/newspack-popups/issues/875)) ([fbc181c](https://github.com/Automattic/newspack-popups/commit/fbc181cf3df50e8fc4fbd65369898243d8c66bc9))
+
+
+### Features
+
+* disable prompts by default for protected pages ([#879](https://github.com/Automattic/newspack-popups/issues/879)) ([410ec3e](https://github.com/Automattic/newspack-popups/commit/410ec3ee2199eb4ed32947813d6c882f26a625bd))
+
+# [2.1.0-alpha.3](https://github.com/Automattic/newspack-popups/compare/v2.1.0-alpha.2...v2.1.0-alpha.3) (2022-06-24)
+
+
+### Bug Fixes
+
+* force release ([9eb0b0f](https://github.com/Automattic/newspack-popups/commit/9eb0b0fcb1e81c6bc19ea592634ab7db14068520))
+
+## [2.0.2](https://github.com/Automattic/newspack-popups/compare/v2.0.1...v2.0.2) (2022-06-24)
+
+
+### Bug Fixes
+
+* force release ([9eb0b0f](https://github.com/Automattic/newspack-popups/commit/9eb0b0fcb1e81c6bc19ea592634ab7db14068520))
+
+## [2.0.1](https://github.com/Automattic/newspack-popups/compare/v2.0.0...v2.0.1) (2022-06-24)
+
+
+### Bug Fixes
+
+* misnamed variable in GA non-AMP config filter ([40ae65b](https://github.com/Automattic/newspack-popups/commit/40ae65b9a24c19b6f0efba4d45a3a2a774c20920))
+
+# [2.0.0](https://github.com/Automattic/newspack-popups/compare/v1.52.2...v2.0.0) (2022-05-30)
+
+
+### Bug Fixes
+
+* force alpha release ([5e7525c](https://github.com/Automattic/newspack-popups/commit/5e7525ced358e6bc7606782988df6f85b9905099))
+* overlays should have a background by default ([#875](https://github.com/Automattic/newspack-popups/issues/875)) ([e831d4c](https://github.com/Automattic/newspack-popups/commit/e831d4cabc896b440852548beaf1c61c46598072))
+
+
+### Features
+
+* **api:** improve web crawler handling ([#863](https://github.com/Automattic/newspack-popups/issues/863)) ([a0a43e9](https://github.com/Automattic/newspack-popups/commit/a0a43e924264feadc8d5ab4cf1ea3511a2b7d7e8))
+* new option to not display an overlay background ([#867](https://github.com/Automattic/newspack-popups/issues/867)) ([6a7fb47](https://github.com/Automattic/newspack-popups/commit/6a7fb474d0e2b25d1a9d70a6721821d2e6ab2109))
+* remove permanent suppression features ([#866](https://github.com/Automattic/newspack-popups/issues/866)) ([1477205](https://github.com/Automattic/newspack-popups/commit/1477205b2ad04fd61e4e2c145e0a22bd7bc3647c))
+
+
+### BREAKING CHANGES
+
+* Removes permanent suppression options. All prompts will be displayed to all readers who meet both segmentation and frequency requirements for the prompt, even if those prompts were previously dismissed by those readers. Prompts containing newsletter signup or donation blocks will no longer be suppressed automatically under any circumstances.
+
+* feat: remove permanent suppression features
+
+* test: remove tests related to permanent suppression
+
+# [2.0.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.53.0-alpha.1...v2.0.0-alpha.1) (2022-05-27)
+
+
+### Features
+
+* new option to not display an overlay background ([#867](https://github.com/Automattic/newspack-popups/issues/867)) ([6a7fb47](https://github.com/Automattic/newspack-popups/commit/6a7fb474d0e2b25d1a9d70a6721821d2e6ab2109))
+* remove permanent suppression features ([#866](https://github.com/Automattic/newspack-popups/issues/866)) ([1477205](https://github.com/Automattic/newspack-popups/commit/1477205b2ad04fd61e4e2c145e0a22bd7bc3647c))
+
+
+### BREAKING CHANGES
+
+* Removes permanent suppression options. All prompts will be displayed to all readers who meet both segmentation and frequency requirements for the prompt, even if those prompts were previously dismissed by those readers. Prompts containing newsletter signup or donation blocks will no longer be suppressed automatically under any circumstances.
+
+* feat: remove permanent suppression features
+
+* test: remove tests related to permanent suppression
+
+# [1.53.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v1.52.2...v1.53.0-alpha.1) (2022-05-19)
+
+
+### Features
+
+* **api:** improve web crawler handling ([#863](https://github.com/Automattic/newspack-popups/issues/863)) ([a0a43e9](https://github.com/Automattic/newspack-popups/commit/a0a43e924264feadc8d5ab4cf1ea3511a2b7d7e8))
+
 ## [1.52.2](https://github.com/Automattic/newspack-popups/compare/v1.52.1...v1.52.2) (2022-05-10)
 
 

@@ -9,6 +9,9 @@
  * Create the base Lightweight_API class.
  */
 require_once dirname( __FILE__ ) . '/../segmentation/class-segmentation-report.php';
+require_once __DIR__ . '/../../vendor/autoload.php';
+
+use \DrewM\MailChimp\MailChimp;
 
 /**
  * API endpoints.
@@ -839,6 +842,26 @@ class Lightweight_API {
 	}
 
 	/**
+	 * Get URL query param.
+	 *
+	 * @param string $param Param name.
+	 * @param string $url URL to parse.
+	 *
+	 * @return string|boolean Value of the param, or false if it's not in the URL.
+	 */
+	public function get_url_param( $param, $url ) {
+		$parsed_url = parse_url( $url ); // phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url
+		if ( ! empty( $parsed_url['query'] ) ) {
+			parse_str( $parsed_url['query'], $query );
+			if ( ! empty( $query[ $param ] ) ) {
+				return $query[ $param ];
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Get POST request payload.
 	 */
 	public function get_post_payload() {
@@ -856,6 +879,88 @@ class Lightweight_API {
 			return $_GET; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended
 		}
 		return $payload;
+	}
+
+	/**
+	 * Get Mailchimp client data via API and sync to reader events.
+	 *
+	 * @param string $client_id Client ID.
+	 * @param string $mailchimp_campaign_id Campaign ID extracted from mc_cid param.
+	 * @param string $mailchimp_subscriber_id Campaign ID extracted from mc_eid param.
+	 */
+	public function get_mailchimp_client_data( $client_id, $mailchimp_campaign_id, $mailchimp_subscriber_id ) {
+		$reader_events                        = [];
+		$mailchimp_api_key_option_name        = 'newspack_mailchimp_api_key';
+		$mailchimp_api_key_option_name_legacy = 'newspack_newsletters_mailchimp_api_key';
+		global $wpdb;
+		$mailchimp_api_key = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->prepare( "SELECT option_value FROM `$wpdb->options` WHERE option_name IN (%s,%s) ORDER BY FIELD(%s,%s)", $mailchimp_api_key_option_name, $mailchimp_api_key_option_name_legacy, $mailchimp_api_key_option_name, $mailchimp_api_key_option_name_legacy )
+		);
+		if ( $mailchimp_api_key ) {
+			$mc            = new Mailchimp( $mailchimp_api_key->option_value );
+			$campaign_data = $mc->get( "campaigns/$mailchimp_campaign_id" );
+			if ( isset( $campaign_data['recipients'], $campaign_data['recipients']['list_id'] ) ) {
+				$list_id = $campaign_data['recipients']['list_id'];
+				$members = $mc->get( "/lists/$list_id/members", [ 'unique_email_id' => $mailchimp_subscriber_id ] )['members'];
+
+				if ( ! empty( $members ) ) {
+					$subscriber      = $members[0];
+					$reader_events[] = [
+						'type'    => 'subscription',
+						'context' => 'mailchimp',
+						'value'   => [
+							'email' => $subscriber['email_address'],
+						],
+					];
+
+					if ( isset( $subscriber['merge_fields'] ) ) {
+						$donor_merge_field_option_name      = 'newspack_popups_mc_donor_merge_field';
+						$donor_merge_fields                 = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+							$wpdb->prepare( "SELECT option_value FROM `$wpdb->options` WHERE option_name = %s LIMIT 1", $donor_merge_field_option_name )
+						);
+						$donor_merge_fields                 = isset( $donor_merge_fields->option_value ) ? explode( ',', $donor_merge_fields->option_value ) : [ 'DONAT' ];
+						$has_donated_according_to_mailchimp = array_reduce(
+							// Get all merge fields whose name contains one of the Donor Merge Field option strings.
+							array_filter(
+								array_keys( $subscriber['merge_fields'] ),
+								function ( $merge_field ) use ( $donor_merge_fields ) {
+									$matches = false;
+									foreach ( $donor_merge_fields as $donor_merge_field ) {
+										if ( strpos( $merge_field, trim( $donor_merge_field ) ) !== false ) {
+											$matches = true;
+										}
+									}
+									return $matches;
+								}
+							),
+							// If any of these fields is "true", the subscriber has donated.
+							function ( $result, $donation_merge_field_name ) use ( $subscriber ) {
+								if ( 'true' === $subscriber['merge_fields'][ $donation_merge_field_name ] ) {
+									$result = true;
+								}
+								return $result;
+							},
+							false
+						);
+
+						if ( $has_donated_according_to_mailchimp ) {
+							$reader_events[] = [
+								'type'    => 'donation',
+								'context' => 'mailchimp',
+								'value'   => [
+									'email' => $subscriber['email_address'],
+									'mailchimp_has_donated' => true,
+								],
+							];
+						}
+					}
+				}
+			}
+		}
+
+		if ( ! empty( $reader_events ) ) {
+			$this->save_reader_events( $client_id, $reader_events );
+		}
 	}
 
 	/**
