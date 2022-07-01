@@ -10,12 +10,24 @@
  */
 class Campaign_Data_Utils {
 	/**
+	 * Is the URL from a newsletter?
+	 *
+	 * @param string $url A URL.
+	 */
+	public static function is_url_from_email( $url ) {
+		return stripos( $url, 'utm_medium=email' ) !== false;
+	}
+
+	/**
 	 * Is client a subscriber?
 	 *
 	 * @param object $client_data Client data.
+	 * @param string $url Referrer URL.
+	 *
+	 * @return boolean
 	 */
-	public static function is_subscriber( $client_data ) {
-		return ! empty( $client_data['email_subscriptions'] );
+	public static function is_subscriber( $client_data, $url = '' ) {
+		return ! empty( $client_data['email_subscriptions'] ) || self::is_url_from_email( $url );
 	}
 
 	/**
@@ -105,7 +117,7 @@ class Campaign_Data_Utils {
 				}
 			)
 		);
-		$is_subscriber            = self::is_subscriber( $client_data );
+		$is_subscriber            = self::is_subscriber( $client_data, $referer_url );
 		$is_donor                 = self::is_donor( $client_data );
 		$is_logged_in             = self::is_logged_in( $client_data );
 		$campaign_segment         = self::canonize_segment( $campaign_segment );
