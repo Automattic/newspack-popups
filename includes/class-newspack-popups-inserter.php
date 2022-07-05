@@ -758,7 +758,7 @@ final class Newspack_Popups_Inserter {
 		} else {
 			global $wp;
 			$non_singular_query_type = 'unknown';
-			$request                 = wp_json_encode( $wp->query_vars );
+			$request                 = $wp->query_vars;
 
 			if ( is_archive() ) {
 				$non_singular_query_type = 'archive';

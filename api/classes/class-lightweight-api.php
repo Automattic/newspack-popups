@@ -708,7 +708,12 @@ class Lightweight_API {
 			'value'
 		);
 		$already_read_singular    = array_column( $event_values, 'post_id' );
-		$already_read_nonsingular = array_column( $event_values, 'request' );
+		$already_read_nonsingular = array_map(
+			function( $request_value ) {
+				return wp_json_encode( $request_value );
+			},
+			array_column( $event_values, 'request' )
+		);
 		$already_read             = array_merge( $already_read_singular, $already_read_nonsingular );
 
 		// Filter out recently seen views.
@@ -717,7 +722,7 @@ class Lightweight_API {
 				$events,
 				function( $event ) use ( $already_read ) {
 					if ( 'view' === $event['type'] && isset( $event['context'] ) && isset( $event['value'] ) ) {
-						$current_page = isset( $event['value']['post_id'] ) ? $event['value']['post_id'] : $event['value']['request'];
+						$current_page = isset( $event['value']['post_id'] ) ? $event['value']['post_id'] : wp_json_encode( $event['value'] ['request'] );
 						return ! in_array( $current_page, $already_read, true );
 					}
 
