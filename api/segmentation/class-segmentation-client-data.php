@@ -44,10 +44,20 @@ class Segmentation_Client_Data extends Lightweight_API {
 			if ( 'string' === gettype( $donation ) ) {
 				$donation = (array) json_decode( $donation );
 			}
-			$reader_events[] = [
+
+			$donation_event = [
 				'type'  => 'donation',
 				'value' => $donation,
 			];
+
+			if ( isset( $donation['order_id'] ) ) {
+				$donation_event['context'] = 'woocommerce';
+			}
+			if ( isset( $donation['stripe_id'] ) ) {
+				$donation_event['context'] = 'stripe';
+			}
+
+			$reader_events[] = $donation_event;
 		}
 
 		// Add a subscription to client.
