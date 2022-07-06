@@ -238,7 +238,7 @@ final class Newspack_Popups {
 				'object_subtype' => self::NEWSPACK_POPUPS_CPT,
 				'show_in_rest'   => true,
 				'type'           => 'integer',
-				'default'        => 1,
+				'default'        => 0,
 				'single'         => true,
 				'auth_callback'  => '__return_true',
 			]

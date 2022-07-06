@@ -203,6 +203,7 @@ class APITest extends WP_UnitTestCase {
 	 */
 	public function test_once_frequency() {
 		$test_popup = self::create_test_popup( [ 'frequency' => 'once' ] );
+		$api        = new Lightweight_API();
 
 		self::assertTrue(
 			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
@@ -258,6 +259,112 @@ class APITest extends WP_UnitTestCase {
 				strtotime( '+1 day 1 hour' )
 			),
 			'Assert visible after a day has passed.'
+		);
+	}
+
+	/**
+	 * Custom frequency options by pageview and period.
+	 */
+	public function test_custom_frequency() {
+		$test_popup = self::create_test_popup(
+			[
+				'frequency'         => 'custom',
+				'frequency_max'     => 2,
+				'frequency_start'   => 1,
+				'frequency_between' => 2,
+				'frequency_reset'   => 'week',
+			]
+		);
+
+		// Report a pageview.
+		self::$maybe_show_campaign->save_reader_events(
+			self::$client_id,
+			[ self::create_event( [ 'post_id' => 1 ] ) ]
+		);
+
+		self::assertFalse(
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
+			'Assert not initially visible, because a frequency_start of 1 means it should only be shown on the second pageview.'
+		);
+
+		// Report another pageview.
+		self::$maybe_show_campaign->save_reader_events(
+			self::$client_id,
+			[ self::create_event( [ 'post_id' => 2 ] ) ]
+		);
+
+		self::assertTrue(
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
+			'Assert visible on the second pageview.'
+		);
+
+		// Report a view.
+		self::$report_campaign_data->report_campaign(
+			[
+				'cid'      => self::$client_id,
+				'popup_id' => Newspack_Popups_Model::canonize_popup_id( $test_popup['id'] ),
+			]
+		);
+
+		// Report another view.
+		self::$maybe_show_campaign->save_reader_events(
+			self::$client_id,
+			[ self::create_event( [ 'post_id' => 3 ] ) ]
+		);
+
+		self::assertFalse(
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
+			'Assert not visible, because a frequency_between of 2 means it should not be shown for two pageviews after display.'
+		);
+
+		// Report two more pageviews.
+		self::$maybe_show_campaign->save_reader_events(
+			self::$client_id,
+			[
+				self::create_event( [ 'post_id' => 4 ] ),
+				self::create_event( [ 'post_id' => 5 ] ),
+			]
+		);
+
+		self::assertTrue(
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
+			'Assert visible after two more pageviews.'
+		);
+
+		// Report a view.
+		self::$report_campaign_data->report_campaign(
+			[
+				'cid'      => self::$client_id,
+				'popup_id' => Newspack_Popups_Model::canonize_popup_id( $test_popup['id'] ),
+			]
+		);
+
+		// Report three more pageviews.
+		self::$maybe_show_campaign->save_reader_events(
+			self::$client_id,
+			[
+				self::create_event( [ 'post_id' => 6 ] ),
+				self::create_event( [ 'post_id' => 7 ] ),
+				self::create_event( [ 'post_id' => 8 ] ),
+			]
+		);
+
+		self::assertFalse(
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
+			'Assert not visible, because the prompt has been viewed the max number of times.'
+		);
+
+		self::assertTrue(
+			self::$maybe_show_campaign->should_popup_be_shown(
+				self::$client_id,
+				$test_popup['payload'],
+				self::$settings,
+				'',
+				'',
+				false,
+				strtotime( '+1 week 1 hour' )
+			),
+			'Assert visible again after the reset period has passed.'
 		);
 	}
 
@@ -1336,7 +1443,7 @@ class APITest extends WP_UnitTestCase {
 
 		self::assertArraySubset(
 			(array) [
-				'f'   => 'once',
+				'f'   => 'always',
 				'utm' => null,
 				's'   => '',
 			],
@@ -1347,7 +1454,7 @@ class APITest extends WP_UnitTestCase {
 				]
 			)['payload'],
 			false,
-			'An overlay popup with "always" frequency has it corrected to "once".'
+			'An overlay popup with "always" frequency no longer has it corrected to "once".'
 		);
 	}
 

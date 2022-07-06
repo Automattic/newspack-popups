@@ -304,26 +304,26 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		// Override individual settings if a frequency preset is selected.
 		if ( 'once' === $frequency ) {
 			$frequency_max     = 1;
-			$frequency_start   = 1;
+			$frequency_start   = 0;
 			$frequency_between = 0;
 			$frequency_reset   = 'month';
 		}
 		if ( 'daily' === $frequency ) {
 			$frequency_max     = 1;
-			$frequency_start   = 1;
+			$frequency_start   = 0;
 			$frequency_between = 0;
 			$frequency_reset   = 'day';
 		}
 		if ( 'always' === $frequency ) {
 			$frequency_max     = 0;
-			$frequency_start   = 1;
+			$frequency_start   = 0;
 			$frequency_between = 0;
 			$frequency_reset   = 'month';
 		}
 		if ( 'preset_1' === $frequency ) {
 			$frequency_max     = 5;
-			$frequency_start   = 4;
-			$frequency_between = 4;
+			$frequency_start   = 3;
+			$frequency_between = 3;
 			$frequency_reset   = 'month';
 		}
 
@@ -358,7 +358,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 
 		// If not displaying every pageview.
 		if ( 0 < $frequency_between ) {
-			$views_after_start = $total_views - $frequency_start;
+			$views_after_start = max( 0, $total_views - ( $frequency_start + 1 ) );
 
 			if ( 0 < $views_after_start % ( $frequency_between + 1 ) ) {
 				$should_display = false;
@@ -374,7 +374,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		}
 
 		// If reader hasn't viewed enough articles yet.
-		if ( $total_views < $frequency_start ) {
+		if ( 0 < $total_views && $total_views <= $frequency_start ) {
 			$should_display = false;
 			self::add_suppression_reason( $popup->id, __( 'Minimum pageviews not yet met.', 'newspack-popups' ) );
 		}

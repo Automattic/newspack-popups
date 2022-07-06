@@ -34,36 +34,36 @@ const FrequencySidebar = ( {
 
 					if ( 'once' === value ) {
 						onMetaFieldChange( 'frequency_max', 1 );
-						onMetaFieldChange( 'frequency_start', 1 );
+						onMetaFieldChange( 'frequency_start', 0 );
 						onMetaFieldChange( 'frequency_between', 0 );
 						onMetaFieldChange( 'frequency_reset', 'month' );
 					}
 
 					if ( 'daily' === value ) {
 						onMetaFieldChange( 'frequency_max', 1 );
-						onMetaFieldChange( 'frequency_start', 1 );
+						onMetaFieldChange( 'frequency_start', 0 );
 						onMetaFieldChange( 'frequency_between', 0 );
 						onMetaFieldChange( 'frequency_reset', 'day' );
 					}
 
 					if ( 'weekly' === value ) {
 						onMetaFieldChange( 'frequency_max', 1 );
-						onMetaFieldChange( 'frequency_start', 1 );
+						onMetaFieldChange( 'frequency_start', 0 );
 						onMetaFieldChange( 'frequency_between', 0 );
 						onMetaFieldChange( 'frequency_reset', 'week' );
 					}
 
 					if ( 'always' === value ) {
 						onMetaFieldChange( 'frequency_max', 0 );
-						onMetaFieldChange( 'frequency_start', 1 );
+						onMetaFieldChange( 'frequency_start', 0 );
 						onMetaFieldChange( 'frequency_between', 0 );
 						onMetaFieldChange( 'frequency_reset', 'month' );
 					}
 
 					if ( 'preset_1' === value ) {
 						onMetaFieldChange( 'frequency_max', 5 );
-						onMetaFieldChange( 'frequency_start', 4 );
-						onMetaFieldChange( 'frequency_between', 4 );
+						onMetaFieldChange( 'frequency_start', 3 );
+						onMetaFieldChange( 'frequency_between', 3 );
 						onMetaFieldChange( 'frequency_reset', 'month' );
 					}
 				} }
@@ -93,9 +93,9 @@ const FrequencySidebar = ( {
 					/>
 					<NumberControl
 						className="newspack-popups__frequency-number-control"
-						label={ __( 'Start on pageview', 'newspack-popups' ) }
+						label={ __( 'Start after pageview', 'newspack-popups' ) }
 						value={ frequency_start }
-						min={ 1 }
+						min={ 0 }
 						onChange={ value => onMetaFieldChange( 'frequency_start', value ) }
 					/>
 					<NumberControl
