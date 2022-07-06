@@ -233,11 +233,6 @@ class Maybe_Show_Campaign extends Lightweight_API {
 	 * @return bool Whether prompt should be shown.
 	 */
 	public function should_popup_be_shown( $client_id, $popup, $settings, $referer_url = '', $page_referer_url = '', $view_as_spec = false, $now = false ) {
-		if ( false === $now ) {
-			$now = time();
-		}
-
-		$seen_events    = $this->get_reader_events( $client_id, 'prompt_seen', $popup->id );
 		$should_display = true;
 
 		// Handle referer-based conditions.
@@ -300,21 +295,101 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		}
 
 		// Handle frequency.
-		$frequency = $popup->f;
-		if ( 'once' === $frequency && count( $seen_events ) >= 1 ) {
-			$should_display = false;
-			self::add_suppression_reason( $popup->id, __( 'Prompt already seen once.', 'newspack-popups' ) );
+		$frequency         = $popup->f;
+		$frequency_max     = (int) $popup->fm;
+		$frequency_start   = (int) $popup->fs;
+		$frequency_between = (int) $popup->fb;
+		$frequency_reset   = $popup->ft;
+
+		// Override individual settings if a frequency preset is selected.
+		if ( 'once' === $frequency ) {
+			$frequency_max     = 1;
+			$frequency_start   = 1;
+			$frequency_between = 0;
+			$frequency_reset   = 'month';
+		}
+		if ( 'daily' === $frequency ) {
+			$frequency_max     = 1;
+			$frequency_start   = 1;
+			$frequency_between = 0;
+			$frequency_reset   = 'day';
+		}
+		if ( 'always' === $frequency ) {
+			$frequency_max     = 0;
+			$frequency_start   = 1;
+			$frequency_between = 0;
+			$frequency_reset   = 'month';
+		}
+		if ( 'preset_1' === $frequency ) {
+			$frequency_max     = 5;
+			$frequency_start   = 4;
+			$frequency_between = 4;
+			$frequency_reset   = 'month';
 		}
 
-		$last_seen = false;
-		if ( 0 < count( $seen_events ) ) {
-			$last_seen_event = $seen_events[0];
-			$last_seen       = strtotime( $last_seen_event['date_created'] );
+		if ( false === $now ) {
+			$now = time();
 		}
 
-		if ( 'daily' === $frequency && $last_seen && $last_seen >= strtotime( '-1 day', $now ) ) {
+		$reader      = $this->get_reader( $client_id );
+		$seen_events = $this->get_reader_events( $client_id, 'prompt_seen', $popup->id );
+		$total_views = 0;
+
+		// Tally up pageviews of any post type.
+		if ( isset( $reader['reader_data']['views'] ) ) {
+			foreach ( $reader['reader_data']['views'] as $post_type => $views ) {
+				$total_views += (int) $views;
+			}
+		}
+
+		// Guard against invalid or missing reset period values.
+		if ( ! in_array( $frequency_reset, [ 'month', 'week', 'day' ], true ) ) {
+			$frequency_reset = 'month';
+		}
+
+		// Filter seen events for the relevant period.
+		$seen_events = array_filter(
+			$seen_events,
+			function( $event ) use ( $frequency_reset, $now ) {
+				$seen = strtotime( $event['date_created'] );
+				return $seen >= strtotime( '-1 ' . $frequency_reset, $now );
+			}
+		);
+
+		// If not displaying every pageview.
+		if ( 0 < $frequency_between ) {
+			$views_after_start = $total_views - $frequency_start;
+
+			if ( 0 < $views_after_start % ( $frequency_between + 1 ) ) {
+				$should_display = false;
+				self::add_suppression_reason(
+					$popup->id,
+					sprintf(
+						// Translators: Suppression debug message.
+						__( 'Prompt should only be displayed once every %d pageviews.', 'newspack-popups' ),
+						$frequency_between + 1
+					)
+				);
+			}
+		}
+
+		// If reader hasn't viewed enough articles yet.
+		if ( $total_views < $frequency_start ) {
 			$should_display = false;
-			self::add_suppression_reason( $popup->id, __( 'Daily prompt already seen today.', 'newspack-popups' ) );
+			self::add_suppression_reason( $popup->id, __( 'Minimum pageviews not yet met.', 'newspack-popups' ) );
+		}
+
+		// If there's a max frequency.
+		if ( 0 < $frequency_max && count( $seen_events ) >= $frequency_max ) {
+			$should_display = false;
+			self::add_suppression_reason(
+				$popup->id,
+				sprintf(
+					// Translators: Suppression debug message.
+					__( 'Max displays met for the %s.', 'newspack-popups' ),
+					$frequency_reset
+				)
+			);
 		}
 
 		return $should_display;

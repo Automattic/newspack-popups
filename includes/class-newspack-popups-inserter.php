@@ -595,18 +595,18 @@ final class Newspack_Popups_Inserter {
 	 * @param object $popup A popup.
 	 */
 	public static function create_single_popup_access_payload( $popup ) {
-		$popup_id_string = Newspack_Popups_Model::canonize_popup_id( esc_attr( $popup['id'] ) );
-		$frequency       = $popup['options']['frequency'];
-		$is_overlay      = Newspack_Popups_Model::is_overlay( $popup );
-		$is_above_header = Newspack_Popups_Model::is_above_header( $popup );
-		$type            = 'i';
+		$popup_id_string   = Newspack_Popups_Model::canonize_popup_id( esc_attr( $popup['id'] ) );
+		$frequency         = $popup['options']['frequency'];
+		$frequency_max     = $popup['options']['frequency_max'];
+		$frequency_start   = $popup['options']['frequency_start'];
+		$frequency_between = $popup['options']['frequency_between'];
+		$frequency_reset   = $popup['options']['frequency_reset'];
+		$is_overlay        = Newspack_Popups_Model::is_overlay( $popup );
+		$is_above_header   = Newspack_Popups_Model::is_above_header( $popup );
+		$type              = 'i';
 
 		if ( $is_overlay ) {
 			$type = 'o';
-
-			if ( 'always' === $frequency ) {
-				$frequency = 'once';
-			}
 		}
 
 		if ( $is_above_header ) {
@@ -616,6 +616,10 @@ final class Newspack_Popups_Inserter {
 		$popup_payload = [
 			'id'  => $popup_id_string,
 			'f'   => $frequency,
+			'fm'  => $frequency_max,
+			'fs'  => $frequency_start,
+			'fb'  => $frequency_between,
+			'ft'  => $frequency_reset,
 			'utm' => $popup['options']['utm_suppression'],
 			's'   => $popup['options']['selected_segment_id'],
 			't'   => $type,

@@ -121,7 +121,7 @@ final class Newspack_Popups_Model {
 		foreach ( $options as $key => $value ) {
 			switch ( $key ) {
 				case 'frequency':
-					if ( ! in_array( $value, [ 'once', 'daily', 'always' ] ) ) {
+					if ( ! in_array( $value, [ 'once', 'daily', 'always', 'preset_1', 'custom' ] ) ) {
 						return new \WP_Error(
 							'newspack_popups_invalid_option_value',
 							esc_html__( 'Invalid frequency value.', 'newspack-popups' ),
@@ -226,6 +226,10 @@ final class Newspack_Popups_Model {
 				'display_title'                  => filter_input( INPUT_GET, 'n_ti', FILTER_VALIDATE_BOOLEAN ),
 				'hide_border'                    => filter_input( INPUT_GET, 'n_hb', FILTER_VALIDATE_BOOLEAN ),
 				'frequency'                      => filter_input( INPUT_GET, 'n_fr', FILTER_SANITIZE_STRING ),
+				'frequency_max'                  => filter_input( INPUT_GET, 'n_fm', FILTER_SANITIZE_STRING ),
+				'frequency_start'                => filter_input( INPUT_GET, 'n_fs', FILTER_SANITIZE_STRING ),
+				'frequency_between'              => filter_input( INPUT_GET, 'n_fb', FILTER_SANITIZE_STRING ),
+				'frequency_reset'                => filter_input( INPUT_GET, 'n_ft', FILTER_SANITIZE_STRING ),
 				'overlay_color'                  => filter_input( INPUT_GET, 'n_oc', FILTER_SANITIZE_STRING ),
 				'overlay_opacity'                => filter_input( INPUT_GET, 'n_oo', FILTER_SANITIZE_STRING ),
 				'overlay_size'                   => filter_input( INPUT_GET, 'n_os', FILTER_SANITIZE_STRING ),
@@ -347,6 +351,10 @@ final class Newspack_Popups_Model {
 			'display_title'                  => get_post_meta( $id, 'display_title', true ),
 			'hide_border'                    => get_post_meta( $id, 'hide_border', true ),
 			'frequency'                      => get_post_meta( $id, 'frequency', true ),
+			'frequency_max'                  => get_post_meta( $id, 'frequency_max', true ),
+			'frequency_start'                => get_post_meta( $id, 'frequency_start', true ),
+			'frequency_between'              => get_post_meta( $id, 'frequency_between', true ),
+			'frequency_reset'                => get_post_meta( $id, 'frequency_reset', true ),
 			'overlay_color'                  => get_post_meta( $id, 'overlay_color', true ),
 			'overlay_opacity'                => get_post_meta( $id, 'overlay_opacity', true ),
 			'overlay_size'                   => get_post_meta( $id, 'overlay_size', true ),
@@ -386,6 +394,10 @@ final class Newspack_Popups_Model {
 				'display_title'                  => false,
 				'hide_border'                    => false,
 				'frequency'                      => 'always',
+				'frequency_max'                  => '0',
+				'frequency_start'                => '1',
+				'frequency_between'              => '0',
+				'frequency_reset'                => 'month',
 				'overlay_color'                  => '#000000',
 				'overlay_opacity'                => 30,
 				'overlay_size'                   => 'medium',
