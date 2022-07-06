@@ -106,7 +106,7 @@ const FrequencySidebar = ( {
 						onChange={ value => onMetaFieldChange( 'frequency_between', value ) }
 					/>
 					<SelectControl
-						label={ __( 'Reset counters per:', 'newspack-popups' ) }
+						label={ __( 'Reset counter per:', 'newspack-popups' ) }
 						value={ frequency_reset }
 						options={ [
 							{ value: 'month', label: __( 'Month', 'newspack-popups' ) },
