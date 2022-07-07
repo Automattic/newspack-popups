@@ -551,19 +551,6 @@ class Lightweight_API {
 	 * @return array Filtered array of data items.
 	 */
 	public function filter_events_by_type( $events = [], $types = null, $contexts = null ) {
-		// Unserialize event values.
-		if ( ! empty( $events ) ) {
-			$events = array_map(
-				function( $event ) {
-					if ( ! empty( $event['value'] ) && ! is_array( $event['value'] ) ) {
-						$event['value'] = json_decode( $event['value'], true );
-					}
-					return $event;
-				},
-				$events
-			);
-		}
-
 		if ( null === $types && null === $contexts ) {
 			return $events;
 		}
@@ -621,6 +608,7 @@ class Lightweight_API {
 				function( $event ) {
 					$event = (array) $event;
 
+					// Unserialize event values.
 					if ( ! empty( $event['value'] ) && ! is_array( $event['value'] ) ) {
 						$event['value'] = json_decode( $event['value'], true );
 					}
