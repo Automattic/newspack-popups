@@ -419,7 +419,7 @@ class Lightweight_API {
 		}
 
 		// Unserialize reader_data value.
-		if ( isset( $reader['reader_data'] ) && ! is_array( $reader['reader_data'] ) ) {
+		if ( isset( $reader['reader_data'] ) && is_string( $reader['reader_data'] ) ) {
 			$reader['reader_data'] = json_decode( $reader['reader_data'], true );
 		}
 
@@ -551,6 +551,19 @@ class Lightweight_API {
 	 * @return array Filtered array of data items.
 	 */
 	public function filter_events_by_type( $events = [], $types = null, $contexts = null ) {
+		// Unserialize event values.
+		if ( ! empty( $events ) ) {
+			$events = array_map(
+				function( $event ) {
+					if ( ! empty( $event['value'] ) && is_string( $event['value'] ) ) {
+						$event['value'] = json_decode( $event['value'], true );
+					}
+					return $event;
+				},
+				$events
+			);
+		}
+
 		if ( null === $types && null === $contexts ) {
 			return $events;
 		}
@@ -608,8 +621,7 @@ class Lightweight_API {
 				function( $event ) {
 					$event = (array) $event;
 
-					// Unserialize event values.
-					if ( ! empty( $event['value'] ) && ! is_array( $event['value'] ) ) {
+					if ( ! empty( $event['value'] ) && is_string( $event['value'] ) ) {
 						$event['value'] = json_decode( $event['value'], true );
 					}
 
