@@ -32,6 +32,7 @@ class Segmentation_Report {
 					'|',
 					[
 						$event['client_id'],
+						isset( $event['date_created'] ) ? $event['date_created'] : gmdate( 'Y-m-d H:i:s' ),
 						isset( $event['type'] ) ? $event['type'] : '',
 						isset( $event['context'] ) ? $event['context'] : '',
 						$value,
