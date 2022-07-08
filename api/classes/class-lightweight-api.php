@@ -63,17 +63,6 @@ class Lightweight_API {
 	];
 
 	/**
-	 * Reader events can be temporary (purged periodically) or persistent depending on the type.
-	 * The following `type` values are considered persistent data.
-	 *
-	 * @var reader_events_persistent_types
-	 */
-	public $reader_events_persistent_types = [
-		'subscription',
-		'donation',
-	];
-
-	/**
 	 * Constructor.
 	 *
 	 * @codeCoverageIgnore
@@ -363,8 +352,7 @@ class Lightweight_API {
 				if ( ! empty( $legacy_reader['user_id'] ) ) {
 					$reader_events[] = [
 						'type'    => 'user_account',
-						'context' => 'wp',
-						'value'   => [ 'user_id' => $legacy_reader['user_id'] ],
+						'context' => $legacy_reader['user_id'],
 					];
 				}
 
@@ -394,10 +382,8 @@ class Lightweight_API {
 				if ( ! empty( $legacy_reader['email_subscriptions'] ) ) {
 					foreach ( $legacy_reader['email_subscriptions'] as $subscription ) {
 						$reader_events[] = [
-							'type'  => 'subscription',
-							'value' => [
-								'email' => $subscription['email'] ?? $subscription['address'],
-							],
+							'type'    => 'subscription',
+							'context' => $subscription['email'] ?? $subscription['address'],
 						];
 					}
 				}
@@ -463,10 +449,10 @@ class Lightweight_API {
 			}
 
 			// Serialize value strings.
-			if ( isset( $item['reader_data'] ) ) {
+			if ( isset( $item['reader_data'] ) && is_array( $item['reader_data'] ) ) {
 				$item['reader_data'] = wp_json_encode( $item['reader_data'] );
 			}
-			if ( isset( $item['value'] ) ) {
+			if ( isset( $item['value'] ) && is_array( $item['value'] ) ) {
 				$item['value'] = wp_json_encode( $item['value'] );
 			}
 
@@ -575,16 +561,12 @@ class Lightweight_API {
 			$contexts = [ $contexts ];
 		}
 
-		$persistent_types = $this->reader_events_persistent_types;
-
 		return array_values(
 			array_filter(
 				$events,
-				function( $event ) use ( $types, $contexts, $persistent_types ) {
+				function( $event ) use ( $types, $contexts ) {
 					$matches = true;
-					if ( null === $types ) {
-						$matches = ! in_array( $event['type'], $persistent_types, true );
-					} else {
+					if ( null !== $types ) {
 						$matches = in_array( $event['type'], $types, true );
 					}
 
@@ -598,21 +580,57 @@ class Lightweight_API {
 	}
 
 	/**
+	 * Given an array of values, build a SQL statement to query on those values.
+	 *
+	 * @param string $column_name Name of the column to query.
+	 * @param array  $values Possible values to query for.
+	 *
+	 * @return string Partial query string to use in a SQL query.
+	 */
+	public function build_partial_query_filter( $column_name, $values ) {
+		global $wpdb;
+
+		// If only one value to query on, use the = operator. Otherwise, use the IN operator.
+		if ( 1 === count( $values ) ) {
+			return $wpdb->prepare( "$column_name = %s", $values ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
+		}
+
+		$placeholders = [];
+		foreach ( $values as $value ) {
+			$placeholders[] = '%s';
+		}
+		$placeholders = implode( ',', $placeholders );
+
+		return $wpdb->prepare( "$column_name IN ( $placeholders )", $values ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
+	}
+
+	/**
 	 * Get all reader data from the DB.
 	 *
-	 * @param string $client_id Client ID of the reader.
+	 * @param string            $client_ids Client ID or IDs associated with the reader.
+	 * @param string|array|null $type Type or types of data to retrieve.
+	 * @param string|array|null $context Context or contexts of data to retrieve.
 	 *
 	 * @return array Array of reader data for the given client ID.
 	 */
-	public function get_reader_events_from_db( $client_id ) {
+	public function get_reader_events_from_db( $client_ids, $type = null, $context = null ) {
 		global $wpdb;
+
+		$client_filter  = $this->build_partial_query_filter( 'client_id', $client_ids );
+		$type_filter    = '';
+		$context_filter = '';
+
+		if ( is_array( $type ) ) {
+			$type_filter .= 'AND ' . $this->build_partial_query_filter( 'type', $type );
+		}
+		if ( is_array( $context ) ) {
+			$context_filter .= 'AND ' . $this->build_partial_query_filter( 'context', $context );
+		}
+
+
 		$reader_events_table_name = Segmentation::get_reader_events_table_name();
-		$events                   = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-			$wpdb->prepare(
-				"SELECT client_id, date_created, type, context, value from $reader_events_table_name WHERE client_id = %s ORDER BY date_created DESC", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-				$client_id
-			)
-		);
+		$events_sql               = "SELECT id, client_id, date_created, type, context, value from $reader_events_table_name WHERE $client_filter $type_filter $context_filter ORDER BY date_created DESC LIMIT 1000";
+		$events                   = $wpdb->get_results( $events_sql ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
 
 		$this->debug['read_query_count'] += 1;
 
@@ -637,49 +655,72 @@ class Lightweight_API {
 	/**
 	 * Retrieve data for a specific reader from the cache or DB.
 	 *
-	 * @param string            $client_id Client ID of the reader.
+	 * @param string|array      $client_ids Client IDs of the reader.
 	 * @param string|array|null $type Type or types of data to retrieve.
 	 *                                If not given, only return temporary data types.
 	 * @param string|array|null $context Context or contexts of data to retrieve.
 	 *
 	 * @return array Array of reader data, optionally filtered by $type and $context.
 	 */
-	public function get_reader_events( $client_id, $type = null, $context = null ) {
-		$events = [];
+	public function get_reader_events( $client_ids, $type = null, $context = null ) {
+		if ( ! is_array( $client_ids ) ) {
+			$client_ids = [ $client_ids ];
+		}
+		if ( ! is_array( $type ) && null !== $type ) {
+			$type = [ $type ];
+		}
+		if ( ! is_array( $context ) && null !== $context ) {
+			$context = [ $context ];
+		}
+
+		$events = wp_cache_get( 'reader_events', $client_ids[0] );
+		if ( ! $events ) {
+			$events = [];
+		}
 
 		// Check the cache first.
 		if ( ! $this->ignore_cache ) {
-			$events = wp_cache_get( 'reader_events', $client_id );
 			if ( ! empty( $events ) ) {
-				$this->debug['reader_events'] = $events;
-				return $this->filter_events_by_type( $events, $type, $context );
+				$get_cached_events = true;
+
+				foreach ( $type as $single_type ) {
+					$filtered_events = $this->filter_events_by_type( $events, $single_type );
+
+					if ( empty( $filtered_events ) ) {
+						$get_cached_events = false;
+					}
+				}
+
+				if ( $get_cached_events ) {
+					return $this->filter_events_by_type( $events, $type, $context );
+				}
 			}
 		}
 
-		// If no data in the cache, get it from the DB.
-		$events = $this->get_reader_events_from_db( $client_id );
+		$filtered_events = $this->get_reader_events_from_db( $client_ids, $type, $context );
+		$unique_ids      = [];
+		$all_events      = array_merge( $filtered_events, $events );
+		$all_events      = array_values(
+			array_filter(
+				$all_events,
+				function( $event ) use ( &$unique_ids ) {
+					if ( ! in_array( $event['id'], $unique_ids ) ) {
+						$unique_ids[] = $event['id'];
+						return true;
+					}
+
+					return false;
+				}
+			)
+		);
 
 		// Rebuild cache.
-		if ( ! empty( $events ) ) {
-			wp_cache_set( 'reader_events', $events, $client_id );
+		if ( ! empty( $all_events ) ) {
+			wp_cache_set( 'reader_events', $all_events, $client_ids[0] );
+			$this->debug['reader_events'] = $all_events;
 		}
 
-		$this->debug['reader_events'] = $events;
-		return $this->filter_events_by_type( $events, $type, $context );
-	}
-
-	/**
-	 * Retrieve only persistent data for a specific reader.
-	 * Persistent event types are defined in the $get_reader_events_persistent class variable.
-	 *
-	 * @param string $client_id Client ID of the reader.
-	 */
-	public function get_reader_events_persistent( $client_id ) {
-		$persistent_events = $this->get_reader_events( $client_id, $this->reader_events_persistent_types );
-
-		$this->debug['reader_events_persistent'] = $persistent_events;
-
-		return $persistent_events;
+		return $filtered_events;
 	}
 
 	/**
@@ -701,8 +742,7 @@ class Lightweight_API {
 		}
 
 		// Deduplicate views from the past hour.
-		$existing_events          = $this->get_reader_events( $client_id );
-		$already_read             = $this->filter_events_by_type( $existing_events, 'view' );
+		$already_read             = $this->get_reader_events( $client_id, 'view' );
 		$event_values             = array_column(
 			$already_read,
 			'value'
@@ -800,14 +840,7 @@ class Lightweight_API {
 			Segmentation_Report::log_reader_events( $events );
 		}
 
-		// Rebuild cache.
-		$all_events = array_merge( $existing_events, $events );
-
-		return wp_cache_set(
-			'reader_events',
-			$all_events,
-			$client_id
-		);
+		return true;
 	}
 
 	/**
@@ -912,9 +945,9 @@ class Lightweight_API {
 					$subscriber      = $members[0];
 					$reader_events[] = [
 						'type'    => 'subscription',
-						'context' => 'mailchimp',
+						'context' => $subscriber['email_address'],
 						'value'   => [
-							'email' => $subscriber['email_address'],
+							'esp' => 'mailchimp',
 						],
 					];
 

@@ -271,9 +271,7 @@ class SegmentationTest extends WP_UnitTestCase {
 				[
 					'client_id' => 'test-subscriber',
 					'type'      => 'subscription',
-					'value'     => [
-						'email' => 'test@testing.com',
-					],
+					'context'   => 'test@testing.com',
 				],
 			]
 		);

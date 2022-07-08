@@ -580,10 +580,7 @@ class APITest extends WP_UnitTestCase {
 		$subscribe_event = [
 			'client_id' => self::$client_id,
 			'type'      => 'subscription',
-			'context'   => '',
-			'value'     => [
-				'email' => $email_address,
-			],
+			'context'   => $email_address,
 		];
 
 		self::assertArraySubset(

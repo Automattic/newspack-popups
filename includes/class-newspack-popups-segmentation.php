@@ -243,8 +243,14 @@ final class Newspack_Popups_Segmentation {
 			$initial_client_report_url_params['mc_eid'] = sanitize_text_field( $_GET['mc_eid'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		}
 
-		// Handle Newspack donations via WooCommerce.
+		// Handle user accounts and Newspack donations via WooCommerce.
 		if ( is_user_logged_in() && ! Newspack_Popups::is_preview_request() ) {
+			// If the user is logged in, store their user ID.
+			$user_id = get_current_user_id();
+			if ( $user_id ) {
+				$initial_client_report_url_params['user_id'] = $user_id;
+			}
+
 			$newspack_donation_product_id = class_exists( '\Newspack\Donations' ) ?
 				(int) get_option( \Newspack\Donations::DONATION_PRODUCT_ID_OPTION, 0 ) :
 				0;
@@ -288,8 +294,6 @@ final class Newspack_Popups_Segmentation {
 					}
 				}
 			}
-
-			$initial_client_report_url_params['user_id'] = get_current_user_id();
 		}
 
 		// If visiting the donor landing page, mark the visitor as donor.
@@ -370,7 +374,7 @@ final class Newspack_Popups_Segmentation {
 			client_id varchar(100) NOT NULL,
 			date_created datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
 			type varchar(20) NOT NULL,
-			context varchar(20) NOT NULL,
+			context varchar(100) NOT NULL,
 			value longtext,
 			PRIMARY KEY  id (id),
 			KEY client_id_type_context (client_id, type, context),
@@ -579,7 +583,7 @@ final class Newspack_Popups_Segmentation {
 				return Campaign_Data_Utils::does_reader_match_segment(
 					$segment_config,
 					$api->get_reader( $client_id ),
-					$api->get_reader_events( $client_id )
+					$api->get_reader_events( $client_id, [ 'subscription', 'donation', 'user_account', 'view' ] )
 				);
 			}
 		);

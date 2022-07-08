@@ -76,29 +76,26 @@ class Segmentation_Client_Data extends Lightweight_API {
 		}
 		if ( $email_address ) {
 			$reader_events[] = [
-				'type'  => 'subscription',
-				'value' => [ 'email' => $email_address ],
+				'type'    => 'subscription',
+				'context' => $email_address,
 			];
 		}
 
 		// Get user ID if they have a user account.
 		$user_id = $this->get_request_param( 'user_id', $request );
 		if ( $user_id ) {
-			$existing_user_accounts = $this->get_reader_events( $client_id, 'user_account', 'wp' );
+			$existing_user_accounts = $this->get_reader_events( $client_id, 'user_account', $user_id );
 			$add_user_account       = true;
 
 			// Only add a new user account if it hasn't already been logged for this client.
-			foreach ( $existing_user_accounts as $existing_user_account ) {
-				if ( isset( $existing_user_account['value']['user_id'] ) && $existing_user_account['value']['user_id'] === $user_id ) {
-					$add_user_account = false;
-				}
+			if ( 0 < count( $existing_user_accounts ) ) {
+				$add_user_account = false;
 			}
 
 			if ( $add_user_account ) {
 				$reader_events[] = [
 					'type'    => 'user_account',
-					'context' => 'wp',
-					'value'   => [ 'user_id' => $user_id ],
+					'context' => $user_id,
 				];
 			}
 		}
@@ -106,18 +103,32 @@ class Segmentation_Client_Data extends Lightweight_API {
 		// Add donations data from WC orders.
 		$orders = $this->get_request_param( 'orders', $request );
 		if ( $orders ) {
-			if ( 'string' === gettype( $orders ) ) {
-				$orders = (array) json_decode( $orders );
-			}
-			$order_events  = array_map(
-				function( $order ) {
-					return [
-						'type'    => 'donation',
-						'context' => 'woocommerce',
-						'value'   => $order,
-					];
+			// Lookup existing orders so we don't log duplicate events.
+			$existing_orders = array_map(
+				function( $order_event ) {
+					return isset( $order_event['value']['order_id'] ) ? (int) $order_event['value']['order_id'] : 0;
 				},
-				$orders
+				$this->get_reader_events( $client_id, 'donation', 'woocommerce' )
+			);
+
+			if ( 'string' === gettype( $orders ) ) {
+				$orders = json_decode( $orders, true );
+			}
+
+			$order_events  = array_reduce(
+				$orders,
+				function( $acc, $order ) use ( $existing_orders ) {
+					if ( ! in_array( (int) $order['order_id'], $existing_orders, true ) ) {
+						$acc[] = [
+							'type'    => 'donation',
+							'context' => 'woocommerce',
+							'value'   => $order,
+						];
+					}
+
+					return $acc;
+				},
+				[]
 			);
 			$reader_events = array_merge( $reader_events, $order_events );
 		}

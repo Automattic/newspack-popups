@@ -48,8 +48,9 @@ class Segmentation_Custom_GA_Config extends Lightweight_API {
 
 		$custom_dimensions_values = [];
 
-		$api           = new Lightweight_API();
-		$reader_events = $api->get_reader_events( $client_id );
+		$api                 = new Lightweight_API();
+		$subscription_events = $api->get_reader_events( $client_id, 'subscription' );
+		$donation_events     = $api->get_reader_events( $client_id, 'donation' );
 
 		foreach ( $custom_dimensions as $custom_dimension ) {
 			// Strip the `ga:` prefix from gaID.
@@ -67,10 +68,10 @@ class Segmentation_Custom_GA_Config extends Lightweight_API {
 					$custom_dimensions_values[ $dimension_id ] = $read_count_tier;
 					break;
 				case Segmentation::CUSTOM_DIMENSIONS_OPTION_NAME_IS_SUBSCRIBER:
-					$custom_dimensions_values[ $dimension_id ] = Campaign_Data_Utils::is_subscriber( $reader_events ) ? 'true' : 'false';
+					$custom_dimensions_values[ $dimension_id ] = Campaign_Data_Utils::is_subscriber( $subscription_events ) ? 'true' : 'false';
 					break;
 				case Segmentation::CUSTOM_DIMENSIONS_OPTION_NAME_IS_DONOR:
-					$custom_dimensions_values[ $dimension_id ] = Campaign_Data_Utils::is_donor( $reader_events ) ? 'true' : 'false';
+					$custom_dimensions_values[ $dimension_id ] = Campaign_Data_Utils::is_donor( $donation_events ) ? 'true' : 'false';
 					break;
 			}
 		}

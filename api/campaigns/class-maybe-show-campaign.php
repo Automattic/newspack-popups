@@ -26,7 +26,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		}
 		$popups    = json_decode( $_REQUEST['popups'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		$settings  = json_decode( $_REQUEST['settings'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		$visit     = (array) json_decode( $_REQUEST['visit'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.InputNotValidated
+		$visit     = json_decode( $_REQUEST['visit'], true ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.InputNotValidated
 		$response  = [];
 		$client_id = $_REQUEST['cid']; // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 
@@ -182,7 +182,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		}
 
 		$reader                   = $this->get_reader( $client_id );
-		$reader_events            = $this->get_reader_events( $client_id );
+		$reader_events            = $this->get_reader_events( $client_id, [ 'subscription', 'donation', 'user_account', 'view' ] );
 		$best_segment_priority    = PHP_INT_MAX;
 		$best_priority_segment_id = null;
 
@@ -285,7 +285,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			$segment_matches = Campaign_Data_Utils::does_reader_match_segment(
 				$popup_segment,
 				$this->get_reader( $client_id ),
-				$this->get_reader_events( $client_id ),
+				$this->get_reader_events( $client_id, [ 'subscription', 'donation', 'user_account', 'view' ] ),
 				$referer_url,
 				$page_referer_url
 			);
