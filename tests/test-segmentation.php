@@ -107,8 +107,8 @@ class SegmentationTest extends WP_UnitTestCase {
 
 		self::assertArraySubset(
 			[
-				self::$post_read_payload,
 				$second_event,
+				self::$post_read_payload,
 			],
 			$api->get_reader_events( self::$post_read_payload['client_id'] ),
 			'Both new and legacy formats are parsed into events.'
