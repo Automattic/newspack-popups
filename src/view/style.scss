@@ -1,6 +1,8 @@
+@use 'sass:color';
+
 // Secondary Color
 $color__secondary: #757575;
-$color__secondary-variation: darken( $color__secondary, 10% );
+$color__secondary-variation: color.adjust( $color__secondary, $lightness: -10% );
 
 // System Font
 $font__system: -apple-system, blinkmacsystemfont, 'Segoe UI', roboto, oxygen, ubuntu, cantarell,
@@ -119,7 +121,7 @@ $size__large: 1264px;
 		width: 36px;
 
 		svg {
-			fill: currentColor;
+			fill: currentcolor;
 			flex: 0 0 24px;
 		}
 
