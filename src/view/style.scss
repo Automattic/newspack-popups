@@ -70,6 +70,7 @@ $size__large: 1264px;
 		background: transparent;
 		margin: 0 auto;
 		max-width: $size__medium;
+		overflow: auto;
 		padding: 17px;
 		@media only screen and ( min-width: 601px ) {
 			padding: 32px;
@@ -90,9 +91,20 @@ $size__large: 1264px;
 		}
 	}
 
+	&.newspack-lightbox-no-border {
+		.newspack-popup-wrapper {
+			background-color: transparent;
+			box-shadow: none;
+		}
+		.newspack-popup {
+			box-shadow: 0 0 1em 0.5em rgba( black, 0.1 );
+			margin: 32px;
+		}
+	}
+
 	.newspack-lightbox__close {
 		align-items: center;
-		background: white;
+		background-color: transparent;
 		border: none;
 		border-radius: 0;
 		box-shadow: none;
@@ -170,6 +182,9 @@ $size__large: 1264px;
 				width: $size__x-small;
 			}
 		}
+		.newspack-popup {
+			max-height: 50vh;
+		}
 	}
 
 	&.newspack-lightbox-size-small {
@@ -179,6 +194,9 @@ $size__large: 1264px;
 				width: $size__small;
 			}
 		}
+		.newspack-popup {
+			max-height: 60vh;
+		}
 	}
 
 	&.newspack-lightbox-size-medium {
@@ -187,6 +205,9 @@ $size__large: 1264px;
 				min-width: $size__medium;
 				width: $size__medium;
 			}
+		}
+		.newspack-popup {
+			max-height: 80vh;
 		}
 	}
 
