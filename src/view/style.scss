@@ -70,9 +70,9 @@ $size__large: 1264px;
 		background: transparent;
 		margin: 0 auto;
 		max-width: $size__medium;
-		padding: 32px;
+		padding: 17px;
 		@media only screen and ( min-width: 601px ) {
-			padding: 17px;
+			padding: 32px;
 		}
 
 		> *:first-child {
