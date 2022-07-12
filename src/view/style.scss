@@ -73,7 +73,10 @@ $size__large: 1264px;
 		margin: 0 auto;
 		max-width: $size__medium;
 		overflow: auto;
-		padding: 32px;
+		padding: 17px;
+		@media only screen and ( min-width: 601px ) {
+			padding: 32px;
+		}
 
 		> *:first-child {
 			margin-top: 0;
