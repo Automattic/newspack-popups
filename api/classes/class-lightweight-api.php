@@ -266,6 +266,7 @@ class Lightweight_API {
 	public function get_reader( $client_id ) {
 		$reader              = $this->reader_blueprint;
 		$reader['client_id'] = $client_id;
+		$reader_events       = [];
 
 		// Check the cache first.
 		if ( ! $this->ignore_cache ) {
@@ -290,8 +291,6 @@ class Lightweight_API {
 
 		// If there's no reader for this client ID in the DB, create it.
 		if ( empty( $reader_from_db ) ) {
-			$reader_events = [];
-
 			// Check the legacy transients table for existing reader.
 			$legacy_reader = $this->get_transient_legacy( $client_id );
 
@@ -358,7 +357,11 @@ class Lightweight_API {
 
 				// Add prior donations.
 				if ( ! empty( $legacy_reader['donations'] ) ) {
+					// Keep track of logged donations so we don't log duplicate events.
+					$donation_ids = [];
+
 					foreach ( $legacy_reader['donations'] as $donation ) {
+						$create_event  = false;
 						$donation      = (array) $donation;
 						$donation_date = isset( $donation['date'] ) ? strtotime( $donation['date'] ) : time();
 						$donation_data = [
@@ -367,14 +370,21 @@ class Lightweight_API {
 							'value'        => $donation,
 						];
 
-						if ( isset( $donation['order_id'] ) ) {
+						if ( isset( $donation['order_id'] ) && ! in_array( (int) $donation['order_id'], $donation_ids, true ) ) {
+							$donation_ids[]           = $donation['order_id'];
 							$donation_data['context'] = 'woocommerce';
+							$create_event             = true;
 						}
-						if ( isset( $donation['stripe_id'] ) ) {
+						if ( isset( $donation['stripe_id'] ) && ! in_array( (int) $donation['stripe_id'], $donation_ids, true ) ) {
+							$donation_ids[]           = $donation['stripe_id'];
 							$donation_data['context'] = 'stripe';
+							$create_event             = true;
 						}
 
-						$reader_events[] = $donation_data;
+						// Only log the event if it hasn't already been logged.
+						if ( $create_event ) {
+							$reader_events[] = $donation_data;
+						}
 					}
 				}
 
@@ -388,15 +398,15 @@ class Lightweight_API {
 					}
 				}
 
-				if ( ! empty( $reader_events ) ) {
-					$this->save_reader_events( $client_id, $reader_events );
-				}
-
 				// If we were able to save the legacy data, clean up old transients data.
 				$this->delete_transient_legacy( $client_id );
 			}
 
 			$this->save_reader( $client_id, $reader['reader_data'] );
+
+			if ( ! empty( $reader_events ) ) {
+				$this->save_reader_events( $client_id, $reader_events );
+			}
 		} else {
 			// Rebuild the cache.
 			$reader_from_db = reset( $reader_from_db );
