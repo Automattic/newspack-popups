@@ -748,16 +748,42 @@ final class Newspack_Popups_Inserter {
 			(object) []
 		);
 
+		if ( is_singular() ) {
+			$visit['post_type'] = get_post_type();
+			$visit['post_id']   = get_the_ID();
+
+			if ( ! empty( $category_ids ) ) {
+				$visit['categories'] = esc_attr( $category_ids );
+			}
+		} else {
+			global $wp;
+			$non_singular_query_type = 'unknown';
+			$request                 = $wp->query_vars;
+
+			if ( is_archive() ) {
+				$non_singular_query_type = 'archive';
+			}
+			if ( is_search() ) {
+				$non_singular_query_type = 'search';
+			}
+			if ( is_feed() ) {
+				$non_singular_query_type = 'feed';
+			}
+			if ( is_home() ) {
+				$non_singular_query_type = 'posts_page';
+			}
+			if ( is_404() ) {
+				$non_singular_query_type = '404';
+			}
+
+			$visit['request']      = $request;
+			$visit['request_type'] = $non_singular_query_type;
+		}
+
 		$popups_access_provider['authorization'] .= '&ref=DOCUMENT_REFERRER';
 		$popups_access_provider['authorization'] .= '&popups=' . wp_json_encode( $popups_configs );
 		$popups_access_provider['authorization'] .= '&settings=' . wp_json_encode( $settings );
-		$popups_access_provider['authorization'] .= '&visit=' . wp_json_encode(
-			[
-				'post_id'    => esc_attr( get_the_ID() ),
-				'categories' => esc_attr( $category_ids ),
-				'is_post'    => is_single(),
-			]
-		);
+		$popups_access_provider['authorization'] .= '&visit=' . wp_json_encode( $visit );
 		if ( isset( $_GET['newspack-campaigns-debug'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 			$popups_access_provider['authorization'] .= '&debug';
 		}

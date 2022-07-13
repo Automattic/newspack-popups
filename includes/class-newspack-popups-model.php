@@ -761,15 +761,18 @@ final class Newspack_Popups_Model {
 		 * @param string $class_name The class name to look for.
 		 */
 		$newspack_form_class = apply_filters( 'newspack_campaigns_form_class', 'newspack-subscribe-form' );
+		$esp                 = null;
 
 		if ( preg_match( '/wp-block-jetpack-mailchimp/', $body ) !== 0 ) {
 			// Jetpack Mailchimp block.
 			$subscribe_form_selector = apply_filters( 'newspack_campaigns_form_selector', '.wp-block-jetpack-mailchimp form' );
 			$email_form_field_name   = apply_filters( 'newspack_campaigns_email_form_field_name', 'email', $subscribe_form_selector );
+			$esp                     = 'mailchimp';
 		} elseif ( preg_match( '/mc4wp-form/', $body ) !== 0 ) {
 			// MC4WP form.
 			$subscribe_form_selector = apply_filters( 'newspack_campaigns_form_selector', '.mc4wp-form' );
 			$email_form_field_name   = apply_filters( 'newspack_campaigns_email_form_field_name', 'EMAIL', $subscribe_form_selector );
+			$esp                     = 'mailchimp';
 		} elseif ( preg_match( '/\[gravityforms\s(.*)\]/', $body, $gravity_form_attributes ) !== 0 && class_exists( '\GFAPI' ) ) {
 			// Gravity Forms block produces a shortcode. Check for a form ID attribute on the shortcode.
 			$has_id = preg_match( '/id="(\d*)"/', $gravity_form_attributes[1], $id_matches );
@@ -831,16 +834,22 @@ final class Newspack_Popups_Model {
 			],
 		];
 		if ( $subscribe_form_selector && $email_form_field_name ) {
+			$extra_params = [
+				'popup_id'            => esc_attr( self::canonize_popup_id( $popup['id'] ) ),
+				'cid'                 => 'CLIENT_ID(' . esc_attr( Newspack_Popups_Segmentation::NEWSPACK_SEGMENTATION_CID_NAME ) . ')',
+				'mailing_list_status' => 'subscribed',
+				'email'               => '${formFields[' . esc_attr( $email_form_field_name ) . ']}',
+			];
+
+			if ( ! empty( $esp ) ) {
+				$extra_params['esp'] = $esp;
+			}
+
 			$amp_analytics_config['triggers']['formSubmitSuccess'] = [
 				'on'             => 'amp-form-submit-success',
 				'request'        => 'event',
 				'selector'       => '#' . esc_attr( $element_id ) . ' ' . esc_attr( $subscribe_form_selector ),
-				'extraUrlParams' => [
-					'popup_id'            => esc_attr( self::canonize_popup_id( $popup['id'] ) ),
-					'cid'                 => 'CLIENT_ID(' . esc_attr( Newspack_Popups_Segmentation::NEWSPACK_SEGMENTATION_CID_NAME ) . ')',
-					'mailing_list_status' => 'subscribed',
-					'email'               => '${formFields[' . esc_attr( $email_form_field_name ) . ']}',
-				],
+				'extraUrlParams' => $extra_params,
 			];
 		}
 
@@ -1036,7 +1045,6 @@ final class Newspack_Popups_Model {
 		$endpoint             = self::get_reader_endpoint();
 		$display_title        = $popup['options']['display_title'];
 		$hide_border          = $popup['options']['hide_border'];
-		$hidden_fields        = self::get_hidden_fields( $popup );
 		$is_newsletter_prompt = self::has_newsletter_prompt( $popup );
 		$classes              = [ 'newspack-popup' ];
 		$classes[]            = 'above_header' === $popup['options']['placement'] ? 'newspack-above-header-popup' : null;
@@ -1323,6 +1331,11 @@ final class Newspack_Popups_Model {
 			name="is_newsletter_popup"
 			type="hidden"
 			value="<?php echo esc_attr( self::has_newsletter_prompt( $popup ) ); ?>"
+		/>
+		<input
+			name="dismiss"
+			type="hidden"
+			value="1"
 		/>
 		<?php
 		return ob_get_clean();
