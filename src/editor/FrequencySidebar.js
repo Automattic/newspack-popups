@@ -23,7 +23,6 @@ const FrequencySidebar = ( {
 	onMetaFieldChange,
 	utm_suppression,
 } ) => {
-	console.log( frequency_max, frequency_start, frequency_between, frequency_reset );
 	return (
 		<Fragment>
 			<SelectControl
