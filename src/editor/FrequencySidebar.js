@@ -14,12 +14,47 @@ import {
 	__experimentalNumberControl as NumberControl,
 } from '@wordpress/components';
 
+const frequencyOptions = [
+	{ value: 'once', label: __( 'Once a month', 'newspack-popups' ) },
+	{ value: 'weekly', label: __( 'Once a week', 'newspack-popups' ) },
+	{ value: 'daily', label: __( 'Once a day', 'newspack-popups' ) },
+	{
+		value: 'preset_1',
+		label: __( 'Every 4th pageview, up to 5x per month', 'newspack-popups' ),
+	},
+	{
+		value: 'always',
+		label: __( 'Every pageview', 'newspack-popups' ),
+	},
+	{ value: 'custom', label: __( 'Custom', 'newspack-popups' ) },
+];
+
+const getFrequencyOptions = isOverlay => {
+	const { experimental } = window.newspack_popups_data;
+	const experimentalKeys = [ 'weekly', 'preset_1', 'custom' ];
+
+	if ( experimental ) {
+		return frequencyOptions;
+	}
+
+	return frequencyOptions
+		.filter( item => 0 > experimentalKeys.indexOf( item.value ) )
+		.map( item => {
+			if ( 'always' === item.value && isOverlay ) {
+				item.disabled = true;
+			}
+
+			return item;
+		} );
+};
+
 const FrequencySidebar = ( {
 	frequency,
 	frequency_max,
 	frequency_start,
 	frequency_between,
 	frequency_reset,
+	isOverlay,
 	onMetaFieldChange,
 	utm_suppression,
 } ) => {
@@ -66,20 +101,7 @@ const FrequencySidebar = ( {
 						onMetaFieldChange( 'frequency_reset', 'month' );
 					}
 				} }
-				options={ [
-					{ value: 'once', label: __( 'Once a month', 'newspack-popups' ) },
-					{ value: 'weekly', label: __( 'Once a week', 'newspack-popups' ) },
-					{ value: 'daily', label: __( 'Once a day', 'newspack-popups' ) },
-					{
-						value: 'preset_1',
-						label: __( 'Every 4th pageview, up to 5x per month', 'newspack-popups' ),
-					},
-					{
-						value: 'always',
-						label: __( 'Every pageview', 'newspack-popups' ),
-					},
-					{ value: 'custom', label: __( 'Custom', 'newspack-popups' ) },
-				] }
+				options={ getFrequencyOptions( isOverlay ) }
 			/>
 			{ 'custom' === frequency && (
 				<>
