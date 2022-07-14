@@ -81,12 +81,23 @@ class Segmentation_Client_Data extends Lightweight_API {
 			];
 		}
 
+		$user_account_context = false;
+
+		// Get auth intention value if they are pre-authenticated.
+		$pre_auth_value = $this->get_request_param( 'pre_auth_value', $request );
+		if ( $pre_auth_value ) {
+			$user_account_context = $pre_auth_value;
+		}
+
 		// Get user ID if they have a user account.
 		$user_id = $this->get_request_param( 'user_id', $request );
 		if ( $user_id ) {
+			$user_account_context = $user_id;
+		}
+
+		if ( $user_account_context ) {
 			$existing_user_accounts = $this->get_reader_events( $client_id, 'user_account', $user_id );
 			$add_user_account       = true;
-
 			// Only add a new user account if it hasn't already been logged for this client.
 			if ( 0 < count( $existing_user_accounts ) ) {
 				$add_user_account = false;
@@ -95,7 +106,7 @@ class Segmentation_Client_Data extends Lightweight_API {
 			if ( $add_user_account ) {
 				$reader_events[] = [
 					'type'    => 'user_account',
-					'context' => $user_id,
+					'context' => $user_account_context,
 				];
 			}
 		}
