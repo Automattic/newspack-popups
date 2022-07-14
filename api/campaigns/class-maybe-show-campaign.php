@@ -38,24 +38,47 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		// Log an article or page view event.
 		if ( $visit && ( ! defined( 'DISABLE_CAMPAIGN_EVENT_LOGGING' ) || true !== DISABLE_CAMPAIGN_EVENT_LOGGING ) ) {
 			$reader_events = [];
+			$current_page  = null;
 			$view_event    = [
 				'type'  => 'view',
 				'value' => [],
 			];
 			if ( isset( $visit['post_id'] ) ) {
 				$view_event['value']['post_id'] = $visit['post_id'];
+				$current_page                   = $visit['post_id'];
 			}
 			if ( isset( $visit['categories'] ) ) {
 				$view_event['value']['categories'] = $visit['categories'];
 			}
 			if ( isset( $visit['request'] ) ) {
 				$view_event['value']['request'] = $visit['request'];
+				$current_page                   = $visit['request'];
 			}
 			if ( isset( $visit['post_type'] ) || isset( $visit['request_type'] ) ) {
 				$view_event['context'] = isset( $visit['post_type'] ) ? $visit['post_type'] : $visit['request_type'];
 			}
 
-			$reader_events[] = $view_event;
+			// Deduplicate views from the past hour.
+			$already_read             = $this->get_reader_events( $client_id, 'view', $view_event['context'] );
+			$event_values             = array_column(
+				$already_read,
+				'value'
+			);
+			$already_read_singular    = array_column( $event_values, 'post_id' );
+			$already_read_nonsingular = array_map(
+				function( $request_value ) {
+					return wp_json_encode( $request_value );
+				},
+				array_column( $event_values, 'request' )
+			);
+			$already_read             = array_merge( $already_read_singular, $already_read_nonsingular );
+
+			// Filter out recently seen views.
+			if ( in_array( $current_page, $already_read, true ) ) {
+				$this->debug['already_read'] = true;
+			} else {
+				$reader_events[] = $view_event;
+			}
 
 			$referer_url                   = filter_input( INPUT_SERVER, 'HTTP_REFERER', FILTER_SANITIZE_STRING );
 			$page_referer_url              = isset( $_REQUEST['ref'] ) ? $_REQUEST['ref'] : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized

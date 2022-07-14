@@ -751,42 +751,6 @@ class Lightweight_API {
 			return false;
 		}
 
-		// Deduplicate views from the past hour.
-		$already_read             = $this->get_reader_events( $client_id, 'view' );
-		$event_values             = array_column(
-			$already_read,
-			'value'
-		);
-		$already_read_singular    = array_column( $event_values, 'post_id' );
-		$already_read_nonsingular = array_map(
-			function( $request_value ) {
-				return wp_json_encode( $request_value );
-			},
-			array_column( $event_values, 'request' )
-		);
-		$already_read             = array_merge( $already_read_singular, $already_read_nonsingular );
-
-		// Filter out recently seen views.
-		$events = array_values(
-			array_filter(
-				$events,
-				function( $event ) use ( $already_read ) {
-					if ( 'view' === $event['type'] && isset( $event['context'] ) && isset( $event['value'] ) ) {
-						$current_page = isset( $event['value']['post_id'] ) ? $event['value']['post_id'] : wp_json_encode( $event['value'] ['request'] );
-						return ! in_array( $current_page, $already_read, true );
-					}
-
-					return ! empty( $event['type'] );
-				}
-			)
-		);
-
-		// If no new items to save, return false.
-		if ( empty( $events ) ) {
-			$this->debug['already_read'] = true;
-			return false;
-		}
-
 		// Rebuild reader_data if there were new views.
 		$new_views = $this->filter_events_by_type( $events, 'view' );
 		if ( ! empty( $new_views ) ) {
