@@ -734,6 +734,44 @@ class Lightweight_API {
 	}
 
 	/**
+	 * Has the given reader already recently viewed the page with the given context + value?
+	 *
+	 * @param string|array $client_ids Client ID or IDs for the reader.
+	 * @param string       $context Context of the visit to check.
+	 * @param int|string   $value   Post ID (if singular) or request string (if not) of the visit to check.
+	 *
+	 * @return boolean True if the reader has already viewed this page in the past hour.
+	 */
+	public function is_repeat_visit( $client_ids, $context, $value ) {
+		if ( ! $context || ! $value ) {
+			return false;
+		}
+
+		if ( is_numeric( $value ) ) {
+			$value = (int) $value;
+		}
+
+		$already_read             = $this->get_reader_events( $client_ids, 'view', $context );
+		$event_values             = array_column(
+			$already_read,
+			'value'
+		);
+		$already_read_singular    = array_column( $event_values, 'post_id' );
+		$already_read_nonsingular = array_map(
+			function( $request_value ) {
+				return wp_json_encode( $request_value );
+			},
+			array_column( $event_values, 'request' )
+		);
+		$already_read             = array_merge( $already_read_singular, $already_read_nonsingular );
+		$has_already_read         = in_array( $value, $already_read, true );
+
+		$this->debug['already_read'] = $has_already_read;
+
+		return $has_already_read;
+	}
+
+	/**
 	 * Save reader data.
 	 *
 	 * @param string $client_id Client ID of the reader.

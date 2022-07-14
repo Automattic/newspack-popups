@@ -306,21 +306,11 @@ class APITest extends WP_UnitTestCase {
 			]
 		);
 
-		// Report another pageview.
-		self::$maybe_show_campaign->save_reader_events(
-			self::$client_id,
-			[ self::create_event( [ 'post_id' => 3 ] ) ]
-		);
-
-		self::assertFalse(
-			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
-			'Assert not visible, because a frequency_between of 2 means it should not be shown for two pageviews after display.'
-		);
-
-		// Report another pageview.
+		// Report two more pageviews.
 		self::$maybe_show_campaign->save_reader_events(
 			self::$client_id,
 			[
+				self::create_event( [ 'post_id' => 3 ] ),
 				self::create_event( [ 'post_id' => 4 ] ),
 			]
 		);
@@ -328,6 +318,19 @@ class APITest extends WP_UnitTestCase {
 		self::assertFalse(
 			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
 			'Assert not visible, because a frequency_between of 2 means it should not be shown for two pageviews after display.'
+		);
+
+		// Repeat a pageview.
+		$is_repeat_visit = self::$maybe_show_campaign->is_repeat_visit( self::$client_id, 'post', 4 );
+
+		self::assertTrue(
+			$is_repeat_visit,
+			'Assert that another visit to a recently-visited page is marked as such.'
+		);
+
+		self::assertFalse(
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup['payload'], self::$settings, $is_repeat_visit ),
+			'Assert not visible on a repeat visit to a recently-viewed page.'
 		);
 
 		// Report another pageview.

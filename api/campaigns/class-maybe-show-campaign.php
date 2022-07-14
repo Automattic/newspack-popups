@@ -58,25 +58,10 @@ class Maybe_Show_Campaign extends Lightweight_API {
 				$view_event['context'] = isset( $visit['post_type'] ) ? $visit['post_type'] : $visit['request_type'];
 			}
 
-			// Deduplicate views from the past hour.
-			$already_read             = $this->get_reader_events( $client_id, 'view', $view_event['context'] );
-			$event_values             = array_column(
-				$already_read,
-				'value'
-			);
-			$already_read_singular    = array_column( $event_values, 'post_id' );
-			$already_read_nonsingular = array_map(
-				function( $request_value ) {
-					return wp_json_encode( $request_value );
-				},
-				array_column( $event_values, 'request' )
-			);
-			$already_read             = array_merge( $already_read_singular, $already_read_nonsingular );
+			$is_repeat_visit = $this->is_repeat_visit( $client_id, $view_event['context'], $current_page );
 
 			// Filter out recently seen views.
-			if ( in_array( $current_page, $already_read, true ) ) {
-				$this->debug['already_read'] = true;
-			} else {
+			if ( ! $is_repeat_visit ) {
 				$reader_events[] = $view_event;
 			}
 
@@ -122,11 +107,12 @@ class Maybe_Show_Campaign extends Lightweight_API {
 				$referer_url,
 				$page_referer_url,
 				$view_as_spec,
-				false
+				false,
+				$is_repeat_visit
 			);
 
 			// If an overlay is already able to be shown, pick the one that has the higher priority.
-			if ( $popup_should_be_shown && 'o' === $popup->t ) {
+			if ( $popup_should_be_shown && Campaign_Data_Utils::is_overlay( $popup ) ) {
 				if ( empty( $overlay_to_maybe_display ) ) {
 					$overlay_to_maybe_display = $popup;
 				} else {
@@ -145,7 +131,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			// TODO: the conditions below should not apply to manually-placed prompts.
 
 			// If an above-header is already able to be shown, pick the one that has the higher priority.
-			if ( $popup_should_be_shown && 'a' === $popup->t ) {
+			if ( $popup_should_be_shown && Campaign_Data_Utils::is_above_header( $popup ) ) {
 				if ( empty( $above_header_to_maybe_display ) ) {
 					$above_header_to_maybe_display = $popup;
 				} else {
@@ -246,16 +232,18 @@ class Maybe_Show_Campaign extends Lightweight_API {
 	/**
 	 * Primary prompt visibility logic.
 	 *
-	 * @param string $client_id Client ID.
-	 * @param object $popup Prompt.
-	 * @param object $settings Settings.
-	 * @param string $referer_url URL of the page performing the API request.
-	 * @param string $page_referer_url URL of the referrer of the frontend page that is making the API request.
-	 * @param object $view_as_spec "View As" specification.
-	 * @param string $now Current timestamp.
+	 * @param string  $client_id Client ID.
+	 * @param object  $popup Prompt.
+	 * @param object  $settings Settings.
+	 * @param string  $referer_url URL of the page performing the API request.
+	 * @param string  $page_referer_url URL of the referrer of the frontend page that is making the API request.
+	 * @param object  $view_as_spec "View As" specification.
+	 * @param string  $now Current timestamp.
+	 * @param boolean $is_repeat_visit True if the current page has already been visited by this reader in the past hour.
+	 *
 	 * @return bool Whether prompt should be shown.
 	 */
-	public function should_popup_be_shown( $client_id, $popup, $settings, $referer_url = '', $page_referer_url = '', $view_as_spec = false, $now = false ) {
+	public function should_popup_be_shown( $client_id, $popup, $settings, $referer_url = '', $page_referer_url = '', $view_as_spec = false, $now = false, $is_repeat_visit = false ) {
 		$should_display = true;
 
 		// Handle referer-based conditions.
@@ -413,6 +401,12 @@ class Maybe_Show_Campaign extends Lightweight_API {
 					$frequency_reset
 				)
 			);
+		}
+
+		// If the prompt is an overlay, don't show on repeat visits to the same page within a one-hour period.
+		// Note that non-overlay prompts will be displayed on repeat visits, but `seen` events won't be logged.
+		if ( Campaign_Data_Utils::is_overlay( $popup ) && $is_repeat_visit ) {
+			$should_display = false;
 		}
 
 		return $should_display;

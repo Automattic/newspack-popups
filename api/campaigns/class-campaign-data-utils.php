@@ -290,4 +290,37 @@ class Campaign_Data_Utils {
 
 		return $should_display;
 	}
+
+	/**
+	 * If the prompt is an overlay.
+	 *
+	 * @param array $popup Popup object.
+	 *
+	 * @return boolean
+	 */
+	public static function is_overlay( $popup ) {
+		return isset( $popup->t ) && 'o' === $popup->t;
+	}
+
+	/**
+	 * If the prompt is an inline prompt.
+	 *
+	 * @param array $popup Popup object.
+	 *
+	 * @return boolean
+	 */
+	public static function is_inline( $popup ) {
+		return isset( $popup->t ) && 'i' === $popup->t;
+	}
+
+	/**
+	 * If the prompt is an above-header prompt.
+	 *
+	 * @param array $popup Popup object.
+	 *
+	 * @return boolean
+	 */
+	public static function is_above_header( $popup ) {
+		return isset( $popup->t ) && 'a' === $popup->t;
+	}
 }
