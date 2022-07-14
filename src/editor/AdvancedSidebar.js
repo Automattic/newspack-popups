@@ -60,7 +60,7 @@ const AdvancedSidebar = ( { onMetaFieldChange, excluded_categories = [], exclude
 					key="categories"
 					tokens={ excluded_categories }
 					onChange={ _excluded_categories => {
-						onMetaFieldChange( 'excluded_categories', _excluded_categories );
+						onMetaFieldChange( { excluded_categories: _excluded_categories } );
 					} }
 					fetchSuggestions={ search => fetchTaxonomySuggestions( '/wp/v2/categories', search ) }
 					fetchSavedInfo={ taxonomyIDs => fetchSavedTaxonomies( '/wp/v2/categories', taxonomyIDs ) }
@@ -71,7 +71,7 @@ const AdvancedSidebar = ( { onMetaFieldChange, excluded_categories = [], exclude
 					key="tags"
 					tokens={ excluded_tags }
 					onChange={ _excluded_tags => {
-						onMetaFieldChange( 'excluded_tags', _excluded_tags );
+						onMetaFieldChange( { excluded_tags: _excluded_tags } );
 					} }
 					fetchSuggestions={ search => fetchTaxonomySuggestions( '/wp/v2/tags', search ) }
 					fetchSavedInfo={ taxonomyIDs => fetchSavedTaxonomies( '/wp/v2/tags', taxonomyIDs ) }
