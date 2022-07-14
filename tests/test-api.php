@@ -298,7 +298,7 @@ class APITest extends WP_UnitTestCase {
 			'Assert visible on the second pageview.'
 		);
 
-		// Report a view.
+		// Report a prompt view after it was seen.
 		self::$report_campaign_data->report_campaign(
 			[
 				'cid'      => self::$client_id,
@@ -306,7 +306,7 @@ class APITest extends WP_UnitTestCase {
 			]
 		);
 
-		// Report another view.
+		// Report another pageview.
 		self::$maybe_show_campaign->save_reader_events(
 			self::$client_id,
 			[ self::create_event( [ 'post_id' => 3 ] ) ]
@@ -317,11 +317,23 @@ class APITest extends WP_UnitTestCase {
 			'Assert not visible, because a frequency_between of 2 means it should not be shown for two pageviews after display.'
 		);
 
-		// Report two more pageviews.
+		// Report another pageview.
 		self::$maybe_show_campaign->save_reader_events(
 			self::$client_id,
 			[
 				self::create_event( [ 'post_id' => 4 ] ),
+			]
+		);
+
+		self::assertFalse(
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
+			'Assert not visible, because a frequency_between of 2 means it should not be shown for two pageviews after display.'
+		);
+
+		// Report another pageview.
+		self::$maybe_show_campaign->save_reader_events(
+			self::$client_id,
+			[
 				self::create_event( [ 'post_id' => 5 ] ),
 			]
 		);
@@ -1439,22 +1451,6 @@ class APITest extends WP_UnitTestCase {
 			'/id_\d/',
 			$default_payload->id,
 			'The id in the payload is the popup id prefixed with "id_"'
-		);
-
-		self::assertArraySubset(
-			(array) [
-				'f'   => 'always',
-				'utm' => null,
-				's'   => '',
-			],
-			(array) self::create_test_popup(
-				[
-					'frequency' => 'always',
-					'placement' => 'top',
-				]
-			)['payload'],
-			false,
-			'An overlay popup with "always" frequency no longer has it corrected to "once".'
 		);
 	}
 
