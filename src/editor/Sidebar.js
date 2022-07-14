@@ -23,13 +23,7 @@ import { without } from 'lodash';
 /**
  * Internal dependencies
  */
-import {
-	isCustomPlacement,
-	isInlinePlacement,
-	isManualOnlyPlacement,
-	isOverlayPlacement,
-	getPlacementHelpMessage,
-} from './utils';
+import { isOverlayPlacement, getPlacementHelpMessage } from './utils';
 import PositionPlacementControl from './PositionPlacementControl';
 
 const Sidebar = props => {
@@ -236,15 +230,11 @@ const Sidebar = props => {
 				checked={ display_title }
 				onChange={ value => onMetaFieldChange( 'display_title', value ) }
 			/>
-			{ ( isInlinePlacement( placement ) ||
-				isManualOnlyPlacement( placement ) ||
-				isCustomPlacement( placement ) ) && (
-				<ToggleControl
-					label={ __( 'Hide Prompt Border', 'newspack-popups' ) }
-					checked={ hide_border }
-					onChange={ value => onMetaFieldChange( 'hide_border', value ) }
-				/>
-			) }
+			<ToggleControl
+				label={ __( 'Hide Prompt Border', 'newspack-popups' ) }
+				checked={ hide_border }
+				onChange={ value => onMetaFieldChange( 'hide_border', value ) }
+			/>
 		</>
 	);
 };
