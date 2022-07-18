@@ -1,3 +1,10 @@
+# [2.2.0-alpha.2](https://github.com/Automattic/newspack-popups/compare/v2.2.0-alpha.1...v2.2.0-alpha.2) (2022-07-18)
+
+
+### Bug Fixes
+
+* retrieve events from persistent cache, if available ([#915](https://github.com/Automattic/newspack-popups/issues/915)) ([96eb998](https://github.com/Automattic/newspack-popups/commit/96eb998dfbf12a67aecb827ec6d4b031805835a0))
+
 # [2.2.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v2.1.0...v2.2.0-alpha.1) (2022-07-14)
 
 
