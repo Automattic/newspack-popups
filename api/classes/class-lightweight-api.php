@@ -89,7 +89,7 @@ class Lightweight_API {
 		];
 
 		// If we don't have a persistent object cache, we can't rely on it across page views.
-		if ( ! class_exists( 'Memcache' ) || ( defined( 'IS_TEST_ENV' ) && IS_TEST_ENV ) ) {
+		if ( ! file_exists( WP_CONTENT_DIR . '/object-cache.php' ) || ( defined( 'IS_TEST_ENV' ) && IS_TEST_ENV ) ) {
 			$this->ignore_cache = true;
 		}
 	}
