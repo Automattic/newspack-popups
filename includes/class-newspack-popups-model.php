@@ -7,6 +7,8 @@
 
 defined( 'ABSPATH' ) || exit;
 
+require_once dirname( __FILE__ ) . '/../api/campaigns/class-campaign-data-utils.php';
+
 /**
  * API endpoints
  */
@@ -1351,5 +1353,71 @@ final class Newspack_Popups_Model {
 		/>
 		<?php
 		return ob_get_clean();
+	}
+
+	/**
+	 * Get info about the current visit.
+	 *
+	 * @return array Visit info.
+	 */
+	public static function get_visit_info() {
+		$context = null;
+		$value   = null;
+		$visit   = [];
+
+		if ( is_singular() ) {
+			$visit['post_type'] = get_post_type();
+			$visit['post_id']   = get_the_ID();
+			$context            = $visit['post_type'];
+			$value              = $visit['post_id'];
+
+			$categories   = get_the_category();
+			$category_ids = '';
+			if ( ! empty( $categories ) ) {
+				$category_ids = implode(
+					',',
+					array_map(
+						function( $cat ) {
+							return $cat->term_id;
+						},
+						$categories
+					)
+				);
+			}
+
+			if ( ! empty( $category_ids ) ) {
+				$visit['categories'] = esc_attr( $category_ids );
+			}
+		} else {
+			global $wp;
+			$non_singular_query_type = 'unknown';
+			$request                 = $wp->query_vars;
+
+			if ( is_archive() ) {
+				$non_singular_query_type = 'archive';
+			}
+			if ( is_search() ) {
+				$non_singular_query_type = 'search';
+			}
+			if ( is_feed() ) {
+				$non_singular_query_type = 'feed';
+			}
+			if ( is_home() ) {
+				$non_singular_query_type = 'posts_page';
+			}
+			if ( is_404() ) {
+				$non_singular_query_type = '404';
+			}
+
+			$visit['request']      = $request;
+			$visit['request_type'] = $non_singular_query_type;
+			$context               = $request;
+			$value                 = $non_singular_query_type;
+		}
+
+		$client_id       = Newspack_Popups_Segmentation::get_client_id();
+		$is_repeat_visit = Campaign_Data_Utils::is_repeat_visit( $client_id, $context, $value, Campaign_Data_Utils::ignore_cache() );
+
+		return $is_repeat_visit ? 0 : $visit;
 	}
 }

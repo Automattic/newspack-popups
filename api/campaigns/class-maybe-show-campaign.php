@@ -35,35 +35,21 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			$view_as_spec = Segmentation::parse_view_as( json_decode( $_REQUEST['view_as'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		}
 
-		// Log an article or page view event.
-		if ( $visit && ( ! defined( 'DISABLE_CAMPAIGN_EVENT_LOGGING' ) || true !== DISABLE_CAMPAIGN_EVENT_LOGGING ) ) {
-			$reader_events = [];
-			$current_page  = null;
-			$view_event    = [
-				'type'  => 'view',
-				'value' => [],
-			];
-			if ( isset( $visit['post_id'] ) ) {
-				$view_event['value']['post_id'] = $visit['post_id'];
-				$current_page                   = $visit['post_id'];
-			}
-			if ( isset( $visit['categories'] ) ) {
-				$view_event['value']['categories'] = $visit['categories'];
-			}
-			if ( isset( $visit['request'] ) ) {
-				$view_event['value']['request'] = $visit['request'];
-				$current_page                   = $visit['request'];
-			}
-			if ( isset( $visit['post_type'] ) || isset( $visit['request_type'] ) ) {
-				$view_event['context'] = isset( $visit['post_type'] ) ? $visit['post_type'] : $visit['request_type'];
-			}
+		$is_repeat_visit = false;
 
-			$is_repeat_visit = $this->is_repeat_visit( $client_id, $view_event['context'], $current_page );
+		// Log an article or page view event.
+		if ( ! defined( 'DISABLE_CAMPAIGN_EVENT_LOGGING' ) || true !== DISABLE_CAMPAIGN_EVENT_LOGGING ) {
+			$reader_events = [];
+			$view_event    = $this->convert_visit_to_event( $client_id, $visit );
 
 			// Filter out recently seen views.
-			if ( ! $is_repeat_visit ) {
+			if ( ! empty( $view_event ) ) {
 				$reader_events[] = $view_event;
+			} else {
+				$is_repeat_visit = true;
 			}
+
+			$this->debug['already_read'] = $is_repeat_visit;
 
 			$referer_url                   = filter_input( INPUT_SERVER, 'HTTP_REFERER', FILTER_SANITIZE_STRING );
 			$page_referer_url              = isset( $_REQUEST['ref'] ) ? $_REQUEST['ref'] : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
@@ -239,12 +225,17 @@ class Maybe_Show_Campaign extends Lightweight_API {
 	 * @param string  $page_referer_url URL of the referrer of the frontend page that is making the API request.
 	 * @param object  $view_as_spec "View As" specification.
 	 * @param string  $now Current timestamp.
-	 * @param boolean $is_repeat_visit True if the current page has already been visited by this reader in the past hour.
+	 * @param boolean $is_repeat_visit If true, don't display overlays on repeat visits.
 	 *
 	 * @return bool Whether prompt should be shown.
 	 */
 	public function should_popup_be_shown( $client_id, $popup, $settings, $referer_url = '', $page_referer_url = '', $view_as_spec = false, $now = false, $is_repeat_visit = false ) {
 		$should_display = true;
+
+		if ( Campaign_Data_Utils::is_overlay( $popup ) && $is_repeat_visit ) {
+			self::add_suppression_reason( $popup->id, __( 'Overlays should not be shown repeatedly on already-visited posts.', 'newspack-popups' ) );
+			return false;
+		}
 
 		// Handle referer-based conditions.
 		if ( ! empty( $referer_url ) ) {
@@ -401,12 +392,6 @@ class Maybe_Show_Campaign extends Lightweight_API {
 					$frequency_reset
 				)
 			);
-		}
-
-		// If the prompt is an overlay, don't show on repeat visits to the same page within a one-hour period.
-		// Note that non-overlay prompts will be displayed on repeat visits, but `seen` events won't be logged.
-		if ( Campaign_Data_Utils::is_overlay( $popup ) && $is_repeat_visit ) {
-			$should_display = false;
 		}
 
 		return $should_display;

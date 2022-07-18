@@ -321,7 +321,8 @@ class APITest extends WP_UnitTestCase {
 		);
 
 		// Repeat a pageview.
-		$is_repeat_visit = self::$maybe_show_campaign->is_repeat_visit( self::$client_id, 'post', 4 );
+		require_once dirname( __FILE__ ) . '/../api/campaigns/class-campaign-data-utils.php';
+		$is_repeat_visit = Campaign_Data_Utils::is_repeat_visit( self::$client_id, 'post', 4, true );
 
 		self::assertTrue(
 			$is_repeat_visit,
@@ -604,7 +605,7 @@ class APITest extends WP_UnitTestCase {
 
 		self::assertArraySubset(
 			$third_seen_event,
-			$api->get_reader_events( $client_id, 'prompt_seen' )[2],
+			$api->get_reader_events( $client_id, 'prompt_seen' )[0],
 			'Returns data in expected shape.'
 		);
 	}
@@ -654,13 +655,13 @@ class APITest extends WP_UnitTestCase {
 
 		self::assertArraySubset(
 			$donate_event_1,
-			$api->get_reader_events( $client_id, 'donation' )[0],
+			$api->get_reader_events( $client_id, 'donation' )[1],
 			'Returns data with donation data after a donation is reported.'
 		);
 
 		self::assertArraySubset(
 			$donate_event_2,
-			$api->get_reader_events( $client_id, 'donation' )[1],
+			$api->get_reader_events( $client_id, 'donation' )[0],
 			'Returns data with donation data after a donation is reported.'
 		);
 	}

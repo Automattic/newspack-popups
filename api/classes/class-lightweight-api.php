@@ -8,6 +8,7 @@
 /**
  * Create the base Lightweight_API class.
  */
+require_once dirname( __FILE__ ) . '/../campaigns/class-campaign-data-utils.php';
 require_once dirname( __FILE__ ) . '/../segmentation/class-segmentation-report.php';
 require_once __DIR__ . '/../../vendor/autoload.php';
 
@@ -89,7 +90,7 @@ class Lightweight_API {
 		];
 
 		// If we don't have a persistent object cache, we can't rely on it across page views.
-		if ( ! file_exists( WP_CONTENT_DIR . '/object-cache.php' ) || ( defined( 'IS_TEST_ENV' ) && IS_TEST_ENV ) ) {
+		if ( Campaign_Data_Utils::ignore_cache() ) {
 			$this->ignore_cache = true;
 		}
 	}
@@ -536,149 +537,6 @@ class Lightweight_API {
 	}
 
 	/**
-	 * Given an array of reader events, only return those with matching $types and/or $contexts.
-	 * If both $types and $contexts are null, simply return the array as-is.
-	 *
-	 * @param array             $events Array of reader events.
-	 * @param string|array|null $types Data type or array of data types to filter by.
-	 *                                 If not given, will only retrieve temporary data types.
-	 * @param string|array|null $contexts Data context or array of data contexts to filter by.
-	 *
-	 * @return array Filtered array of data items.
-	 */
-	public function filter_events_by_type( $events = [], $types = null, $contexts = null ) {
-		// Unserialize event values.
-		if ( ! empty( $events ) ) {
-			$events = array_map(
-				function( $event ) {
-					if ( ! empty( $event['value'] ) && is_string( $event['value'] ) ) {
-						$event['value'] = json_decode( $event['value'], true );
-					}
-					return $event;
-				},
-				$events
-			);
-		}
-
-		if ( null === $types && null === $contexts ) {
-			return $events;
-		}
-
-		if ( ! is_array( $types ) && null !== $types ) {
-			$types = [ $types ];
-		}
-		if ( ! is_array( $contexts ) && null !== $contexts ) {
-			$contexts = [ $contexts ];
-		}
-
-		return array_values(
-			array_filter(
-				$events,
-				function( $event ) use ( $types, $contexts ) {
-					$matches = true;
-					if ( null !== $types ) {
-						$matches = in_array( $event['type'], $types, true );
-					}
-
-					if ( null !== $contexts ) {
-						$matches = $matches && in_array( $event['context'], $contexts, true );
-					}
-					return $matches;
-				}
-			)
-		);
-	}
-
-	/**
-	 * Given an array of values, build a SQL statement to query on those values.
-	 *
-	 * @param string $column_name Name of the column to query.
-	 * @param array  $values Possible values to query for.
-	 *
-	 * @return string Partial query string to use in a SQL query.
-	 */
-	public function build_partial_query_filter( $column_name, $values ) {
-		global $wpdb;
-
-		// If only one value to query on, use the = operator. Otherwise, use the IN operator.
-		if ( 1 === count( $values ) ) {
-			return $wpdb->prepare( "$column_name = %s", $values ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
-		}
-
-		$placeholders = [];
-		foreach ( $values as $value ) {
-			$placeholders[] = '%s';
-		}
-		$placeholders = implode( ',', $placeholders );
-
-		return $wpdb->prepare( "$column_name IN ( $placeholders )", $values ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
-	}
-
-	/**
-	 * Get all reader data from the DB.
-	 *
-	 * @param string            $client_ids Client ID or IDs associated with the reader.
-	 * @param string|array|null $type Type or types of data to retrieve.
-	 * @param string|array|null $context Context or contexts of data to retrieve.
-	 *
-	 * @return array Array of reader data for the given client ID.
-	 */
-	public function get_reader_events_from_db( $client_ids, $type = null, $context = null ) {
-		global $wpdb;
-
-		$client_filter  = $this->build_partial_query_filter( 'client_id', $client_ids );
-		$type_filter    = '';
-		$context_filter = '';
-
-		if ( is_array( $type ) ) {
-			$type_filter .= 'AND ' . $this->build_partial_query_filter( 'type', $type );
-		}
-		if ( is_array( $context ) ) {
-			$context_filter .= 'AND ' . $this->build_partial_query_filter( 'context', $context );
-		}
-
-
-		$reader_events_table_name = Segmentation::get_reader_events_table_name();
-		$events_sql               = "SELECT id, client_id, date_created, type, context, value from $reader_events_table_name WHERE $client_filter $type_filter $context_filter ORDER BY date_created DESC LIMIT 1000";
-		$events                   = $wpdb->get_results( $events_sql ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
-
-		$this->debug['read_query_count'] += 1;
-
-		if ( ! empty( $events ) ) {
-			$events = array_map(
-				function( $event ) {
-					$event = (array) $event;
-
-					if ( ! empty( $event['value'] ) && is_string( $event['value'] ) ) {
-						$event['value'] = json_decode( $event['value'], true );
-					}
-
-					return $event;
-				},
-				$events
-			);
-		}
-
-		return $events;
-	}
-
-	/**
-	 * Get reader events from the persistent cache, if available.
-	 *
-	 * @param string $client_id Single client ID associated with the current reader.
-	 *
-	 * @return array Array of reader events for the given client ID.
-	 */
-	public static function get_reader_events_from_cache( $client_id ) {
-		$events = wp_cache_get( 'reader_events', $client_id );
-		if ( ! $events ) {
-			$events = [];
-		}
-
-		return $events;
-	}
-
-	/**
 	 * Retrieve data for a specific reader from the cache or DB.
 	 *
 	 * @param string|array      $client_ids Client IDs of the reader.
@@ -689,101 +547,74 @@ class Lightweight_API {
 	 * @return array Array of reader data, optionally filtered by $type and $context.
 	 */
 	public function get_reader_events( $client_ids, $type = null, $context = null ) {
-		if ( ! is_array( $client_ids ) ) {
-			$client_ids = [ $client_ids ];
-		}
-		if ( ! is_array( $type ) && null !== $type ) {
-			$type = [ $type ];
-		}
-		if ( ! is_array( $context ) && null !== $context ) {
-			$context = [ $context ];
-		}
+		$filtered_events = Campaign_Data_Utils::get_reader_events( $client_ids, $type, $context, $this->ignore_cache );
 
-		$events = [];
-
-		// Check the cache first.
-		if ( ! $this->ignore_cache ) {
-			$events = $this->get_reader_events_from_cache( $client_ids[0] );
-
-			if ( ! empty( $events ) ) {
-				$get_cached_events = true;
-
-				// If cached events are missing events of any type/context, fetch from the DB so we don't miss anything.
-				foreach ( $type as $single_type ) {
-					$filtered_events = $this->filter_events_by_type( $events, $single_type );
-
-					if ( empty( $filtered_events ) ) {
-						$get_cached_events = false;
-					}
-				}
-
-				if ( $get_cached_events ) {
-					return $this->filter_events_by_type( $events, $type, $context );
-				}
-			}
-		}
-
-		$filtered_events = $this->get_reader_events_from_db( $client_ids, $type, $context );
-		$unique_ids      = [];
-		$all_events      = array_merge( $events, $filtered_events );
-		$all_events      = array_values(
+		$debug_events                 = $this->debug['reader_events'];
+		$new_debug_events             = array_values(
 			array_filter(
-				$all_events,
-				function( $event ) use ( &$unique_ids ) {
-
-					if ( ! isset( $event['id'] ) || ! in_array( $event['id'], $unique_ids ) ) {
-						// If the event is coming from the persistent cache, fashion a faux-unique ID using the timestamp.
-						$unique_id    = isset( $event['id'] ) ? $event['id'] : $event['type'] . $event['context'] . $event['date_created'];
-						$unique_ids[] = $unique_id;
-						return true;
+				$filtered_events,
+				function( $event ) use ( $debug_events ) {
+					foreach ( $debug_events as $existing_event ) {
+						if ( $event['id'] === $existing_event['id'] ) {
+							return false;
+						}
 					}
-
-					return false;
+					return true;
 				}
 			)
 		);
+		$this->debug['reader_events'] = array_merge( $debug_events, $new_debug_events );
 
-		$this->debug['reader_events'] = $all_events;
+		if ( ! $this->ignore_cache ) {
+			$this->debug['read_query_count'] += 1;
+		}
 
 		return $filtered_events;
 	}
 
 	/**
-	 * Has the given reader already recently viewed the page with the given context + value?
+	 * Given a visit object, convert it to a view event.
+	 * Return false if the visit is a repeat visit so we don't log duplicate events.
 	 *
-	 * @param string|array $client_ids Client ID or IDs for the reader.
-	 * @param string       $context Context of the visit to check.
-	 * @param int|string   $value   Post ID (if singular) or request string (if not) of the visit to check.
+	 * @param string $client_id Client ID.
+	 * @param array  $visit Visit object passed to API.
 	 *
-	 * @return boolean True if the reader has already viewed this page in the past hour.
+	 * @return array|boolean View event for the visit, or false.
 	 */
-	public function is_repeat_visit( $client_ids, $context, $value ) {
-		if ( ! $context || ! $value ) {
+	public function convert_visit_to_event( $client_id, $visit ) {
+		if ( ! $visit || ( ! isset( $visit['post_id'] ) && ! isset( $visit['request'] ) ) ) {
 			return false;
 		}
 
-		if ( is_numeric( $value ) ) {
-			$value = (int) $value;
+		$value_to_check = null;
+
+		$view_event = [
+			'type'  => 'view',
+			'value' => [],
+		];
+		if ( isset( $visit['post_id'] ) ) {
+			$view_event['value']['post_id'] = $visit['post_id'];
+			$value_to_check                 = $visit['post_id'];
+		}
+		if ( isset( $visit['categories'] ) ) {
+			$view_event['value']['categories'] = $visit['categories'];
+		}
+		if ( isset( $visit['request'] ) ) {
+			$view_event['value']['request'] = $visit['request'];
+			$value_to_check                 = $visit['request'];
+		}
+		if ( isset( $visit['post_type'] ) || isset( $visit['request_type'] ) ) {
+			$view_event['context'] = isset( $visit['post_type'] ) ? $visit['post_type'] : $visit['request_type'];
 		}
 
-		$already_read             = $this->get_reader_events( $client_ids, 'view', $context );
-		$event_values             = array_column(
-			$already_read,
-			'value'
-		);
-		$already_read_singular    = array_column( $event_values, 'post_id' );
-		$already_read_nonsingular = array_map(
-			function( $request_value ) {
-				return wp_json_encode( $request_value );
-			},
-			array_column( $event_values, 'request' )
-		);
-		$already_read             = array_merge( $already_read_singular, $already_read_nonsingular );
-		$has_already_read         = in_array( $value, $already_read, true );
+		// Don't log new view events for posts that werer recently visited.
+		if ( Campaign_Data_Utils::is_repeat_visit( $client_id, $view_event['context'], $value_to_check, $this->ignore_cache ) ) {
+			return false;
+		}
 
-		$this->debug['already_read'] = $has_already_read;
+		$this->debug['view_event'] = $view_event;
 
-		return $has_already_read;
+		return $view_event;
 	}
 
 	/**
@@ -805,7 +636,7 @@ class Lightweight_API {
 		}
 
 		// Rebuild reader_data if there were new views.
-		$new_views = $this->filter_events_by_type( $events, 'view' );
+		$new_views = Campaign_Data_Utils::filter_events_by_type( $events, 'view' );
 		if ( ! empty( $new_views ) ) {
 			$reader      = $this->get_reader( $client_id );
 			$reader_data = isset( $reader['reader_data'] ) ? $reader['reader_data'] : [];
