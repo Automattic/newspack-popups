@@ -33,27 +33,47 @@ class Report_Campaign_Data extends Lightweight_API {
 	/**
 	 * Handle reporting campaign data – views and subscriptions.
 	 *
-	 * @param object $request A request.
+	 * @param object         $request A request.
+	 * @param string|boolean $now A timestamp to log events with. If none given, use the current time.
 	 */
-	public function report_campaign( $request ) {
-		$client_id = $this->get_request_param( 'cid', $request );
-		$popup_id  = $this->get_request_param( 'popup_id', $request );
-		$action    = $this->get_request_param( 'dismiss', $request ) ? 'prompt_dismissed' : 'prompt_seen';
-		$events    = [
-			[
-				'client_id' => $client_id,
-				'type'      => $action,
-				'context'   => $popup_id,
-			],
-		];
+	public function report_campaign( $request, $now = false ) {
+		$client_id  = $this->get_request_param( 'cid', $request );
+		$popup_id   = $this->get_request_param( 'popup_id', $request );
+		$action     = $this->get_request_param( 'dismiss', $request ) ? 'prompt_dismissed' : 'prompt_seen';
+		$log_action = true;
+		$events     = [];
+
+		if ( false === $now ) {
+			$now = time();
+		}
+
+		$timestamp = gmdate( 'Y-m-d H:i:s', $now );
+
+		// Don't log duplicate prompt_seen events if viewing the same page multiple times in a short period.
+		if ( 'prompt_seen' === $action ) {
+			$repeat     = boolval( $this->get_request_param( 'repeat', $request ) );
+			$log_action = ! $repeat;
+
+			$this->debug['repeat'] = $repeat;
+		}
+
+		if ( $log_action ) {
+			$events[] = [
+				'client_id'    => $client_id,
+				'date_created' => $timestamp,
+				'type'         => $action,
+				'context'      => $popup_id,
+			];
+		}
 
 		// Log a newsletter subscription event.
 		$email_address = $this->get_request_param( 'email', $request );
 		if ( $email_address ) {
 			$subscription_event = [
-				'client_id' => $client_id,
-				'type'      => 'subscription',
-				'context'   => $email_address,
+				'client_id'    => $client_id,
+				'date_created' => $timestamp,
+				'type'         => 'subscription',
+				'context'      => $email_address,
 			];
 			$esp                = $this->get_request_param( 'esp', $request );
 

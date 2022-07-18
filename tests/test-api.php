@@ -584,20 +584,18 @@ class APITest extends WP_UnitTestCase {
 		);
 
 		// Report another view of a different prompt.
-		$new_popup_id            = Newspack_Popups_Model::canonize_popup_id( uniqid() );
-		$expected_new_popup_data = [
-			'count'       => 1,
-			'last_viewed' => time(),
-		];
+		$timestamp    = strtotime( '+1 hour' );
+		$new_popup_id = Newspack_Popups_Model::canonize_popup_id( uniqid() );
 		self::$report_campaign_data->report_campaign(
 			[
 				'cid'      => $client_id,
 				'popup_id' => $new_popup_id,
-			]
+			],
+			$timestamp
 		);
 		$third_seen_event = [
 			'client_id'    => $client_id,
-			'date_created' => gmdate( 'Y-m-d H:i:s' ),
+			'date_created' => gmdate( 'Y-m-d H:i:s', $timestamp ),
 			'type'         => 'prompt_seen',
 			'context'      => $new_popup_id,
 			'value'        => '',
@@ -638,7 +636,8 @@ class APITest extends WP_UnitTestCase {
 			[
 				'client_id' => $client_id,
 				'donation'  => wp_json_encode( $donation_2 ),
-			]
+			],
+			strtotime( '+1 hour' )
 		);
 
 		$donate_event_1 = [

@@ -843,6 +843,7 @@ final class Newspack_Popups_Model {
 					'extraUrlParams' => [
 						'popup_id' => esc_attr( self::canonize_popup_id( $popup['id'] ) ),
 						'cid'      => 'CLIENT_ID(' . esc_attr( Newspack_Popups_Segmentation::NEWSPACK_SEGMENTATION_CID_NAME ) . ')',
+						'repeat'   => empty( self::get_visit_info() ) ? 1 : 0,
 					],
 				],
 			],
