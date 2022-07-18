@@ -732,7 +732,9 @@ class Lightweight_API {
 				function( $event ) use ( &$unique_ids ) {
 
 					if ( ! isset( $event['id'] ) || ! in_array( $event['id'], $unique_ids ) ) {
-						$unique_ids[] = $event['id'];
+						// If the event is coming from the persistent cache, fashion a faux-unique ID using the timestamp.
+						$unique_id    = isset( $event['id'] ) ? $event['id'] : $event['type'] . $event['context'] . $event['date_created'];
+						$unique_ids[] = $unique_id;
 						return true;
 					}
 
