@@ -89,7 +89,7 @@ class Lightweight_API {
 		];
 
 		// If we don't have a persistent object cache, we can't rely on it across page views.
-		if ( ! class_exists( 'Memcache' ) || ( defined( 'IS_TEST_ENV' ) && IS_TEST_ENV ) ) {
+		if ( ! file_exists( WP_CONTENT_DIR . '/object-cache.php' ) || ( defined( 'IS_TEST_ENV' ) && IS_TEST_ENV ) ) {
 			$this->ignore_cache = true;
 		}
 	}
@@ -663,6 +663,22 @@ class Lightweight_API {
 	}
 
 	/**
+	 * Get reader events from the persistent cache, if available.
+	 *
+	 * @param string $client_id Single client ID associated with the current reader.
+	 *
+	 * @return array Array of reader events for the given client ID.
+	 */
+	public static function get_reader_events_from_cache( $client_id ) {
+		$events = wp_cache_get( 'reader_events', $client_id );
+		if ( ! $events ) {
+			$events = [];
+		}
+
+		return $events;
+	}
+
+	/**
 	 * Retrieve data for a specific reader from the cache or DB.
 	 *
 	 * @param string|array      $client_ids Client IDs of the reader.
@@ -683,16 +699,16 @@ class Lightweight_API {
 			$context = [ $context ];
 		}
 
-		$events = wp_cache_get( 'reader_events', $client_ids[0] );
-		if ( ! $events ) {
-			$events = [];
-		}
+		$events = [];
 
 		// Check the cache first.
 		if ( ! $this->ignore_cache ) {
+			$events = $this->get_reader_events_from_cache( $client_ids[0] );
+
 			if ( ! empty( $events ) ) {
 				$get_cached_events = true;
 
+				// If cached events are missing events of any type/context, fetch from the DB so we don't miss anything.
 				foreach ( $type as $single_type ) {
 					$filtered_events = $this->filter_events_by_type( $events, $single_type );
 
@@ -709,13 +725,16 @@ class Lightweight_API {
 
 		$filtered_events = $this->get_reader_events_from_db( $client_ids, $type, $context );
 		$unique_ids      = [];
-		$all_events      = array_merge( $filtered_events, $events );
+		$all_events      = array_merge( $events, $filtered_events );
 		$all_events      = array_values(
 			array_filter(
 				$all_events,
 				function( $event ) use ( &$unique_ids ) {
-					if ( ! in_array( $event['id'], $unique_ids ) ) {
-						$unique_ids[] = $event['id'];
+
+					if ( ! isset( $event['id'] ) || ! in_array( $event['id'], $unique_ids ) ) {
+						// If the event is coming from the persistent cache, fashion a faux-unique ID using the timestamp.
+						$unique_id    = isset( $event['id'] ) ? $event['id'] : $event['type'] . $event['context'] . $event['date_created'];
+						$unique_ids[] = $unique_id;
 						return true;
 					}
 
@@ -724,11 +743,7 @@ class Lightweight_API {
 			)
 		);
 
-		// Rebuild cache.
-		if ( ! empty( $all_events ) ) {
-			wp_cache_set( 'reader_events', $all_events, $client_ids[0] );
-			$this->debug['reader_events'] = $all_events;
-		}
+		$this->debug['reader_events'] = $all_events;
 
 		return $filtered_events;
 	}
@@ -846,6 +861,12 @@ class Lightweight_API {
 				return false;
 			}
 		} else {
+			// Rebuild cache.
+			$cached_events                = $this->get_reader_events_from_cache( $client_id );
+			$all_events                   = array_merge( $cached_events, $events );
+			$write_result                 = wp_cache_set( 'reader_events', $all_events, $client_id );
+			$this->debug['reader_events'] = $all_events;
+
 			// Write items to the flat file to be parsed to the DB at a later point.
 			Segmentation_Report::log_reader_events( $events );
 		}
