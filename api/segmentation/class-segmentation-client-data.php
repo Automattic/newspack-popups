@@ -127,7 +127,7 @@ class Segmentation_Client_Data extends Lightweight_API {
 
 			$order_events  = array_reduce(
 				$orders,
-				function( $acc, $order ) use ( $existing_orders ) {
+				function( $acc, $order ) use ( $existing_orders, $timestamp ) {
 					if ( ! in_array( (int) $order['order_id'], $existing_orders, true ) ) {
 						$acc[] = [
 							'date_created' => $timestamp,

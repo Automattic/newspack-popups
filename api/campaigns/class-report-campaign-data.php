@@ -37,34 +37,23 @@ class Report_Campaign_Data extends Lightweight_API {
 	 * @param string|boolean $now A timestamp to log events with. If none given, use the current time.
 	 */
 	public function report_campaign( $request, $now = false ) {
-		$client_id  = $this->get_request_param( 'cid', $request );
-		$popup_id   = $this->get_request_param( 'popup_id', $request );
-		$action     = $this->get_request_param( 'dismiss', $request ) ? 'prompt_dismissed' : 'prompt_seen';
-		$log_action = true;
-		$events     = [];
+		$client_id = $this->get_request_param( 'cid', $request );
+		$popup_id  = $this->get_request_param( 'popup_id', $request );
+		$action    = $this->get_request_param( 'dismiss', $request ) ? 'prompt_dismissed' : 'prompt_seen';
 
 		if ( false === $now ) {
 			$now = time();
 		}
 
 		$timestamp = gmdate( 'Y-m-d H:i:s', $now );
-
-		// Don't log duplicate prompt_seen events if viewing the same page multiple times in a short period.
-		if ( 'prompt_seen' === $action ) {
-			$repeat     = boolval( $this->get_request_param( 'repeat', $request ) );
-			$log_action = ! $repeat;
-
-			$this->debug['repeat'] = $repeat;
-		}
-
-		if ( $log_action ) {
-			$events[] = [
+		$events    = [
+			[
 				'client_id'    => $client_id,
 				'date_created' => $timestamp,
 				'type'         => $action,
 				'context'      => $popup_id,
-			];
-		}
+			],
+		];
 
 		// Log a newsletter subscription event.
 		$email_address = $this->get_request_param( 'email', $request );

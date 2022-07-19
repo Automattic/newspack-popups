@@ -35,8 +35,6 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			$view_as_spec = Segmentation::parse_view_as( json_decode( $_REQUEST['view_as'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		}
 
-		$is_repeat_visit = false;
-
 		// Log an article or page view event.
 		if ( ! defined( 'DISABLE_CAMPAIGN_EVENT_LOGGING' ) || true !== DISABLE_CAMPAIGN_EVENT_LOGGING ) {
 			$reader_events = [];
@@ -45,11 +43,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			// Filter out recently seen views.
 			if ( ! empty( $view_event ) ) {
 				$reader_events[] = $view_event;
-			} else {
-				$is_repeat_visit = true;
 			}
-
-			$this->debug['already_read'] = $is_repeat_visit;
 
 			$referer_url                   = filter_input( INPUT_SERVER, 'HTTP_REFERER', FILTER_SANITIZE_STRING );
 			$page_referer_url              = isset( $_REQUEST['ref'] ) ? $_REQUEST['ref'] : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
@@ -93,8 +87,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 				$referer_url,
 				$page_referer_url,
 				$view_as_spec,
-				false,
-				$is_repeat_visit
+				false
 			);
 
 			// If an overlay is already able to be shown, pick the one that has the higher priority.
@@ -218,24 +211,18 @@ class Maybe_Show_Campaign extends Lightweight_API {
 	/**
 	 * Primary prompt visibility logic.
 	 *
-	 * @param string  $client_id Client ID.
-	 * @param object  $popup Prompt.
-	 * @param object  $settings Settings.
-	 * @param string  $referer_url URL of the page performing the API request.
-	 * @param string  $page_referer_url URL of the referrer of the frontend page that is making the API request.
-	 * @param object  $view_as_spec "View As" specification.
-	 * @param string  $now Current timestamp.
-	 * @param boolean $is_repeat_visit If true, don't display overlays on repeat visits.
+	 * @param string $client_id Client ID.
+	 * @param object $popup Prompt.
+	 * @param object $settings Settings.
+	 * @param string $referer_url URL of the page performing the API request.
+	 * @param string $page_referer_url URL of the referrer of the frontend page that is making the API request.
+	 * @param object $view_as_spec "View As" specification.
+	 * @param string $now Current timestamp.
 	 *
 	 * @return bool Whether prompt should be shown.
 	 */
-	public function should_popup_be_shown( $client_id, $popup, $settings, $referer_url = '', $page_referer_url = '', $view_as_spec = false, $now = false, $is_repeat_visit = false ) {
+	public function should_popup_be_shown( $client_id, $popup, $settings, $referer_url = '', $page_referer_url = '', $view_as_spec = false, $now = false ) {
 		$should_display = true;
-
-		if ( Campaign_Data_Utils::is_overlay( $popup ) && $is_repeat_visit ) {
-			self::add_suppression_reason( $popup->id, __( 'Overlays should not be shown repeatedly on already-visited posts.', 'newspack-popups' ) );
-			return false;
-		}
 
 		// Handle referer-based conditions.
 		if ( ! empty( $referer_url ) ) {

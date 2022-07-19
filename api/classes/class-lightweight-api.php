@@ -8,7 +8,6 @@
 /**
  * Create the base Lightweight_API class.
  */
-require_once dirname( __FILE__ ) . '/../campaigns/class-campaign-data-utils.php';
 require_once dirname( __FILE__ ) . '/../segmentation/class-segmentation-report.php';
 require_once __DIR__ . '/../../vendor/autoload.php';
 
@@ -90,7 +89,7 @@ class Lightweight_API {
 		];
 
 		// If we don't have a persistent object cache, we can't rely on it across page views.
-		if ( Campaign_Data_Utils::ignore_cache() ) {
+		if ( ! file_exists( WP_CONTENT_DIR . '/object-cache.php' ) || ( defined( 'IS_TEST_ENV' ) && IS_TEST_ENV ) ) {
 			$this->ignore_cache = true;
 		}
 	}
@@ -249,6 +248,8 @@ class Lightweight_API {
 
 		// Write to the DB.
 		$write_result = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
+
+		$this->debug['write_query_count'] += 1;
 
 		if ( ! $write_result ) {
 			$this->debug['write_error'] = "Error writing to $reader_events_table_name.";
@@ -526,14 +527,157 @@ class Lightweight_API {
 		// Write to the DB.
 		$write_result = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
 
+		$this->debug['write_query_count'] += 1;
+
 		// If DB write was successful, rebuild cache.
 		if ( $write_result ) {
-			$this->debug['write_query_count'] += 1;
 			return wp_cache_set( 'reader', $reader, $client_id );
 		}
 
 		$this->debug['write_error'] = "Error writing to $readers_table_name.";
 		return false;
+	}
+
+	/**
+	 * Given an array of reader events, only return those with matching $types and/or $contexts.
+	 * If both $types and $contexts are null, simply return the array as-is.
+	 *
+	 * @param array             $events Array of reader events.
+	 * @param string|array|null $types Data type or array of data types to filter by.
+	 *                                 If not given, will only retrieve temporary data types.
+	 * @param string|array|null $contexts Data context or array of data contexts to filter by.
+	 *
+	 * @return array Filtered array of data items.
+	 */
+	public function filter_events_by_type( $events = [], $types = null, $contexts = null ) {
+		// Unserialize event values.
+		if ( ! empty( $events ) ) {
+			$events = array_map(
+				function( $event ) {
+					if ( ! empty( $event['value'] ) && is_string( $event['value'] ) ) {
+						$event['value'] = json_decode( $event['value'], true );
+					}
+					return $event;
+				},
+				$events
+			);
+		}
+
+		if ( null === $types && null === $contexts ) {
+			return $events;
+		}
+
+		if ( ! is_array( $types ) && null !== $types ) {
+			$types = [ $types ];
+		}
+		if ( ! is_array( $contexts ) && null !== $contexts ) {
+			$contexts = [ $contexts ];
+		}
+
+		return array_values(
+			array_filter(
+				$events,
+				function( $event ) use ( $types, $contexts ) {
+					$matches = true;
+					if ( null !== $types ) {
+						$matches = in_array( $event['type'], $types, true );
+					}
+
+					if ( null !== $contexts ) {
+						$matches = $matches && in_array( $event['context'], $contexts, true );
+					}
+					return $matches;
+				}
+			)
+		);
+	}
+
+	/**
+	 * Given an array of values, build a SQL statement to query on those values.
+	 *
+	 * @param string $column_name Name of the column to query.
+	 * @param array  $values Possible values to query for.
+	 *
+	 * @return string Partial query string to use in a SQL query.
+	 */
+	public function build_partial_query_filter( $column_name, $values ) {
+		global $wpdb;
+
+		// If only one value to query on, use the = operator. Otherwise, use the IN operator.
+		if ( 1 === count( $values ) ) {
+			return $wpdb->prepare( "$column_name = %s", $values ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
+		}
+
+		$placeholders = [];
+		foreach ( $values as $value ) {
+			$placeholders[] = '%s';
+		}
+		$placeholders = implode( ',', $placeholders );
+
+		return $wpdb->prepare( "$column_name IN ( $placeholders )", $values ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
+	}
+
+	/**
+	 * Get all reader data from the DB.
+	 *
+	 * @param string            $client_ids Client ID or IDs associated with the reader.
+	 * @param string|array|null $type Type or types of data to retrieve.
+	 * @param string|array|null $context Context or contexts of data to retrieve.
+	 *
+	 * @return array Array of reader data for the given client ID.
+	 */
+	public function get_reader_events_from_db( $client_ids, $type = null, $context = null ) {
+		global $wpdb;
+
+		$client_filter  = $this->build_partial_query_filter( 'client_id', $client_ids );
+		$type_filter    = '';
+		$context_filter = '';
+
+		if ( is_array( $type ) ) {
+			$type_filter .= 'AND ' . $this->build_partial_query_filter( 'type', $type );
+		}
+		if ( is_array( $context ) ) {
+			$context_filter .= 'AND ' . $this->build_partial_query_filter( 'context', $context );
+		}
+
+		$reader_events_table_name = Segmentation::get_reader_events_table_name();
+		$events_sql               = "SELECT id, client_id, date_created, type, context, value from $reader_events_table_name WHERE $client_filter $type_filter $context_filter ORDER BY date_created DESC LIMIT 1000";
+		$events                   = $wpdb->get_results( $events_sql ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
+
+		$this->debug['read_query_count'] += 1;
+
+		if ( ! empty( $events ) ) {
+			$events = array_map(
+				function( $event ) {
+					$event = (array) $event;
+
+					if ( ! empty( $event['value'] ) && is_string( $event['value'] ) ) {
+						$event['value'] = json_decode( $event['value'], true );
+					}
+
+					return $event;
+				},
+				$events
+			);
+		}
+
+		return $events;
+	}
+
+	/**
+	 * Get reader events from the persistent cache, if available.
+	 *
+	 * @param string $client_id Single client ID associated with the current reader.
+	 *
+	 * @return array Array of reader events for the given client ID.
+	 */
+	public function get_reader_events_from_cache( $client_id ) {
+		$events = wp_cache_get( 'reader_events', $client_id );
+		if ( ! $events ) {
+			$events = [];
+		}
+
+		return $events;
 	}
 
 	/**
@@ -543,38 +687,59 @@ class Lightweight_API {
 	 * @param string|array|null $type Type or types of data to retrieve.
 	 *                                If not given, only return temporary data types.
 	 * @param string|array|null $context Context or contexts of data to retrieve.
+	 * @param boolean           $ignore_cache If true, skip cache and get events directly from DB.
 	 *
 	 * @return array Array of reader data, optionally filtered by $type and $context.
 	 */
-	public function get_reader_events( $client_ids, $type = null, $context = null ) {
-		$filtered_events = Campaign_Data_Utils::get_reader_events( $client_ids, $type, $context, $this->ignore_cache );
+	public function get_reader_events( $client_ids, $type = null, $context = null, $ignore_cache = false ) {
+		if ( ! is_array( $client_ids ) ) {
+			$client_ids = [ $client_ids ];
+		}
+		if ( ! is_array( $type ) && null !== $type ) {
+			$type = [ $type ];
+		}
+		if ( ! is_array( $context ) && null !== $context ) {
+			$context = [ $context ];
+		}
 
-		$debug_events                 = $this->debug['reader_events'];
-		$new_debug_events             = array_values(
+		$events = [];
+
+		// Check the cache first.
+		if ( ! $ignore_cache ) {
+			$events = $this->get_reader_events_from_cache( $client_ids[0] );
+			if ( ! empty( $events ) ) {
+				return $this->filter_events_by_type( $events, $type, $context );
+			}
+		}
+
+		$events_from_db  = $this->get_reader_events_from_db( $client_ids, $type, $context );
+		$unique_ids      = [];
+		$filtered_events = array_values(
 			array_filter(
-				$filtered_events,
-				function( $event ) use ( $debug_events ) {
-					foreach ( $debug_events as $existing_event ) {
+				$events_from_db,
+				function( $event ) use ( $events ) {
+					// If the event is coming from the persistent cache, fashion a faux-unique ID using the timestamp.
+					if ( ! isset( $event['id'] ) ) {
+						$event['id'] = $event['type'] . $event['context'] . $event['date_created'];
+					}
+
+					// Dedupe events from cache.
+					foreach ( $events as $existing_event ) {
 						if ( $event['id'] === $existing_event['id'] ) {
 							return false;
 						}
 					}
+
 					return true;
 				}
 			)
 		);
-		$this->debug['reader_events'] = array_merge( $debug_events, $new_debug_events );
-
-		if ( ! $this->ignore_cache ) {
-			$this->debug['read_query_count'] += 1;
-		}
 
 		return $filtered_events;
 	}
 
 	/**
 	 * Given a visit object, convert it to a view event.
-	 * Return false if the visit is a repeat visit so we don't log duplicate events.
 	 *
 	 * @param string $client_id Client ID.
 	 * @param array  $visit Visit object passed to API.
@@ -586,33 +751,22 @@ class Lightweight_API {
 			return false;
 		}
 
-		$value_to_check = null;
-
 		$view_event = [
 			'type'  => 'view',
 			'value' => [],
 		];
 		if ( isset( $visit['post_id'] ) ) {
 			$view_event['value']['post_id'] = $visit['post_id'];
-			$value_to_check                 = $visit['post_id'];
 		}
 		if ( isset( $visit['categories'] ) ) {
 			$view_event['value']['categories'] = $visit['categories'];
 		}
 		if ( isset( $visit['request'] ) ) {
 			$view_event['value']['request'] = $visit['request'];
-			$value_to_check                 = $visit['request'];
 		}
 		if ( isset( $visit['post_type'] ) || isset( $visit['request_type'] ) ) {
 			$view_event['context'] = isset( $visit['post_type'] ) ? $visit['post_type'] : $visit['request_type'];
 		}
-
-		// Don't log new view events for posts that werer recently visited.
-		if ( Campaign_Data_Utils::is_repeat_visit( $client_id, $view_event['context'], $value_to_check, $this->ignore_cache ) ) {
-			return false;
-		}
-
-		$this->debug['view_event'] = $view_event;
 
 		return $view_event;
 	}
@@ -636,7 +790,7 @@ class Lightweight_API {
 		}
 
 		// Rebuild reader_data if there were new views.
-		$new_views = Campaign_Data_Utils::filter_events_by_type( $events, 'view' );
+		$new_views = $this->filter_events_by_type( $events, 'view' );
 		if ( ! empty( $new_views ) ) {
 			$reader      = $this->get_reader( $client_id );
 			$reader_data = isset( $reader['reader_data'] ) ? $reader['reader_data'] : [];
@@ -687,12 +841,9 @@ class Lightweight_API {
 		if ( $this->ignore_cache ) {
 			$write_result = $this->bulk_db_insert( $events );
 
-			// If DB write was successful, rebuild cache.
-			if ( $write_result ) {
-				$this->debug['write_query_count'] += 1;
-			} else {
-				return false;
-			}
+			$this->debug['write_query_count'] += 1;
+
+			return $write_result;
 		} else {
 			// Rebuild cache.
 			$cached_events                = $this->get_reader_events_from_cache( $client_id );
@@ -716,19 +867,13 @@ class Lightweight_API {
 		global $wpdb;
 		$readers_table_name = Segmentation::get_readers_table_name();
 
-		// Results are limited to the 1000 most recent rows for performance reasons.
+		// Results are limited to the 1000 most recent rows for performance reasons. Also ignore clients from preview sessions.
 		$all_client_ids_rows = $wpdb->get_results( "SELECT DISTINCT client_id,date_modified FROM $readers_table_name WHERE is_preview IS NULL ORDER BY date_modified DESC LIMIT 1000" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		$api                 = new Lightweight_API();
-		return array_reduce(
-			$all_client_ids_rows,
-			function ( $acc, $row ) use ( $api ) {
-				// Disregard client data created during previewing.
-				if ( ! $this->is_preview( $row->client_id ) ) {
-					$acc[] = $row->client_id;
-				}
-				return $acc;
+		return array_map(
+			function ( $row ) {
+				return $row->client_id;
 			},
-			[]
+			$all_client_ids_rows
 		);
 	}
 
