@@ -320,20 +320,6 @@ class APITest extends WP_UnitTestCase {
 			'Assert not visible, because a frequency_between of 2 means it should not be shown for two pageviews after display.'
 		);
 
-		// Repeat a pageview.
-		require_once dirname( __FILE__ ) . '/../api/campaigns/class-campaign-data-utils.php';
-		$is_repeat_visit = Campaign_Data_Utils::is_repeat_visit( self::$client_id, 'post', 4, true );
-
-		self::assertTrue(
-			$is_repeat_visit,
-			'Assert that another visit to a recently-visited page is marked as such.'
-		);
-
-		self::assertFalse(
-			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup['payload'], self::$settings, $is_repeat_visit ),
-			'Assert not visible on a repeat visit to a recently-viewed page.'
-		);
-
 		// Report another pageview.
 		self::$maybe_show_campaign->save_reader_events(
 			self::$client_id,
