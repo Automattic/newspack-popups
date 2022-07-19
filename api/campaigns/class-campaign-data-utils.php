@@ -19,6 +19,7 @@ class Campaign_Data_Utils {
 		'feed',
 		'posts_page',
 		'404',
+		'page',
 	];
 
 	/**
