@@ -245,14 +245,6 @@ final class Newspack_Popups_Segmentation {
 			$initial_client_report_url_params['mc_eid'] = sanitize_text_field( $_GET['mc_eid'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		}
 
-		// Handle pre-authentication (Reader Activation feature).
-		if ( ! is_user_logged_in() && class_exists( 'Newspack\Reader_Activation' ) && \Newspack\Reader_Activation::is_enabled() ) {
-			$auth_intention_value = \Newspack\Reader_Activation::get_auth_intention_value();
-			if ( $auth_intention_value ) {
-				$initial_client_report_url_params['pre_auth_value'] = $auth_intention_value;
-			}
-		}
-
 		// Handle user accounts and Newspack donations via WooCommerce.
 		if ( is_user_logged_in() && ! Newspack_Popups::is_preview_request() ) {
 			// If the user is logged in, store their user ID.
