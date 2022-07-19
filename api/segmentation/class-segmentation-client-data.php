@@ -38,6 +38,12 @@ class Segmentation_Client_Data extends Lightweight_API {
 		$client_id     = $this->get_request_param( 'client_id', $request );
 		$reader_events = [];
 
+		// Save arbitrary events from the payload.
+		$events = $this->get_request_param( 'reader_events', $request );
+		if ( $events ) {
+			$reader_events = array_merge( $reader_events, $events );
+		}
+
 		// Add a donation to client.
 		$donation = $this->get_request_param( 'donation', $request );
 		if ( $donation ) {
