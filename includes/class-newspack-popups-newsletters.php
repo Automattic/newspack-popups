@@ -8,13 +8,13 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Main Newspack Popups Donations Class.
+ * Main Newspack Popups Newsletters Class.
  */
-final class Newspack_Popups_Subscriptions {
+final class Newspack_Popups_Newsletters {
 	/**
 	 * The single instance of the class.
 	 *
-	 * @var Newspack_Popups_Subscriptions
+	 * @var Newspack_Popups_Newsletters
 	 */
 	protected static $instance = null;
 
@@ -73,4 +73,4 @@ final class Newspack_Popups_Subscriptions {
 	}
 }
 
-Newspack_Popups_Subscriptions::instance();
+Newspack_Popups_Newsletters::instance();
