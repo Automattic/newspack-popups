@@ -1,6 +1,6 @@
 <?php
 /**
- * Newspack Popups Subscriptions
+ * Newspack Popups Newsletters
  *
  * @package Newspack
  */
@@ -19,10 +19,10 @@ final class Newspack_Popups_Newsletters {
 	protected static $instance = null;
 
 	/**
-	 * Main Newspack Popups Subscriptions Instance.
-	 * Ensures only one instance of Newspack Popups Subscriptions Instance is loaded or can be loaded.
+	 * Main Newspack Popups Newsletters Instance.
+	 * Ensures only one instance of Newspack Popups Newsletters Instance is loaded or can be loaded.
 	 *
-	 * @return Newspack Popups Subscriptions Instance - Main instance.
+	 * @return Newspack Popups Newsletters Instance - Main instance.
 	 */
 	public static function instance() {
 		if ( is_null( self::$instance ) ) {
