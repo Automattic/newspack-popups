@@ -36,26 +36,14 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		}
 
 		// Log an article or page view event.
-		if ( $visit && ( ! defined( 'DISABLE_CAMPAIGN_EVENT_LOGGING' ) || true !== DISABLE_CAMPAIGN_EVENT_LOGGING ) ) {
+		if ( ! defined( 'DISABLE_CAMPAIGN_EVENT_LOGGING' ) || true !== DISABLE_CAMPAIGN_EVENT_LOGGING ) {
 			$reader_events = [];
-			$view_event    = [
-				'type'  => 'view',
-				'value' => [],
-			];
-			if ( isset( $visit['post_id'] ) ) {
-				$view_event['value']['post_id'] = $visit['post_id'];
-			}
-			if ( isset( $visit['categories'] ) ) {
-				$view_event['value']['categories'] = $visit['categories'];
-			}
-			if ( isset( $visit['request'] ) ) {
-				$view_event['value']['request'] = $visit['request'];
-			}
-			if ( isset( $visit['post_type'] ) || isset( $visit['request_type'] ) ) {
-				$view_event['context'] = isset( $visit['post_type'] ) ? $visit['post_type'] : $visit['request_type'];
-			}
+			$view_event    = $this->convert_visit_to_event( $client_id, $visit );
 
-			$reader_events[] = $view_event;
+			// Filter out recently seen views.
+			if ( ! empty( $view_event ) ) {
+				$reader_events[] = $view_event;
+			}
 
 			$referer_url                   = filter_input( INPUT_SERVER, 'HTTP_REFERER', FILTER_SANITIZE_STRING );
 			$page_referer_url              = isset( $_REQUEST['ref'] ) ? $_REQUEST['ref'] : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
@@ -103,7 +91,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			);
 
 			// If an overlay is already able to be shown, pick the one that has the higher priority.
-			if ( $popup_should_be_shown && 'o' === $popup->t ) {
+			if ( $popup_should_be_shown && Campaign_Data_Utils::is_overlay( $popup ) ) {
 				if ( empty( $overlay_to_maybe_display ) ) {
 					$overlay_to_maybe_display = $popup;
 				} else {
@@ -122,7 +110,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			// TODO: the conditions below should not apply to manually-placed prompts.
 
 			// If an above-header is already able to be shown, pick the one that has the higher priority.
-			if ( $popup_should_be_shown && 'a' === $popup->t ) {
+			if ( $popup_should_be_shown && Campaign_Data_Utils::is_above_header( $popup ) ) {
 				if ( empty( $above_header_to_maybe_display ) ) {
 					$above_header_to_maybe_display = $popup;
 				} else {
@@ -230,14 +218,10 @@ class Maybe_Show_Campaign extends Lightweight_API {
 	 * @param string $page_referer_url URL of the referrer of the frontend page that is making the API request.
 	 * @param object $view_as_spec "View As" specification.
 	 * @param string $now Current timestamp.
+	 *
 	 * @return bool Whether prompt should be shown.
 	 */
 	public function should_popup_be_shown( $client_id, $popup, $settings, $referer_url = '', $page_referer_url = '', $view_as_spec = false, $now = false ) {
-		if ( false === $now ) {
-			$now = time();
-		}
-
-		$seen_events    = $this->get_reader_events( $client_id, 'prompt_seen', $popup->id );
 		$should_display = true;
 
 		// Handle referer-based conditions.
@@ -300,21 +284,101 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		}
 
 		// Handle frequency.
-		$frequency = $popup->f;
-		if ( 'once' === $frequency && count( $seen_events ) >= 1 ) {
-			$should_display = false;
-			self::add_suppression_reason( $popup->id, __( 'Prompt already seen once.', 'newspack-popups' ) );
+		$frequency         = $popup->f;
+		$frequency_max     = (int) $popup->fm;
+		$frequency_start   = (int) $popup->fs;
+		$frequency_between = (int) $popup->fb;
+		$frequency_reset   = $popup->ft;
+
+		// Override individual settings if a frequency preset is selected.
+		if ( 'once' === $frequency ) {
+			$frequency_max     = 1;
+			$frequency_start   = 0;
+			$frequency_between = 0;
+			$frequency_reset   = 'month';
+		}
+		if ( 'daily' === $frequency ) {
+			$frequency_max     = 1;
+			$frequency_start   = 0;
+			$frequency_between = 0;
+			$frequency_reset   = 'day';
+		}
+		if ( 'always' === $frequency ) {
+			$frequency_max     = 0;
+			$frequency_start   = 0;
+			$frequency_between = 0;
+			$frequency_reset   = 'month';
+		}
+		if ( 'preset_1' === $frequency ) {
+			$frequency_max     = 5;
+			$frequency_start   = 3;
+			$frequency_between = 3;
+			$frequency_reset   = 'month';
 		}
 
-		$last_seen = false;
-		if ( 0 < count( $seen_events ) ) {
-			$last_seen_event = $seen_events[0];
-			$last_seen       = strtotime( $last_seen_event['date_created'] );
+		if ( false === $now ) {
+			$now = time();
 		}
 
-		if ( 'daily' === $frequency && $last_seen && $last_seen >= strtotime( '-1 day', $now ) ) {
+		$reader      = $this->get_reader( $client_id );
+		$seen_events = $this->get_reader_events( $client_id, 'prompt_seen', $popup->id );
+		$total_views = 0;
+
+		// Tally up pageviews of any post type.
+		if ( isset( $reader['reader_data']['views'] ) ) {
+			foreach ( $reader['reader_data']['views'] as $post_type => $views ) {
+				$total_views += (int) $views;
+			}
+		}
+
+		// Guard against invalid or missing reset period values.
+		if ( ! in_array( $frequency_reset, [ 'month', 'week', 'day' ], true ) ) {
+			$frequency_reset = 'month';
+		}
+
+		// Filter seen events for the relevant period.
+		$seen_events = array_filter(
+			$seen_events,
+			function( $event ) use ( $frequency_reset, $now ) {
+				$seen = strtotime( $event['date_created'] );
+				return $seen >= strtotime( '-1 ' . $frequency_reset, $now );
+			}
+		);
+
+		// If not displaying every pageview.
+		if ( 0 < $frequency_between ) {
+			$views_after_start = max( 0, $total_views - ( $frequency_start + 1 ) );
+
+			if ( 0 < $views_after_start % ( $frequency_between + 1 ) ) {
+				$should_display = false;
+				self::add_suppression_reason(
+					$popup->id,
+					sprintf(
+						// Translators: Suppression debug message.
+						__( 'Prompt should only be displayed once every %d pageviews.', 'newspack-popups' ),
+						$frequency_between + 1
+					)
+				);
+			}
+		}
+
+		// If reader hasn't viewed enough articles yet.
+		if ( 0 < $total_views && $total_views <= $frequency_start ) {
 			$should_display = false;
-			self::add_suppression_reason( $popup->id, __( 'Daily prompt already seen today.', 'newspack-popups' ) );
+			self::add_suppression_reason( $popup->id, __( 'Minimum pageviews not yet met.', 'newspack-popups' ) );
+		}
+
+		// If there's a max frequency.
+		if ( 0 < $frequency_max && count( $seen_events ) >= $frequency_max ) {
+			$should_display = false;
+			self::add_suppression_reason(
+				$popup->id,
+				sprintf(
+					// Translators: Suppression debug message.
+					__( 'Max displays met for the %s.', 'newspack-popups' ),
+					$frequency_reset
+				)
+			);
 		}
 
 		return $should_display;
