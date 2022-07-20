@@ -33,17 +33,25 @@ class Report_Campaign_Data extends Lightweight_API {
 	/**
 	 * Handle reporting campaign data – views and subscriptions.
 	 *
-	 * @param object $request A request.
+	 * @param object         $request A request.
+	 * @param string|boolean $now A timestamp to log events with. If none given, use the current time.
 	 */
-	public function report_campaign( $request ) {
+	public function report_campaign( $request, $now = false ) {
 		$client_id = $this->get_request_param( 'cid', $request );
 		$popup_id  = $this->get_request_param( 'popup_id', $request );
 		$action    = $this->get_request_param( 'dismiss', $request ) ? 'prompt_dismissed' : 'prompt_seen';
+
+		if ( false === $now ) {
+			$now = time();
+		}
+
+		$timestamp = gmdate( 'Y-m-d H:i:s', $now );
 		$events    = [
 			[
-				'client_id' => $client_id,
-				'type'      => $action,
-				'context'   => $popup_id,
+				'client_id'    => $client_id,
+				'date_created' => $timestamp,
+				'type'         => $action,
+				'context'      => $popup_id,
 			],
 		];
 
@@ -51,9 +59,10 @@ class Report_Campaign_Data extends Lightweight_API {
 		$email_address = $this->get_request_param( 'email', $request );
 		if ( $email_address ) {
 			$subscription_event = [
-				'client_id' => $client_id,
-				'type'      => 'subscription',
-				'context'   => $email_address,
+				'client_id'    => $client_id,
+				'date_created' => $timestamp,
+				'type'         => 'subscription',
+				'context'      => $email_address,
 			];
 			$esp                = $this->get_request_param( 'esp', $request );
 

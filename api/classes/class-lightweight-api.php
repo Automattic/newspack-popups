@@ -249,6 +249,8 @@ class Lightweight_API {
 		// Write to the DB.
 		$write_result = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
 
+		$this->debug['write_query_count'] += 1;
+
 		if ( ! $write_result ) {
 			$this->debug['write_error'] = "Error writing to $reader_events_table_name.";
 		}
@@ -525,9 +527,10 @@ class Lightweight_API {
 		// Write to the DB.
 		$write_result = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
 
+		$this->debug['write_query_count'] += 1;
+
 		// If DB write was successful, rebuild cache.
 		if ( $write_result ) {
-			$this->debug['write_query_count'] += 1;
 			return wp_cache_set( 'reader', $reader, $client_id );
 		}
 
@@ -637,7 +640,6 @@ class Lightweight_API {
 			$context_filter .= 'AND ' . $this->build_partial_query_filter( 'context', $context );
 		}
 
-
 		$reader_events_table_name = Segmentation::get_reader_events_table_name();
 		$events_sql               = "SELECT id, client_id, date_created, type, context, value from $reader_events_table_name WHERE $client_filter $type_filter $context_filter ORDER BY date_created DESC LIMIT 1000";
 		$events                   = $wpdb->get_results( $events_sql ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
@@ -669,7 +671,7 @@ class Lightweight_API {
 	 *
 	 * @return array Array of reader events for the given client ID.
 	 */
-	public static function get_reader_events_from_cache( $client_id ) {
+	public function get_reader_events_from_cache( $client_id ) {
 		$events = wp_cache_get( 'reader_events', $client_id );
 		if ( ! $events ) {
 			$events = [];
@@ -685,10 +687,11 @@ class Lightweight_API {
 	 * @param string|array|null $type Type or types of data to retrieve.
 	 *                                If not given, only return temporary data types.
 	 * @param string|array|null $context Context or contexts of data to retrieve.
+	 * @param boolean           $ignore_cache If true, skip cache and get events directly from DB.
 	 *
 	 * @return array Array of reader data, optionally filtered by $type and $context.
 	 */
-	public function get_reader_events( $client_ids, $type = null, $context = null ) {
+	public function get_reader_events( $client_ids, $type = null, $context = null, $ignore_cache = false ) {
 		if ( ! is_array( $client_ids ) ) {
 			$client_ids = [ $client_ids ];
 		}
@@ -702,50 +705,70 @@ class Lightweight_API {
 		$events = [];
 
 		// Check the cache first.
-		if ( ! $this->ignore_cache ) {
+		if ( ! $ignore_cache ) {
 			$events = $this->get_reader_events_from_cache( $client_ids[0] );
-
 			if ( ! empty( $events ) ) {
-				$get_cached_events = true;
-
-				// If cached events are missing events of any type/context, fetch from the DB so we don't miss anything.
-				foreach ( $type as $single_type ) {
-					$filtered_events = $this->filter_events_by_type( $events, $single_type );
-
-					if ( empty( $filtered_events ) ) {
-						$get_cached_events = false;
-					}
-				}
-
-				if ( $get_cached_events ) {
-					return $this->filter_events_by_type( $events, $type, $context );
-				}
+				return $this->filter_events_by_type( $events, $type, $context );
 			}
 		}
 
-		$filtered_events = $this->get_reader_events_from_db( $client_ids, $type, $context );
+		$events_from_db  = $this->get_reader_events_from_db( $client_ids, $type, $context );
 		$unique_ids      = [];
-		$all_events      = array_merge( $events, $filtered_events );
-		$all_events      = array_values(
+		$filtered_events = array_values(
 			array_filter(
-				$all_events,
-				function( $event ) use ( &$unique_ids ) {
-
-					if ( ! isset( $event['id'] ) || ! in_array( $event['id'], $unique_ids ) ) {
-						// If the event is coming from the persistent cache, fashion a faux-unique ID using the timestamp.
-						$unique_id    = isset( $event['id'] ) ? $event['id'] : $event['type'] . $event['context'] . $event['date_created'];
-						$unique_ids[] = $unique_id;
-						return true;
+				$events_from_db,
+				function( $event ) use ( $events ) {
+					// If the event is coming from the persistent cache, fashion a faux-unique ID using the timestamp.
+					if ( ! isset( $event['id'] ) ) {
+						$event['id'] = $event['type'] . $event['context'] . $event['date_created'];
 					}
 
-					return false;
+					// Dedupe events from cache.
+					foreach ( $events as $existing_event ) {
+						if ( $event['id'] === $existing_event['id'] ) {
+							return false;
+						}
+					}
+
+					return true;
 				}
 			)
 		);
 
-		$this->debug['reader_events'] = $all_events;
-
 		return $filtered_events;
+	}
+
+	/**
+	 * Given a visit object, convert it to a view event.
+	 *
+	 * @param string $client_id Client ID.
+	 * @param array  $visit Visit object passed to API.
+	 *
+	 * @return array|boolean View event for the visit, or false.
+	 */
+	public function convert_visit_to_event( $client_id, $visit ) {
+		if ( ! $visit || ( ! isset( $visit['post_id'] ) && ! isset( $visit['request'] ) ) ) {
+			return false;
+		}
+
+		$view_event = [
+			'type'  => 'view',
+			'value' => [],
+		];
+		if ( isset( $visit['post_id'] ) ) {
+			$view_event['value']['post_id'] = $visit['post_id'];
+		}
+		if ( isset( $visit['categories'] ) ) {
+			$view_event['value']['categories'] = $visit['categories'];
+		}
+		if ( isset( $visit['request'] ) ) {
+			$view_event['value']['request'] = $visit['request'];
+		}
+		if ( isset( $visit['post_type'] ) || isset( $visit['request_type'] ) ) {
+			$view_event['context'] = isset( $visit['post_type'] ) ? $visit['post_type'] : $visit['request_type'];
+		}
+
+		return $view_event;
 	}
 
 	/**
@@ -763,42 +786,6 @@ class Lightweight_API {
 	 */
 	public function save_reader_events( $client_id, $events ) {
 		if ( empty( $client_id ) || empty( $events ) ) {
-			return false;
-		}
-
-		// Deduplicate views from the past hour.
-		$already_read             = $this->get_reader_events( $client_id, 'view' );
-		$event_values             = array_column(
-			$already_read,
-			'value'
-		);
-		$already_read_singular    = array_column( $event_values, 'post_id' );
-		$already_read_nonsingular = array_map(
-			function( $request_value ) {
-				return wp_json_encode( $request_value );
-			},
-			array_column( $event_values, 'request' )
-		);
-		$already_read             = array_merge( $already_read_singular, $already_read_nonsingular );
-
-		// Filter out recently seen views.
-		$events = array_values(
-			array_filter(
-				$events,
-				function( $event ) use ( $already_read ) {
-					if ( 'view' === $event['type'] && isset( $event['context'] ) && isset( $event['value'] ) ) {
-						$current_page = isset( $event['value']['post_id'] ) ? $event['value']['post_id'] : wp_json_encode( $event['value'] ['request'] );
-						return ! in_array( $current_page, $already_read, true );
-					}
-
-					return ! empty( $event['type'] );
-				}
-			)
-		);
-
-		// If no new items to save, return false.
-		if ( empty( $events ) ) {
-			$this->debug['already_read'] = true;
 			return false;
 		}
 
@@ -854,12 +841,9 @@ class Lightweight_API {
 		if ( $this->ignore_cache ) {
 			$write_result = $this->bulk_db_insert( $events );
 
-			// If DB write was successful, rebuild cache.
-			if ( $write_result ) {
-				$this->debug['write_query_count'] += 1;
-			} else {
-				return false;
-			}
+			$this->debug['write_query_count'] += 1;
+
+			return $write_result;
 		} else {
 			// Rebuild cache.
 			$cached_events                = $this->get_reader_events_from_cache( $client_id );
@@ -883,19 +867,13 @@ class Lightweight_API {
 		global $wpdb;
 		$readers_table_name = Segmentation::get_readers_table_name();
 
-		// Results are limited to the 1000 most recent rows for performance reasons.
+		// Results are limited to the 1000 most recent rows for performance reasons. Also ignore clients from preview sessions.
 		$all_client_ids_rows = $wpdb->get_results( "SELECT DISTINCT client_id,date_modified FROM $readers_table_name WHERE is_preview IS NULL ORDER BY date_modified DESC LIMIT 1000" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		$api                 = new Lightweight_API();
-		return array_reduce(
-			$all_client_ids_rows,
-			function ( $acc, $row ) use ( $api ) {
-				// Disregard client data created during previewing.
-				if ( ! $this->is_preview( $row->client_id ) ) {
-					$acc[] = $row->client_id;
-				}
-				return $acc;
+		return array_map(
+			function ( $row ) {
+				return $row->client_id;
 			},
-			[]
+			$all_client_ids_rows
 		);
 	}
 

@@ -32,11 +32,35 @@ class Segmentation_Client_Data extends Lightweight_API {
 	/**
 	 * Handle reporting client data – e.g. views, subscriptions, donations.
 	 *
-	 * @param object $request A request.
+	 * @param object         $request A request.
+	 * @param string|boolean $now A timestamp to log events with. If none given, use the current time.
 	 */
-	public function report_client_data( $request ) {
+	public function report_client_data( $request, $now = false ) {
 		$client_id     = $this->get_request_param( 'client_id', $request );
 		$reader_events = [];
+
+		if ( false === $now ) {
+			$now = time();
+		}
+
+		$timestamp = gmdate( 'Y-m-d H:i:s', $now );
+
+		// Save arbitrary events from the payload.
+		$events = $this->get_request_param( 'reader_events', $request );
+		if ( $events ) {
+			// Set timestamp of events, if not already given.
+			$events        = array_map(
+				function( $event ) use ( $timestamp ) {
+					if ( ! isset( $event['date_created'] ) ) {
+						$event['date_created'] = $timestamp;
+					}
+
+					return $event;
+				},
+				$events
+			);
+			$reader_events = array_merge( $reader_events, $events );
+		}
 
 		// Add a donation to client.
 		$donation = $this->get_request_param( 'donation', $request );
@@ -46,8 +70,9 @@ class Segmentation_Client_Data extends Lightweight_API {
 			}
 
 			$donation_event = [
-				'type'  => 'donation',
-				'value' => $donation,
+				'date_created' => $timestamp,
+				'type'         => 'donation',
+				'value'        => $donation,
 			];
 
 			if ( isset( $donation['order_id'] ) ) {
@@ -76,8 +101,9 @@ class Segmentation_Client_Data extends Lightweight_API {
 		}
 		if ( $email_address ) {
 			$reader_events[] = [
-				'type'    => 'subscription',
-				'context' => $email_address,
+				'date_created' => $timestamp,
+				'type'         => 'subscription',
+				'context'      => $email_address,
 			];
 		}
 
@@ -94,8 +120,9 @@ class Segmentation_Client_Data extends Lightweight_API {
 
 			if ( $add_user_account ) {
 				$reader_events[] = [
-					'type'    => 'user_account',
-					'context' => $user_id,
+					'date_created' => $timestamp,
+					'type'         => 'user_account',
+					'context'      => $user_id,
 				];
 			}
 		}
@@ -117,12 +144,13 @@ class Segmentation_Client_Data extends Lightweight_API {
 
 			$order_events  = array_reduce(
 				$orders,
-				function( $acc, $order ) use ( $existing_orders ) {
+				function( $acc, $order ) use ( $existing_orders, $timestamp ) {
 					if ( ! in_array( (int) $order['order_id'], $existing_orders, true ) ) {
 						$acc[] = [
-							'type'    => 'donation',
-							'context' => 'woocommerce',
-							'value'   => $order,
+							'date_created' => $timestamp,
+							'type'         => 'donation',
+							'context'      => 'woocommerce',
+							'value'        => $order,
 						];
 					}
 

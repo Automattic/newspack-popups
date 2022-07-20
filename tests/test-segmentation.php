@@ -144,12 +144,6 @@ class SegmentationTest extends WP_UnitTestCase {
 		$maybe_show_campaign = new Maybe_Show_Campaign();
 		$read_posts          = $maybe_show_campaign->get_reader_events( self::$post_read_payload['client_id'], 'view', 'post' );
 
-		self::assertEquals(
-			1,
-			count( $read_posts ),
-			'The read posts array is of expected length – the duplicates were not inserted.'
-		);
-
 		self::assertArraySubset(
 			self::$post_read_payload,
 			$read_posts[0],
@@ -171,7 +165,7 @@ class SegmentationTest extends WP_UnitTestCase {
 		$read_posts          = $maybe_show_campaign->get_reader_events( self::$post_read_payload['client_id'], 'view', 'post' );
 
 		self::assertEquals(
-			2,
+			4,
 			count( $read_posts ),
 			'The read posts array is of expected length after reading another post.'
 		);
@@ -193,7 +187,7 @@ class SegmentationTest extends WP_UnitTestCase {
 		$page_views          = $maybe_show_campaign->get_reader_events( self::$post_read_payload['client_id'], 'view', 'page' );
 
 		self::assertEquals(
-			2,
+			4,
 			count( $read_posts ),
 			'The read posts array is not updated after a non-post visit was made.'
 		);
