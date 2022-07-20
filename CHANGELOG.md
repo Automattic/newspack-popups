@@ -1,3 +1,11 @@
+# [2.2.0-alpha.3](https://github.com/Automattic/newspack-popups/compare/v2.2.0-alpha.2...v2.2.0-alpha.3) (2022-07-20)
+
+
+### Features
+
+* improved frequency options ([#908](https://github.com/Automattic/newspack-popups/issues/908)) ([f86d22f](https://github.com/Automattic/newspack-popups/commit/f86d22fae1ba3eb0dd431d32217bb8d5314c21f5))
+* **newsletters:** handle subscribe form block event ([#917](https://github.com/Automattic/newspack-popups/issues/917)) ([e89cd14](https://github.com/Automattic/newspack-popups/commit/e89cd145ddceb3a6b61181fb4f6e6f8ffd042f28))
+
 # [2.2.0-alpha.2](https://github.com/Automattic/newspack-popups/compare/v2.2.0-alpha.1...v2.2.0-alpha.2) (2022-07-18)
 
 
