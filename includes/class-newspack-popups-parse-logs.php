@@ -62,7 +62,6 @@ final class Newspack_Popups_Parse_Logs {
 
 	/**
 	 * Parse the log file, write data to the DB, and remove the file.
-	 * TODO: reformat rows with context and id
 	 */
 	public static function parse_events_logs() {
 		global $wpdb;
