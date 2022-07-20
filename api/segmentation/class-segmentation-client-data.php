@@ -45,6 +45,23 @@ class Segmentation_Client_Data extends Lightweight_API {
 
 		$timestamp = gmdate( 'Y-m-d H:i:s', $now );
 
+		// Save arbitrary events from the payload.
+		$events = $this->get_request_param( 'reader_events', $request );
+		if ( $events ) {
+			// Set timestamp of events, if not already given.
+			$events        = array_map(
+				function( $event ) use ( $timestamp ) {
+					if ( ! isset( $event['date_created'] ) ) {
+						$event['date_created'] = $timestamp;
+					}
+
+					return $event;
+				},
+				$events
+			);
+			$reader_events = array_merge( $reader_events, $events );
+		}
+
 		// Add a donation to client.
 		$donation = $this->get_request_param( 'donation', $request );
 		if ( $donation ) {
