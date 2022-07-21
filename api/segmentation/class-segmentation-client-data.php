@@ -127,7 +127,7 @@ class Segmentation_Client_Data extends Lightweight_API {
 			}
 		}
 
-		// Add donations data from WC orders.
+		// Add donations data from past WC orders.
 		$orders = $this->get_request_param( 'orders', $request );
 		if ( $orders ) {
 			// Lookup existing orders so we don't log duplicate events.

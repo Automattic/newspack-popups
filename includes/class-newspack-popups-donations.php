@@ -37,31 +37,18 @@ final class Newspack_Popups_Donations {
 	 * Constructor.
 	 */
 	public function __construct() {
-		add_action( 'rest_api_init', [ __CLASS__, 'rest_api_init' ] );
-		add_action( 'admin_init', [ __CLASS__, 'create_wc_webhook' ] );
-		add_action( 'woocommerce_checkout_update_order_meta', [ __CLASS__, 'woocommerce_checkout_update_order_meta' ] );
+		add_action( 'admin_init', [ __CLASS__, 'delete_legacy_wc_webhook' ] );
 		add_filter( 'woocommerce_billing_fields', [ __CLASS__, 'woocommerce_billing_fields' ] );
+		add_action( 'woocommerce_checkout_update_order_meta', [ __CLASS__, 'woocommerce_checkout_update_order_meta' ] );
+		add_action( 'woocommerce_checkout_order_created', [ __CLASS__, 'create_donation_event' ] );
 	}
 
 	/**
-	 * Initialise REST API endpoints.
+	 * Delete legacy WooCommerce webhooks, so we don't log duplicate donations.
+	 * Previously, donation events were logged as a webhook callback, but this is
+	 * no longer needed with the woocommerce_checkout_order_created action.
 	 */
-	public static function rest_api_init() {
-		\register_rest_route(
-			'newspack-popups/v1',
-			'woocommerce-sync',
-			[
-				'methods'             => \WP_REST_Server::EDITABLE,
-				'callback'            => [ __CLASS__, 'api_woocommerce_sync' ],
-				'permission_callback' => '__return_true',
-			]
-		);
-	}
-
-	/**
-	 * Create a WooCommerce webhook.
-	 */
-	public static function create_wc_webhook() {
+	public static function delete_legacy_wc_webhook() {
 		if ( ! class_exists( 'WC_Webhook' ) || ! class_exists( 'WC_Data_Store' ) ) {
 			return;
 		}
@@ -84,45 +71,9 @@ final class Newspack_Popups_Donations {
 		);
 		$should_upsert_webhook = false;
 		if ( 0 !== count( $matching_webhooks ) ) {
-			$webhook               = wc_get_webhook( $matching_webhooks[0] );
-			$should_upsert_webhook = $webhook->get_delivery_url() !== $webhook_delivery_url;
-		} else {
-			$webhook               = new \WC_Webhook();
-			$should_upsert_webhook = true;
+			$webhook = wc_get_webhook( $matching_webhooks[0] );
+			$webhook->delete( true );
 		}
-
-		if ( $should_upsert_webhook ) {
-			$webhook->set_name( 'Sync to Newspack Campaigns' );
-			$webhook->set_topic( 'order.created' );
-			$webhook->set_delivery_url( $webhook_delivery_url );
-			$webhook->set_status( 'active' );
-			$webhook->set_user_id( get_current_user_id() );
-			$webhook->save();
-		}
-	}
-
-	/**
-	 * Webhook callback handler for syncing WooCommerce data.
-	 *
-	 * @param WP_REST_Request $request Request containing webhook.
-	 */
-	public static function api_woocommerce_sync( $request ) {
-		$wc_order_data = $request->get_params();
-		if ( ! isset( $wc_order_data['id'] ) ) {
-			return;
-		}
-
-		// If there was a donation, update the client data.
-		Newspack_Popups_Segmentation::update_client_data(
-			get_post_meta( $wc_order_data['id'], Newspack_Popups_Segmentation::NEWSPACK_SEGMENTATION_CID_NAME, true ),
-			[
-				'donation' => [
-					'order_id' => $wc_order_data['id'],
-					'date'     => date_format( date_create( $wc_order_data['date_created'] ), 'Y-m-d' ),
-					'amount'   => $wc_order_data['total'],
-				],
-			]
-		);
 	}
 
 	/**
@@ -153,6 +104,85 @@ final class Newspack_Popups_Donations {
 		}
 
 		return $form_fields;
+	}
+
+	/**
+	 * Given an array of WC orders, get relevant data to log with reader events.
+	 * Only return data for orders that match Newspack donation products.
+	 *
+	 * @param array $orders Array of orders.
+	 *
+	 * @return array Formatted order data to save as reader event values.
+	 */
+	public static function get_wc_orders_data( $orders ) {
+		$newspack_donation_product_id = class_exists( '\Newspack\Donations' ) ?
+			(int) get_option( \Newspack\Donations::DONATION_PRODUCT_ID_OPTION, 0 ) :
+			0;
+		$newspack_donation_product    = $newspack_donation_product_id ? wc_get_product( $newspack_donation_product_id ) : null;
+		$newspack_child_products      = $newspack_donation_product ? $newspack_donation_product->get_children() : [];
+
+		/**
+		 * Allows other plugins to designate additional WooCommerce products by ID that should be considered donations.
+		 *
+		 * @param int[] $product_ids Array of WooCommerce product IDs.
+		 */
+		$other_donation_products = apply_filters( 'newspack_popups_donation_products', [] );
+		$all_donation_products   = array_values( array_merge( $newspack_child_products, $other_donation_products ) );
+		$orders_data             = [];
+
+		foreach ( $orders as $order ) {
+			$order_data  = $order->get_data();
+			$order_items = array_map(
+				function( $item ) {
+					return $item->get_product_id();
+				},
+				array_values( $order->get_items() )
+			);
+
+			// Only count orders that include donation products as donations.
+			if ( 0 < count( array_intersect( $order_items, $all_donation_products ) ) ) {
+				$orders_data[] = [
+					'order_id' => $order_data['id'],
+					'date'     => date_format( date_create( $order_data['date_created'] ), 'Y-m-d' ),
+					'amount'   => $order_data['total'],
+				];
+			}
+		}
+
+		return $orders_data;
+	}
+
+	/**
+	 * When a new WooCommerce order is created with the client ID meta,
+	 * log a new donation event to that client ID.
+	 *
+	 * @param WC_Order $order Order object.
+	 */
+	public static function create_donation_event( $order ) {
+		$order_id  = $order->get_id();
+		$client_id = get_post_meta( $order_id, Newspack_Popups_Segmentation::NEWSPACK_SEGMENTATION_CID_NAME, true );
+
+		if ( $client_id ) {
+			$orders_data     = self::get_wc_orders_data( [ $order ] );
+			$donation_events = [];
+
+			foreach ( $orders_data as $order_data ) {
+				$donation_events[] = [
+					'type'    => 'donation',
+					'context' => 'woocommerce',
+					'value'   => $order_data,
+				];
+			}
+
+			if ( 0 < count( $donation_events ) ) {
+				Newspack_Popups_Segmentation::update_client_data(
+					$client_id,
+					[
+						'reader_events' => $donation_events,
+					]
+				);
+			}
+		}
 	}
 }
 Newspack_Popups_Donations::instance();
