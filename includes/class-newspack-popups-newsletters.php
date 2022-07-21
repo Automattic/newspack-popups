@@ -7,6 +7,8 @@
 
 defined( 'ABSPATH' ) || exit;
 
+require_once dirname( __FILE__ ) . '/../api/campaigns/class-campaign-data-utils.php';
+
 /**
  * Main Newspack Popups Newsletters Class.
  */
@@ -35,7 +37,24 @@ final class Newspack_Popups_Newsletters {
 	 * Constructor.
 	 */
 	public function __construct() {
-		add_action( 'newspack_newsletters_add_contact', [ __CLASS__, 'handle_newsletter_subscription' ], 10, 4 );
+		\add_action( 'init', [ __CLASS__, 'check_login_status' ] );
+		\add_action( 'newspack_newsletters_add_contact', [ __CLASS__, 'handle_newsletter_subscription' ], 10, 4 );
+		\add_filter( 'newspack_auth_intention', [ __CLASS__, 'check_reader_newsletter_subscription_status' ] );
+		\add_action( 'newspack_registered_reader', [ __CLASS__, 'check_reader_newsletter_subscription_status' ] );
+	}
+
+	/**
+	 * If user is logged in, check their newsletter susbscription status.
+	 */
+	public static function check_login_status() {
+		if ( \is_user_logged_in() && ! \is_admin() && ! Newspack_Popups::is_preview_request() ) {
+			$current_user  = \wp_get_current_user();
+			$email_address = $current_user->user_email;
+
+			if ( ! empty( $email_address ) ) {
+				self::check_reader_newsletter_subscription_status( $email_address );
+			}
+		}
 	}
 
 	/**
@@ -53,7 +72,7 @@ final class Newspack_Popups_Newsletters {
 	 * @param bool|WP_Error $result   True if the contact was added or error if failed.
 	 */
 	public static function handle_newsletter_subscription( $provider, $contact, $lists, $result ) {
-		if ( ! is_wp_error( $result ) && $result ) {
+		if ( ! \is_wp_error( $result ) && $result ) {
 			$subscription_event = [
 				'type'    => 'subscription',
 				'context' => $contact['email'],
@@ -63,13 +82,61 @@ final class Newspack_Popups_Newsletters {
 				],
 			];
 
-			Newspack_Popups_Segmentation::update_client_data(
-				Newspack_Popups_Segmentation::get_client_id(),
+			\Newspack_Popups_Segmentation::update_client_data(
+				\Newspack_Popups_Segmentation::get_client_id(),
 				[
 					'reader_events' => [ $subscription_event ],
 				]
 			);
 		}
+	}
+
+	/**
+	 * When a reader provides an email address through the Newspack auth flow and
+	 * the reader's newsletter subscription status is unknown, check the status
+	 * of the email address with the ESP currently active in Newspack Newsletters.
+	 *
+	 * @param string|null $email_address Email address or null if not set.
+	 *
+	 * @return string Email address.
+	 */
+	public static function check_reader_newsletter_subscription_status( $email_address ) {
+		if ( $email_address && class_exists( '\Newspack_Newsletters' ) && class_exists( '\Newspack_Newsletters_Subscription' ) ) {
+			$client_id = Newspack_Popups_Segmentation::get_client_id();
+			$nonce     = \wp_create_nonce( 'newspack_get_reader_events' );
+			$api       = Campaign_Data_Utils::get_api( $nonce );
+
+			if ( ! $api ) {
+				return $email_address;
+			}
+
+			// If the reader's newsletter subscription status is unknown, look it up in the ESP.
+			$newsletter_events = $api->get_reader_events( $client_id, 'subscription', $email_address );
+			if ( empty( $newsletter_events ) ) {
+				$subscribed_lists = \Newspack_Newsletters_Subscription::get_contact_lists( $email_address );
+
+				if ( ! empty( $subscribed_lists ) && is_array( $subscribed_lists ) ) {
+					$provider           = \Newspack_Newsletters::get_service_provider();
+					$subscription_event = [
+						'type'    => 'subscription',
+						'context' => $email_address,
+						'value'   => [
+							'esp'   => $provider->service,
+							'lists' => $subscribed_lists,
+						],
+					];
+
+					\Newspack_Popups_Segmentation::update_client_data(
+						\Newspack_Popups_Segmentation::get_client_id(),
+						[
+							'reader_events' => [ $subscription_event ],
+						]
+					);
+				}
+			}
+		}
+
+		return $email_address;
 	}
 }
 
