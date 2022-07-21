@@ -733,8 +733,7 @@ final class Newspack_Popups_Segmentation {
 			);
 			$removed_preview_readers = self::query_with_sleep( "DELETE FROM $readers_table_name WHERE is_preview = 1" );
 			$removed_preview_events  = self::query_with_sleep(
-				"DELETE FROM $reader_events_table_name WHERE client_id IN ( $preview_client_ids )",
-				$old_client_ids_to_delete
+				"DELETE FROM $reader_events_table_name WHERE client_id IN ( $preview_client_ids )"
 			);
 		}
 
