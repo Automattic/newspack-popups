@@ -65,14 +65,16 @@ class Lightweight_API {
 	/**
 	 * Constructor.
 	 *
+	 * @param string|null $nonce If API is being instantiated directly by WP, it needs nonce verification.
+	 *
 	 * @codeCoverageIgnore
 	 */
-	public function __construct() {
+	public function __construct( $nonce = null ) {
 		if ( $this->is_a_web_crawler() ) {
 			header( 'X-Robots-Tag: noindex' );
 			exit;
 		}
-		if ( ! $this->verify_referer() ) {
+		if ( ! $this->verify_referer( $nonce ) ) {
 			$this->error( 'invalid_referer' );
 		}
 		$this->debug = [
@@ -123,8 +125,16 @@ class Lightweight_API {
 
 	/**
 	 * Verify referer is valid.
+	 *
+	 * @param string|null $nonce If API is being instantiated directly by WP, it needs nonce verification.
+	 *
+	 * @return boolean|void True if the nonce or referer is valid; otherwise kill the request.
 	 */
-	public function verify_referer() {
+	public function verify_referer( $nonce = null ) {
+		if ( $nonce ) {
+			return \wp_verify_nonce( $nonce, 'newspack_campaigns_lightweight_api' );
+		}
+
 		$http_referer = ! empty( $_SERVER['HTTP_REFERER'] ) ? parse_url( $_SERVER['HTTP_REFERER'] , PHP_URL_HOST ) : null; // phpcs:ignore
 		$valid_referers = [
 			$http_referer,

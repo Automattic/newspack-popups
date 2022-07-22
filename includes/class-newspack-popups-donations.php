@@ -7,6 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
+require_once dirname( __FILE__ ) . '/../api/campaigns/class-campaign-data-utils.php';
 require_once dirname( __FILE__ ) . '/../api/segmentation/class-segmentation.php';
 
 /**
@@ -158,12 +159,14 @@ final class Newspack_Popups_Donations {
 		}
 
 		if ( 0 < count( $donation_events ) ) {
-			\Newspack_Popups_Segmentation::update_client_data(
-				$client_id,
-				[
-					'reader_events' => $donation_events,
-				]
-			);
+			$nonce = \wp_create_nonce( 'newspack_campaigns_lightweight_api' );
+			$api   = \Campaign_Data_Utils::get_api( $nonce );
+
+			if ( ! $api ) {
+				return;
+			}
+
+			$api->save_reader_events( $client_id, $donation_events );
 		}
 	}
 
@@ -176,21 +179,22 @@ final class Newspack_Popups_Donations {
 	 * @param string|null $newsletter_email If the user signed up for a newsletter as part of the transaction, the subscribed email address. Otherwise, null.
 	 */
 	public static function create_donation_event_stripe( $client_id, $donation_data, $newsletter_email ) {
-		$client_update = [
-			'reader_events' => [
-				[
-					'type'    => 'donation',
-					'context' => 'stripe',
-					'value'   => $donation_data,
-				],
+		$donation_events = [
+			[
+				'type'    => 'donation',
+				'context' => 'stripe',
+				'value'   => $donation_data,
 			],
 		];
 
-		if ( $newsletter_email ) {
-			$client_update['email_subscription'] = $newsletter_email;
+		$nonce = \wp_create_nonce( 'newspack_campaigns_lightweight_api' );
+		$api   = \Campaign_Data_Utils::get_api( $nonce );
+
+		if ( ! $api ) {
+			return;
 		}
 
-		\Newspack_Popups_Segmentation::update_client_data( $client_id, $client_update );
+		$api->save_reader_events( $client_id, $donation_events );
 	}
 }
 Newspack_Popups_Donations::instance();
