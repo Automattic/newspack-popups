@@ -132,7 +132,7 @@ class Lightweight_API {
 	 */
 	public function verify_referer( $nonce = null ) {
 		if ( $nonce ) {
-			return \wp_verify_nonce( $nonce, 'newspack_get_reader_events' );
+			return \wp_verify_nonce( $nonce, 'newspack_campaigns_lightweight_api' );
 		}
 
 		$http_referer = ! empty( $_SERVER['HTTP_REFERER'] ) ? parse_url( $_SERVER['HTTP_REFERER'] , PHP_URL_HOST ) : null; // phpcs:ignore

@@ -31,7 +31,7 @@ class Campaign_Data_Utils {
 	 * @return object|boolean If the nonce is valid, an instance of the API. Otherwise, false.
 	 */
 	public static function get_api( $nonce ) {
-		if ( \wp_verify_nonce( $nonce, 'newspack_get_reader_events' ) ) {
+		if ( \wp_verify_nonce( $nonce, 'newspack_campaigns_lightweight_api' ) ) {
 			return new \Lightweight_API( $nonce );
 		}
 

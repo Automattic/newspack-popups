@@ -82,12 +82,16 @@ final class Newspack_Popups_Newsletters {
 				],
 			];
 
-			\Newspack_Popups_Segmentation::update_client_data(
-				\Newspack_Popups_Segmentation::get_client_id(),
-				[
-					'reader_events' => [ $subscription_event ],
-				]
-			);
+
+			$client_id = isset( $contact['client_id'] ) ? $contact['client_id'] : \Newspack_Popups_Segmentation::get_client_id();
+			$nonce     = \wp_create_nonce( 'newspack_campaigns_lightweight_api' );
+			$api       = \Campaign_Data_Utils::get_api( $nonce );
+
+			if ( ! $api || ! $client_id ) {
+				return;
+			}
+
+			$api->save_reader_events( $client_id, [ $subscription_event ] );
 		}
 	}
 
