@@ -115,7 +115,7 @@ final class Newspack_Popups_Newsletters {
 			if ( empty( $newsletter_events ) ) {
 				$subscribed_lists = \Newspack_Newsletters_Subscription::get_contact_lists( $email_address );
 
-				if ( ! empty( $subscribed_lists ) && is_array( $subscribed_lists ) ) {
+				if ( ! is_wp_error( $subscribed_lists ) && ! empty( $subscribed_lists ) && is_array( $subscribed_lists ) ) {
 					$provider           = \Newspack_Newsletters::get_service_provider();
 					$subscription_event = [
 						'type'    => 'subscription',
