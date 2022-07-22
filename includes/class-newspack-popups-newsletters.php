@@ -107,7 +107,7 @@ final class Newspack_Popups_Newsletters {
 	public static function check_reader_newsletter_subscription_status( $email_address ) {
 		if ( $email_address && class_exists( '\Newspack_Newsletters' ) && class_exists( '\Newspack_Newsletters_Subscription' ) ) {
 			$client_id = Newspack_Popups_Segmentation::get_client_id();
-			$nonce     = \wp_create_nonce( 'newspack_get_reader_events' );
+			$nonce     = \wp_create_nonce( 'newspack_campaigns_lightweight_api' );
 			$api       = Campaign_Data_Utils::get_api( $nonce );
 
 			if ( ! $api ) {
