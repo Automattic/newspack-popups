@@ -39,6 +39,7 @@ final class Newspack_Popups_Donations {
 	public function __construct() {
 		\add_action( 'admin_init', [ __CLASS__, 'delete_legacy_wc_webhook' ] );
 		\add_action( 'woocommerce_new_order', [ __CLASS__, 'create_donation_event' ], 10, 2 );
+		\add_action( 'newspack_stripe_new_donation', [ __CLASS__, 'create_donation_event_stripe' ], 10, 3 );
 	}
 
 	/**
@@ -152,7 +153,7 @@ final class Newspack_Popups_Donations {
 			}
 
 			if ( 0 < count( $donation_events ) ) {
-				Newspack_Popups_Segmentation::update_client_data(
+				\Newspack_Popups_Segmentation::update_client_data(
 					$client_id,
 					[
 						'reader_events' => $donation_events,
@@ -160,6 +161,32 @@ final class Newspack_Popups_Donations {
 				);
 			}
 		}
+	}
+
+	/**
+	 * When a new Stripe transaction is completed with a client ID,
+	 * log a new donation event to that client ID.
+	 *
+	 * @param string      $client_id Client ID.
+	 * @param array       $donation_data Info about the transaction.
+	 * @param string|null $newsletter_email If the user signed up for a newsletter as part of the transaction, the subscribed email address. Otherwise, null.
+	 */
+	public static function create_donation_event_stripe( $client_id, $donation_data, $newsletter_email ) {
+		$client_update = [
+			'reader_events' => [
+				[
+					'type'    => 'donation',
+					'context' => 'stripe',
+					'value'   => $donation_data,
+				],
+			],
+		];
+
+		if ( $newsletter_email ) {
+			$client_update['email_subscription'] = $newsletter_email;
+		}
+
+		\Newspack_Popups_Segmentation::update_client_data( $client_id, $client_update );
 	}
 }
 Newspack_Popups_Donations::instance();
