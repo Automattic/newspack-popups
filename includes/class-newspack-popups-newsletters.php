@@ -114,30 +114,38 @@ final class Newspack_Popups_Newsletters {
 				return $email_address;
 			}
 
-			// If the reader's newsletter subscription status is unknown, look it up in the ESP.
+			// If the reader is already known to be a newsletter subscriber, no need to proceed.
 			$newsletter_events = $api->get_reader_events( $client_id, 'subscription', $email_address );
-			if ( empty( $newsletter_events ) ) {
-				$subscribed_lists = \Newspack_Newsletters_Subscription::get_contact_lists( $email_address );
-
-				if ( ! is_wp_error( $subscribed_lists ) && ! empty( $subscribed_lists ) && is_array( $subscribed_lists ) ) {
-					$provider           = \Newspack_Newsletters::get_service_provider();
-					$subscription_event = [
-						'type'    => 'subscription',
-						'context' => $email_address,
-						'value'   => [
-							'esp'   => $provider->service,
-							'lists' => $subscribed_lists,
-						],
-					];
-
-					\Newspack_Popups_Segmentation::update_client_data(
-						\Newspack_Popups_Segmentation::get_client_id(),
-						[
-							'reader_events' => [ $subscription_event ],
-						]
-					);
-				}
+			if ( ! empty( $newsletter_events ) ) {
+				return $email_address;
 			}
+
+			// Look up the email address as a contact with the connected ESP. If not a contact, no need to proceed.
+			$subscribed_lists = \Newspack_Newsletters_Subscription::get_contact_lists( $email_address );
+			if ( is_wp_error( $subscribed_lists ) || empty( $subscribed_lists ) || ! is_array( $subscribed_lists ) ) {
+				return $email_address;
+			}
+
+			// The reader is subscribed to one or more lists, so they should be segmented as a subscriber.
+			$provider           = \Newspack_Newsletters::get_service_provider();
+			$subscription_event = [
+				'type'    => 'subscription',
+				'context' => $email_address,
+				'value'   => [
+					'esp'   => $provider->service,
+					'lists' => $subscribed_lists,
+				],
+			];
+
+			$client_id = \Newspack_Popups_Segmentation::get_client_id();
+			$nonce     = \wp_create_nonce( 'newspack_campaigns_lightweight_api' );
+			$api       = \Campaign_Data_Utils::get_api( $nonce );
+
+			if ( ! $api || ! $client_id ) {
+				return $email_address;
+			}
+
+			$api->save_reader_events( $client_id, [ $subscription_event ] );
 		}
 
 		return $email_address;
