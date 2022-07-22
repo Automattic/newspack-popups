@@ -143,8 +143,9 @@ final class Newspack_Popups_Donations {
 	 * When a new WooCommerce order is created with the client ID meta,
 	 * log a new donation event to that client ID.
 	 *
-	 * @param int      $order_id Order ID.
-	 * @param WC_Order $order Order object.
+	 * @param int         $order_id Order ID.
+	 * @param WC_Order    $order Order object.
+	 * @param string|null $client_id Client ID to associate with the donation. If not passed, will attempt to get from the current session.
 	 */
 	public static function create_donation_event( $order_id, $order, $client_id = null ) {
 		if ( ! $client_id ) {
