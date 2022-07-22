@@ -75,25 +75,6 @@ final class Newspack_Popups_Donations {
 	}
 
 	/**
-	 * Add a hidden billing field with client id.
-	 *
-	 * @param Array $form_fields WC form fields.
-	 */
-	public static function woocommerce_billing_fields( $form_fields ) {
-		$client_id = \Newspack_Popups_Segmentation::get_client_id();
-
-		if ( $client_id ) {
-			$form_fields[ \Newspack_Popups_Segmentation::NEWSPACK_SEGMENTATION_CID_NAME ] = [
-				'type'    => 'text',
-				'default' => $client_id,
-				'class'   => [ 'hide' ],
-			];
-		}
-
-		return $form_fields;
-	}
-
-	/**
 	 * Given an array of WC orders, get relevant data to log with reader events.
 	 * Only return data for orders that match Newspack donation products.
 	 *
