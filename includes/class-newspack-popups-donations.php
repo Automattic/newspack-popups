@@ -38,8 +38,9 @@ final class Newspack_Popups_Donations {
 	 */
 	public function __construct() {
 		\add_action( 'admin_init', [ __CLASS__, 'delete_legacy_wc_webhook' ] );
-		\add_action( 'woocommerce_new_order', [ __CLASS__, 'create_donation_event' ], 10, 2 );
-		\add_action( 'newspack_stripe_new_donation', [ __CLASS__, 'create_donation_event_stripe' ], 10, 3 );
+		\add_action( 'woocommerce_checkout_order_created', [ __CLASS__, 'create_donation_event_woocommerce' ] );
+		\add_action( 'newspack_new_donation_woocommerce', [ __CLASS__, 'create_donation_event_woocommerce' ], 10, 2 );
+		\add_action( 'newspack_new_donation_stripe', [ __CLASS__, 'create_donation_event_stripe' ], 10, 3 );
 	}
 
 	/**
@@ -125,41 +126,44 @@ final class Newspack_Popups_Donations {
 	 * When a new WooCommerce order is created with the client ID meta,
 	 * log a new donation event to that client ID.
 	 *
-	 * @param int         $order_id Order ID.
 	 * @param WC_Order    $order Order object.
 	 * @param string|null $client_id Client ID to associate with the donation. If not passed, will attempt to get from the current session.
 	 */
-	public static function create_donation_event( $order_id, $order, $client_id = null ) {
+	public static function create_donation_event_woocommerce( $order, $client_id = null ) {
 		if ( ! $client_id ) {
 			$client_id = \Newspack_Popups_Segmentation::get_client_id();
 		}
 
-		if ( $client_id ) {
-			$orders_data     = self::get_wc_orders_data( [ $order ] );
-			$donation_events = [];
+		// Must have a client ID to proceed.
+		if ( ! $client_id ) {
+			return;
+		}
 
-			if ( 0 < count( $orders_data ) ) {
-				// Update order meta with cilent ID.
-				\update_post_meta( $order_id, \Newspack_Popups_Segmentation::NEWSPACK_SEGMENTATION_CID_NAME, $client_id );
+		$order_id        = $order->get_id();
+		$orders_data     = self::get_wc_orders_data( [ $order ] );
+		$donation_events = [];
 
-				// Convert order item data to donation events.
-				foreach ( $orders_data as $order_data ) {
-					$donation_events[] = [
-						'type'    => 'donation',
-						'context' => 'woocommerce',
-						'value'   => $order_data,
-					];
-				}
+		if ( 0 < count( $orders_data ) ) {
+			// Update order meta with cilent ID.
+			\update_post_meta( $order_id, \Newspack_Popups_Segmentation::NEWSPACK_SEGMENTATION_CID_NAME, $client_id );
+
+			// Convert order item data to donation events.
+			foreach ( $orders_data as $order_data ) {
+				$donation_events[] = [
+					'type'    => 'donation',
+					'context' => 'woocommerce',
+					'value'   => $order_data,
+				];
 			}
+		}
 
-			if ( 0 < count( $donation_events ) ) {
-				\Newspack_Popups_Segmentation::update_client_data(
-					$client_id,
-					[
-						'reader_events' => $donation_events,
-					]
-				);
-			}
+		if ( 0 < count( $donation_events ) ) {
+			\Newspack_Popups_Segmentation::update_client_data(
+				$client_id,
+				[
+					'reader_events' => $donation_events,
+				]
+			);
 		}
 	}
 
