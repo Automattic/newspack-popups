@@ -83,6 +83,8 @@ final class Newspack_Popups_Segmentation {
 			self::cron_deactivate(); // To avoid duplicate execution when transitioning from daily to hourly schedule.
 			wp_schedule_event( time(), 'hourly', 'newspack_popups_segmentation_data_prune' );
 		}
+
+		add_action( 'newspack_registered_reader', [ __CLASS__, 'handle_registered_reader' ], 10, 3 );
 	}
 
 	/**
@@ -765,6 +767,31 @@ final class Newspack_Popups_Segmentation {
 		}
 		if ( $removed_row_counts_prompt_seen_events ) {
 			error_log( 'Newspack Campaigns: Data pruning – removed ' . $removed_row_counts_prompt_seen_events . ' prompt seen events from ' . $reader_events_table_name . ' table.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+		}
+	}
+
+	/**
+	 * Handle reader registration.
+	 *
+	 * @param string $email Email address.
+	 * @param bool   $authenticate Whether the user was authenticated.
+	 * @param int    $user_id New user ID.
+	 */
+	public static function handle_registered_reader( $email, $authenticate, $user_id ) {
+		if ( $authenticate ) {
+			try {
+				require_once dirname( __FILE__ ) . '/../api/classes/class-lightweight-api.php';
+				$api           = new Lightweight_API();
+				$reader_events = [
+					[
+						'type'    => 'user_account',
+						'context' => $user_id,
+					],
+				];
+				$api->save_reader_events( self::get_client_id(), $reader_events );
+			} catch ( \Throwable $th ) {
+				\Newspack\Logger::log( 'Error when saving reader data on registration: ' . $th->getMessage() );
+			}
 		}
 	}
 }
