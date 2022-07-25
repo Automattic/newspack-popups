@@ -106,13 +106,14 @@ final class Newspack_Popups_Newsletters {
 	 */
 	public static function check_reader_newsletter_subscription_status( $email_address ) {
 		if ( $email_address && class_exists( '\Newspack_Newsletters' ) && class_exists( '\Newspack_Newsletters_Subscription' ) ) {
-			$client_id = Newspack_Popups_Segmentation::get_client_id();
-			$nonce     = \wp_create_nonce( 'newspack_campaigns_lightweight_api' );
-			$api       = Campaign_Data_Utils::get_api( $nonce );
+			$nonce = \wp_create_nonce( 'newspack_campaigns_lightweight_api' );
+			$api   = Campaign_Data_Utils::get_api( $nonce );
 
 			if ( ! $api ) {
 				return $email_address;
 			}
+
+			$client_id = Newspack_Popups_Segmentation::get_client_id();
 
 			// If the reader is already known to be a newsletter subscriber, no need to proceed.
 			$newsletter_events = $api->get_reader_events( $client_id, 'subscription', $email_address );
@@ -136,14 +137,6 @@ final class Newspack_Popups_Newsletters {
 					'lists' => $subscribed_lists,
 				],
 			];
-
-			$client_id = \Newspack_Popups_Segmentation::get_client_id();
-			$nonce     = \wp_create_nonce( 'newspack_campaigns_lightweight_api' );
-			$api       = \Campaign_Data_Utils::get_api( $nonce );
-
-			if ( ! $api || ! $client_id ) {
-				return $email_address;
-			}
 
 			$api->save_reader_events( $client_id, [ $subscription_event ] );
 		}
