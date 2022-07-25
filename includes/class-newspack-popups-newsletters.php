@@ -147,8 +147,6 @@ final class Newspack_Popups_Newsletters {
 
 			$api->save_reader_events( $client_id, [ $subscription_event ] );
 		}
-
-		return;
 	}
 }
 
