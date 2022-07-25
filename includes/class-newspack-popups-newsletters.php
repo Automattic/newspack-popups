@@ -37,24 +37,22 @@ final class Newspack_Popups_Newsletters {
 	 * Constructor.
 	 */
 	public function __construct() {
-		\add_action( 'init', [ __CLASS__, 'check_login_status' ] );
 		\add_action( 'newspack_newsletters_add_contact', [ __CLASS__, 'handle_newsletter_subscription' ], 10, 4 );
-		\add_filter( 'newspack_auth_intention', [ __CLASS__, 'check_reader_newsletter_subscription_status' ] );
+		\add_action( 'wp_login', [ __CLASS__, 'status_check_on_login' ], 10, 2 );
 		\add_action( 'newspack_registered_reader', [ __CLASS__, 'check_reader_newsletter_subscription_status' ] );
 	}
 
 	/**
-	 * If user is logged in, check their newsletter susbscription status.
+	 * Check status on login.
+	 *
+	 * @param string  $user_login Username.
+	 * @param WP_User $user User object.
 	 */
-	public static function check_login_status() {
-		if ( \is_user_logged_in() && ! \is_admin() && ! Newspack_Popups::is_preview_request() ) {
-			$current_user  = \wp_get_current_user();
-			$email_address = $current_user->user_email;
-
-			if ( ! empty( $email_address ) ) {
-				self::check_reader_newsletter_subscription_status( $email_address );
-			}
+	public static function status_check_on_login( $user_login, $user ) {
+		if ( ! \Newspack\Reader_Activation::is_user_reader( $user ) ) {
+			return;
 		}
+		self::check_reader_newsletter_subscription_status( $user->user_email );
 	}
 
 	/**
@@ -101,8 +99,6 @@ final class Newspack_Popups_Newsletters {
 	 * of the email address with the ESP currently active in Newspack Newsletters.
 	 *
 	 * @param string|null $email_address Email address or null if not set.
-	 *
-	 * @return string Email address.
 	 */
 	public static function check_reader_newsletter_subscription_status( $email_address ) {
 		if ( $email_address && class_exists( '\Newspack_Newsletters' ) && class_exists( '\Newspack_Newsletters_Subscription' ) ) {
@@ -110,7 +106,7 @@ final class Newspack_Popups_Newsletters {
 			$api   = Campaign_Data_Utils::get_api( $nonce );
 
 			if ( ! $api ) {
-				return $email_address;
+				return;
 			}
 
 			$client_id = Newspack_Popups_Segmentation::get_client_id();
@@ -118,13 +114,13 @@ final class Newspack_Popups_Newsletters {
 			// If the reader is already known to be a newsletter subscriber, no need to proceed.
 			$newsletter_events = $api->get_reader_events( $client_id, 'subscription', $email_address );
 			if ( ! empty( $newsletter_events ) ) {
-				return $email_address;
+				return;
 			}
 
 			// Look up the email address as a contact with the connected ESP. If not a contact, no need to proceed.
 			$subscribed_lists = \Newspack_Newsletters_Subscription::get_contact_lists( $email_address );
 			if ( is_wp_error( $subscribed_lists ) || empty( $subscribed_lists ) || ! is_array( $subscribed_lists ) ) {
-				return $email_address;
+				return;
 			}
 
 			// The reader is subscribed to one or more lists, so they should be segmented as a subscriber.
@@ -141,7 +137,7 @@ final class Newspack_Popups_Newsletters {
 			$api->save_reader_events( $client_id, [ $subscription_event ] );
 		}
 
-		return $email_address;
+		return;
 	}
 }
 
