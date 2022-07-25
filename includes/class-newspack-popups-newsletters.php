@@ -21,6 +21,13 @@ final class Newspack_Popups_Newsletters {
 	protected static $instance = null;
 
 	/**
+	 * Ensures the is-subscriber status check is run only once per request.
+	 *
+	 * @var bool
+	 */
+	private static $is_checking_status = false;
+
+	/**
 	 * Main Newspack Popups Newsletters Instance.
 	 * Ensures only one instance of Newspack Popups Newsletters Instance is loaded or can be loaded.
 	 *
@@ -101,6 +108,10 @@ final class Newspack_Popups_Newsletters {
 	 * @param string|null $email_address Email address or null if not set.
 	 */
 	public static function check_reader_newsletter_subscription_status( $email_address ) {
+		if ( self::$is_checking_status ) {
+			return;
+		}
+		self::$is_checking_status = true;
 		if ( $email_address && class_exists( '\Newspack_Newsletters' ) && class_exists( '\Newspack_Newsletters_Subscription' ) ) {
 			$nonce = \wp_create_nonce( 'newspack_campaigns_lightweight_api' );
 			$api   = Campaign_Data_Utils::get_api( $nonce );
