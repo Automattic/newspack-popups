@@ -153,7 +153,7 @@ $width__tablet: 782px;
 		}
 	}
 
-	&.has-featured-image {
+	&-featured-image {
 		@media only screen and ( min-width: $width__tablet ) {
 			.newspack-lightbox__close {
 				background-color: rgba( black, 0.25 );

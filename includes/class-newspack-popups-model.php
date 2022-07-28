@@ -1142,7 +1142,7 @@ final class Newspack_Popups_Model {
 		$classes[]             = $hide_border ? 'newspack-lightbox-no-border' : null;
 		$classes[]             = $is_newsletter_prompt ? 'newspack-newsletter-prompt-overlay' : null;
 		$classes[]             = $no_overlay_background ? 'newspack-lightbox-no-overlay' : null;
-		$classes[]             = $has_featured_image ? 'has-featured-image' : null;
+		$classes[]             = $has_featured_image ? 'newspack-lightbox-featured-image' : null;
 		$wrapper_classes       = [ 'newspack-popup-wrapper' ];
 		$wrapper_classes[]     = 'publish' !== $popup['status'] ? 'newspack-inactive-popup-status' : null;
 		$is_scroll_triggered   = 'scroll' === $popup['options']['trigger_type'];
