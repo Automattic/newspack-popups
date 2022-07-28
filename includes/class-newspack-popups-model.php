@@ -1136,11 +1136,13 @@ final class Newspack_Popups_Model {
 		$no_overlay_background = $popup['options']['no_overlay_background'];
 		$hidden_fields         = self::get_hidden_fields( $popup );
 		$is_newsletter_prompt  = self::has_newsletter_prompt( $popup );
+		$has_featured_image    = has_post_thumbnail( $popup['id'] );
 		$classes               = array( 'newspack-lightbox', 'newspack-popup', 'newspack-lightbox-placement-' . $popup['options']['placement'], 'newspack-lightbox-size-' . $overlay_size );
 		$classes[]             = ( ! empty( $popup['title'] ) && $display_title ) ? 'newspack-lightbox-has-title' : null;
 		$classes[]             = $hide_border ? 'newspack-lightbox-no-border' : null;
 		$classes[]             = $is_newsletter_prompt ? 'newspack-newsletter-prompt-overlay' : null;
 		$classes[]             = $no_overlay_background ? 'newspack-lightbox-no-overlay' : null;
+		$classes[]             = $has_featured_image ? 'has-featured-image' : null;
 		$wrapper_classes       = [ 'newspack-popup-wrapper' ];
 		$wrapper_classes[]     = 'publish' !== $popup['status'] ? 'newspack-inactive-popup-status' : null;
 		$is_scroll_triggered   = 'scroll' === $popup['options']['trigger_type'];
@@ -1153,8 +1155,6 @@ final class Newspack_Popups_Model {
 		);
 
 		$animation_id = 'a_' . $element_id;
-
-		$has_featured_image = has_post_thumbnail( $popup['id'] );
 
 		ob_start();
 		?>
