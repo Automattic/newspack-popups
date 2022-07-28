@@ -1154,6 +1154,8 @@ final class Newspack_Popups_Model {
 
 		$animation_id = 'a_' . $element_id;
 
+		$has_featured_image = has_post_thumbnail( $popup['id'] );
+
 		ob_start();
 		?>
 		<amp-layout
@@ -1166,10 +1168,17 @@ final class Newspack_Popups_Model {
 		>
 			<div class="<?php echo esc_attr( implode( ' ', $wrapper_classes ) ); ?>" data-popup-status="<?php echo esc_attr( $popup['status'] ); ?>" style="<?php echo ! $hide_border ? esc_attr( self::container_style( $popup ) ) : ''; ?>">
 				<div class="newspack-popup" style="<?php echo $hide_border ? esc_attr( self::container_style( $popup ) ) : ''; ?>">
-					<?php if ( ! empty( $popup['title'] ) && $display_title ) : ?>
-						<h1 class="newspack-popup-title"><?php echo esc_html( $popup['title'] ); ?></h1>
+					<?php if ( $has_featured_image ) : ?>
+						<div class="newspack-popup__featured-image">
+							<?php echo get_the_post_thumbnail( $popup['id'], 'large' ); ?>
+						</div>
 					<?php endif; ?>
-					<?php echo do_shortcode( $body ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					<div class="newspack-popup__content">
+						<?php if ( ! empty( $popup['title'] ) && $display_title ) : ?>
+							<h1 class="newspack-popup-title"><?php echo esc_html( $popup['title'] ); ?></h1>
+						<?php endif; ?>
+						<?php echo do_shortcode( $body ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					</div>
 					<form class="popup-dismiss-form <?php echo esc_attr( self::get_form_class( 'dismiss', $element_id ) ); ?> popup-action-form <?php echo esc_attr( self::get_form_class( 'action', $element_id ) ); ?>"
 						method="POST"
 						action-xhr="<?php echo esc_url( $endpoint ); ?>"

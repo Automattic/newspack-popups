@@ -73,15 +73,22 @@ $size__large: 1264px;
 		margin: 0 auto;
 		max-width: $size__medium;
 		overflow: auto;
-		padding: 17px;
-		@media only screen and ( min-width: 601px ) {
-			padding: 32px;
+
+		&__content {
+			padding: 17px;
+			@media only screen and ( min-width: 601px ) {
+				padding: 32px;
+			}
+		}
+		&__featured-image {
+			max-height: 200px;
+			overflow: hidden;
+			img {
+				transform: translateY( -50% ) translateY( 100px );
+			}
 		}
 
-		> *:first-child {
-			margin-top: 0;
-		}
-
+		&__content,
 		.wp-block-column {
 			> *:first-child {
 				margin-top: 0;
