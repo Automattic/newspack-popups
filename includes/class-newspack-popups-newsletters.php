@@ -77,7 +77,7 @@ final class Newspack_Popups_Newsletters {
 	 * @param bool|WP_Error  $result   True if the contact was added or error if failed.
 	 */
 	public static function handle_newsletter_subscription( $provider, $contact, $lists, $result ) {
-		if ( \is_wp_error( $result ) || ! $result || false == $lists || empty( $lists ) ) {
+		if ( \is_wp_error( $result ) || ! $result || empty( $lists ) ) {
 			return;
 		}
 		$subscription_event = [
