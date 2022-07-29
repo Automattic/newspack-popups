@@ -46,7 +46,7 @@ final class Newspack_Popups_Newsletters {
 	public function __construct() {
 		\add_action( 'newspack_newsletters_add_contact', [ __CLASS__, 'handle_newsletter_subscription' ], 10, 4 );
 		\add_action( 'wp_login', [ __CLASS__, 'status_check_on_login' ], 10, 2 );
-		\add_action( 'newspack_registered_reader', [ __CLASS__, 'create_reader_event_from_esp_data' ] );
+		\add_action( 'newspack_registered_reader', [ __CLASS__, 'newspack_registered_reader' ], 10, 5 );
 	}
 
 	/**
@@ -62,7 +62,7 @@ final class Newspack_Popups_Newsletters {
 		if ( ! \Newspack\Reader_Activation::is_user_reader( $user ) ) {
 			return;
 		}
-		self::create_reader_event_from_esp_data( $user->user_email );
+		self::fetch_reader_data_from_esp( $user->user_email );
 	}
 
 	/**
@@ -104,13 +104,30 @@ final class Newspack_Popups_Newsletters {
 	}
 
 	/**
+	 * Handle the newspack_registered_reader hook.
+	 *
+	 * @param string         $email_address   Email address.
+	 * @param bool           $authenticate    Whether to authenticate after registering.
+	 * @param false|int      $user_id         The created user id.
+	 * @param false|\WP_User $existing_user   The existing user object.
+	 * @param array          $metadata        Metadata.
+	 */
+	public static function newspack_registered_reader( $email_address, $authenticate, $user_id, $existing_user, $metadata ) {
+		if ( false !== $existing_user ) {
+			// Fetch data only if it's a new user registration.
+			return;
+		}
+		self::fetch_reader_data_from_esp( $email_address );
+	}
+
+	/**
 	 * When a reader provides an email address through the Newspack auth flow and
 	 * the reader's newsletter subscription status is unknown, check the status
 	 * of the email address with the ESP currently active in Newspack Newsletters.
 	 *
-	 * @param string|null $email_address Email address or null if not set.
+	 * @param string $email_address Email address.
 	 */
-	public static function create_reader_event_from_esp_data( $email_address ) {
+	private static function fetch_reader_data_from_esp( $email_address ) {
 		if ( self::$is_checking_status ) {
 			return;
 		}
