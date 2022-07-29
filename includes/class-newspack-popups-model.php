@@ -1045,14 +1045,6 @@ final class Newspack_Popups_Model {
 	public static function generate_inline_popup( $popup ) {
 		global $wp;
 
-		do_action( 'newspack_campaigns_before_campaign_render', $popup );
-		$blocks = parse_blocks( $popup['content'] );
-		$body   = '';
-		foreach ( $blocks as $block ) {
-			$body .= render_block( $block );
-		}
-		do_action( 'newspack_campaigns_after_campaign_render', $popup );
-
 		$element_id           = self::get_uniqid();
 		$endpoint             = self::get_reader_endpoint();
 		$display_title        = $popup['options']['display_title'];
@@ -1066,6 +1058,38 @@ final class Newspack_Popups_Model {
 		$classes[]            = $hide_border ? 'newspack-lightbox-no-border' : null;
 		$classes[]            = $is_newsletter_prompt ? 'newspack-newsletter-prompt-inline' : null;
 
+		ob_start();
+		?>
+			<amp-layout
+				<?php echo self::get_access_attrs( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+				<?php echo self::get_data_status_preview_attrs( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+				class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>"
+				role="button"
+				tabindex="0"
+				style="<?php echo esc_attr( self::container_style( $popup ) ); ?>"
+				id="<?php echo esc_attr( $element_id ); ?>"
+			>
+				<?php echo self::generate_inner_content( $popup, $element_id ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+			</amp-layout>
+		<?php
+		return ob_get_clean();
+	}
+
+	/**
+	 * Create HTML for the popup inner content.
+	 *
+	 * @param string $popup The popup object.
+	 * @param string $element_id The element id.
+	 */
+	private static function generate_inner_content( $popup, $element_id ) {
+		do_action( 'newspack_campaigns_before_campaign_render', $popup );
+		$blocks = parse_blocks( $popup['content'] );
+		$body   = '';
+		foreach ( $blocks as $block ) {
+			$body .= render_block( $block );
+		}
+		do_action( 'newspack_campaigns_after_campaign_render', $popup );
+
 		$analytics_events = self::get_analytics_events( $popup, $body, $element_id );
 		if ( ! empty( $analytics_events ) ) {
 			add_filter(
@@ -1076,23 +1100,21 @@ final class Newspack_Popups_Model {
 			);
 		}
 
+		$has_featured_image = has_post_thumbnail( $popup['id'] );
 		ob_start();
 		?>
-			<?php self::insert_event_tracking( $popup, $body, $element_id ); ?>
-			<amp-layout
-				<?php echo self::get_access_attrs( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-				<?php echo self::get_data_status_preview_attrs( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-				class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>"
-				role="button"
-				tabindex="0"
-				style="<?php echo esc_attr( self::container_style( $popup ) ); ?>"
-				id="<?php echo esc_attr( $element_id ); ?>"
-			>
-				<?php if ( ! empty( $popup['title'] ) && $display_title ) : ?>
+			<?php if ( $has_featured_image ) : ?>
+				<div class="newspack-popup__featured-image">
+					<?php echo get_the_post_thumbnail( $popup['id'], 'large' ); ?>
+				</div>
+			<?php endif; ?>
+			<div class="newspack-popup__content">
+				<?php if ( ! empty( $popup['title'] ) && $popup['options']['display_title'] ) : ?>
 					<h1 class="newspack-popup-title"><?php echo esc_html( $popup['title'] ); ?></h1>
 				<?php endif; ?>
 				<?php echo do_shortcode( $body ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-			</amp-layout>
+			</div>
+			<?php self::insert_event_tracking( $popup, $body, $element_id ); ?>
 		<?php
 		return ob_get_clean();
 	}
@@ -1118,14 +1140,6 @@ final class Newspack_Popups_Model {
 			return self::generate_inline_popup( $popup );
 		}
 
-		do_action( 'newspack_campaigns_before_campaign_render', $popup );
-		$blocks = parse_blocks( $popup['content'] );
-		$body   = '';
-		foreach ( $blocks as $block ) {
-			$body .= render_block( $block );
-		}
-		do_action( 'newspack_campaigns_after_campaign_render', $popup );
-
 		$element_id            = self::get_uniqid();
 		$endpoint              = self::get_reader_endpoint();
 		$display_title         = $popup['options']['display_title'];
@@ -1147,16 +1161,7 @@ final class Newspack_Popups_Model {
 		$wrapper_classes[]     = 'publish' !== $popup['status'] ? 'newspack-inactive-popup-status' : null;
 		$is_scroll_triggered   = 'scroll' === $popup['options']['trigger_type'];
 
-		add_filter(
-			'newspack_analytics_events',
-			function ( $evts ) use ( $popup, $body, $element_id ) {
-				return array_merge( $evts, self::get_analytics_events( $popup, $body, $element_id ) );
-			}
-		);
-
 		$animation_id = 'a_' . $element_id;
-
-		$has_featured_image = has_post_thumbnail( $popup['id'] );
 
 		ob_start();
 		?>
@@ -1170,17 +1175,7 @@ final class Newspack_Popups_Model {
 		>
 			<div class="<?php echo esc_attr( implode( ' ', $wrapper_classes ) ); ?>" data-popup-status="<?php echo esc_attr( $popup['status'] ); ?>" style="<?php echo ! $hide_border ? esc_attr( self::container_style( $popup ) ) : ''; ?>">
 				<div class="newspack-popup" style="<?php echo $hide_border ? esc_attr( self::container_style( $popup ) ) : ''; ?>">
-					<?php if ( $has_featured_image ) : ?>
-						<div class="newspack-popup__featured-image">
-							<?php echo get_the_post_thumbnail( $popup['id'], 'large' ); ?>
-						</div>
-					<?php endif; ?>
-					<div class="newspack-popup__content">
-						<?php if ( ! empty( $popup['title'] ) && $display_title ) : ?>
-							<h1 class="newspack-popup-title"><?php echo esc_html( $popup['title'] ); ?></h1>
-						<?php endif; ?>
-						<?php echo do_shortcode( $body ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-					</div>
+					<?php echo self::generate_inner_content( $popup, $element_id ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					<form class="popup-dismiss-form <?php echo esc_attr( self::get_form_class( 'dismiss', $element_id ) ); ?> popup-action-form <?php echo esc_attr( self::get_form_class( 'action', $element_id ) ); ?>"
 						method="POST"
 						action-xhr="<?php echo esc_url( $endpoint ); ?>"
@@ -1252,7 +1247,6 @@ final class Newspack_Popups_Model {
 			</script>
 		</amp-animation>
 		<?php
-		self::insert_event_tracking( $popup, $body, $element_id );
 		if ( self::is_overlay( $popup ) && has_block( 'newspack-blocks/homepage-articles', $popup['content'] ) ) {
 			add_filter( 'newspack_blocks_homepage_enable_duplication', '__return_false' );
 			add_filter( 'newspack_blocks_homepage_shown_rendered_posts', '__return_false' );

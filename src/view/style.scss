@@ -84,27 +84,6 @@ $width__tablet: 782px;
 				padding: #{2 * $overlay__gap};
 			}
 		}
-		&__featured-image {
-			display: none;
-			max-height: #{13 * $overlay__gap};
-			overflow: hidden;
-			@media only screen and ( min-width: $width__tablet ) {
-				align-items: center;
-				display: flex;
-				justify-content: center;
-			}
-		}
-
-		&__content,
-		.wp-block-column {
-			> *:first-child {
-				margin-top: 0;
-			}
-
-			> *:last-child {
-				margin-bottom: 0;
-			}
-		}
 	}
 
 	&.newspack-lightbox-no-border {
@@ -371,6 +350,10 @@ $width__tablet: 782px;
 		border: none;
 		padding: 0;
 	}
+
+	.newspack-popup__featured-image {
+		margin-bottom: 0.75rem;
+	}
 }
 
 .newspack-inactive-popup-status {
@@ -398,6 +381,31 @@ $width__tablet: 782px;
 
 	&:focus {
 		outline: none;
+	}
+}
+
+// Universal styles for all popups.
+.newspack-popup {
+	&__featured-image {
+		display: none;
+		max-height: #{13 * $overlay__gap};
+		overflow: hidden;
+		@media only screen and ( min-width: $width__tablet ) {
+			align-items: center;
+			display: flex;
+			justify-content: center;
+		}
+	}
+
+	&__content,
+	.wp-block-column {
+		> *:first-child {
+			margin-top: 0;
+		}
+
+		> *:last-child {
+			margin-bottom: 0;
+		}
 	}
 }
 
