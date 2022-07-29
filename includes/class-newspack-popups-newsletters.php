@@ -65,39 +65,40 @@ final class Newspack_Popups_Newsletters {
 	/**
 	 * Update reader events when the Newspack Newsletters subscribe form adds a contact to a list.
 	 *
-	 * @param string        $provider The provider name.
-	 * @param array         $contact  {
-	 *    Contact information.
+	 * @param string         $provider The provider name.
+	 * @param array          $contact  {
+	 *     Contact information.
 	 *
 	 *    @type string   $email    Contact email address.
 	 *    @type string   $name     Contact name. Optional.
 	 *    @type string[] $metadata Contact additional metadata. Optional.
 	 * }
-	 * @param string[]      $lists    Array of list IDs to subscribe the contact to.
-	 * @param bool|WP_Error $result   True if the contact was added or error if failed.
+	 * @param string[]|false $lists    Array of list IDs to subscribe the contact to.
+	 * @param bool|WP_Error  $result   True if the contact was added or error if failed.
 	 */
 	public static function handle_newsletter_subscription( $provider, $contact, $lists, $result ) {
-		if ( ! \is_wp_error( $result ) && $result ) {
-			$subscription_event = [
-				'type'    => 'subscription',
-				'context' => $contact['email'],
-				'value'   => [
-					'esp'   => $provider,
-					'lists' => $lists,
-				],
-			];
-
-
-			$client_id = isset( $contact['client_id'] ) ? $contact['client_id'] : \Newspack_Popups_Segmentation::get_client_id();
-			$nonce     = \wp_create_nonce( 'newspack_campaigns_lightweight_api' );
-			$api       = \Campaign_Data_Utils::get_api( $nonce );
-
-			if ( ! $api || ! $client_id ) {
-				return;
-			}
-
-			$api->save_reader_events( $client_id, [ $subscription_event ] );
+		if ( \is_wp_error( $result ) || ! $result || empty( $lists ) ) {
+			return;
 		}
+		$subscription_event = [
+			'type'    => 'subscription',
+			'context' => $contact['email'],
+			'value'   => [
+				'esp'   => $provider,
+				'lists' => $lists,
+			],
+		];
+
+
+		$client_id = isset( $contact['client_id'] ) ? $contact['client_id'] : \Newspack_Popups_Segmentation::get_client_id();
+		$nonce     = \wp_create_nonce( 'newspack_campaigns_lightweight_api' );
+		$api       = \Campaign_Data_Utils::get_api( $nonce );
+
+		if ( ! $api || ! $client_id ) {
+			return;
+		}
+
+		$api->save_reader_events( $client_id, [ $subscription_event ] );
 	}
 
 	/**
