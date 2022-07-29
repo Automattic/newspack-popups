@@ -46,7 +46,7 @@ final class Newspack_Popups_Newsletters {
 	public function __construct() {
 		\add_action( 'newspack_newsletters_add_contact', [ __CLASS__, 'handle_newsletter_subscription' ], 10, 4 );
 		\add_action( 'wp_login', [ __CLASS__, 'status_check_on_login' ], 10, 2 );
-		\add_action( 'newspack_registered_reader', [ __CLASS__, 'check_reader_newsletter_subscription_status' ] );
+		\add_action( 'newspack_registered_reader', [ __CLASS__, 'newspack_registered_reader' ], 10, 5 );
 	}
 
 	/**
@@ -56,10 +56,13 @@ final class Newspack_Popups_Newsletters {
 	 * @param WP_User $user User object.
 	 */
 	public static function status_check_on_login( $user_login, $user ) {
+		if ( ! method_exists( '\Newspack\Reader_Activation', 'is_user_reader' ) ) {
+			return;
+		}
 		if ( ! \Newspack\Reader_Activation::is_user_reader( $user ) ) {
 			return;
 		}
-		self::check_reader_newsletter_subscription_status( $user->user_email );
+		self::fetch_reader_data_from_esp( $user->user_email );
 	}
 
 	/**
@@ -102,13 +105,30 @@ final class Newspack_Popups_Newsletters {
 	}
 
 	/**
+	 * Handle the newspack_registered_reader hook.
+	 *
+	 * @param string         $email_address   Email address.
+	 * @param bool           $authenticate    Whether to authenticate after registering.
+	 * @param false|int      $user_id         The created user id.
+	 * @param false|\WP_User $existing_user   The existing user object.
+	 * @param array          $metadata        Metadata.
+	 */
+	public static function newspack_registered_reader( $email_address, $authenticate, $user_id, $existing_user, $metadata ) {
+		if ( false !== $existing_user ) {
+			// Fetch data only if it's a new user registration.
+			return;
+		}
+		self::fetch_reader_data_from_esp( $email_address );
+	}
+
+	/**
 	 * When a reader provides an email address through the Newspack auth flow and
 	 * the reader's newsletter subscription status is unknown, check the status
 	 * of the email address with the ESP currently active in Newspack Newsletters.
 	 *
-	 * @param string|null $email_address Email address or null if not set.
+	 * @param string $email_address Email address.
 	 */
-	public static function check_reader_newsletter_subscription_status( $email_address ) {
+	private static function fetch_reader_data_from_esp( $email_address ) {
 		if ( self::$is_checking_status ) {
 			return;
 		}
@@ -117,39 +137,63 @@ final class Newspack_Popups_Newsletters {
 		if ( ! $email_address || ! class_exists( '\Newspack_Newsletters' ) || ! class_exists( '\Newspack_Newsletters_Subscription' ) ) {
 			return;
 		}
+
 		$nonce = \wp_create_nonce( 'newspack_campaigns_lightweight_api' );
 		$api   = Campaign_Data_Utils::get_api( $nonce );
-
 		if ( ! $api ) {
 			return;
 		}
 
-		$client_id = Newspack_Popups_Segmentation::get_client_id();
+		$client_id           = Newspack_Popups_Segmentation::get_client_id();
+		$events_to_add       = [];
+		$newsletter_provider = \Newspack_Newsletters::get_service_provider();
 
 		// If the reader is already known to be a newsletter subscriber, no need to proceed.
-		$newsletter_events = $api->get_reader_events( $client_id, 'subscription', $email_address );
-		if ( ! empty( $newsletter_events ) ) {
-			return;
+		$has_subscription_events = ! empty( $api->get_reader_events( $client_id, 'subscription', $email_address ) );
+		if ( ! $has_subscription_events ) {
+			// Look up the email address as a contact with the connected ESP. If not a contact, no need to proceed.
+			$subscribed_lists = \Newspack_Newsletters_Subscription::get_contact_lists( $email_address );
+			if ( ! is_wp_error( $subscribed_lists ) && ! empty( $subscribed_lists ) && is_array( $subscribed_lists ) ) {
+				// The reader is subscribed to one or more lists, so they should be segmented as a subscriber.
+				$events_to_add[] = [
+					'type'    => 'subscription',
+					'context' => $email_address,
+					'value'   => [
+						'esp'   => $newsletter_provider->service,
+						'lists' => $subscribed_lists,
+					],
+				];
+			}
 		}
 
-		// Look up the email address as a contact with the connected ESP. If not a contact, no need to proceed.
-		$subscribed_lists = \Newspack_Newsletters_Subscription::get_contact_lists( $email_address );
-		if ( is_wp_error( $subscribed_lists ) || empty( $subscribed_lists ) || ! is_array( $subscribed_lists ) ) {
-			return;
+		// If the reader is already known to be a donor, no need to proceed.
+		$has_donation_events = ! empty( $api->get_reader_events( $client_id, 'donation', $email_address ) );
+		if ( ! $has_donation_events ) {
+			$contact_details = \Newspack_Newsletters_Subscription::get_contact_data( $email_address, true );
+			if ( ! is_wp_error( $contact_details ) && isset( $contact_details['metadata'] ) ) {
+				$metadata        = $contact_details['metadata'];
+				$donation_amount = 0;
+
+				if ( isset( $metadata['NP_LAST_PAYMENT_AMOUNT'] ) ) {
+					$donation_amount = (int) $metadata['NP_LAST_PAYMENT_AMOUNT'];
+				} elseif ( isset( $metadata['TOTAL_SPENT'] ) ) {
+					$donation_amount = (int) $metadata['TOTAL_SPENT'];
+				}
+				if ( 0 < $donation_amount ) {
+					$events_to_add[] = [
+						'type'    => 'donation',
+						'context' => $newsletter_provider->service,
+						'value'   => [
+							'amount' => $donation_amount,
+						],
+					];
+				}
+			}
 		}
 
-		// The reader is subscribed to one or more lists, so they should be segmented as a subscriber.
-		$provider           = \Newspack_Newsletters::get_service_provider();
-		$subscription_event = [
-			'type'    => 'subscription',
-			'context' => $email_address,
-			'value'   => [
-				'esp'   => $provider->service,
-				'lists' => $subscribed_lists,
-			],
-		];
-
-		$api->save_reader_events( $client_id, [ $subscription_event ] );
+		if ( ! empty( $events_to_add ) ) {
+			$api->save_reader_events( $client_id, $events_to_add );
+		}
 	}
 }
 
