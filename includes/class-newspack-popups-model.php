@@ -1156,6 +1156,8 @@ final class Newspack_Popups_Model {
 
 		$animation_id = 'a_' . $element_id;
 
+		$has_featured_image = has_post_thumbnail( $popup['id'] );
+
 		ob_start();
 		?>
 		<amp-layout
