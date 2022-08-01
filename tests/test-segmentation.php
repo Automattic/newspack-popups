@@ -15,29 +15,32 @@ class SegmentationTest extends WP_UnitTestCase {
 
 	public function setUp() { // phpcs:ignore Squiz.Commenting.FunctionComment.Missing
 		global $wpdb;
-		$events_table_name     = Segmentation::get_events_table_name();
-		$transients_table_name = Segmentation::get_transients_table_name();
-		$wpdb->query( "DELETE FROM $events_table_name;" ); // phpcs:ignore
-		$wpdb->query( "DELETE FROM $transients_table_name;" ); // phpcs:ignore
+		$reader_events_table_name = Segmentation::get_reader_events_table_name();
+		$readers_table_name       = Segmentation::get_readers_table_name();
+		$wpdb->query( "DELETE FROM $reader_events_table_name;" ); // phpcs:ignore
+		$wpdb->query( "DELETE FROM $readers_table_name;" ); // phpcs:ignore
 		if ( file_exists( Segmentation::get_log_file_path() ) ) {
 			unlink( Segmentation::get_log_file_path() ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_unlink
 		}
 		self::$post_read_payload = [
-			'is_post'    => true,
-			'clientId'   => 'test-' . uniqid(),
-			'post_id'    => '42',
-			'categories' => '5,6',
-			'created_at' => gmdate( 'Y-m-d H:i:s' ),
+			'client_id'    => 'test-' . uniqid(),
+			'date_created' => gmdate( 'Y-m-d H:i:s' ),
+			'type'         => 'view',
+			'context'      => 'post',
+			'value'        => [
+				'post_id'    => 42,
+				'categories' => '5,6',
+			],
 		];
 		self::$request           = [
-			'cid'      => self::$post_read_payload['clientId'],
+			'cid'      => self::$post_read_payload['client_id'],
 			'popups'   => wp_json_encode( [] ),
 			'settings' => wp_json_encode( [] ),
 			'visit'    => wp_json_encode(
 				[
-					'post_id'    => self::$post_read_payload['post_id'],
-					'categories' => self::$post_read_payload['categories'],
-					'is_post'    => true,
+					'post_id'    => self::$post_read_payload['value']['post_id'],
+					'post_type'  => 'post',
+					'categories' => self::$post_read_payload['value']['categories'],
 					'date'       => gmdate( 'Y-m-d', time() ),
 				]
 			),
@@ -48,39 +51,45 @@ class SegmentationTest extends WP_UnitTestCase {
 	 * Log file updating with a post_read event.
 	 */
 	public function test_log_visit() {
-		Segmentation_Report::log_single_visit( self::$post_read_payload );
+		$api = new Lightweight_API();
+		Segmentation_Report::log_reader_events( [ self::$post_read_payload ] );
 
 		$expected_log_line = implode(
-			';',
+			'|',
 			[
-				'post_read',
-				self::$post_read_payload['clientId'],
-				gmdate( 'Y-m-d H:i:s', time() ),
-				self::$post_read_payload['post_id'],
-				self::$post_read_payload['categories'],
+				self::$post_read_payload['client_id'],
+				self::$post_read_payload['date_created'],
+				self::$post_read_payload['type'],
+				self::$post_read_payload['context'],
+				wp_json_encode( self::$post_read_payload['value'] ),
 			]
-		) . "\n";
+		);
 
 		self::assertEquals(
-			$expected_log_line,
+			$expected_log_line . "\n",
 			file_get_contents( Segmentation::get_log_file_path() ),
 			'Log file contains the expected line.'
 		);
 
-		Segmentation_Report::log_single_visit(
-			array_merge(
-				self::$post_read_payload,
-				[
-					'is_post' => false,
-				]
-			)
-		);
-
-		self::assertEquals(
-			$expected_log_line,
-			file_get_contents( Segmentation::get_log_file_path() ),
-			'Log file is not updated after a non-post visit is reported.'
-		);
+		$second_event    = [
+			'client_id' => self::$post_read_payload['client_id'],
+			'type'      => 'view',
+			'context'   => 'post',
+			'value'     => [
+				'post_id'    => 43,
+				'categories' => '7,8',
+			],
+		];
+		$legacy_log_line = implode(
+			';',
+			[
+				'post_read',
+				self::$post_read_payload['client_id'],
+				gmdate( 'Y-m-d', strtotime( '-1 day', time() ) ),
+				$second_event['value']['post_id'],
+				$second_event['value']['categories'],
+			]
+		) . "\n";
 
 		Newspack_Popups_Parse_Logs::parse_events_logs();
 
@@ -88,6 +97,23 @@ class SegmentationTest extends WP_UnitTestCase {
 			'',
 			file_get_contents( Segmentation::get_log_file_path() ),
 			'Log file is emptied after parsing logs.'
+		);
+
+		file_put_contents( // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_file_put_contents
+			Segmentation::get_log_file_path(),
+			$legacy_log_line,
+			FILE_APPEND
+		);
+
+		Newspack_Popups_Parse_Logs::parse_events_logs();
+
+		self::assertArraySubset(
+			[
+				self::$post_read_payload,
+				$second_event,
+			],
+			$api->get_reader_events( self::$post_read_payload['client_id'] ),
+			'Both new and legacy formats are parsed into events.'
 		);
 	}
 
@@ -103,8 +129,7 @@ class SegmentationTest extends WP_UnitTestCase {
 
 		// And a duplicate.
 		$maybe_show_campaign = new Maybe_Show_Campaign();
-
-		$date = gmdate( 'Y-m-d', strtotime( '+1 week' ) );
+		$date                = gmdate( 'Y-m-d', strtotime( '+1 week' ) );
 
 		// Duplicate article read, but on a different date.
 		$_REQUEST            = self::$request;
@@ -117,21 +142,10 @@ class SegmentationTest extends WP_UnitTestCase {
 			)
 		);
 		$maybe_show_campaign = new Maybe_Show_Campaign();
+		$read_posts          = $maybe_show_campaign->get_reader_events( self::$post_read_payload['client_id'], 'view', 'post' );
 
-		$read_posts = $maybe_show_campaign->get_client_data( self::$post_read_payload['clientId'] )['posts_read'];
-
-		self::assertEquals(
-			1,
-			count( $read_posts ),
-			'The read posts array is of expected length – the duplicates were not inserted.'
-		);
-
-		self::assertEquals(
-			[
-				'post_id'      => self::$post_read_payload['post_id'],
-				'category_ids' => self::$post_read_payload['categories'],
-				'created_at'   => self::$post_read_payload['created_at'],
-			],
+		self::assertArraySubset(
+			self::$post_read_payload,
 			$read_posts[0],
 			'The read posts array contains the reported post.'
 		);
@@ -148,33 +162,48 @@ class SegmentationTest extends WP_UnitTestCase {
 			)
 		);
 		$maybe_show_campaign = new Maybe_Show_Campaign();
-
-		$read_posts = $maybe_show_campaign->get_client_data( self::$post_read_payload['clientId'] )['posts_read'];
+		$read_posts          = $maybe_show_campaign->get_reader_events( self::$post_read_payload['client_id'], 'view', 'post' );
 
 		self::assertEquals(
-			2,
+			4,
 			count( $read_posts ),
 			'The read posts array is of expected length after reading another post.'
 		);
 
 		// Now a non-post visit.
-		$_REQUEST            = self::$request;
-		$_REQUEST['visit']   = wp_json_encode(
+		$_REQUEST          = self::$request;
+		$_REQUEST['visit'] = wp_json_encode(
 			array_merge(
 				(array) json_decode( self::$request['visit'] ),
 				[
-					'post_id' => '12345',
-					'is_post' => false,
+					'post_id'   => '12345',
+					'post_type' => 'page',
 				]
 			)
 		);
+
 		$maybe_show_campaign = new Maybe_Show_Campaign();
-		$read_posts          = $maybe_show_campaign->get_client_data( self::$post_read_payload['clientId'] )['posts_read'];
+		$read_posts          = $maybe_show_campaign->get_reader_events( self::$post_read_payload['client_id'], 'view', 'post' );
+		$page_views          = $maybe_show_campaign->get_reader_events( self::$post_read_payload['client_id'], 'view', 'page' );
 
 		self::assertEquals(
-			2,
+			4,
 			count( $read_posts ),
 			'The read posts array is not updated after a non-post visit was made.'
+		);
+
+		self::assertArraySubset(
+			[
+				'client_id' => self::$post_read_payload['client_id'],
+				'type'      => 'view',
+				'context'   => 'page',
+				'value'     => [
+					'post_id'    => '12345',
+					'categories' => '5,6',
+				],
+			],
+			$page_views[0],
+			'Non-article visits are logged as page views.'
 		);
 	}
 
@@ -211,55 +240,76 @@ class SegmentationTest extends WP_UnitTestCase {
 	 */
 	public function test_data_pruning() {
 		global $wpdb;
-		$transients_table_name = Segmentation::get_transients_table_name();
-
 		$api_campaign_handler = new Maybe_Show_Campaign();
+		$readers_table_name   = Segmentation::get_readers_table_name();
+		$wpdb->query( "DELETE FROM $readers_table_name;" ); // phpcs:ignore
 
 		// Add the donor client data.
-		$api_campaign_handler->save_client_data(
+		$api_campaign_handler->save_reader( 'test-donor' );
+		$api_campaign_handler->save_reader_events(
 			'test-donor',
 			[
-				'donation' => [ 'amount' => 100 ],
+				[
+					'client_id' => 'test-donor',
+					'type'      => 'donation',
+					'value'     => [
+						'amount' => 100,
+					],
+				],
 			]
 		);
 
 		// Add and backdate the subscriber client data.
-		$api_campaign_handler->save_client_data(
+		$api_campaign_handler->save_reader( 'test-subscriber' );
+		$api_campaign_handler->save_reader_events(
 			'test-subscriber',
 			[
-				'email_subscriptions' => [ 'address' => 'test@testing.com' ],
+				[
+					'client_id' => 'test-subscriber',
+					'type'      => 'subscription',
+					'context'   => 'test@testing.com',
+				],
 			]
 		);
-		$wpdb->query( "UPDATE $transients_table_name SET `date` = '2020-04-29 15:39:13' WHERE `option_name` = '_transient_test-subcriber';" ); // phpcs:ignore
+		$wpdb->query( "UPDATE $readers_table_name SET `date_modified` = '2020-04-29 15:39:13' WHERE `client_id` = 'test-subscriber';" ); // phpcs:ignore
 
-		// Add and backdate the one time reader client data.
-		$api_campaign_handler->save_client_data(
+		// Add the one time reader client data.
+		$api_campaign_handler->save_reader( 'test-one-time-reader' );
+		$api_campaign_handler->save_reader_events(
 			'test-one-time-reader',
 			[
-				'posts_read' => [
-					[
-						'post_id'      => '142',
-						'category_ids' => '',
+				[
+					'client_id' => 'test-one-time-reader',
+					'type'      => 'view',
+					'context'   => 'post',
+					'value'     => [
+						'post_id'    => '142',
+						'categories' => '',
 					],
 				],
 			]
 		);
 
 		// Add and backdate the one time reader client data.
-		$api_campaign_handler->save_client_data(
+		$api_campaign_handler->save_reader( 'test-one-time-reader-backdated' );
+		$api_campaign_handler->save_reader_events(
 			'test-one-time-reader-backdated',
 			[
-				'posts_read' => [
-					[
-						'post_id'      => '142',
-						'category_ids' => '',
+				[
+					'client_id' => 'test-one-time-reader-backdated',
+					'type'      => 'view',
+					'context'   => 'post',
+					'value'     => [
+						'post_id'    => '142',
+						'categories' => '',
 					],
 				],
 			]
 		);
-		$wpdb->query( "UPDATE $transients_table_name SET `date` = '2020-04-29 15:39:13' WHERE `option_name` = '_transient_test-one-time-reader-backdated';" ); // phpcs:ignore
+		$wpdb->query( "UPDATE $readers_table_name SET `date_modified` = '2020-04-29 15:39:13' WHERE `client_id` = 'test-one-time-reader-backdated';" ); // phpcs:ignore
 
-		$all_readers_rows = $wpdb->get_results( "SELECT option_name FROM $transients_table_name" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$all_readers_rows = $wpdb->get_results( "SELECT client_id FROM $readers_table_name" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+
 		self::assertEquals(
 			4,
 			count( $all_readers_rows ),
@@ -269,20 +319,20 @@ class SegmentationTest extends WP_UnitTestCase {
 		// Prune the data.
 		Newspack_Popups_Segmentation::prune_data();
 
-		$all_readers_rows = $wpdb->get_results( "SELECT option_name FROM $transients_table_name" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$all_readers_rows = $wpdb->get_results( "SELECT client_id FROM $readers_table_name" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		self::assertEquals(
 			[
 				// Donor was not removed.
 				(object) [
-					'option_name' => '_transient_test-donor',
+					'client_id' => 'test-donor',
 				],
 				// One time reader was not removed, since they visited in the last 30 days.
 				(object) [
-					'option_name' => '_transient_test-one-time-reader',
+					'client_id' => 'test-one-time-reader',
 				],
 				// Subscriber was not removed, despite not visiting since >30 days.
 				(object) [
-					'option_name' => '_transient_test-subscriber',
+					'client_id' => 'test-subscriber',
 				],
 			],
 			$all_readers_rows,

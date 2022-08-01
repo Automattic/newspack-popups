@@ -26,6 +26,10 @@ final class Newspack_Popups {
 		'display_title'                  => 'n_ti',
 		'hide_border'                    => 'n_hb',
 		'frequency'                      => 'n_fr',
+		'frequency_max'                  => 'n_fm',
+		'frequency_start'                => 'n_fs',
+		'frequency_between'              => 'n_fb',
+		'frequency_reset'                => 'n_ft',
 		'overlay_color'                  => 'n_oc',
 		'overlay_opacity'                => 'n_oo',
 		'overlay_size'                   => 'n_os',
@@ -87,6 +91,7 @@ final class Newspack_Popups {
 			include_once dirname( __FILE__ ) . '/class-newspack-popups-segmentation.php';
 			include_once dirname( __FILE__ ) . '/class-newspack-popups-custom-placements.php';
 			include_once dirname( __FILE__ ) . '/class-newspack-popups-parse-logs.php';
+			include_once dirname( __FILE__ ) . '/class-newspack-popups-newsletters.php';
 			include_once dirname( __FILE__ ) . '/class-newspack-popups-donations.php';
 			include_once dirname( __FILE__ ) . '/class-newspack-popups-view-as.php';
 		}
@@ -216,6 +221,58 @@ final class Newspack_Popups {
 
 		\register_meta(
 			'post',
+			'frequency_max',
+			[
+				'object_subtype' => self::NEWSPACK_POPUPS_CPT,
+				'show_in_rest'   => true,
+				'type'           => 'integer',
+				'default'        => 0,
+				'single'         => true,
+				'auth_callback'  => '__return_true',
+			]
+		);
+
+		\register_meta(
+			'post',
+			'frequency_start',
+			[
+				'object_subtype' => self::NEWSPACK_POPUPS_CPT,
+				'show_in_rest'   => true,
+				'type'           => 'integer',
+				'default'        => 0,
+				'single'         => true,
+				'auth_callback'  => '__return_true',
+			]
+		);
+
+		\register_meta(
+			'post',
+			'frequency_between',
+			[
+				'object_subtype' => self::NEWSPACK_POPUPS_CPT,
+				'show_in_rest'   => true,
+				'type'           => 'integer',
+				'default'        => 0,
+				'single'         => true,
+				'auth_callback'  => '__return_true',
+			]
+		);
+
+		\register_meta(
+			'post',
+			'frequency_reset',
+			[
+				'object_subtype' => self::NEWSPACK_POPUPS_CPT,
+				'show_in_rest'   => true,
+				'type'           => 'string',
+				'default'        => 'month',
+				'single'         => true,
+				'auth_callback'  => '__return_true',
+			]
+		);
+
+		\register_meta(
+			'post',
 			'placement',
 			[
 				'object_subtype' => self::NEWSPACK_POPUPS_CPT,
@@ -284,6 +341,7 @@ final class Newspack_Popups {
 				'object_subtype' => self::NEWSPACK_POPUPS_CPT,
 				'show_in_rest'   => true,
 				'type'           => 'string',
+				'default'        => 'medium',
 				'single'         => true,
 				'auth_callback'  => '__return_true',
 			]
@@ -595,6 +653,7 @@ final class Newspack_Popups {
 					)
 				),
 				'preview_query_keys'           => self::PREVIEW_QUERY_KEYS,
+				'experimental'                 => class_exists( '\Newspack\Reader_Activation' ) ? \Newspack\Reader_Activation::is_enabled() : false,
 			]
 		);
 		\wp_enqueue_style(
