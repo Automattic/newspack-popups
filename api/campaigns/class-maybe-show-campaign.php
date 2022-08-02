@@ -251,7 +251,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 					$should_display = true;
 				}
 			}
-		} elseif ( ! empty( $popup_segment_ids ) ) {
+		} elseif ( $should_display && ! empty( $popup_segment_ids ) ) {
 			// $settings->best_priority_segment_id should always be present, but in case it's not (e.g. in a unit test), we can fetch it here.
 			$best_priority_segment_id = isset( $settings->best_priority_segment_id ) ?
 				$settings->best_priority_segment_id :
@@ -281,6 +281,11 @@ class Maybe_Show_Campaign extends Lightweight_API {
 					self::add_suppression_reason( $popup->id, __( 'Segment does not match.', 'newspack-popups' ) );
 				}
 			}
+		}
+
+		// If the prompt is already suppressed, no need to proceed.
+		if ( ! $should_display ) {
+			return $should_display;
 		}
 
 		// Handle frequency.
