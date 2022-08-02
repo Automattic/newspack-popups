@@ -1,3 +1,10 @@
+## [2.2.1](https://github.com/Automattic/newspack-popups/compare/v2.2.0...v2.2.1) (2022-08-02)
+
+
+### Bug Fixes
+
+* utm_source suppression if segment also matches ([#931](https://github.com/Automattic/newspack-popups/issues/931)) ([869054d](https://github.com/Automattic/newspack-popups/commit/869054d05763e37bf379185b7330993848846953))
+
 # [2.2.0](https://github.com/Automattic/newspack-popups/compare/v2.1.0...v2.2.0) (2022-08-01)
 
 
