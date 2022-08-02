@@ -245,15 +245,6 @@ final class Newspack_Popups_Segmentation {
 			$initial_client_report_url_params['mc_eid'] = sanitize_text_field( $_GET['mc_eid'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		}
 
-		// Handle user accounts and Newspack donations via WooCommerce.
-		if ( is_user_logged_in() && ! Newspack_Popups::is_preview_request() ) {
-			// If the user is logged in, store their user ID.
-			$user_id = get_current_user_id();
-			if ( $user_id ) {
-				$initial_client_report_url_params['user_id'] = $user_id;
-			}
-		}
-
 		// If visiting the donor landing page, mark the visitor as donor.
 		$donor_landing_page = intval( Newspack_Popups_Settings::donor_landing_page() );
 		if ( ! empty( $donor_landing_page ) && get_queried_object_id() === $donor_landing_page ) {

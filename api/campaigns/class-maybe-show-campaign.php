@@ -29,6 +29,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		$visit     = json_decode( $_REQUEST['visit'], true ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.InputNotValidated
 		$response  = [];
 		$client_id = $_REQUEST['cid']; // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$user_id   = isset( $_REQUEST['uid'] ) ? absint( $_REQUEST['uid'] ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 
 		$view_as_spec = [];
 		if ( ! empty( $_REQUEST['view_as'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -39,6 +40,17 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		if ( ! defined( 'DISABLE_CAMPAIGN_EVENT_LOGGING' ) || true !== DISABLE_CAMPAIGN_EVENT_LOGGING ) {
 			$reader_events = [];
 			$view_event    = $this->convert_visit_to_event( $client_id, $visit );
+
+			// Handle user accounts.
+			if ( $user_id ) {
+				$existing_user_accounts = $this->get_reader_events( $client_id, 'user_account', $user_id );
+				if ( 0 === count( $existing_user_accounts ) ) {
+					$reader_events[] = [
+						'type'    => 'user_account',
+						'context' => $user_id,
+					];
+				}
+			}
 
 			// Filter out recently seen views.
 			if ( ! empty( $view_event ) ) {
