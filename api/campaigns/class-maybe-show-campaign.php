@@ -29,6 +29,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		$visit     = json_decode( $_REQUEST['visit'], true ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.InputNotValidated
 		$response  = [];
 		$client_id = $_REQUEST['cid']; // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$user_id   = isset( $_REQUEST['uid'] ) ? absint( $_REQUEST['uid'] ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 
 		$view_as_spec = [];
 		if ( ! empty( $_REQUEST['view_as'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -39,6 +40,17 @@ class Maybe_Show_Campaign extends Lightweight_API {
 		if ( ! defined( 'DISABLE_CAMPAIGN_EVENT_LOGGING' ) || true !== DISABLE_CAMPAIGN_EVENT_LOGGING ) {
 			$reader_events = [];
 			$view_event    = $this->convert_visit_to_event( $client_id, $visit );
+
+			// Handle user accounts.
+			if ( $user_id ) {
+				$existing_user_accounts = $this->get_reader_events( $client_id, 'user_account', $user_id );
+				if ( 0 === count( $existing_user_accounts ) ) {
+					$reader_events[] = [
+						'type'    => 'user_account',
+						'context' => $user_id,
+					];
+				}
+			}
 
 			// Filter out recently seen views.
 			if ( ! empty( $view_event ) ) {
@@ -257,23 +269,21 @@ class Maybe_Show_Campaign extends Lightweight_API {
 				$settings->best_priority_segment_id :
 				$this->get_best_priority_segment_id( $settings->all_segments, $client_id, $referer_url, $page_referer_url, $view_as_spec );
 
-			// Only factor in the best=priority segment.
+			// Only factor in the best-priority segment.
 			$is_best_priority = ! empty( $best_priority_segment_id ) ? in_array( $best_priority_segment_id, $popup_segment_ids ) : false;
-			$popup_segment    = $is_best_priority ?
-				$settings->all_segments->{$best_priority_segment_id} :
-				[];
+			$popup_segment    = $is_best_priority ? $settings->all_segments->{$best_priority_segment_id} : false;
+			$segment_matches  =
+				$popup_segment ?
+				Campaign_Data_Utils::does_reader_match_segment(
+					Campaign_Data_Utils::canonize_segment( $popup_segment ),
+					$this->get_reader( $client_id ),
+					$this->get_reader_events( $client_id, [ 'subscription', 'donation', 'user_account', 'view' ] ),
+					$referer_url,
+					$page_referer_url
+				) :
+				false;
+			$should_display   = $is_best_priority && $segment_matches;
 
-			$popup_segment = Campaign_Data_Utils::canonize_segment( $popup_segment );
-
-			// Check whether client matches the prompt's segment.
-			$segment_matches = Campaign_Data_Utils::does_reader_match_segment(
-				$popup_segment,
-				$this->get_reader( $client_id ),
-				$this->get_reader_events( $client_id, [ 'subscription', 'donation', 'user_account', 'view' ] ),
-				$referer_url,
-				$page_referer_url
-			);
-			$should_display  = $is_best_priority && $segment_matches;
 			if ( false === $should_display ) {
 				if ( $segment_matches ) {
 					self::add_suppression_reason( $popup->id, __( 'Segment matches, but another segment has higher priority.', 'newspack-popups' ) );

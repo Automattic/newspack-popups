@@ -83,6 +83,8 @@ final class Newspack_Popups_Segmentation {
 			self::cron_deactivate(); // To avoid duplicate execution when transitioning from daily to hourly schedule.
 			wp_schedule_event( time(), 'hourly', 'newspack_popups_segmentation_data_prune' );
 		}
+
+		add_action( 'newspack_registered_reader', [ __CLASS__, 'handle_registered_reader' ], 10, 3 );
 	}
 
 	/**
@@ -241,59 +243,6 @@ final class Newspack_Popups_Segmentation {
 		if ( isset( $_GET['mc_cid'], $_GET['mc_eid'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$initial_client_report_url_params['mc_cid'] = sanitize_text_field( $_GET['mc_cid'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$initial_client_report_url_params['mc_eid'] = sanitize_text_field( $_GET['mc_eid'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		}
-
-		// Handle user accounts and Newspack donations via WooCommerce.
-		if ( is_user_logged_in() && ! Newspack_Popups::is_preview_request() ) {
-			// If the user is logged in, store their user ID.
-			$user_id = get_current_user_id();
-			if ( $user_id ) {
-				$initial_client_report_url_params['user_id'] = $user_id;
-			}
-
-			$newspack_donation_product_id = class_exists( '\Newspack\Donations' ) ?
-				(int) get_option( \Newspack\Donations::DONATION_PRODUCT_ID_OPTION, 0 ) :
-				0;
-
-			if ( class_exists( 'WooCommerce' ) ) {
-				$user_orders               = wc_get_orders( [ 'customer_id' => get_current_user_id() ] );
-				$newspack_donation_product = $newspack_donation_product_id ? wc_get_product( $newspack_donation_product_id ) : null;
-				$newspack_child_products   = $newspack_donation_product ? $newspack_donation_product->get_children() : [];
-
-				/**
-				 * Allows other plugins to designate additional WooCommerce products by ID that should be considered donations.
-				 *
-				 * @param int[] $product_ids Array of WooCommerce product IDs.
-				 */
-				$other_donation_products = apply_filters( 'newspack_popups_donation_products', [] );
-				$all_donation_products   = array_values( array_merge( $newspack_child_products, $other_donation_products ) );
-
-				if ( count( $user_orders ) ) {
-					$orders = [];
-					foreach ( $user_orders as $order ) {
-						$order_data  = $order->get_data();
-						$order_items = array_map(
-							function( $item ) {
-								return $item->get_product_id();
-							},
-							array_values( $order->get_items() )
-						);
-
-						// Only count orders that include donation products as donations.
-						if ( 0 < count( array_intersect( $order_items, $all_donation_products ) ) ) {
-							$orders[] = [
-								'order_id' => $order_data['id'],
-								'date'     => date_format( date_create( $order_data['date_created'] ), 'Y-m-d' ),
-								'amount'   => $order_data['total'],
-							];
-						}
-					}
-
-					if ( count( $orders ) ) {
-						$initial_client_report_url_params['orders'] = wp_json_encode( $orders );
-					}
-				}
-			}
 		}
 
 		// If visiting the donor landing page, mark the visitor as donor.
@@ -733,8 +682,7 @@ final class Newspack_Popups_Segmentation {
 			);
 			$removed_preview_readers = self::query_with_sleep( "DELETE FROM $readers_table_name WHERE is_preview = 1" );
 			$removed_preview_events  = self::query_with_sleep(
-				"DELETE FROM $reader_events_table_name WHERE client_id IN ( $preview_client_ids )",
-				$old_client_ids_to_delete
+				"DELETE FROM $reader_events_table_name WHERE client_id IN ( $preview_client_ids )"
 			);
 		}
 
@@ -810,6 +758,31 @@ final class Newspack_Popups_Segmentation {
 		}
 		if ( $removed_row_counts_prompt_seen_events ) {
 			error_log( 'Newspack Campaigns: Data pruning – removed ' . $removed_row_counts_prompt_seen_events . ' prompt seen events from ' . $reader_events_table_name . ' table.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+		}
+	}
+
+	/**
+	 * Handle reader registration.
+	 *
+	 * @param string $email Email address.
+	 * @param bool   $authenticate Whether the user was authenticated.
+	 * @param int    $user_id New user ID.
+	 */
+	public static function handle_registered_reader( $email, $authenticate, $user_id ) {
+		if ( $authenticate ) {
+			try {
+				require_once dirname( __FILE__ ) . '/../api/classes/class-lightweight-api.php';
+				$api           = new Lightweight_API();
+				$reader_events = [
+					[
+						'type'    => 'user_account',
+						'context' => $user_id,
+					],
+				];
+				$api->save_reader_events( self::get_client_id(), $reader_events );
+			} catch ( \Throwable $th ) {
+				\Newspack\Logger::log( 'Error when saving reader data on registration: ' . $th->getMessage() );
+			}
 		}
 	}
 }

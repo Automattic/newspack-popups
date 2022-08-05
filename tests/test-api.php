@@ -826,10 +826,13 @@ class APITest extends WP_UnitTestCase {
 		);
 
 		// Report a login.
-		self::$report_client_data->report_client_data(
+		self::$maybe_show_campaign->save_reader_events(
+			self::$client_id,
 			[
-				'client_id' => self::$client_id,
-				'user_id'   => 123,
+				[
+					'type'    => 'user_account',
+					'context' => 123,
+				],
 			]
 		);
 

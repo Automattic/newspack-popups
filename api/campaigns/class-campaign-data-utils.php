@@ -23,6 +23,22 @@ class Campaign_Data_Utils {
 	];
 
 	/**
+	 * Get an instance of the lightweight API that can be called directly by other plugin classes.
+	 * Requires nonce verfication to prevent CSRF attacks.
+	 *
+	 * @param string $nonce Nonce string to authenticate the request. If not valid, the request will fail.
+	 *
+	 * @return object|boolean If the nonce is valid, an instance of the API. Otherwise, false.
+	 */
+	public static function get_api( $nonce ) {
+		if ( \wp_verify_nonce( $nonce, 'newspack_campaigns_lightweight_api' ) ) {
+			return new \Lightweight_API( $nonce );
+		}
+
+		return false;
+	}
+
+	/**
 	 * Is the URL from a newsletter?
 	 *
 	 * @param string $url A URL.

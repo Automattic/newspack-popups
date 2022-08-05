@@ -791,6 +791,13 @@ final class Newspack_Popups_Inserter {
 		$popups_access_provider['authorization'] .= '&popups=' . wp_json_encode( $popups_configs );
 		$popups_access_provider['authorization'] .= '&settings=' . wp_json_encode( $settings );
 		$popups_access_provider['authorization'] .= '&visit=' . wp_json_encode( $visit );
+
+		// Handle user accounts.
+		$user_id = get_current_user_id();
+		if ( ! empty( $user_id ) ) {
+			$popups_access_provider['authorization'] .= '&uid=' . absint( $user_id );
+		}
+
 		if ( isset( $_GET['newspack-campaigns-debug'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 			$popups_access_provider['authorization'] .= '&debug';
 		}
