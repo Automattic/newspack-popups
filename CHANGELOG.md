@@ -1,3 +1,21 @@
+# [2.3.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v2.2.1...v2.3.0-alpha.1) (2022-08-05)
+
+
+### Bug Fixes
+
+* remove unneeded arg from preview pruning ([9fa5f4e](https://github.com/Automattic/newspack-popups/commit/9fa5f4e751b185569288c58b27329b2532d8cd89))
+* segment matching when no segment is the best-priority ([#930](https://github.com/Automattic/newspack-popups/issues/930)) ([d1a46a7](https://github.com/Automattic/newspack-popups/commit/d1a46a775147bd4aab2550a059e627eecbd69ae2))
+* simplify WC donation handling ([#922](https://github.com/Automattic/newspack-popups/issues/922)) ([43edced](https://github.com/Automattic/newspack-popups/commit/43edcedd757ea1be15a961f422c84bbf97038d50))
+
+
+### Features
+
+* featured images for overlay prompts ([#924](https://github.com/Automattic/newspack-popups/issues/924)) ([1e42665](https://github.com/Automattic/newspack-popups/commit/1e4266566e9b321ffbcd3ada019f2d1e4511361f))
+* lookup unknown email addresses in ESP to determine status ([#923](https://github.com/Automattic/newspack-popups/issues/923)) ([c352517](https://github.com/Automattic/newspack-popups/commit/c3525171d1b2031470d5cfbfa7366b25603d2604))
+* **newsletters-data:** handle no lists update ([#926](https://github.com/Automattic/newspack-popups/issues/926)) ([df77f1c](https://github.com/Automattic/newspack-popups/commit/df77f1cc2a76751d25754a25f410cd24fcd9009d))
+* read ESP donation metadata on login and supply to segmentation ([#927](https://github.com/Automattic/newspack-popups/issues/927)) ([2778b53](https://github.com/Automattic/newspack-popups/commit/2778b53179238cb6d9aca4d55eecf742187953bc))
+* **segmentation:** handle pre-authenticated users ([#911](https://github.com/Automattic/newspack-popups/issues/911)) ([211bbe0](https://github.com/Automattic/newspack-popups/commit/211bbe01ac705e4c00a032bdc958ae16edb455ff)), closes [#903](https://github.com/Automattic/newspack-popups/issues/903)
+
 ## [2.2.1](https://github.com/Automattic/newspack-popups/compare/v2.2.0...v2.2.1) (2022-08-02)
 
 
