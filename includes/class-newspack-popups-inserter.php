@@ -918,22 +918,18 @@ final class Newspack_Popups_Inserter {
 		}
 
 		$post_terms     = get_the_terms( get_the_ID(), $taxonomy );
-		$post_terms_ids = array_column( $post_terms ? $post_terms : [], 'term_id' );
+		$post_terms_ids = $post_terms ? array_column( $post_terms, 'term_id' ) : [];
 
 		// Check if a post term is excluded on the popup options.
 		if ( 'category' === $taxonomy ) {
-			foreach ( $popup['options']['excluded_categories'] as $category_excluded_id ) {
-				if ( in_array( $category_excluded_id, $post_terms_ids ) ) {
-					return false;
-				}
+			if ( 0 < count( array_intersect( $popup['options']['excluded_categories'], $post_terms_ids ) ) ) {
+				return false;
 			}
 		}
 
 		if ( 'post_tag' === $taxonomy ) {
-			foreach ( $popup['options']['excluded_tags'] as $post_tag_excluded_id ) {
-				if ( in_array( $post_tag_excluded_id, $post_terms_ids ) ) {
-					return false;
-				}
+			if ( 0 < count( array_intersect( $popup['options']['excluded_tags'], $post_terms_ids ) ) ) {
+				return false;
 			}
 		}
 
