@@ -15,6 +15,10 @@ $size__small: 544px;
 $size__medium: 784px;
 $size__large: 1264px;
 
+// Widths
+$width__mobile: 600px;
+$width__tablet: 782px;
+
 .newspack-lightbox {
 	align-items: center;
 	bottom: 0;
@@ -35,11 +39,11 @@ $size__large: 1264px;
 	z-index: 99999;
 
 	.admin-bar & {
-		@media only screen and ( min-width: 601px ) {
+		@media only screen and ( min-width: #{$width__mobile + 1} ) {
 			padding-top: 46px !important;
 		}
 
-		@media only screen and ( min-width: 783px ) {
+		@media only screen and ( min-width: #{$width__tablet + 1} ) {
 			padding-top: 32px !important;
 		}
 	}
@@ -73,15 +77,25 @@ $size__large: 1264px;
 		margin: 0 auto;
 		max-width: $size__medium;
 		overflow: auto;
-		padding: 17px;
-		@media only screen and ( min-width: 601px ) {
-			padding: 32px;
+
+		&__content {
+			padding: $overlay__gap;
+			@media only screen and ( min-width: $width__mobile ) {
+				padding: #{2 * $overlay__gap};
+			}
+		}
+		&__featured-image {
+			display: none;
+			max-height: #{13 * $overlay__gap};
+			overflow: hidden;
+			@media only screen and ( min-width: $width__tablet ) {
+				align-items: center;
+				display: flex;
+				justify-content: center;
+			}
 		}
 
-		> *:first-child {
-			margin-top: 0;
-		}
-
+		&__content,
 		.wp-block-column {
 			> *:first-child {
 				margin-top: 0;
@@ -134,8 +148,31 @@ $size__large: 1264px;
 		}
 
 		&:focus {
-			outline: 1px solid;
+			outline: 1.5px solid;
 			outline-offset: -1px;
+		}
+	}
+
+	&-featured-image {
+		@media only screen and ( min-width: $width__tablet ) {
+			.newspack-lightbox__close {
+				background-color: rgba( black, 0.25 );
+				border-radius: 3px;
+				color: white;
+				height: 48px;
+				margin: 8px;
+				width: 48px;
+
+				&:active,
+				&:hover {
+					background-color: rgba( black, 0.75 );
+					opacity: 1;
+				}
+
+				&:focus {
+					outline-offset: 2px;
+				}
+			}
 		}
 	}
 
@@ -292,7 +329,7 @@ $size__large: 1264px;
 				padding-left: 0;
 				padding-right: 0;
 
-				@media only screen and ( min-width: 600px ) {
+				@media only screen and ( min-width: $width__mobile ) {
 					&.wp-block-columns {
 						margin-left: -16px;
 						margin-right: -16px;
