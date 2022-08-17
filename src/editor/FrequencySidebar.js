@@ -40,10 +40,7 @@ const getFrequencyOptions = isOverlay => {
 	return frequencyOptions
 		.filter( item => 0 > experimentalKeys.indexOf( item.value ) )
 		.map( item => {
-			if ( 'always' === item.value && isOverlay ) {
-				item.disabled = true;
-			}
-
+			item.disabled = 'always' === item.value && isOverlay;
 			return item;
 		} );
 };
