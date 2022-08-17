@@ -19,7 +19,7 @@ const AdvancedSidebar = ( { onMetaFieldChange, excluded_categories = [], exclude
 		<Fragment>
 			<BaseControl className="newspack-popups__segmentation-sidebar">
 				<CategoryAutocomplete
-					label={ __( 'Post categories', 'newspack ' ) }
+					label={ __( 'Exclude categories', 'newspack ' ) }
 					value={ excluded_categories }
 					onChange={ tokens =>
 						onMetaFieldChange( {
@@ -28,7 +28,7 @@ const AdvancedSidebar = ( { onMetaFieldChange, excluded_categories = [], exclude
 					}
 				/>
 				<CategoryAutocomplete
-					label={ __( 'Post tags', 'newspack ' ) }
+					label={ __( 'Exclude tags', 'newspack ' ) }
 					taxonomy="tags"
 					value={ excluded_tags }
 					onChange={ tokens =>
