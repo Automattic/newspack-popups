@@ -17,7 +17,7 @@ import { CategoryAutocomplete } from 'newspack-components';
 const AdvancedSidebar = ( { onMetaFieldChange, excluded_categories = [], excluded_tags = [] } ) => {
 	return (
 		<Fragment>
-			<BaseControl className="newspack-popups__advanced-sidebar">
+			<BaseControl>
 				<CategoryAutocomplete
 					label={ __( 'Excluded Categories', 'newspack-popups' ) }
 					description={ __(
