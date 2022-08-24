@@ -156,7 +156,7 @@ $width__tablet: 782px;
 	&-featured-image {
 		@media only screen and ( min-width: $width__tablet ) {
 			.newspack-lightbox__close {
-				background-color: rgba( black, 0.25 );
+				background-color: rgba( black, 0.5 );
 				border-radius: 3px;
 				color: white;
 				height: 48px;
@@ -165,7 +165,7 @@ $width__tablet: 782px;
 
 				&:active,
 				&:hover {
-					background-color: rgba( black, 0.75 );
+					background-color: rgba( black, 0.95 );
 					opacity: 1;
 				}
 
