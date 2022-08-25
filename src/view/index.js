@@ -18,6 +18,7 @@ import { manageAnalyticsLinkers, manageAnalyticsEvents } from './analytics';
 import { manageForms } from './form';
 import { manageAnimations } from './animation';
 import { managePositionObservers } from './position-observer';
+import { manageBinds } from './bind';
 
 if ( typeof window !== 'undefined' ) {
 	domReady( () => {
@@ -30,5 +31,6 @@ if ( typeof window !== 'undefined' ) {
 		manageForms();
 		manageAnimations();
 		managePositionObservers();
+		manageBinds();
 	} );
 }

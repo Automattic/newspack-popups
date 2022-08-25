@@ -6,28 +6,13 @@ import 'intersection-observer';
 /**
  * Internal dependencies
  */
-import { shouldPolyfillAMPModule } from './utils';
+import { parseOnHandlers, shouldPolyfillAMPModule } from './utils';
 import * as store from './store';
 import { runAnimationById } from './animation';
 
-const parsePositionObserverElement = positionObserverElement => {
-	const onHandlers = positionObserverElement.getAttribute( 'on' ).split( ';' );
-
-	const on = onHandlers
-		.filter( Boolean )
-		.map(
-			onHandler => /(?<action>\w*):(?<animationId>\w*)\.(?<method>.*)/.exec( onHandler ).groups
-		);
-	return {
-		target: positionObserverElement.getAttribute( 'target' ),
-		on,
-		once: positionObserverElement.hasAttribute( 'once' ),
-	};
-};
-
 const runEffect = effect => {
-	if ( effect.animationId ) {
-		runAnimationById( effect.animationId );
+	if ( effect.id ) {
+		runAnimationById( effect.id );
 	}
 };
 
@@ -54,7 +39,11 @@ const visibilityObserver = new IntersectionObserver( entries => {
 const managePositionObserver = positionObserverElement => {
 	let config;
 	try {
-		config = parsePositionObserverElement( positionObserverElement );
+		config = {
+			target: positionObserverElement.getAttribute( 'target' ),
+			on: parseOnHandlers( positionObserverElement.getAttribute( 'on' ) ),
+			once: positionObserverElement.hasAttribute( 'once' ),
+		};
 	} catch ( error ) {
 		return;
 	}
