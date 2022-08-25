@@ -15,8 +15,8 @@ import './style.scss';
 import './patterns.scss';
 import { getClientIDValue, waitUntil } from './utils';
 import { manageAnalyticsLinkers, manageAnalyticsEvents } from './analytics';
-import { manageForms } from './forms';
-import { manageAnimations } from './animations';
+import { manageForms } from './form';
+import { manageAnimations } from './animation';
 
 if ( typeof window !== 'undefined' ) {
 	domReady( () => {
