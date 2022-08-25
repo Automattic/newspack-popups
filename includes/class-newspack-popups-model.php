@@ -1167,7 +1167,7 @@ final class Newspack_Popups_Model {
 			id="<?php echo esc_attr( $element_id ); ?>"
 		>
 			<div class="<?php echo esc_attr( implode( ' ', $wrapper_classes ) ); ?>" data-popup-status="<?php echo esc_attr( $popup['status'] ); ?>" style="<?php echo ! $hide_border ? esc_attr( self::container_style( $popup ) ) : ''; ?>">
-				<div class="newspack-popup" style="<?php echo $hide_border ? esc_attr( self::container_style( $popup ) ) : ''; ?>">
+				<div style="<?php echo $hide_border ? esc_attr( self::container_style( $popup ) ) : ''; ?>">
 					<?php if ( $has_featured_image ) : ?>
 						<div class="newspack-popup__featured-image">
 							<?php echo get_the_post_thumbnail( $popup['id'], 'large' ); ?>
