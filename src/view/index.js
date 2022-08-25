@@ -16,6 +16,7 @@ import './patterns.scss';
 import { getClientIDValue, waitUntil } from './utils';
 import { manageAnalyticsLinkers, manageAnalyticsEvents } from './analytics';
 import { manageForms } from './forms';
+import { manageAnimations } from './animations';
 
 if ( typeof window !== 'undefined' ) {
 	domReady( () => {
@@ -26,5 +27,7 @@ if ( typeof window !== 'undefined' ) {
 		waitUntil( getClientIDValue, manageAnalyticsEvents );
 
 		manageForms();
+
+		manageAnimations();
 	} );
 }
