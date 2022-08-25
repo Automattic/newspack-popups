@@ -7,8 +7,7 @@ import 'intersection-observer';
  * Internal dependencies
  */
 import { shouldPolyfillAMPModule } from './utils';
-
-const ANIMATION_SPECS_MAP = {};
+import * as store from './store';
 
 const parseAnimationElement = animationElement => {
 	try {
@@ -45,17 +44,16 @@ const runAnimation = animationSpec => {
 	} );
 };
 
-const runAnimationById = id => {
-	if ( ANIMATION_SPECS_MAP[ id ] ) {
-		runAnimation( ANIMATION_SPECS_MAP[ id ] );
+export const runAnimationById = id => {
+	if ( store.get( id ) ) {
+		runAnimation( store.get( id ) );
 	}
 };
 
 const visibilityObserver = new IntersectionObserver( entries => {
 	entries.forEach( observerEntry => {
 		if ( observerEntry.isIntersecting ) {
-			const animationId = observerEntry.target.getAttribute( 'data-anim-id' );
-			runAnimationById( animationId );
+			runAnimationById( observerEntry.target.getAttribute( 'data-anim-id' ) );
 			visibilityObserver.unobserve( observerEntry.target );
 		}
 	} );
@@ -68,7 +66,7 @@ const setupAnimations = animationSpec => {
 			if ( animationSpec.trigger === 'visibility' ) {
 				visibilityObserver.observe( animatedElement );
 			}
-			ANIMATION_SPECS_MAP[ animationSpec.id ] = animationSpec;
+			store.set( animationSpec.id, animationSpec );
 			animatedElement.setAttribute( 'data-anim-id', animationSpec.id );
 		} );
 	} );

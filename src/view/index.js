@@ -17,6 +17,7 @@ import { getClientIDValue, waitUntil } from './utils';
 import { manageAnalyticsLinkers, manageAnalyticsEvents } from './analytics';
 import { manageForms } from './form';
 import { manageAnimations } from './animation';
+import { managePositionObservers } from './position-observer';
 
 if ( typeof window !== 'undefined' ) {
 	domReady( () => {
@@ -27,7 +28,7 @@ if ( typeof window !== 'undefined' ) {
 		waitUntil( getClientIDValue, manageAnalyticsEvents );
 
 		manageForms();
-
 		manageAnimations();
+		managePositionObservers();
 	} );
 }
