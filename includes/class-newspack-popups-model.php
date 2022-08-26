@@ -1191,12 +1191,7 @@ final class Newspack_Popups_Model {
 				</div>
 			</div>
 			<?php if ( ! $no_overlay_background ) : ?>
-				<form class="popup-dismiss-form <?php echo esc_attr( self::get_form_class( 'dismiss', $element_id ) ); ?> popup-action-form <?php echo esc_attr( self::get_form_class( 'action', $element_id ) ); ?>"
-					method="POST"
-					action-xhr="<?php echo esc_url( $endpoint ); ?>"
-					target="_top">
-					<?php echo $hidden_fields; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-					<button style="opacity: <?php echo floatval( $overlay_opacity ); ?>;background-color:<?php echo esc_attr( $overlay_color ); ?>;" class="newspack-lightbox-shim" on="tap:<?php echo esc_attr( $element_id ); ?>.hide"></button>
+				<div style="opacity: <?php echo floatval( $overlay_opacity ); ?>;background-color:<?php echo esc_attr( $overlay_color ); ?>;" class="newspack-lightbox-shim"></div>
 				</form>
 			<?php endif; ?>
 		</amp-layout>
