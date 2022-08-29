@@ -1201,9 +1201,9 @@ final class Newspack_Popups_Model {
 			<?php endif; ?>
 		</amp-layout>
 		<?php if ( $is_scroll_triggered ) : ?>
-			<div id="page-position-marker" style="position: absolute; top: <?php echo esc_attr( $popup['options']['trigger_scroll_progress'] ); ?>%"></div>
+			<div id="page-position-marker_<?php echo esc_attr( $animation_id ); ?>" style="position: absolute; top: <?php echo esc_attr( $popup['options']['trigger_scroll_progress'] ); ?>%"></div>
 			<amp-position-observer
-				target="page-position-marker"
+				target="page-position-marker_<?php echo esc_attr( $animation_id ); ?>"
 				on="enter:<?php echo esc_attr( $animation_id ); ?>.start;"
 				once
 				layout="nodisplay"

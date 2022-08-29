@@ -107,7 +107,7 @@ class ModelTest extends WP_UnitTestCase {
 
 		self::assertEquals(
 			0,
-			$xpath->query( '//*[@id="page-position-marker"]' )->length,
+			$xpath->query( '//*[starts-with(@id,"page-position-marker")]' )->length,
 			'The page position marker is not output for a default (time-triggered) popup.'
 		);
 
@@ -132,7 +132,7 @@ class ModelTest extends WP_UnitTestCase {
 
 		self::assertContains(
 			'top: 0%',
-			$xpath->query( '//*[@id="page-position-marker"]' )->item( 0 )->getAttribute( 'style' ),
+			$xpath->query( '//*[starts-with(@id,"page-position-marker")]' )->item( 0 )->getAttribute( 'style' ),
 			'The position marker is set at 0% by default.'
 		);
 
@@ -152,7 +152,7 @@ class ModelTest extends WP_UnitTestCase {
 
 		self::assertContains(
 			'top: 42%',
-			$xpath->query( '//*[@id="page-position-marker"]' )->item( 0 )->getAttribute( 'style' ),
+			$xpath->query( '//*[starts-with(@id,"page-position-marker")]' )->item( 0 )->getAttribute( 'style' ),
 			'The position marker is set at position passed in options.'
 		);
 	}
