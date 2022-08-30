@@ -213,7 +213,12 @@ $width__tablet: 782px;
 		}
 
 		.newspack-popup__content-wrapper {
+			max-height: 80vh;
 			max-width: 100%;
+
+			@media only screen and ( min-width: $width__tablet ) {
+				max-height: calc( 100vh - #{2 * $overlay__gap} );
+			}
 		}
 	}
 
@@ -224,9 +229,6 @@ $width__tablet: 782px;
 				width: $size__x-small;
 			}
 		}
-		.newspack-popup__content-wrapper {
-			max-height: 50vh;
-		}
 	}
 
 	&.newspack-lightbox-size-small {
@@ -236,9 +238,6 @@ $width__tablet: 782px;
 				width: $size__small;
 			}
 		}
-		.newspack-popup__content-wrapper {
-			max-height: 60vh;
-		}
 	}
 
 	&.newspack-lightbox-size-medium {
@@ -247,9 +246,6 @@ $width__tablet: 782px;
 				min-width: $size__medium;
 				width: $size__medium;
 			}
-		}
-		.newspack-popup__content-wrapper {
-			max-height: 80vh;
 		}
 	}
 
