@@ -938,6 +938,7 @@ final class Newspack_Popups_Model {
 		$has_link            = preg_match( '/<a\s/', $body ) !== 0;
 		$newspack_form_class = apply_filters( 'newspack_campaigns_form_class', '.newspack-subscribe-form' );
 		$newspack_form_class = '.' === substr( $newspack_form_class, 0, 1 ) ? substr( $newspack_form_class, 1 ) : $newspack_form_class; // Strip the "." class selector.
+		$has_register_form   = preg_match( '/id="newspack-(register|subscribe)-(.+)"/', $body ) !== 0;
 		$has_form            = preg_match( '/<form\s|mc4wp-form|\[gravityforms\s|' . $newspack_form_class . '/', $body ) !== 0;
 		$has_dismiss_form    = self::is_overlay( $popup );
 
@@ -966,6 +967,11 @@ final class Newspack_Popups_Model {
 				'amp_element' => '#' . esc_attr( $element_id ) . ' a',
 				'event_name'  => __( 'Link Click', 'newspack-popups' ),
 			];
+		}
+
+		// If the form contains registration + list info, append that to the event label.
+		if ( $has_register_form ) {
+			$event_label .= __( ' | ${formId} - ${formFields[npe]} - ${formFields[lists[]]}' );
 		}
 
 		if ( $has_form ) {
