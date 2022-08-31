@@ -96,6 +96,11 @@ $width__tablet: 782px;
 				display: flex;
 				justify-content: center;
 			}
+
+			img {
+				height: auto;
+				width: 100%;
+			}
 		}
 
 		&__content,
