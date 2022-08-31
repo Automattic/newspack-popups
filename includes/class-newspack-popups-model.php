@@ -971,7 +971,7 @@ final class Newspack_Popups_Model {
 
 		// If the form contains registration + list info, append that to the event label.
 		if ( $has_register_form ) {
-			$event_label .= __( ' | ${formId} - ${formFields[npe]} - ${formFields[lists[]]}' );
+			$event_label .= __( ' | ${formId} - ${formFields[lists[]]}' );
 		}
 
 		if ( $has_form ) {
