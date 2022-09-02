@@ -340,4 +340,18 @@ class Campaign_Data_Utils {
 	public static function is_above_header( $popup ) {
 		return isset( $popup->t ) && 'a' === $popup->t;
 	}
+
+	/**
+	 * Get all events types.
+	 */
+	public static function get_all_events_types() {
+		return array_merge( self::get_protected_events_types(), [ 'user_account', 'view' ] );
+	}
+
+	/**
+	 * Get protected events types. These events are not allowed to be deleted when pruning data.
+	 */
+	public static function get_protected_events_types() {
+		return [ 'donation', 'subscription' ];
+	}
 }
