@@ -30,7 +30,7 @@ class SegmentationCriteriaTest extends WP_UnitTestCase {
 		return Campaign_Data_Utils::does_reader_match_segment(
 			Campaign_Data_Utils::canonize_segment( $segment_config ),
 			self::$api->get_reader( $client_id ),
-			self::$api->get_reader_events( $client_id, Campaign_Data_Utils::get_all_events_types() )
+			self::$api->get_reader_events( $client_id, Campaign_Data_Utils::get_reader_events_types() )
 		);
 	}
 

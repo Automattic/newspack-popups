@@ -372,7 +372,7 @@ class Campaign_Data_Utils {
 	/**
 	 * Get all events types.
 	 */
-	public static function get_all_events_types() {
+	public static function get_reader_events_types() {
 		return array_merge( self::get_protected_events_types(), [ 'user_account', 'view' ] );
 	}
 
