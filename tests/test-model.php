@@ -32,6 +32,7 @@ class ModelTest extends WP_UnitTestCase {
 				'background_color'               => '#FFFFFF',
 				'display_title'                  => false,
 				'hide_border'                    => false,
+				'large_border'                   => false,
 				'frequency'                      => 'always',
 				'frequency_max'                  => 0,
 				'frequency_start'                => 0,
