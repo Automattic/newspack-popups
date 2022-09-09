@@ -39,8 +39,16 @@ export const getClientIDValue = () => getCookies()[ 'newspack-cid' ];
  * @return {string} String with the value replaced.
  */
 export const substituteDynamicValue = value => {
-	if ( value && String( value ).replace( /\s/g, '' ) === 'CLIENT_ID(newspack-cid)' ) {
-		value = getClientIDValue() || '';
+	if ( value ) {
+		const trimmedValue = String( value ).replace( /\s/g, '' );
+		switch ( trimmedValue ) {
+			case 'CLIENT_ID(newspack-cid)':
+				value = getClientIDValue() || '';
+				break;
+			case 'DOCUMENT_REFERRER':
+				value = document.referrer || '';
+				break;
+		}
 	}
 	return value;
 };
