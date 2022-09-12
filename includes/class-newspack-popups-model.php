@@ -972,11 +972,6 @@ final class Newspack_Popups_Model {
 			];
 		}
 
-		// If the form contains registration + list info, append that to the event label.
-		if ( $has_register_form ) {
-			$event_label .= __( ' | ${formId} - ${formFields[lists[]]}' );
-		}
-
 		if ( $has_form ) {
 			$analytics_events[] = [
 				'amp_on'     => 'amp-form-submit',
@@ -996,6 +991,11 @@ final class Newspack_Popups_Model {
 		}
 
 		foreach ( $analytics_events as &$event ) {
+			// If a form submission and the form contains registration + list info, append that to the event label.
+			if ( 'submit' === $event['on'] && $has_register_form ) {
+				$event_label .= __( ' | ${formId} - ${formFields[lists[]]}' );
+			}
+
 			$event['id']             = self::get_uniqid();
 			$event['event_category'] = esc_attr( $event_category );
 			$event['event_label']    = esc_attr( $event_label );
