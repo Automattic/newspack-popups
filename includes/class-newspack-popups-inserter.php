@@ -78,6 +78,7 @@ final class Newspack_Popups_Inserter {
 
 		// Always enqueue scripts, since this plugin's scripts are handling pageview sending via GTAG.
 		add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
+		add_filter( 'script_loader_tag', [ __CLASS__, 'mark_view_script_as_amp_plus_allowed' ], 10, 2 );
 
 		add_filter(
 			'newspack_popups_assess_has_disabled_popups',
@@ -523,6 +524,37 @@ final class Newspack_Popups_Inserter {
 	}
 
 	/**
+	 * Modify the view script tag to allow it as an "AMP Plus" script.
+	 *
+	 * @param string $tag HTML of the script tag.
+	 * @param string $handle The script handle.
+	 */
+	public static function mark_view_script_as_amp_plus_allowed( $tag, $handle ) {
+		if ( 'newspack-popups-view' === $handle ) {
+			return str_replace( '<script', '<script data-amp-plus-allowed', $tag );
+		}
+		return $tag;
+	}
+
+	/**
+	 * Is the page AMP-enabled?
+	 *
+	 * @return bool True if AMP.
+	 */
+	public static function is_amp() {
+		return function_exists( 'is_amp_endpoint' ) && is_amp_endpoint();
+	}
+
+	/**
+	 * Can the site use AMP Plus features?
+	 *
+	 * @return bool Configured or not.
+	 */
+	public static function is_amp_plus() {
+		return method_exists( '\Newspack\AMP_Enhancements', 'should_use_amp_plus' ) && \Newspack\AMP_Enhancements::should_use_amp_plus();
+	}
+
+	/**
 	 * Enqueue the assets needed to display the popups.
 	 */
 	public static function enqueue_scripts() {
@@ -536,8 +568,7 @@ final class Newspack_Popups_Inserter {
 			return;
 		}
 
-		$is_amp = function_exists( 'is_amp_endpoint' ) && is_amp_endpoint();
-		if ( ! $is_amp ) {
+		if ( ! self::is_amp() || self::is_amp_plus() ) {
 			wp_register_script(
 				'newspack-popups-view',
 				plugins_url( '../dist/view.js', __FILE__ ),
