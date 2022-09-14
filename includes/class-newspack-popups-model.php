@@ -942,6 +942,7 @@ final class Newspack_Popups_Model {
 		$newspack_form_class = apply_filters( 'newspack_campaigns_form_class', '.newspack-subscribe-form' );
 		$newspack_form_class = '.' === substr( $newspack_form_class, 0, 1 ) ? substr( $newspack_form_class, 1 ) : $newspack_form_class; // Strip the "." class selector.
 		$has_register_form   = preg_match( '/id="newspack-(register|subscribe)-(.+)"/', $body ) !== 0;
+		$has_lists_field     = preg_match( '/name="lists\[\]"/', $body ) !== 0;
 		$has_form            = preg_match( '/<form\s|mc4wp-form|\[gravityforms\s|' . $newspack_form_class . '/', $body ) !== 0;
 		$has_dismiss_form    = self::is_overlay( $popup );
 
@@ -993,7 +994,12 @@ final class Newspack_Popups_Model {
 		foreach ( $analytics_events as &$event ) {
 			// If a form submission and the form contains registration + list info, append that to the event label.
 			if ( isset( $event['amp_on'] ) && 'amp-form-submit' === $event['amp_on'] && $has_register_form ) {
-				$event_label .= __( ' | ${formId} - ${formFields[lists[]]}' );
+				$event_label .= ' | ${formId}';
+
+				// If the reg form has a lists[] field, append the value to the event label.
+				if ( $has_lists_field ) {
+					$event_label .= ' - ${formFields[lists[]]}';
+				}
 			}
 
 			$event['id']             = self::get_uniqid();
