@@ -23,10 +23,6 @@ const frequencyOptions = [
 		value: 'always',
 		label: __( 'Every pageview', 'newspack-popups' ),
 	},
-	{
-		value: 'preset_1',
-		label: __( 'Every 4 pageviews', 'newspack-popups' ),
-	},
 	{ value: 'custom', label: __( 'Custom', 'newspack-popups' ) },
 ];
 
