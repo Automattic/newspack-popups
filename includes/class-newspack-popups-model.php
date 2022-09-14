@@ -976,7 +976,7 @@ final class Newspack_Popups_Model {
 			$analytics_events[] = [
 				'amp_on'     => 'amp-form-submit',
 				'on'         => 'submit',
-				'element'    => '#' . esc_attr( $element_id ) . ' form:not(.' . self::get_form_class( 'action', $element_id ) . ')', // Not an 'action' (dismissal) form.
+				'element'    => '#' . esc_attr( $element_id ) . ' form:not(.popup-dismiss-form)', // Not a dismissal form.
 				'event_name' => __( 'Form Submission', 'newspack-popups' ),
 			];
 		}
@@ -984,7 +984,7 @@ final class Newspack_Popups_Model {
 			$analytics_events[] = [
 				'amp_on'          => 'amp-form-submit-success',
 				'on'              => 'submit',
-				'element'         => '.' . self::get_form_class( 'dismiss', $element_id ),
+				'element'         => '#' . esc_attr( $element_id ) . ' .popup-dismiss-form',
 				'event_name'      => __( 'Dismissal', 'newspack-popups' ),
 				'non_interaction' => true,
 			];
@@ -992,7 +992,7 @@ final class Newspack_Popups_Model {
 
 		foreach ( $analytics_events as &$event ) {
 			// If a form submission and the form contains registration + list info, append that to the event label.
-			if ( 'submit' === $event['on'] && $has_register_form ) {
+			if ( isset( $event['amp_on'] ) && 'amp-form-submit' === $event['amp_on'] && $has_register_form ) {
 				$event_label .= __( ' | ${formId} - ${formFields[lists[]]}' );
 			}
 
