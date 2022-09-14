@@ -78,7 +78,6 @@ final class Newspack_Popups_Inserter {
 
 		// Always enqueue scripts, since this plugin's scripts are handling pageview sending via GTAG.
 		add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
-		add_filter( 'script_loader_tag', [ __CLASS__, 'mark_view_script_as_amp_plus_allowed' ], 10, 2 );
 
 		add_filter(
 			'newspack_popups_assess_has_disabled_popups',
@@ -524,19 +523,6 @@ final class Newspack_Popups_Inserter {
 	}
 
 	/**
-	 * Modify the view script tag to allow it as an "AMP Plus" script.
-	 *
-	 * @param string $tag HTML of the script tag.
-	 * @param string $handle The script handle.
-	 */
-	public static function mark_view_script_as_amp_plus_allowed( $tag, $handle ) {
-		if ( 'newspack-popups-view' === $handle ) {
-			return str_replace( '<script', '<script data-amp-plus-allowed', $tag );
-		}
-		return $tag;
-	}
-
-	/**
 	 * Is the page AMP-enabled?
 	 *
 	 * @return bool True if AMP.
@@ -563,25 +549,26 @@ final class Newspack_Popups_Inserter {
 		}
 
 		// Don't enqueue assets if prompts are disabled on this post.
-		$has_disabled_prompts = is_singular() && ! empty( get_post_meta( get_the_ID(), 'newspack_popups_has_disabled_popups', true ) );
+		$has_disabled_prompts = \is_singular() && ! empty( \get_post_meta( \get_the_ID(), 'newspack_popups_has_disabled_popups', true ) );
 		if ( $has_disabled_prompts ) {
 			return;
 		}
 
 		if ( ! self::is_amp() || self::is_amp_plus() ) {
-			wp_register_script(
+			\wp_register_script(
 				'newspack-popups-view',
 				plugins_url( '../dist/view.js', __FILE__ ),
 				[ 'wp-dom-ready', 'wp-url', 'mediaelement-core' ],
 				filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/view.js' ),
 				true
 			);
-			wp_enqueue_script( 'newspack-popups-view' );
+			\wp_enqueue_script( 'newspack-popups-view' );
+			\wp_script_add_data( 'newspack-popups-view', 'amp-plus', true );
 		}
 
 		\wp_register_style(
 			'newspack-popups-view',
-			plugins_url( '../dist/view.css', __FILE__ ),
+			\plugins_url( '../dist/view.css', __FILE__ ),
 			null,
 			filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/view.css' )
 		);
