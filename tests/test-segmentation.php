@@ -319,23 +319,14 @@ class SegmentationTest extends WP_UnitTestCase {
 		// Prune the data.
 		Newspack_Popups_Segmentation::prune_data();
 
-		$all_readers_rows = $wpdb->get_results( "SELECT client_id FROM $readers_table_name" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$all_readers_client_ids = array_column( $wpdb->get_results( "SELECT client_id FROM $readers_table_name" ), 'client_id' ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		self::assertEquals(
 			[
-				// Donor was not removed.
-				(object) [
-					'client_id' => 'test-donor',
-				],
-				// One time reader was not removed, since they visited in the last 30 days.
-				(object) [
-					'client_id' => 'test-one-time-reader',
-				],
-				// Subscriber was not removed, despite not visiting since >30 days.
-				(object) [
-					'client_id' => 'test-subscriber',
-				],
+				'test-donor', // Donor was not removed.
+				'test-one-time-reader', // One time reader was not removed, since they visited in the last 30 days.
+				'test-subscriber', // Subscriber was not removed, despite not visiting since >30 days.
 			],
-			$all_readers_rows,
+			$all_readers_client_ids,
 			'After pruning, expected rows are still there.'
 		);
 	}

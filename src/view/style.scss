@@ -101,6 +101,10 @@ $width__tablet: 782px;
 				height: auto;
 				width: 100%;
 			}
+
+			amp-img.amp-wp-enforced-sizes {
+				object-fit: cover;
+			}
 		}
 
 		&__content,
