@@ -111,7 +111,7 @@ const FrequencySidebar = ( {
 					/>
 					<NumberControl
 						className="newspack-popups__frequency-number-control"
-						label={ __( 'Pageviews between displays', 'newspack-popups' ) }
+						label={ __( 'Display every n pageviews', 'newspack-popups' ) }
 						value={ frequency_between + 1 }
 						min={ 1 }
 						onChange={ value => onMetaFieldChange( { frequency_between: value - 1 } ) }
