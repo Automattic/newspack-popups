@@ -35,7 +35,7 @@
     "whatwg-fetch": "^3.6.2"
   },
   "devDependencies": {
-    "@rushstack/eslint-patch": "^1.1.4",
+    "@rushstack/eslint-patch": "^1.2.0",
     "eslint": "^7.32.0",
     "lint-staged": "^13.0.3",
     "newspack-scripts": "^4.3.0",
