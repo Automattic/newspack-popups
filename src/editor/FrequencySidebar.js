@@ -73,13 +73,6 @@ const FrequencySidebar = ( {
 						metaToUpdate.frequency_reset = 'month';
 					}
 
-					if ( 'preset_1' === value ) {
-						metaToUpdate.frequency_max = 0;
-						metaToUpdate.frequency_start = 0;
-						metaToUpdate.frequency_between = 3;
-						metaToUpdate.frequency_reset = 'day';
-					}
-
 					onMetaFieldChange( metaToUpdate );
 				} }
 				options={ frequencyOptions }
