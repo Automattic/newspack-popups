@@ -79,6 +79,20 @@ const FrequencySidebar = ( {
 			/>
 			{ 'custom' === frequency && (
 				<>
+					<NumberControl
+						className="newspack-popups__frequency-number-control"
+						label={ __( 'Start at pageview', 'newspack-popups' ) }
+						value={ frequency_start + 1 }
+						min={ 1 }
+						onChange={ value => onMetaFieldChange( { frequency_start: value - 1 } ) }
+					/>
+					<NumberControl
+						className="newspack-popups__frequency-number-control"
+						label={ __( 'Display every n pageviews', 'newspack-popups' ) }
+						value={ frequency_between + 1 }
+						min={ 1 }
+						onChange={ value => onMetaFieldChange( { frequency_between: value - 1 } ) }
+					/>
 					<ToggleControl
 						className="newspack-popups__frequency-toggle-control"
 						label={ __( 'Limit number of displays', 'newspack-popups' ) }
@@ -95,20 +109,6 @@ const FrequencySidebar = ( {
 							onChange={ value => onMetaFieldChange( { frequency_max: value } ) }
 						/>
 					) }
-					<NumberControl
-						className="newspack-popups__frequency-number-control"
-						label={ __( 'Start at pageview', 'newspack-popups' ) }
-						value={ frequency_start + 1 }
-						min={ 1 }
-						onChange={ value => onMetaFieldChange( { frequency_start: value - 1 } ) }
-					/>
-					<NumberControl
-						className="newspack-popups__frequency-number-control"
-						label={ __( 'Display every n pageviews', 'newspack-popups' ) }
-						value={ frequency_between + 1 }
-						min={ 1 }
-						onChange={ value => onMetaFieldChange( { frequency_between: value - 1 } ) }
-					/>
 					<SelectControl
 						label={ __( 'Reset counter per:', 'newspack-popups' ) }
 						value={ frequency_reset }
