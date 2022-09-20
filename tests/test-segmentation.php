@@ -5,15 +5,20 @@
  * @package Newspack_Popups
  */
 
+use DMS\PHPUnitExtensions\ArraySubset\ArraySubsetAsserts;
+
 /**
  * Segmentation test case.
  */
 class SegmentationTest extends WP_UnitTestCase {
+
+	use ArraySubsetAsserts;
+
 	private static $post_read_payload = []; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
 
 	private static $request = []; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
 
-	public function setUp() { // phpcs:ignore Squiz.Commenting.FunctionComment.Missing
+	public function set_up() { // phpcs:ignore Squiz.Commenting.FunctionComment.Missing
 		global $wpdb;
 		$reader_events_table_name = Segmentation::get_reader_events_table_name();
 		$readers_table_name       = Segmentation::get_readers_table_name();
