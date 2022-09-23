@@ -36,6 +36,9 @@
     "drewm/mailchimp-api": "^2.5"
   },
   "config": {
+    "platform": {
+      "php": "7.4"
+    },
     "allow-plugins": {
       "composer/installers": true,
       "dealerdirect/phpcodesniffer-composer-installer": true
