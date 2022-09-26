@@ -1,3 +1,10 @@
+# [2.6.0-alpha.2](https://github.com/Automattic/newspack-popups/compare/v2.6.0-alpha.1...v2.6.0-alpha.2) (2022-09-26)
+
+
+### Features
+
+* add concept of prompt styles and add large style ([0d3ad81](https://github.com/Automattic/newspack-popups/commit/0d3ad8181dff183eb686691e065e80b4ac856b64))
+
 # [2.6.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v2.5.0...v2.6.0-alpha.1) (2022-09-21)
 
 
