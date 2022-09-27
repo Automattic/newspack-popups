@@ -1519,5 +1519,24 @@ class APITest extends WP_UnitTestCase {
 			[ $client_id_1, $client_id_2 ],
 			'Returns all known client IDs associated with the same user ID.'
 		);
+
+
+		// Report 3 articles read.
+		$api->save_reader_events(
+			$client_id_1,
+			[
+				self::create_event( [ 'post_id' => 1 ] ),
+				self::create_event( [ 'post_id' => 2 ] ),
+				self::create_event( [ 'post_id' => 3 ] ),
+			]
+		);
+
+		$reader_2 = $api->get_reader( $client_id_2 );
+
+		self::assertEquals(
+			3,
+			$reader_2['reader_data']['views']['post'],
+			'Concatenates view data across reconciled client IDs known.'
+		);
 	}
 }

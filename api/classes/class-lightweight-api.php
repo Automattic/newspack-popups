@@ -615,13 +615,17 @@ class Lightweight_API {
 			);
 
 			// Gather and concatenate view and term data from the other client IDs.
+			// TODO: this is adding up view counts every single time get_reader() is called. Need to do it only once.
+			$this->debug['other_readers'] = [];
 			foreach ( $other_client_ids as $other_client_id ) {
 				$other_reader = $this->get_reader( $other_client_id, true );
 				if ( empty( $other_reader['reader_data'] ) ) {
 					continue;
 				}
-				$other_reader_data = $other_reader['reader_data'];
-				foreach ( $other_reader_data as $key => $values ) {
+
+				$this->debug['other_readers'][] = $other_reader;
+
+				foreach ( $other_reader['reader_data'] as $key => $values ) {
 					if ( 'client_ids' === $key ) {
 						continue;
 					}
@@ -632,7 +636,7 @@ class Lightweight_API {
 							if ( ! isset( $reader['reader_data'][ $key ][ $type ] ) ) {
 								$reader['reader_data'][ $key ][ $type ] = 0;
 							}
-							$reader['reader_data'][ $key ][ $type ] += $views;
+							$reader['reader_data'][ $key ][ $type ] = (int) $reader['reader_data'][ $key ][ $type ] + (int) $views;
 						}
 					}
 				}
