@@ -837,9 +837,9 @@ final class Newspack_Popups_Model {
 					'request'        => 'event',
 					'visibilitySpec' => [
 						'selector'             => '#' . esc_attr( $element_id ),
-						'visiblePercentageMin' => 90,
-						'totalTimeMin'         => 500,
-						'continuousTimeMin'    => 200,
+						'visiblePercentageMin' => 50,
+						'totalTimeMin'         => 250,
+						'continuousTimeMin'    => 100,
 					],
 					'extraUrlParams' => [
 						'popup_id' => esc_attr( self::canonize_popup_id( $popup['id'] ) ),
