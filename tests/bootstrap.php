@@ -41,6 +41,9 @@ tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
 
 define( 'IS_TEST_ENV', 1 );
 
+// Load the composer autoloader.
+require_once __DIR__ . '/../vendor/autoload.php';
+
 // Start up the WP testing environment.
 require $_tests_dir . '/includes/bootstrap.php';
 require dirname( dirname( __FILE__ ) ) . '/tests/wp-unittestcase-pagewithpopups.php';
