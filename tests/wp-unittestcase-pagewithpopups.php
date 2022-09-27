@@ -18,7 +18,7 @@ class WP_UnitTestCase_PageWithPopups extends WP_UnitTestCase {
 	protected static $post_head_dom_xpath = false; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
 	protected static $segments            = []; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
 
-	public function setUp() { // phpcs:ignore Squiz.Commenting.FunctionComment.Missing
+	public function set_up() { // phpcs:ignore Squiz.Commenting.FunctionComment.Missing
 		// Reset segments.
 		update_option( Newspack_Popups_Segmentation::SEGMENTS_OPTION_NAME, [] );
 		self::$segments = Newspack_Popups_Segmentation::create_segment(

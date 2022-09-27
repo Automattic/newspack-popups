@@ -9,7 +9,7 @@
  * Blocks test case.
  */
 class BlocksTest extends WP_UnitTestCase {
-	public function setUp() { // phpcs:ignore Squiz.Commenting.FunctionComment.Missing
+	public function set_up() { // phpcs:ignore Squiz.Commenting.FunctionComment.Missing
 		// Remove any popups (from previous tests).
 		foreach ( Newspack_Popups_Model::retrieve_popups() as $popup ) {
 			wp_delete_post( $popup['id'] );

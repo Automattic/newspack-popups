@@ -17,12 +17,12 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 		$amp_layout_elements = self::$dom_xpath->query( '//amp-layout' );
 		$popup_text_content  = $amp_layout_elements->item( 0 )->textContent;
 
-		self::assertContains(
+		self::assertStringContainsString(
 			self::$popup_content,
 			$popup_text_content,
 			'Includes the popup content.'
 		);
-		self::assertContains(
+		self::assertStringContainsString(
 			self::$raw_post_content,
 			self::$post_content,
 			'Includes the original post content.'
@@ -41,7 +41,7 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 			$amp_layout_elements->length,
 			'Inserts the inline prompt on a page.'
 		);
-		self::assertContains(
+		self::assertStringContainsString(
 			self::$raw_post_content,
 			self::$post_content,
 			'Includes the original post content.'
@@ -53,7 +53,7 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 		self::renderPost( '', $page_with_shortcode, [], [], 'page' );
 		$overlay_text_content = self::$dom_xpath->query( '//amp-layout' )->item( 0 )->textContent;
 
-		self::assertContains(
+		self::assertStringContainsString(
 			$overlay_content,
 			$overlay_text_content,
 			'Inserts the overlay prompt on a page.'
@@ -73,7 +73,7 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 		self::renderPost( '', $post_with_shortcode );
 		$popup_text_content = self::$dom_xpath->query( '//amp-layout' )->item( 0 )->textContent;
 
-		self::assertContains(
+		self::assertStringContainsString(
 			$popup_content,
 			$popup_text_content,
 			'Shortcode inserts the popup content.'
@@ -100,12 +100,12 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 
 		self::renderPost( '', '[newspack-popups id="' . $shortcoded_popup_id . '"]' );
 
-		self::assertContains(
+		self::assertStringContainsString(
 			self::$popup_content,
 			self::$post_content,
 			'Post contains the programatically inserted popup content.'
 		);
-		self::assertContains(
+		self::assertStringContainsString(
 			$shortcode_popup_content,
 			self::$post_content,
 			'Post contains the shortcode-inserted popup content.'
@@ -209,7 +209,7 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 		$amp_layout_elements = self::$dom_xpath->query( '//amp-layout' );
 		$popup_text_content  = $amp_layout_elements->item( 0 )->textContent;
 
-		self::assertContains(
+		self::assertStringContainsString(
 			$popup_content,
 			$popup_text_content,
 			'Includes the previewed popup content for a logged-in user.'
@@ -222,7 +222,7 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 	public function test_insertion_admin() {
 		self::renderPost();
 		$amp_layout_elements = self::$dom_xpath->query( '//amp-layout' );
-		self::assertContains(
+		self::assertStringContainsString(
 			self::$popup_content,
 			$amp_layout_elements->item( 0 )->textContent,
 			'Includes the popup content for non-logged-in users.'
@@ -233,7 +233,7 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 
 		self::renderPost();
 		$amp_layout_elements = self::$dom_xpath->query( '//amp-layout' );
-		self::assertContains(
+		self::assertStringContainsString(
 			self::$popup_content,
 			$amp_layout_elements->item( 0 )->textContent,
 			'Also includes the popup content for logged-in admin users.'
@@ -254,7 +254,7 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 
 		update_option( 'newspack_popups_non_interative_mode', true );
 		self::renderPost();
-		self::assertNotContains(
+		self::assertStringNotContainsString(
 			self::$popup_content,
 			self::$post_content,
 			'Does not include the popup content, since it is an overlay popup.'
@@ -268,7 +268,7 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 	public function test_non_interactive_inline() {
 		update_option( 'newspack_popups_non_interative_mode', true );
 		self::renderPost();
-		self::assertContains(
+		self::assertStringContainsString(
 			self::$popup_content,
 			self::$post_content,
 			'Does include the popup content.'
@@ -289,14 +289,14 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 		);
 
 		self::renderPost();
-		self::assertNotContains(
+		self::assertStringNotContainsString(
 			self::$popup_content,
 			self::$post_content,
 			'Does not include the popup content, since it is a custom placement popup.'
 		);
 
 		self::renderPost( '', '<!-- wp:newspack-popups/custom-placement {"customPlacement":"custom1"} /-->' );
-		self::assertContains(
+		self::assertStringContainsString(
 			self::$popup_content,
 			self::$post_content,
 			'Includes the popup content when the custom placement is present in post content.'
@@ -316,14 +316,14 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 		);
 
 		self::renderPost();
-		self::assertNotContains(
+		self::assertStringNotContainsString(
 			self::$popup_content,
 			self::$post_content,
 			'Does not include the popup content, since it is a manual-only placement popup.'
 		);
 
 		self::renderPost( '', '<!-- wp:newspack-popups/single-prompt {"promptId":' . self::$popup_id . '} /-->' );
-		self::assertContains(
+		self::assertStringContainsString(
 			self::$popup_content,
 			self::$post_content,
 			'Includes the popup content when the prompt is placed in post content via the Single Prompt block.'
@@ -335,7 +335,7 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 	 */
 	public function test_criterion_category() {
 		self::renderPost();
-		self::assertContains(
+		self::assertStringContainsString(
 			self::$popup_content,
 			self::$post_content,
 			'Does include the popup content if neither post nor popup have a category.'
@@ -350,7 +350,7 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 		);
 
 		self::renderPost( '', null, [ $category_1_id ] );
-		self::assertContains(
+		self::assertStringContainsString(
 			self::$popup_content,
 			self::$post_content,
 			'Includes the popup content when the popup does not have a category, but post has.'
@@ -359,14 +359,14 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 		wp_set_post_terms( self::$popup_id, [ $category_1_id ], 'category' );
 
 		self::renderPost();
-		self::assertNotContains(
+		self::assertStringNotContainsString(
 			self::$popup_content,
 			self::$post_content,
 			'Does not include the popup content when popup does have a category, but post does not.'
 		);
 
 		self::renderPost( '', null, [ $category_1_id ] );
-		self::assertContains(
+		self::assertStringContainsString(
 			self::$popup_content,
 			self::$post_content,
 			'Includes the popup content when the categories match.'
@@ -380,7 +380,7 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 			]
 		);
 		self::renderPost( '', null, [ $category_2_id ] );
-		self::assertNotContains(
+		self::assertStringNotContainsString(
 			self::$popup_content,
 			self::$post_content,
 			'Does not include the popup content when popup and post have different categories.'
@@ -392,7 +392,7 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 	 */
 	public function test_criterion_tag() {
 		self::renderPost();
-		self::assertContains(
+		self::assertStringContainsString(
 			self::$popup_content,
 			self::$post_content,
 			'Does include the popup content if neither post nor popup have tags.'
@@ -406,7 +406,7 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 			]
 		);
 		self::renderPost( '', null, [], [ $tag_1_id ] );
-		self::assertContains(
+		self::assertStringContainsString(
 			self::$popup_content,
 			self::$post_content,
 			'Includes the popup content when popup does not have tags, but post has.'
@@ -416,7 +416,7 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 		wp_set_post_terms( self::$popup_id, [ $tag_1_id ], 'post_tag' );
 
 		self::renderPost();
-		self::assertNotContains(
+		self::assertStringNotContainsString(
 			self::$popup_content,
 			self::$post_content,
 			'Does not include the popup content when the post has no tags, but popup has.'
@@ -430,14 +430,14 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 			]
 		);
 		self::renderPost( '', null, [], [ $tag_2_id ] );
-		self::assertNotContains(
+		self::assertStringNotContainsString(
 			self::$popup_content,
 			self::$post_content,
 			'Does not include the popup content when the post tag has a different tag than the popup.'
 		);
 
 		self::renderPost( '', null, [], [ $tag_1_id ] );
-		self::assertContains(
+		self::assertStringContainsString(
 			self::$popup_content,
 			self::$post_content,
 			'Includes the popup content when the tags match.'
@@ -559,7 +559,7 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 		);
 
 		self::renderPost( '', null, [ $category_to_exclude_id ] );
-		self::assertNotContains(
+		self::assertStringNotContainsString(
 			self::$popup_content,
 			self::$post_content,
 			'Does not include the popup content, since the post category is excluded on this popup.'
@@ -581,7 +581,7 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 		wp_set_post_terms( self::$popup_id, [ $category_to_exclude_id ], 'category' );
 
 		self::renderPost( '', null, [ $category_to_exclude_id ] );
-		self::assertContains(
+		self::assertStringContainsString(
 			self::$popup_content,
 			self::$post_content,
 			'Does contain the popup content, since both post and popup have the same category.'
@@ -595,7 +595,7 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 		);
 
 		self::renderPost( '', null, [ $category_to_exclude_id ] );
-		self::assertNotContains(
+		self::assertStringNotContainsString(
 			self::$popup_content,
 			self::$post_content,
 			'Does not include the popup content, since the post category is excluded on this popup.'
@@ -622,7 +622,7 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 		);
 
 		self::renderPost( '', null, [], [ $tag_to_exclude_id ] );
-		self::assertNotContains(
+		self::assertStringNotContainsString(
 			self::$popup_content,
 			self::$post_content,
 			'Does not include the popup content, since the post tag is excluded on this popup.'
@@ -644,7 +644,7 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 		wp_set_post_terms( self::$popup_id, [ $tag_to_exclude_id ], 'tag' );
 
 		self::renderPost( '', null, [], [ $tag_to_exclude_id ] );
-		self::assertContains(
+		self::assertStringContainsString(
 			self::$popup_content,
 			self::$post_content,
 			'Does contain the popup content, since both post and popup have the same tag.'
@@ -658,7 +658,7 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 		);
 
 		self::renderPost( '', null, [], [ $tag_to_exclude_id ] );
-		self::assertNotContains(
+		self::assertStringNotContainsString(
 			self::$popup_content,
 			self::$post_content,
 			'Does not include the popup content, since the post tag is excluded on this popup.'
