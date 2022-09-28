@@ -843,7 +843,7 @@ final class Newspack_Popups_Model {
 					],
 					'extraUrlParams' => [
 						'popup_id' => esc_attr( self::canonize_popup_id( $popup['id'] ) ),
-						'cid'      => 'CLIENT_ID(' . esc_attr( Newspack_Popups_Segmentation::NEWSPACK_SEGMENTATION_CID_NAME ) . ')',
+						'cid'      => Newspack_Popups_Segmentation::get_cid_param(),
 					],
 				],
 			],
@@ -851,7 +851,7 @@ final class Newspack_Popups_Model {
 		if ( $subscribe_form_selector && $email_form_field_name ) {
 			$extra_params = [
 				'popup_id'            => esc_attr( self::canonize_popup_id( $popup['id'] ) ),
-				'cid'                 => 'CLIENT_ID(' . esc_attr( Newspack_Popups_Segmentation::NEWSPACK_SEGMENTATION_CID_NAME ) . ')',
+				'cid'                 => Newspack_Popups_Segmentation::get_cid_param(),
 				'mailing_list_status' => 'subscribed',
 				'email'               => '${formFields[' . esc_attr( $email_form_field_name ) . ']}',
 			];
@@ -1348,7 +1348,7 @@ final class Newspack_Popups_Model {
 		<input
 			name="cid"
 			type="hidden"
-			value="CLIENT_ID(<?php echo esc_attr( Newspack_Popups_Segmentation::NEWSPACK_SEGMENTATION_CID_NAME ); ?>)"
+			value="<?php echo esc_attr( Newspack_Popups_Segmentation::get_cid_param() ); ?>"
 			data-amp-replace="CLIENT_ID"
 		/>
 		<input

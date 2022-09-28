@@ -739,7 +739,7 @@ final class Newspack_Popups {
 		$is_customizer_preview = is_customize_preview();
 		// Used by the Newspack Plugin's Campaigns Wizard.
 		$is_view_as_preview = false != Newspack_Popups_View_As::viewing_as_spec();
-		return ! empty( self::previewed_popup_id() ) || $is_view_as_preview || $is_customizer_preview;
+		return ! empty( self::previewed_popup_id() ) || $is_view_as_preview || $is_customizer_preview || self::is_user_admin();
 	}
 
 	/**
