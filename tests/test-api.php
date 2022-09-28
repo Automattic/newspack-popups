@@ -1536,7 +1536,7 @@ class APITest extends WP_UnitTestCase {
 		self::assertEquals(
 			3,
 			$reader_2['reader_data']['views']['post'],
-			'Concatenates view data across reconciled client IDs known.'
+			'Concatenates view data across reconciled client IDs.'
 		);
 	}
 }
