@@ -554,13 +554,11 @@ class Lightweight_API {
 	/**
 	 * Get a specific reader.
 	 *
-	 * @param string  $client_id Client ID.
-	 * @param boolean $get_single_reader If true, only get data for the single reader with the given client ID.
-	 *                                   If false, compile data from all readers associated with the client ID.
+	 * @param string $client_id Client ID.
 	 *
 	 * @return array Reader object.
 	 */
-	public function get_reader( $client_id, $get_single_reader = false ) {
+	public function get_reader( $client_id ) {
 		$reader              = $this->reader_blueprint;
 		$reader['client_id'] = $client_id;
 
@@ -604,45 +602,6 @@ class Lightweight_API {
 			$reader['reader_data'] = json_decode( $reader['reader_data'], true );
 		}
 
-		// If there are other client IDs known to belong to the same reader, concatenate all data for this reader.
-		if ( ! $get_single_reader && ! empty( $reader['reader_data']['client_ids'] ) ) {
-			// No need to get data for the current client ID.
-			$other_client_ids = array_filter(
-				$reader['reader_data']['client_ids'],
-				function( $other_client_id ) use ( $client_id ) {
-					return $other_client_id !== $client_id;
-				}
-			);
-
-			// Gather and concatenate view and term data from the other client IDs.
-			// TODO: this is adding up view counts every single time get_reader() is called. Need to do it only once.
-			$this->debug['other_readers'] = [];
-			foreach ( $other_client_ids as $other_client_id ) {
-				$other_reader = $this->get_reader( $other_client_id, true );
-				if ( empty( $other_reader['reader_data'] ) ) {
-					continue;
-				}
-
-				$this->debug['other_readers'][] = $other_reader;
-
-				foreach ( $other_reader['reader_data'] as $key => $values ) {
-					if ( 'client_ids' === $key ) {
-						continue;
-					}
-					if ( ! isset( $reader['reader_data'][ $key ] ) ) {
-						$reader['reader_data'][ $key ] = $values;
-					} else {
-						foreach ( $values as $type => $views ) {
-							if ( ! isset( $reader['reader_data'][ $key ][ $type ] ) ) {
-								$reader['reader_data'][ $key ][ $type ] = 0;
-							}
-							$reader['reader_data'][ $key ][ $type ] = (int) $reader['reader_data'][ $key ][ $type ] + (int) $views;
-						}
-					}
-				}
-			}
-		}
-
 		// Rebuild cache.
 		wp_cache_set( 'reader', $reader, $client_id );
 
@@ -650,6 +609,24 @@ class Lightweight_API {
 			$this->debug['reader'] = $reader;
 		}
 		return $reader;
+	}
+
+	/**
+	 * Get all known reader sessions associated with a client ID.
+	 *
+	 * @param string $current_client_id Client ID of the current session.
+	 *
+	 * @return array Array of all known readers associated with the client ID.
+	 */
+	public function get_readers( $current_client_id ) {
+		$all_client_ids = $this->get_reconciled_client_ids( $current_client_id );
+		$all_readers    = [];
+
+		foreach ( $all_client_ids as $client_id ) {
+			$all_readers[] = $this->get_reader( $client_id );
+		}
+
+		return $all_readers;
 	}
 
 	/**

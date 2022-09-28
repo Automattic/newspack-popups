@@ -555,7 +555,7 @@ final class Newspack_Popups_Segmentation {
 			function ( $client_id ) use ( $api, $segment_config ) {
 				return Campaign_Data_Utils::does_reader_match_segment(
 					$segment_config,
-					$api->get_reader( $client_id ),
+					$api->get_readers( $client_id ),
 					$api->get_reader_events( $client_id, Campaign_Data_Utils::get_reader_events_types() )
 				);
 			}

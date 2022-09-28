@@ -188,7 +188,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			return $view_as_spec['segment'];
 		}
 
-		$reader                   = $this->get_reader( $client_id );
+		$readers                  = $this->get_readers( $client_id );
 		$reader_events            = $this->get_reader_events( $client_id, Campaign_Data_Utils::get_reader_events_types() );
 		$best_segment_priority    = PHP_INT_MAX;
 		$best_priority_segment_id = null;
@@ -198,7 +198,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			$segment                = Campaign_Data_Utils::canonize_segment( $segment );
 			$client_matches_segment = Campaign_Data_Utils::does_reader_match_segment(
 				$segment,
-				$reader,
+				$readers,
 				$reader_events,
 				$referer_url,
 				$page_referer_url
@@ -285,7 +285,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 				$popup_segment ?
 				Campaign_Data_Utils::does_reader_match_segment(
 					Campaign_Data_Utils::canonize_segment( $popup_segment ),
-					$this->get_reader( $client_id ),
+					$this->get_readers( $client_id ),
 					$this->get_reader_events( $client_id, Campaign_Data_Utils::get_reader_events_types() ),
 					$referer_url,
 					$page_referer_url
