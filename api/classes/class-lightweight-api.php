@@ -891,11 +891,6 @@ class Lightweight_API {
 			array_filter(
 				$events_from_db,
 				function( $event ) use ( $existing_event_ids ) {
-					// If the event is coming from the persistent cache, fashion a faux-unique ID using the timestamp.
-					if ( ! isset( $event['id'] ) ) {
-						$event['id'] = $event['type'] . '_' . $event['context'] . '_' . $event['date_created'];
-					}
-
 					// Dedupe events from cache.
 					if ( in_array( $event['id'], $existing_event_ids, true ) ) {
 						return false;
@@ -1028,6 +1023,16 @@ class Lightweight_API {
 			// Rebuild cache.
 			$cached_events = $this->get_reader_events_from_cache( $client_id );
 			$all_events    = array_merge( $cached_events, $events );
+			$all_events    = array_map(
+				function( $event ) {
+					// If the event is coming from the persistent cache, fashion a faux-unique ID using the timestamp.
+					if ( ! isset( $event['id'] ) ) {
+						$event['id'] = $event['type'] . '_' . $event['context'] . '_' . $event['date_created'];
+					}
+					return $event;
+				},
+				$all_events
+			);
 
 			// Set a cache version for future validation.
 			wp_cache_set( 'reader_cache_version', $this->reader_cache_version, $client_id );

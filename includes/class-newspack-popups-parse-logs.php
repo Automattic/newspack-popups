@@ -9,6 +9,7 @@ defined( 'ABSPATH' ) || exit;
 
 require_once dirname( __FILE__ ) . '/../api/segmentation/class-segmentation.php';
 require_once dirname( __FILE__ ) . '/../api/classes/class-lightweight-api.php';
+require_once dirname( __FILE__ ) . '/../api/campaigns/class-campaign-data-utils.php';
 
 /**
  * Main Newspack Segmentation Plugin Class.
@@ -64,7 +65,8 @@ final class Newspack_Popups_Parse_Logs {
 	 * Parse the log file, write data to the DB, and remove the file.
 	 */
 	public static function parse_events_logs() {
-		$api = new Lightweight_Api();
+		$nonce = \wp_create_nonce( 'newspack_campaigns_lightweight_api' );
+		$api   = \Campaign_Data_Utils::get_api( $nonce );
 		$api->parse_event_logs();
 	}
 }
