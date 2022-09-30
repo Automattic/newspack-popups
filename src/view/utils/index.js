@@ -172,8 +172,11 @@ export const waitUntil = ( condition, callback, maxTries = 10 ) => {
  * A common scenario is amp-analytics being blocked by ad blockers or privacy browser extensions like uBlock or Ghostery.
  * In this case the custom element will exist but the service's main class will not exist on the global __AMP_SERVICES object.
  * Extensions in this object may or may not be prefixed with `amp-`: e.g. `__AMP_SERVICES.access` vs. `__AMP_SERVICES.amp-analytics`.
+ *
+ * AMP Analytics should always be polyfilled, as non-AMP JS running in AMP Plus can break AMP Analytics features.
  */
 export const shouldPolyfillAMPModule = name =>
+	'analytics' === name ||
 	undefined === customElements.get( `amp-${ name }` ) ||
 	( ! window.__AMP_SERVICES?.hasOwnProperty( `amp-${ name }` ) &&
 		! window.__AMP_SERVICES?.hasOwnProperty( name ) );
