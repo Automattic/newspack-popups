@@ -930,7 +930,7 @@ final class Newspack_Popups_Model {
 		);
 		$event_category      = __( 'Newspack Announcement', 'newspack-popups' );
 		$formatted_placement = ucwords( str_replace( '_', ' ', $popup['options']['placement'] ) );
-		$event_label         = sprintf(
+		$default_event_label = sprintf(
 			// Translators: Analytics label with prompt details (placement, title, ID, targeted segments).
 			__( '%1$s: %2$s (%3$s) - %4$s', 'newspack-popups' ),
 			$formatted_placement,
@@ -992,6 +992,8 @@ final class Newspack_Popups_Model {
 		}
 
 		foreach ( $analytics_events as &$event ) {
+			$event_label = $default_event_label;
+
 			// If a form submission and the form contains registration + list info, append that to the event label.
 			if ( isset( $event['amp_on'] ) && 'amp-form-submit' === $event['amp_on'] && $has_register_form ) {
 				$event_label .= ' | ${formId}';
