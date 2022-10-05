@@ -816,7 +816,7 @@ final class Newspack_Popups_Inserter {
 			$popups_access_provider['authorization'] .= '&uid=' . absint( $user_id );
 		}
 
-		if ( isset( $_GET['newspack-campaigns-debug'] ) || ( \defined( 'NEWSPACK_POPUPS_DEBUG' ) && NEWSPACK_POPUPS_DEBUG ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		if ( isset( $_GET['newspack-campaigns-debug'] ) || ( defined( 'NEWSPACK_POPUPS_DEBUG' ) && NEWSPACK_POPUPS_DEBUG ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 			$popups_access_provider['authorization'] .= '&debug';
 			$popups_access_provider['authorization'] .= '&authorizationTimeout=10000';
 		}
