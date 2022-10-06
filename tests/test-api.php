@@ -5,10 +5,15 @@
  * @package Newspack_Popups
  */
 
+use DMS\PHPUnitExtensions\ArraySubset\ArraySubsetAsserts;
+
 /**
  * API test case.
  */
 class APITest extends WP_UnitTestCase {
+
+	use ArraySubsetAsserts;
+
 	private static $settings             = []; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
 	private static $maybe_show_campaign  = null; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
 	private static $report_campaign_data = null; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
@@ -1439,7 +1444,7 @@ class APITest extends WP_UnitTestCase {
 			'API payload for the default test popup is correct.'
 		);
 
-		self::assertRegExp(
+		self::assertMatchesRegularExpression(
 			'/id_\d/',
 			$default_payload->id,
 			'The id in the payload is the popup id prefixed with "id_"'
