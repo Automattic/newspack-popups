@@ -22,7 +22,7 @@ class Lightweight_API {
 	 *
 	 * @var reader_cache_version
 	 */
-	private $reader_cache_version = '1.0';
+	public $reader_cache_version = '1.0';
 
 	/**
 	 * Response object.
@@ -796,15 +796,17 @@ class Lightweight_API {
 	 */
 	public function validate_cache( $client_id ) {
 		$cache_version  = wp_cache_get( 'reader_cache_version', $client_id );
+		$cached_events  = $this->get_reader_events_from_cache( $client_id );
 		$cache_is_valid = false;
 
-		if ( ! empty( $cache_version ) && $cache_version === $this->reader_cache_version ) {
+		if ( ! empty( $cache_version ) && $cache_version === $this->reader_cache_version && ! empty( $cached_events ) ) {
 			$cache_is_valid = true;
 		}
 
 		// If the cache has been purged, let's parse the cached events to the DB.
 		if ( ! $cache_is_valid ) {
 			$this->parse_event_logs();
+			return $cache_is_valid;
 		}
 
 		$this->debug['cache_version']  = $cache_version;
@@ -1035,8 +1037,9 @@ class Lightweight_API {
 			);
 
 			// Set a cache version for future validation.
-			wp_cache_set( 'reader_cache_version', $this->reader_cache_version, $client_id );
 			wp_cache_set( 'reader_events', $all_events, $client_id );
+
+			$this->update_debug_events( $all_events );
 
 			// Write items to the flat file to be parsed to the DB at a later point.
 			Segmentation_Report::log_reader_events( $events );

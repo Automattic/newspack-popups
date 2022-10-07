@@ -163,6 +163,10 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			$response[ $popup->id ] = $popup_should_be_shown;
 		}
 
+		if ( ! $this->ignore_cache ) {
+			wp_cache_set( 'reader_cache_version', $this->reader_cache_version, $client_id );
+		}
+
 		$this->response = $response;
 		$this->respond();
 	}
