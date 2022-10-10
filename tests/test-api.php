@@ -472,24 +472,6 @@ class APITest extends WP_UnitTestCase {
 			$reader['reader_data']['category'],
 			'Returns category view count after a post view was reported.'
 		);
-
-		$api->save_reader(
-			self::$client_id,
-			[
-				'some_other_data' => 42,
-			]
-		);
-
-		$reader = $api->get_reader( self::$client_id );
-
-		self::assertArraySubset(
-			[
-				'client_id'  => self::$client_id,
-				'is_preview' => null,
-			],
-			$reader,
-			'Only valid keys are saved and returned.'
-		);
 	}
 
 	/**
