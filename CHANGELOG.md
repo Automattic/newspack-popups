@@ -1,16 +1,11 @@
-# [2.7.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v2.6.0...v2.7.0-alpha.1) (2022-10-07)
+## [2.6.1](https://github.com/Automattic/newspack-popups/compare/v2.6.0...v2.6.1) (2022-10-10)
 
 
 ### Bug Fixes
 
-* **analytics:** only add form info to form submission events ([#960](https://github.com/Automattic/newspack-popups/issues/960)) ([72ff629](https://github.com/Automattic/newspack-popups/commit/72ff629ea4a6a50949db1d1de6c11e568e27ceca))
-* lower visibility threshold for prompt_seen events ([#976](https://github.com/Automattic/newspack-popups/issues/976)) ([607c20d](https://github.com/Automattic/newspack-popups/commit/607c20d701b88a2d8d0b22ea71a8957e1e234168))
-* **release:** use newspack-scripts with fixed semantic-release config ([52119cd](https://github.com/Automattic/newspack-popups/commit/52119cd9b4aa74ca275be4556077f3a6e4298a94))
-
-
-### Features
-
-* treat logged-in admins and editors as preview sessions ([#979](https://github.com/Automattic/newspack-popups/issues/979)) ([516d076](https://github.com/Automattic/newspack-popups/commit/516d07606a54e126eeb53914f3ae93783efdf988))
+* cron job and mock IDs ([d0d99b9](https://github.com/Automattic/newspack-popups/commit/d0d99b93c18e85bb024db58564aa56c6416007b1))
+* handle purged cache ([59605be](https://github.com/Automattic/newspack-popups/commit/59605be1114573c2443d15af06390b6b28231d5d))
+* when to validate cache ([30f0944](https://github.com/Automattic/newspack-popups/commit/30f0944eed595a510d65f029b78d5226554d85cc))
 
 # [2.6.0](https://github.com/Automattic/newspack-popups/compare/v2.5.0...v2.6.0) (2022-09-27)
 
