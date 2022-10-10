@@ -1,3 +1,12 @@
+## [2.6.1](https://github.com/Automattic/newspack-popups/compare/v2.6.0...v2.6.1) (2022-10-10)
+
+
+### Bug Fixes
+
+* cron job and mock IDs ([d0d99b9](https://github.com/Automattic/newspack-popups/commit/d0d99b93c18e85bb024db58564aa56c6416007b1))
+* handle purged cache ([59605be](https://github.com/Automattic/newspack-popups/commit/59605be1114573c2443d15af06390b6b28231d5d))
+* when to validate cache ([30f0944](https://github.com/Automattic/newspack-popups/commit/30f0944eed595a510d65f029b78d5226554d85cc))
+
 # [2.6.0](https://github.com/Automattic/newspack-popups/compare/v2.5.0...v2.6.0) (2022-09-27)
 
 
