@@ -1237,7 +1237,7 @@ final class Newspack_Popups_Model {
 							"selector": "#<?php echo esc_attr( $element_id ); ?>",
 							"delay": "<?php echo esc_html( self::get_delay( $popup ) - 500 ); ?>",
 							"keyframes": {
-								"transform": ["translateY(100vh)", "translateY(0vh)"]
+								"transform": ["translateY(90vh)", "translateY(0vh)"]
 							}
 						},
 						{
