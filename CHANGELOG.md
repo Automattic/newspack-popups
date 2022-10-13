@@ -1,3 +1,10 @@
+## [2.6.2](https://github.com/Automattic/newspack-popups/compare/v2.6.1...v2.6.2) (2022-10-13)
+
+
+### Bug Fixes
+
+* prompt visibility animation ([b278793](https://github.com/Automattic/newspack-popups/commit/b278793f79e59ec640fc1933dc322b434a14284b))
+
 ## [2.6.1](https://github.com/Automattic/newspack-popups/compare/v2.6.0...v2.6.1) (2022-10-10)
 
 
