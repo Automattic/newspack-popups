@@ -65,6 +65,8 @@ final class Newspack_Popups_Segmentation {
 		add_action( 'init', [ __CLASS__, 'check_update_version' ] );
 		add_action( 'wp_footer', [ __CLASS__, 'insert_amp_analytics' ], 20 );
 
+		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'edit_inline_script' ], 21 );
+
 		add_filter( 'newspack_custom_dimensions', [ __CLASS__, 'register_custom_dimensions' ] );
 		if ( ! Newspack_Popups_Settings::is_non_interactive() && ( ! defined( 'NEWSPACK_POPUPS_DISABLE_REPORTING_CUSTOM_DIMENSIONS' ) || true !== NEWSPACK_POPUPS_DISABLE_REPORTING_CUSTOM_DIMENSIONS ) ) {
 			// Sending pageviews with segmentation-related custom dimensions.
@@ -92,6 +94,41 @@ final class Newspack_Popups_Segmentation {
 	 */
 	public static function cron_deactivate() {
 		wp_clear_scheduled_hook( 'newspack_popups_segmentation_data_prune' );
+	}
+
+	/**
+	 * Filters the inline scripts added to google_gtagjs and make sure we disable pageview reporting
+	 *
+	 * Site kit plugin googlesitekit_gtag_opt and googlesitekit_amp_gtag_opt filters will only act on v3 tag if both v3 and v4 are enabled.
+	 *
+	 * This function works around it and edit the snippet used to register v4 ID
+	 *
+	 * @return void
+	 */
+	public static function edit_inline_script() {
+		global $wp_scripts;
+		if (
+			empty( $wp_scripts->registered['google_gtagjs'] ) ||
+			empty( $wp_scripts->registered['google_gtagjs']->extra ) ||
+			empty( $wp_scripts->registered['google_gtagjs']->extra['after'] )
+		) {
+			return;
+		}
+
+		$extras = $wp_scripts->registered['google_gtagjs']->extra['after'];
+
+		// What we want is probably at the end, so let's loop backwards.
+		for ( $i = count( $extras ) - 1; $i >= 0; $i-- ) {
+
+			// Let's look for the snippet that only registers GA4 MEASUREMENT_ID. This is done in Google\Site_Kit\Modules\Analytics_4\Web_Tag::enqueue_gtag_script.
+			preg_match( '/^gtag\("config", "(G-[0-9A-Z]+)"\);$/', $extras[ $i ], $match );
+
+			if ( ! empty( $match ) ) {
+				$option = [ 'send_page_view' => false ];
+				$wp_scripts->registered['google_gtagjs']->extra['after'][ $i ] = sprintf( 'gtag("config", "%s", %s);', esc_js( $match[1] ), wp_json_encode( $option ) );
+				break;
+			}
+		}
 	}
 
 	/**
