@@ -11,7 +11,7 @@
 class SegmentationCriteriaTest extends WP_UnitTestCase {
 	private static $api; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
 
-	public function setUp() { // phpcs:ignore Squiz.Commenting.FunctionComment.Missing
+	public function set_up() { // phpcs:ignore Squiz.Commenting.FunctionComment.Missing
 		global $wpdb;
 		$reader_events_table_name = Segmentation::get_reader_events_table_name();
 		$readers_table_name       = Segmentation::get_readers_table_name();

@@ -11,7 +11,7 @@
 class ContentInsertionTest extends WP_UnitTestCase {
 	private static $popups = []; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
 
-	public function setUp() { // phpcs:ignore Squiz.Commenting.FunctionComment.Missing
+	public function set_up() { // phpcs:ignore Squiz.Commenting.FunctionComment.Missing
 		self::$popups = [
 			self::create_inline_popup( 'scroll', '0' ),
 			self::create_inline_popup( 'scroll', '70' ),
