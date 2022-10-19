@@ -563,7 +563,6 @@ final class Newspack_Popups_Inserter {
 			);
 			\wp_enqueue_script( 'newspack-popups-view' );
 			\wp_script_add_data( 'newspack-popups-view', 'amp-plus', true );
-			\wp_script_add_data( 'newspack-popups-view', 'async', true );
 		}
 
 		\wp_register_style(
