@@ -57,10 +57,14 @@ export const manageAnalyticsEvents = () => {
 		if ( typeof gtag !== 'undefined' && type === 'gtag' && config ) {
 			fetch( parseDynamicURL( config ) )
 				.then( response => response.json() )
-				.then( remoteConfig => {
-					const gaId = remoteConfig?.vars?.gtag_id;
-					if ( gaId ) {
-						gtag( 'config', gaId, remoteConfig.vars.config[ gaId ] );
+				.then( remoteConfigs => {
+					if ( Array.isArray( remoteConfigs?.configs ) ) {
+						remoteConfigs.configs.forEach( remoteConfig => {
+							const gaId = remoteConfig?.vars?.gtag_id;
+							if ( gaId ) {
+								gtag( 'config', gaId, remoteConfig.vars.config[ gaId ] );
+							}
+						} );
 					}
 				} );
 		}

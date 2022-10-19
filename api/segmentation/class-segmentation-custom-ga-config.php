@@ -35,16 +35,22 @@ class Segmentation_Custom_GA_Config extends Lightweight_API {
 	 * @param Request $request Request object.
 	 */
 	public function get_custom_analytics_configuration( $request ) {
-		$client_id   = $request['client_id'];
-		$ga_settings = maybe_unserialize( $this->get_option( 'googlesitekit_analytics_settings' ) );
-		if ( ! $client_id || ! $ga_settings || ! isset( $ga_settings['propertyID'] ) ) {
+		$client_id     = $request['client_id'];
+		$ga_3_settings = maybe_unserialize( $this->get_option( 'googlesitekit_analytics_settings' ) );
+		$ga_4_settings = maybe_unserialize( $this->get_option( 'googlesitekit_analytics-4_settings' ) );
+		if (
+			! $client_id ||
+			( ! $ga_3_settings && ! $ga_4_settings ) ||
+			( ! isset( $ga_3_settings['propertyID'] ) && ! isset( $ga_4_settings['measurementID'] ) )
+		) {
 			return [];
 		}
 
 		$custom_dimensions = json_decode( $request['custom_dimensions'] );
 
 		// Tracking ID from Site Kit.
-		$gtag_id = $ga_settings['propertyID'];
+		$ga3_id = $ga_3_settings && isset( $ga_3_settings['propertyID'] ) ? $ga_3_settings['propertyID'] : false;
+		$ga4_id = $ga_4_settings && isset( $ga_4_settings['measurementID'] ) ? $ga_4_settings['measurementID'] : false;
 
 		$custom_dimensions_values = [];
 
@@ -78,23 +84,49 @@ class Segmentation_Custom_GA_Config extends Lightweight_API {
 
 		$custom_dimensions_existing_values = (array) json_decode( $request['custom_dimensions_existing_values'] );
 
+		$configs = [];
+
+		if ( $ga3_id ) {
+			$config_3  = [
+				'vars'            => [
+					'gtag_id' => $ga3_id,
+					'config'  => [
+						$ga3_id => array_merge(
+							[
+								'groups' => 'default',
+							],
+							$custom_dimensions_values,
+							$custom_dimensions_existing_values
+						),
+					],
+				],
+				'optoutElementId' => '__gaOptOutExtension',
+			];
+			$configs[] = $config_3;
+		}
+
+		if ( $ga4_id ) {
+			$config_4  = [
+				'vars'            => [
+					'gtag_id' => $ga4_id,
+					'config'  => [
+						$ga4_id => array_merge(
+							[
+								'groups' => 'default',
+							],
+							$custom_dimensions_values,
+							$custom_dimensions_existing_values
+						),
+					],
+				],
+				'optoutElementId' => '__gaOptOutExtension',
+			];
+			$configs[] = $config_4;
+		}
+
 		// This is an AMP Analytics-compliant configuration, which on non-AMP pages will be
 		// processed by this plugin's amp-analytics polyfill (src/view).
-		return [
-			'vars'            => [
-				'gtag_id' => $gtag_id,
-				'config'  => [
-					$gtag_id => array_merge(
-						[
-							'groups' => 'default',
-						],
-						$custom_dimensions_values,
-						$custom_dimensions_existing_values
-					),
-				],
-			],
-			'optoutElementId' => '__gaOptOutExtension',
-		];
+		return [ 'configs' => $configs ];
 	}
 }
 new Segmentation_Custom_GA_Config();
