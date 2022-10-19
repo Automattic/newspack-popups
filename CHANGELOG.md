@@ -1,3 +1,24 @@
+# [2.7.0](https://github.com/Automattic/newspack-popups/compare/v2.6.2...v2.7.0) (2022-10-19)
+
+
+### Bug Fixes
+
+* **analytics:** only add form info to form submission events ([#960](https://github.com/Automattic/newspack-popups/issues/960)) ([72ff629](https://github.com/Automattic/newspack-popups/commit/72ff629ea4a6a50949db1d1de6c11e568e27ceca))
+* lower visibility threshold for prompt_seen events ([#976](https://github.com/Automattic/newspack-popups/issues/976)) ([607c20d](https://github.com/Automattic/newspack-popups/commit/607c20d701b88a2d8d0b22ea71a8957e1e234168))
+* **release:** use newspack-scripts with fixed semantic-release config ([52119cd](https://github.com/Automattic/newspack-popups/commit/52119cd9b4aa74ca275be4556077f3a6e4298a94))
+
+
+### Features
+
+* treat logged-in admins and editors as preview sessions ([#979](https://github.com/Automattic/newspack-popups/issues/979)) ([516d076](https://github.com/Automattic/newspack-popups/commit/516d07606a54e126eeb53914f3ae93783efdf988))
+
+# [2.7.0-alpha.3](https://github.com/Automattic/newspack-popups/compare/v2.7.0-alpha.2...v2.7.0-alpha.3) (2022-10-13)
+
+
+### Bug Fixes
+
+* prompt visibility animation ([b278793](https://github.com/Automattic/newspack-popups/commit/b278793f79e59ec640fc1933dc322b434a14284b))
+
 ## [2.6.2](https://github.com/Automattic/newspack-popups/compare/v2.6.1...v2.6.2) (2022-10-13)
 
 
