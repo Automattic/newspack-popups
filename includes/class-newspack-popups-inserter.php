@@ -523,24 +523,6 @@ final class Newspack_Popups_Inserter {
 	}
 
 	/**
-	 * Is the page AMP-enabled?
-	 *
-	 * @return bool True if AMP.
-	 */
-	public static function is_amp() {
-		return function_exists( 'is_amp_endpoint' ) && is_amp_endpoint();
-	}
-
-	/**
-	 * Can the site use AMP Plus features?
-	 *
-	 * @return bool Configured or not.
-	 */
-	public static function is_amp_plus() {
-		return method_exists( '\Newspack\AMP_Enhancements', 'should_use_amp_plus' ) && \Newspack\AMP_Enhancements::should_use_amp_plus();
-	}
-
-	/**
 	 * Enqueue the assets needed to display the popups.
 	 */
 	public static function enqueue_scripts() {
@@ -549,13 +531,14 @@ final class Newspack_Popups_Inserter {
 		}
 
 		// Don't enqueue assets if prompts are disabled on this post.
-		$has_disabled_prompts = \is_singular() && ! empty( \get_post_meta( \get_the_ID(), 'newspack_popups_has_disabled_popups', true ) );
+		$has_disabled_prompts = is_singular() && ! empty( get_post_meta( get_the_ID(), 'newspack_popups_has_disabled_popups', true ) );
 		if ( $has_disabled_prompts ) {
 			return;
 		}
 
-		if ( ! self::is_amp() || self::is_amp_plus() ) {
-			\wp_register_script(
+		$is_amp = function_exists( 'is_amp_endpoint' ) && is_amp_endpoint();
+		if ( ! $is_amp ) {
+			wp_register_script(
 				'newspack-popups-view',
 				plugins_url( '../dist/view.js', __FILE__ ),
 				[ 'wp-url' ],
@@ -563,12 +546,11 @@ final class Newspack_Popups_Inserter {
 				true
 			);
 			\wp_enqueue_script( 'newspack-popups-view' );
-			\wp_script_add_data( 'newspack-popups-view', 'amp-plus', true );
 		}
 
 		\wp_register_style(
 			'newspack-popups-view',
-			\plugins_url( '../dist/view.css', __FILE__ ),
+			plugins_url( '../dist/view.css', __FILE__ ),
 			null,
 			filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/view.css' )
 		);
