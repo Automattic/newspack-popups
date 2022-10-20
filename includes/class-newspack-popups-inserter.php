@@ -826,7 +826,6 @@ final class Newspack_Popups_Inserter {
 		if ( self::assess_has_disabled_popups() ) {
 			return;
 		}
-
 		if ( ! is_admin() && ! wp_script_is( 'amp-runtime', 'registered' ) ) {
 		// phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion
 			wp_register_script(
