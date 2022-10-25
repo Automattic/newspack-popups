@@ -1,3 +1,10 @@
+## [2.7.2](https://github.com/Automattic/newspack-popups/compare/v2.7.1...v2.7.2) (2022-10-25)
+
+
+### Bug Fixes
+
+* invoke wp polyfills for compatibility ([#997](https://github.com/Automattic/newspack-popups/issues/997)) ([3c8f790](https://github.com/Automattic/newspack-popups/commit/3c8f7909e63a93d8ba0b3e8f9335a8d743d71c38))
+
 ## [2.7.1](https://github.com/Automattic/newspack-popups/compare/v2.7.0...v2.7.1) (2022-10-20)
 
 
