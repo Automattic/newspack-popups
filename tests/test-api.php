@@ -1493,4 +1493,31 @@ class APITest extends WP_UnitTestCase {
 			'Can retrieve up to 100 prompts at once.'
 		);
 	}
+
+	/**
+	 * Test reader reconciliation with user account.
+	 */
+	public function reconcile_readers() {
+		$api         = new Lightweight_API();
+		$client_id_1 = 'abc';
+		$client_id_2 = '123';
+
+		$api->save_reader_events(
+			$client_id_1,
+			[ self::create_event( [], false, 'user_account', 12 ) ]
+		);
+
+		$api->save_reader_events(
+			$client_id_2,
+			[ self::create_event( [], false, 'user_account', 12 ) ]
+		);
+
+		$client_ids = $api->get_reconciled_client_ids( $client_id_1 );
+
+		self::assertEquals(
+			$client_ids,
+			[ $client_id_1, $client_id_2 ],
+			'Returns all known client IDs associated with the same user ID.'
+		);
+	}
 }
