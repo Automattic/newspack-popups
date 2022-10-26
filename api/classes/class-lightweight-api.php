@@ -984,9 +984,6 @@ class Lightweight_API {
 	 * @return array Array of reader data, optionally filtered by $type and $context.
 	 */
 	public function get_reader_events( $client_id, $type = null, $context = null, $ignore_cache = false ) {
-		// Get all known client IDs belonging to this reader.
-		$client_id_or_ids = $this->get_reconciled_client_ids( $client_id );
-
 		if ( ! is_array( $type ) && null !== $type ) {
 			$type = [ $type ];
 		}
@@ -994,7 +991,8 @@ class Lightweight_API {
 			$context = [ $context ];
 		}
 
-		$cached_events = [];
+		$client_id_or_ids = $this->get_reconciled_client_ids( $client_id );
+		$cached_events    = [];
 
 		// Check the cache first.
 		if ( ! $this->ignore_cache && $this->validate_cache( $client_id ) ) {
@@ -1022,6 +1020,7 @@ class Lightweight_API {
 				}
 			)
 		);
+		$all_events         = array_merge( $past_events, $new_events );
 
 		// Rebuild cache.
 		if ( ! $this->ignore_cache ) {
