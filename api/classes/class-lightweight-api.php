@@ -1001,7 +1001,6 @@ class Lightweight_API {
 				}
 			)
 		);
-		$all_events         = array_merge( $past_events, $new_events );
 
 		// Rebuild cache.
 		if ( ! $this->ignore_cache ) {
