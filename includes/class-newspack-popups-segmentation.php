@@ -804,9 +804,10 @@ final class Newspack_Popups_Segmentation {
 	/**
 	 * Handle reader registration.
 	 *
-	 * @param string $email Email address.
-	 * @param bool   $authenticate Whether the user was authenticated.
-	 * @param int    $user_id New user ID.
+	 * @param string       $email Email address.
+	 * @param bool         $authenticate Whether the user was authenticated.
+	 * @param int          $user_id New user ID.
+	 * @param null|WP_User $existing_user If the reader already has an account, the user object.
 	 */
 	public static function handle_registered_reader( $email, $authenticate, $user_id, $existing_user ) {
 		if ( empty( $user_id ) && $existing_user && isset( $existing_user->ID ) ) {
