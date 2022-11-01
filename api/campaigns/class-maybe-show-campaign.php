@@ -42,7 +42,7 @@ class Maybe_Show_Campaign extends Lightweight_API {
 			$view_event    = $this->convert_visit_to_event( $client_id, $visit );
 
 			// Handle user accounts.
-			if ( $user_id ) {
+			if ( ! empty( $user_id ) ) {
 				$existing_user_accounts = $this->get_reader_events( $client_id, 'user_account', $user_id );
 				if ( 0 === count( $existing_user_accounts ) ) {
 					$reader_events[] = [

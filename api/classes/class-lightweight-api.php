@@ -1067,7 +1067,9 @@ class Lightweight_API {
 		$identifiable_events = $this->filter_events_by_type( $events, [ 'user_account', 'subscription' ] );
 		if ( ! empty( $identifiable_events ) ) {
 			foreach ( $identifiable_events as $identifiable_event ) {
-				$this->reconcile_readers( $client_id, $identifiable_event['type'], $identifiable_event['context'] );
+				if ( ! empty( $identifiable_event['type'] ) && ! empty( $identifiable_event['context'] ) ) {
+					$this->reconcile_readers( $client_id, $identifiable_event['type'], $identifiable_event['context'] );
+				}
 			}
 		}
 
