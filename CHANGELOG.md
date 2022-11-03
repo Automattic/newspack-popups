@@ -1,3 +1,15 @@
+# [2.8.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v2.7.2...v2.8.0-alpha.1) (2022-11-03)
+
+
+### Bug Fixes
+
+* clarify padding vs. border styles in overlay vs. inline ([#998](https://github.com/Automattic/newspack-popups/issues/998)) ([7c86755](https://github.com/Automattic/newspack-popups/commit/7c8675577c7c6a918e21b0a85d1414b6196a2018))
+
+
+### Features
+
+* reconcile different reader sessions ([#978](https://github.com/Automattic/newspack-popups/issues/978)) ([38a486d](https://github.com/Automattic/newspack-popups/commit/38a486d658a8bd2d45e59e4a0a2c1a623bd7364e))
+
 ## [2.7.2](https://github.com/Automattic/newspack-popups/compare/v2.7.1...v2.7.2) (2022-10-25)
 
 
