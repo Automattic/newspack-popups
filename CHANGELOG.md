@@ -1,3 +1,10 @@
+# [2.8.0-alpha.2](https://github.com/Automattic/newspack-popups/compare/v2.8.0-alpha.1...v2.8.0-alpha.2) (2022-11-11)
+
+
+### Features
+
+* polyfill amp-access script ([4c41745](https://github.com/Automattic/newspack-popups/commit/4c417457df7023fa60c030b8de86f25610f5e7b1)), closes [#995](https://github.com/Automattic/newspack-popups/issues/995) [#193](https://github.com/Automattic/newspack-popups/issues/193) [#880](https://github.com/Automattic/newspack-popups/issues/880) [#749](https://github.com/Automattic/newspack-popups/issues/749) [#170](https://github.com/Automattic/newspack-popups/issues/170) [#569](https://github.com/Automattic/newspack-popups/issues/569)
+
 # [2.8.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v2.7.2...v2.8.0-alpha.1) (2022-11-03)
 
 
