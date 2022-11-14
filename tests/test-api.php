@@ -878,6 +878,65 @@ class APITest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Test reader reconciliation with user account.
+	 */
+	public function test_reconcile_readers() {
+		$client_id_2 = '12345';
+
+		self::$maybe_show_campaign->save_reader_events(
+			self::$client_id,
+			[ self::create_event( [], false, 'user_account', 12 ) ]
+		);
+
+		self::$maybe_show_campaign->save_reader_events(
+			$client_id_2,
+			[ self::create_event( [], false, 'user_account', 12 ) ]
+		);
+
+		$client_ids = self::$maybe_show_campaign->get_reconciled_client_ids( self::$client_id );
+
+		self::assertEquals(
+			$client_ids,
+			[ self::$client_id, $client_id_2 ],
+			'Returns all known client IDs associated with the same user ID.'
+		);
+
+		// Create a popup requiring 3 articles read.
+		$test_popup_with_segment = self::create_test_popup(
+			[
+				'placement'           => 'inline',
+				'frequency'           => 'always',
+				'selected_segment_id' => self::$segment_ids['segmentBetween3And5'],
+			]
+		);
+
+		self::assertFalse(
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings ),
+			'Assert initially not visible.'
+		);
+
+		// Report 3 articles read.
+		self::$maybe_show_campaign->save_reader_events(
+			self::$client_id,
+			[
+				self::create_event( [ 'post_id' => 1 ] ),
+				self::create_event( [ 'post_id' => 2 ] ),
+				self::create_event( [ 'post_id' => 3 ] ),
+			]
+		);
+
+		self::assertTrue(
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup_with_segment['payload'], self::$settings ),
+			'Assert shown when a third article is read.'
+		);
+
+		self::assertTrue(
+			self::$maybe_show_campaign->should_popup_be_shown( $client_id_2, $test_popup_with_segment['payload'], self::$settings ),
+			'Assert shown for other client IDs known to belong to the same reader, too.'
+		);
+	}
+
+	/**
 	 * Suppression caused by a read count segment, with a 'once' frequency cap.
 	 */
 	public function test_segment_read_count_range_with_once_frequency() {
