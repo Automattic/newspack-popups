@@ -1,3 +1,10 @@
+## [2.8.1-hotfix.1](https://github.com/Automattic/newspack-popups/compare/v2.8.0...v2.8.1-hotfix.1) (2022-11-16)
+
+
+### Bug Fixes
+
+* handle ESP exception on login fetch ([e7018da](https://github.com/Automattic/newspack-popups/commit/e7018da39bc58b043c62715f25847f8be7a2b425))
+
 # [2.8.0](https://github.com/Automattic/newspack-popups/compare/v2.7.2...v2.8.0) (2022-11-14)
 
 
