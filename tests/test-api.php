@@ -934,6 +934,71 @@ class APITest extends WP_UnitTestCase {
 			self::$maybe_show_campaign->should_popup_be_shown( $client_id_2, $test_popup_with_segment['payload'], self::$settings ),
 			'Assert shown for other client IDs known to belong to the same reader, too.'
 		);
+
+		$other_client_ids = [
+			'amp--D2OEDEiD4IuXpm8uqEHWg',
+			'amp--d4uB8YUdLAy23d5aOnA0Q',
+			'amp--d67FgKzl0kg0hFM8As1Jw',
+			'amp--d6yPZW_OTOHKG-u_W5TsQ',
+			'amp--D8_eesOq89X8lFc6ZPaDg',
+			'amp--DAeRisE1iY7EH2Rzxg4VQ',
+			'amp--dbGS5aUlSEaHKciZ0ez_g',
+			'amp--DBTOa9Cyb-fKXrXTZcOHw',
+			'amp--dCvJPTMyjVyjGjoZ5hN-w',
+			'amp--DcwPcBKJ_num2H2VmM4iQ',
+			'amp--DEOY8eQs9ufvw__op-AUw',
+			'amp--dePZKVlPaTET2mWESF7vw',
+			'amp--deUe1MvioJLszLBf5eETA',
+			'amp--dF1osS1WBcdc0oKVb6Clg',
+			'amp--dfgR_BnPHCd6PhzD8I5RA',
+			'amp--dfIgguxEh6g0LYv2usWXg',
+			'amp--dgUHpLd3-3e73HFZUID8g',
+			'amp--dhe6MaLqwStNQR31w43_A',
+			'amp--dhMJowhVdSOF7ZYNlrBJg',
+			'amp--dhpHfa-dWcIQZyjMA0zQw',
+			'amp--dIk6UpQ4YFIVJT8ZZMj0w',
+			'amp--dKR8_ZwQfYWBpNV1uz2Cw',
+			'amp--DmGE29B2SmoXAYs4hNv2w',
+			'amp--DNJeqvCSvJHjmtzOCUcmQ',
+			'amp--dOwVuq-PJLE_Ztw7zKEPQ',
+			'amp--DQbhFL5V3AIjjdIjMxpVQ',
+			'amp--DQot5vRnisJCUohZvZpcg',
+			'amp--DrV8EtpUBRqaRBqO80mgA',
+			'amp--DsOxe2zV4R-pWaamT5i6Q',
+			'amp--DsqfK1wRw6IH91r4xEZBQ',
+			'amp--dTrmLcxd2jViwbM5BGbCg',
+			'amp--du9iR5sbGDFCsIIhYs0nQ',
+			'amp--DUWH0WcycC2m4TUN2nLYQ',
+			'amp--dvDP67l1N2f5aW9d3-y_w',
+			'amp--DWSQNU1sJzJ5sDI3vmGmQ',
+			'amp--dYtX3lmB_Jsusfi-QEfSg',
+			'amp--dZLw5NrU4m8ZnGDvZuMEQ',
+			'amp--DzqNOOGdL6NJtXV_mdgyQ',
+			'amp--dZW6Mt5IB19J4aoRhRvRg',
+			'amp--E-sDsO3nzGdlODF32qtFQ',
+			'amp--E1AVdo0yrnVJF5pZBVxxA',
+			'amp--e2jdH09WKw2kdxDVavHYw',
+			'amp--e6G2lW0RIqo1imjHny0uw',
+			'amp--e6mbfTtqaTSyLUIK_7g6A',
+			'amp--E6oWo1wbM8o2nIbxdxM5g',
+			'amp--e6X_-UGWTE-cyHiBeZNhQ',
+			'amp--E7BPzfB-jPmsQWtlnM0RQ',
+			'amp--E7mcERPUAg2q7v-G3IZtw',
+		];
+
+		foreach ( $other_client_ids as $other_client_id ) {
+			self::$maybe_show_campaign->save_reader_events(
+				$other_client_id,
+				[ self::create_event( [], false, 'user_account', 12 ) ]
+			);
+		}
+
+		$client_ids = self::$maybe_show_campaign->get_reconciled_client_ids( self::$client_id );
+		self::assertEquals(
+			count( $client_ids ),
+			10,
+			'Stores a max of 10 reconciled sessions.'
+		);
 	}
 
 	/**

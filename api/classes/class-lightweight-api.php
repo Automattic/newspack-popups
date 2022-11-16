@@ -413,6 +413,9 @@ class Lightweight_API {
 					$reader_data['client_ids'] = $client_ids;
 				}
 
+				// Limit number of reconciled sessions to 10.
+				$reader_data['client_ids'] = array_slice( $reader_data['client_ids'], -10, 10 );
+
 				// Only update if there are new client IDs to add.
 				if ( ! empty( array_diff( $reader_data['client_ids'], $original_client_ids ) ) ) {
 					$this->save_reader( $unique_client_id, $reader_data );
