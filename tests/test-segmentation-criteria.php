@@ -29,7 +29,7 @@ class SegmentationCriteriaTest extends WP_UnitTestCase {
 	private static function does_client_match_segment_config( $client_id, $segment_config ) {
 		return Campaign_Data_Utils::does_reader_match_segment(
 			Campaign_Data_Utils::canonize_segment( $segment_config ),
-			self::$api->get_readers( $client_id ),
+			self::$api->get_reader( $client_id ),
 			self::$api->get_reader_events( $client_id, Campaign_Data_Utils::get_reader_events_types() )
 		);
 	}
@@ -119,3 +119,4 @@ class SegmentationCriteriaTest extends WP_UnitTestCase {
 		);
 	}
 }
+

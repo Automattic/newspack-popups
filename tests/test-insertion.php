@@ -148,7 +148,7 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 			'Includes tracking by default.'
 		);
 
-		$user_id = self::factory()->user->create( [ 'role' => 'administrator' ] );
+		$user_id = $this->factory->user->create( [ 'role' => 'administrator' ] );
 		wp_set_current_user( $user_id );
 
 		self::renderPost( 'view_as=all' );
@@ -170,7 +170,7 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 			'Includes tracking with "view as", since there is no logged in user.'
 		);
 
-		$user_id = self::factory()->user->create( [ 'role' => 'administrator' ] );
+		$user_id = $this->factory->user->create( [ 'role' => 'administrator' ] );
 		wp_set_current_user( $user_id );
 
 		self::renderPost( 'view_as=all' );
@@ -201,7 +201,7 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 			'There are no popups, the previewed popup should only be displayed if user is admin.'
 		);
 
-		$user_id = self::factory()->user->create( [ 'role' => 'administrator' ] );
+		$user_id = $this->factory->user->create( [ 'role' => 'administrator' ] );
 		wp_set_current_user( $user_id );
 
 		self::renderPost( $preview_param );
@@ -228,7 +228,7 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 			'Includes the popup content for non-logged-in users.'
 		);
 
-		$user_id = self::factory()->user->create( [ 'role' => 'administrator' ] );
+		$user_id = $this->factory->user->create( [ 'role' => 'administrator' ] );
 		wp_set_current_user( $user_id );
 
 		self::renderPost();
@@ -341,7 +341,7 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 			'Does include the popup content if neither post nor popup have a category.'
 		);
 
-		$category_1_id = self::factory()->term->create(
+		$category_1_id = $this->factory->term->create(
 			[
 				'name'     => 'Events',
 				'taxonomy' => 'category',
@@ -372,7 +372,7 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 			'Includes the popup content when the categories match.'
 		);
 
-		$category_2_id = self::factory()->term->create(
+		$category_2_id = $this->factory->term->create(
 			[
 				'name'     => 'Health',
 				'taxonomy' => 'category',
@@ -398,7 +398,7 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 			'Does include the popup content if neither post nor popup have tags.'
 		);
 
-		$tag_1_id = self::factory()->term->create(
+		$tag_1_id = $this->factory->term->create(
 			[
 				'name'     => 'Featured',
 				'taxonomy' => 'post_tag',
@@ -422,7 +422,7 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 			'Does not include the popup content when the post has no tags, but popup has.'
 		);
 
-		$tag_2_id = self::factory()->term->create(
+		$tag_2_id = $this->factory->term->create(
 			[
 				'name'     => 'Events',
 				'taxonomy' => 'post_tag',
@@ -502,7 +502,7 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 			'And it is the published one.'
 		);
 
-		$user_id = self::factory()->user->create( [ 'role' => 'administrator' ] );
+		$user_id = $this->factory->user->create( [ 'role' => 'administrator' ] );
 		wp_set_current_user( $user_id );
 
 		self::renderPost( 'view_as=all' );
@@ -543,7 +543,7 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 	 * Test categories exclusion.
 	 */
 	public function test_categories_exclusion() {
-		$category_to_exclude_id = self::factory()->term->create(
+		$category_to_exclude_id = $this->factory->term->create(
 			[
 				'name'     => 'Sport',
 				'taxonomy' => 'category',
@@ -570,7 +570,7 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 	 * Test categories exclusion has priority over inclusion.
 	 */
 	public function test_categories_exclusion_priority_over_inclusion() {
-		$category_to_exclude_id = self::factory()->term->create(
+		$category_to_exclude_id = $this->factory->term->create(
 			[
 				'name'     => 'Arts',
 				'taxonomy' => 'category',
@@ -606,7 +606,7 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 	 * Test tags exclusion.
 	 */
 	public function test_tags_exclusion() {
-		$tag_to_exclude_id = self::factory()->term->create(
+		$tag_to_exclude_id = $this->factory->term->create(
 			[
 				'name'     => 'No Prompt',
 				'taxonomy' => 'post_tag',
@@ -633,7 +633,7 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 	 * Test tags exclusion has priority over inclusion.
 	 */
 	public function test_tags_exclusion_priority_over_inclusion() {
-		$tag_to_exclude_id = self::factory()->term->create(
+		$tag_to_exclude_id = $this->factory->term->create(
 			[
 				'name'     => 'Excluded Tag',
 				'taxonomy' => 'post_tag',

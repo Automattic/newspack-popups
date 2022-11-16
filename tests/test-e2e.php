@@ -99,21 +99,21 @@ class E2ETest extends WP_UnitTestCase_PageWithPopups {
 		);
 
 		// Set up some taxonomy terms to apply to the prompt.
-		$category_id = self::factory()->term->create(
+		$category_id = $this->factory->term->create(
 			[
 				'name'     => 'Featured',
 				'taxonomy' => 'category',
 				'slug'     => 'featured',
 			]
 		);
-		$tag_id      = self::factory()->term->create(
+		$tag_id      = $this->factory->term->create(
 			[
 				'name'     => 'Best of',
 				'taxonomy' => 'post_tag',
 				'slug'     => 'best-of',
 			]
 		);
-		$campaign_id = self::factory()->term->create(
+		$campaign_id = $this->factory->term->create(
 			[
 				'name'     => 'Everyday',
 				'taxonomy' => Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY,
