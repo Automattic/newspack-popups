@@ -74,6 +74,7 @@ final class Newspack_Popups_Inserter {
 		add_action( 'wp_head', [ $this, 'insert_popups_amp_access' ] );
 		add_action( 'before_header', [ $this, 'insert_before_header' ] );
 		add_action( 'after_archive_post', [ $this, 'insert_inline_prompt_in_archive_pages' ] );
+		add_action( 'wp_before_admin_bar_render', [ $this, 'add_preview_toggle' ] );
 
 		// Always enqueue scripts, since this plugin's scripts are handling pageview sending via GTAG.
 		add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
@@ -535,6 +536,22 @@ final class Newspack_Popups_Inserter {
 			return;
 		}
 
+		if ( Newspack_Popups_Segmentation::is_admin_user() ) {
+			\wp_enqueue_script(
+				'newspack-popups-admin-bar',
+				plugins_url( '../dist/admin.js', __FILE__ ),
+				[],
+				filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/admin.js' ),
+				true
+			);
+			\wp_enqueue_style(
+				'newspack-popups-admin-bar',
+				plugins_url( '../dist/admin.css', __FILE__ ),
+				[],
+				filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/admin.css' )
+			);
+		}
+
 		$script_handle = 'newspack-popups-view';
 
 		$is_amp = function_exists( 'is_amp_endpoint' ) && is_amp_endpoint();
@@ -962,6 +979,28 @@ final class Newspack_Popups_Inserter {
 		$is_post_context_matching = $is_taxonomy_matching && in_array( $post_type, $supported_post_types );
 
 		return $is_post_context_matching;
+	}
+
+	/**
+	 * Add an admin bar button for logged-in admins and editors to toggle Campaigns visibility.
+	 */
+	public static function add_preview_toggle() {
+		global $wp_admin_bar;
+		$is_admin = Newspack_Popups_Segmentation::is_admin_user();
+
+		if ( $is_admin ) {
+			$wp_admin_bar->add_menu(
+				[
+					'parent' => false,
+					'id'     => 'campaigns_preview_toggle',
+					'title'  => __( 'Preview Campaigns', 'newspack-popups' ),
+					'href'   => '#',
+					'meta'   => [
+						'class' => 'newspack-campaigns-preview-toggle',
+					],
+				]
+			);
+		}
 	}
 }
 $newspack_popups_inserter = new Newspack_Popups_Inserter();
