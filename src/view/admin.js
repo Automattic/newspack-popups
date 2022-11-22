@@ -17,7 +17,7 @@ const toggleHandler = e => {
 	e.preventDefault();
 	isHidden = ! isHidden;
 	document.body.classList.toggle( 'newspack-popups-hide-prompts' );
-	localStorage.setItem( 'newspackPopupsHide', isHidden ? 0 : 1 );
+	localStorage.setItem( 'newspackPopupsHide', isHidden ? 1 : 0 );
 
 	e.currentTarget.textContent = isHidden ? labelHidden : labelVisible;
 };
