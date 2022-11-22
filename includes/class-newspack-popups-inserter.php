@@ -523,6 +523,24 @@ final class Newspack_Popups_Inserter {
 	}
 
 	/**
+	 * Is the current page an AMP page?
+	 *
+	 * @return boolean True if AMP, otherwise false.
+	 */
+	public static function is_amp() {
+		return function_exists( 'is_amp_endpoint' ) && is_amp_endpoint();
+	}
+
+	/**
+	 * Is AMP Plus enabled on this site?
+	 *
+	 * @return boolean True if AMP, otherwise false.
+	 */
+	public static function is_amp_plus() {
+		return class_exists( '\Newspack\AMP_Enhancements' ) && \Newspack\AMP_Enhancements::is_amp_plus_configured();
+	}
+
+	/**
 	 * Enqueue the assets needed to display the popups.
 	 */
 	public static function enqueue_scripts() {
@@ -536,25 +554,33 @@ final class Newspack_Popups_Inserter {
 			return;
 		}
 
-		if ( Newspack_Popups_Segmentation::is_admin_user() ) {
-			\wp_enqueue_script(
-				'newspack-popups-admin-bar',
+		$is_amp      = self::is_amp();
+		$is_amp_plus = $is_amp && self::is_amp_plus();
+
+		if ( Newspack_Popups_Segmentation::is_admin_user() && ( ! $is_amp || $is_amp_plus ) ) {
+			$admin_script_handle = 'newspack-popups-admin-bar';
+			\wp_register_script(
+				$admin_script_handle,
 				plugins_url( '../dist/admin.js', __FILE__ ),
 				[],
 				filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/admin.js' ),
 				true
 			);
-			\wp_enqueue_style(
-				'newspack-popups-admin-bar',
+			\wp_register_style(
+				$admin_script_handle,
 				plugins_url( '../dist/admin.css', __FILE__ ),
-				[],
+				null,
 				filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/admin.css' )
 			);
+			\wp_script_add_data( $admin_script_handle, 'amp-plus', true );
+			\wp_script_add_data( $admin_script_handle, 'async', true );
+			\wp_enqueue_script( $admin_script_handle );
+			\wp_style_add_data( $admin_script_handle, 'rtl', 'replace' );
+			\wp_enqueue_style( $admin_script_handle );
 		}
 
 		$script_handle = 'newspack-popups-view';
 
-		$is_amp = function_exists( 'is_amp_endpoint' ) && is_amp_endpoint();
 		if ( ! $is_amp ) {
 			\wp_register_script(
 				$script_handle,
@@ -985,6 +1011,10 @@ final class Newspack_Popups_Inserter {
 	 * Add an admin bar button for logged-in admins and editors to toggle Campaigns visibility.
 	 */
 	public static function add_preview_toggle() {
+		if ( self::is_amp() && ! self::is_amp_plus() ) {
+			return;
+		}
+
 		global $wp_admin_bar;
 		$is_admin = Newspack_Popups_Segmentation::is_admin_user();
 
