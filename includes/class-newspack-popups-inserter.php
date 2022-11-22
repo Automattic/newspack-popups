@@ -572,6 +572,14 @@ final class Newspack_Popups_Inserter {
 				null,
 				filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/admin.css' )
 			);
+			\wp_localize_script(
+				$admin_script_handle,
+				'newspack_popups_admin',
+				[
+					'label_visible' => __( 'Prompts Visible', 'newspack-popups' ),
+					'label_hidden'  => __( 'Prompts Hidden', 'newspack-popups' ),
+				]
+			);
 			\wp_script_add_data( $admin_script_handle, 'amp-plus', true );
 			\wp_script_add_data( $admin_script_handle, 'async', true );
 			\wp_enqueue_script( $admin_script_handle );
@@ -1023,7 +1031,7 @@ final class Newspack_Popups_Inserter {
 				[
 					'parent' => false,
 					'id'     => 'campaigns_preview_toggle',
-					'title'  => __( 'Preview Campaigns', 'newspack-popups' ),
+					'title'  => __( 'Prompts Visible', 'newspack-popups' ),
 					'href'   => '#',
 					'meta'   => [
 						'class' => 'newspack-campaigns-preview-toggle',
