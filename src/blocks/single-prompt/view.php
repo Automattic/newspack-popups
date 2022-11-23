@@ -34,7 +34,7 @@ function register_block() {
 function render_block( $attributes ) {
 	$content     = '';
 	$prompt_id   = $attributes['promptId'];
-	$class_names = $attributes['className'];
+	$class_names = isset( $attributes['className'] ) ? $attributes['className'] : '';
 
 	if ( empty( $prompt_id ) ) {
 		return $content;

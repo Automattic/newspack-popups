@@ -34,7 +34,7 @@ function register_block() {
 function render_block( $attributes ) {
 	$content             = '';
 	$custom_placement_id = \Newspack_Popups_Custom_Placements::validate_custom_placement_id( $attributes['customPlacement'] );
-	$class_names         = $attributes['className'];
+	$class_names         = isset( $attributes['className'] ) ? $attributes['className'] : '';
 
 	if ( empty( $custom_placement_id ) ) {
 		return $content;
