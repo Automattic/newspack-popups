@@ -147,7 +147,7 @@ final class Newspack_Popups_Segmentation {
 			$dimension_id = substr( $custom_dimension['gaID'], 3 ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 			switch ( $custom_dimension['role'] ) {
 				case Segmentation::CUSTOM_DIMENSIONS_OPTION_NAME_READER_FREQUENCY:
-					$read_count = Campaign_Data_Utils::get_post_view_count( $api->get_reader( $client_id ) );
+					$read_count = Campaign_Data_Utils::get_post_view_count( [ $api->get_reader( $client_id ) ] );
 					// Tiers mimick NCI's – https://news-consumer-insights.appspot.com.
 					$read_count_tier = 'casual';
 					if ( $read_count > 1 && $read_count <= 14 ) {
