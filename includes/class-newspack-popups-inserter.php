@@ -590,8 +590,7 @@ final class Newspack_Popups_Inserter {
 		}
 
 		$class_names = '';
-
-		if ( isset( $atts['class'] ) && $atts['class'] ) {
+		if ( ! empty( $atts['class'] ) ) {
 			$class_names .= ' class="' . $atts['class'] . '"';
 		}
 
