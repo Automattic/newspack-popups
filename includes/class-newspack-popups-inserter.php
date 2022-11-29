@@ -14,6 +14,11 @@ require_once dirname( __FILE__ ) . '/../api/segmentation/class-segmentation.php'
  */
 final class Newspack_Popups_Inserter {
 	/**
+	 * Handle for admin UI scripts.
+	 */
+	const ADMIN_SCRIPT_HANDLE = 'newspack-popups-admin-bar';
+
+	/**
 	 * The popup objects to display.
 	 *
 	 * @var array
@@ -75,6 +80,8 @@ final class Newspack_Popups_Inserter {
 		add_action( 'before_header', [ $this, 'insert_before_header' ] );
 		add_action( 'after_archive_post', [ $this, 'insert_inline_prompt_in_archive_pages' ] );
 		add_action( 'wp_before_admin_bar_render', [ $this, 'add_preview_toggle' ] );
+		add_action( 'wp_footer', [ $this, 'insert_admin_ui_elements' ] );
+		add_filter( 'newspack_amp_plus_sanitized', [ __CLASS__, 'filter_scripts_for_amp_plus' ], 10, 2 );
 
 		// Always enqueue scripts, since this plugin's scripts are handling pageview sending via GTAG.
 		add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
@@ -541,6 +548,18 @@ final class Newspack_Popups_Inserter {
 	}
 
 	/**
+	 * Should UI for admin users be shown?
+	 *
+	 * @return boolean
+	 */
+	public static function should_show_admin_ui() {
+		$is_amp      = self::is_amp();
+		$is_amp_plus = $is_amp && self::is_amp_plus();
+
+		return Newspack_Popups_Segmentation::is_admin_user() && ( ! $is_amp || $is_amp_plus );
+	}
+
+	/**
 	 * Enqueue the assets needed to display the popups.
 	 */
 	public static function enqueue_scripts() {
@@ -554,11 +573,8 @@ final class Newspack_Popups_Inserter {
 			return;
 		}
 
-		$is_amp      = self::is_amp();
-		$is_amp_plus = $is_amp && self::is_amp_plus();
-
-		if ( Newspack_Popups_Segmentation::is_admin_user() && ( ! $is_amp || $is_amp_plus ) ) {
-			$admin_script_handle = 'newspack-popups-admin-bar';
+		if ( self::should_show_admin_ui() ) {
+			$admin_script_handle = self::ADMIN_SCRIPT_HANDLE;
 			\wp_register_script(
 				$admin_script_handle,
 				plugins_url( '../dist/admin.js', __FILE__ ),
@@ -589,7 +605,7 @@ final class Newspack_Popups_Inserter {
 
 		$script_handle = 'newspack-popups-view';
 
-		if ( ! $is_amp ) {
+		if ( ! self::is_amp() ) {
 			\wp_register_script(
 				$script_handle,
 				plugins_url( '../dist/view.js', __FILE__ ),
@@ -1024,26 +1040,53 @@ final class Newspack_Popups_Inserter {
 	 * Add an admin bar button for logged-in admins and editors to toggle Campaigns visibility.
 	 */
 	public static function add_preview_toggle() {
-		if ( self::is_amp() && ! self::is_amp_plus() ) {
+		if ( ! self::should_show_admin_ui() ) {
 			return;
 		}
 
 		global $wp_admin_bar;
-		$is_admin = Newspack_Popups_Segmentation::is_admin_user();
+		$wp_admin_bar->add_menu(
+			[
+				'parent' => false,
+				'id'     => 'campaigns_preview_toggle',
+				'title'  => __( 'Prompts Visible', 'newspack-popups' ),
+				'href'   => '#',
+				'meta'   => [
+					'class' => 'newspack-campaigns-preview-toggle',
+				],
+			]
+		);
+	}
 
-		if ( $is_admin ) {
-			$wp_admin_bar->add_menu(
-				[
-					'parent' => false,
-					'id'     => 'campaigns_preview_toggle',
-					'title'  => __( 'Prompts Visible', 'newspack-popups' ),
-					'href'   => '#',
-					'meta'   => [
-						'class' => 'newspack-campaigns-preview-toggle',
-					],
-				]
-			);
+	/**
+	 * Add empty DOM elements to avoid admin UI class names from being stripped by AMP.
+	 */
+	public static function insert_admin_ui_elements() {
+		if ( ! Newspack_Popups_Segmentation::is_admin_user() || ! self::is_amp_plus() ) {
+			return;
 		}
+		?>
+			<div class="newspack-popups-hide-prompts"></div>
+		<?php
+	}
+
+	/**
+	 * Allow admin UI scripts to be loaded in AMP Plus mode.
+	 *
+	 * @param bool|null $is_sanitized If null, the error will be handled. If false, rejected.
+	 * @param object    $error        The AMP sanitisation error.
+	 *
+	 * @return bool Whether the error should be rejected.
+	 */
+	public static function filter_scripts_for_amp_plus( $is_sanitized, $error ) {
+		if (
+			method_exists( '\Newspack\AMP_Enhancements', 'is_script_id_matching_strings' ) &&
+			\Newspack\AMP_Enhancements::is_script_id_matching_strings( [ self::ADMIN_SCRIPT_HANDLE ], $error )
+		) {
+			$is_sanitized = false;
+		}
+
+		return $is_sanitized;
 	}
 }
 $newspack_popups_inserter = new Newspack_Popups_Inserter();
