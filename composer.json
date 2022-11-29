@@ -32,6 +32,12 @@
       ]
     }
   },
+  "autoload": {
+		"classmap": [
+			"includes",
+      "includes/schemas"
+		]
+	},
   "require": {
     "drewm/mailchimp-api": "^2.5"
   },
