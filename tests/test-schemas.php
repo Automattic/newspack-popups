@@ -159,6 +159,22 @@ class SchemasTest extends WP_UnitTestCase {
 				],
 				false,
 			],
+			'invalid enum 2'     => [
+				[
+					'title'   => 'Test Campaign',
+					'content' => 'Test content',
+					'meta'    => [
+						'background_color' => '#FFFFFF',
+						'display_title'    => false,
+						'hide_border'      => false,
+						'large_border'     => false,
+						'frequency'        => 'once',
+						'placement'        => 'inline',
+						'overlay_size'     => 'super',
+					],
+				],
+				false,
+			],
 			'additional prop'    => [
 				[
 					'title'   => 'Test Campaign',

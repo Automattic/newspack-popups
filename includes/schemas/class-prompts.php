@@ -135,13 +135,12 @@ class Prompts extends Schema {
 							'type'     => 'string',
 							'required' => false,
 							'default'  => 'medium',
-							'enum'     => [
-								'x-small',
-								'small',
-								'medium',
-								'large',
-								'full-width',
-							],
+							'enum'     => array_map(
+								function( $item ) {
+									return $item['value'];
+								},
+								Newspack_Popups_Model::get_popup_size_options()
+							),
 						],
 						'no_overlay_background'          => [
 							'name'     => 'no_overlay_background',
