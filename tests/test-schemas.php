@@ -182,7 +182,7 @@ class SchemasTest extends WP_UnitTestCase {
 	/**
 	 * Tests the Prompts Schema
 	 *
-	 * @param array $value The valie to be checked.
+	 * @param array $value The value to be checked.
 	 * @param bool  $expected_result The expected result.
 	 * @return void
 	 * @dataProvider prompts_data
