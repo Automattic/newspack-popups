@@ -32,12 +32,7 @@ abstract class Schema {
 	 * @param mixed $value The value to be validated.
 	 */
 	public function __construct( $value ) {
-		$this->value  = $value;
-		$this->errors = array();
-		$this->schema = array(
-			'type' => 'string',
-			'enum' => array( 'foo', 'bar' ),
-		);
+		$this->value = $value;
 	}
 
 	/**
