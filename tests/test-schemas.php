@@ -297,7 +297,7 @@ class SchemasTest extends WP_UnitTestCase {
 	/**
 	 * Tests the Segments Schema
 	 *
-	 * @param array $value The valie to be checked.
+	 * @param array $value The value to be checked.
 	 * @param bool  $expected_result The expected result.
 	 * @return void
 	 * @dataProvider segments_data
