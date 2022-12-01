@@ -250,7 +250,16 @@ class Prompts extends Schema {
 							'required' => false,
 							'default'  => [],
 							'items'    => [
-								'type' => 'integer',
+								'type'                 => 'object',
+								'additionalProperties' => false,
+								'properties'           => [
+									'id'   => [
+										'type' => 'integer',
+									],
+									'name' => [
+										'type' => 'string',
+									],
+								],
 							],
 						],
 						'excluded_tags'                  => [
@@ -259,7 +268,52 @@ class Prompts extends Schema {
 							'required' => false,
 							'default'  => [],
 							'items'    => [
-								'type' => 'integer',
+								'type'                 => 'object',
+								'additionalProperties' => false,
+								'properties'           => [
+									'id'   => [
+										'type' => 'integer',
+									],
+									'name' => [
+										'type' => 'string',
+									],
+								],
+							],
+						],
+						'categories'                     => [
+							'name'     => 'categories',
+							'type'     => 'array',
+							'required' => false,
+							'default'  => [],
+							'items'    => [
+								'type'                 => 'object',
+								'additionalProperties' => false,
+								'properties'           => [
+									'id'   => [
+										'type' => 'integer',
+									],
+									'name' => [
+										'type' => 'string',
+									],
+								],
+							],
+						],
+						'tags'                           => [
+							'name'     => 'tags',
+							'type'     => 'array',
+							'required' => false,
+							'default'  => [],
+							'items'    => [
+								'type'                 => 'object',
+								'additionalProperties' => false,
+								'properties'           => [
+									'id'   => [
+										'type' => 'integer',
+									],
+									'name' => [
+										'type' => 'string',
+									],
+								],
 							],
 						],
 						'duplicate_of'                   => [

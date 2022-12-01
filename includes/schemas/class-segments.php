@@ -118,7 +118,16 @@ class Segments extends Schema {
 							'required' => false,
 							'default'  => [],
 							'items'    => [
-								'type' => 'integer',
+								'type'                 => 'object',
+								'additionalProperties' => false,
+								'properties'           => [
+									'id'   => [
+										'type' => 'integer',
+									],
+									'name' => [
+										'type' => 'string',
+									],
+								],
 							],
 						],
 						'referrers'           => [

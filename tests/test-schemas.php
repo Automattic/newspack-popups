@@ -48,6 +48,16 @@ class SchemasTest extends WP_UnitTestCase {
 						'archive_page_types'             => [],
 						'excluded_categories'            => [],
 						'excluded_tags'                  => [],
+						'categories'                     => [
+							[
+								'id'   => 1,
+								'name' => 'Category 1',
+							],
+							[
+								'id'   => 2,
+								'name' => 'Category 2',
+							],
+						],
 						'duplicate_of'                   => 0,
 						'newspack_popups_has_disabled_popups' => false,
 					],
@@ -233,7 +243,7 @@ class SchemasTest extends WP_UnitTestCase {
 						'is_former_donor'     => true,
 						'is_logged_in'        => true,
 						'is_not_logged_in'    => true,
-						'favorite_categories' => [ 1 ],
+						'favorite_categories' => [],
 						'referrers'           => '',
 						'referrers_not'       => '',
 					],
@@ -290,7 +300,12 @@ class SchemasTest extends WP_UnitTestCase {
 					'id'            => 'aasdqwe1234',
 					'priority'      => 10,
 					'configuration' => [
-						'favorite_categories' => [ 1 ],
+						'favorite_categories' => [
+							[
+								'id'   => 1,
+								'name' => 'Test Category',
+							],
+						],
 					],
 				],
 				true,
