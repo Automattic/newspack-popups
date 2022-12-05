@@ -10,7 +10,9 @@ namespace Newspack\Campaigns\Schemas;
 use \Newspack\Campaigns\Schema;
 
 /**
- * The Campaigns Schema
+ * The Campaigns package Schema
+ *
+ * Defines the schema for the import/export package that includes Campaigns, Segments and Prompts.
  */
 class Package extends Schema {
 
