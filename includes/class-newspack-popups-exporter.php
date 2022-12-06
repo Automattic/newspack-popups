@@ -85,7 +85,7 @@ class Newspack_Popups_Exporter {
 		$prompts        = [];
 		$stored_prompts = Newspack_Popups_Model::retrieve_popups( true );
 		foreach ( $stored_prompts as $stored_prompt ) {
-			$transformed = self::prepare_prompt_for_export( $stored_prompt );
+			$transformed = $this->prepare_prompt_for_export( $stored_prompt );
 			$val         = new Newspack\Campaigns\Schemas\Prompts( $transformed );
 			if ( $val->is_valid() ) {
 				$prompts[] = $transformed;
@@ -107,7 +107,7 @@ class Newspack_Popups_Exporter {
 	 */
 	private function get_campaigns() {
 		$campaigns        = [];
-		$stored_campaigns = self::sanitize_campaign_groups( Newspack_Popups::get_groups() );
+		$stored_campaigns = $this->sanitize_campaign_groups( Newspack_Popups::get_groups() );
 		foreach ( $stored_campaigns as $stored_campaign ) {
 			$val = new Newspack\Campaigns\Schemas\Campaigns( $stored_campaign );
 			if ( $val->is_valid() ) {
@@ -133,13 +133,26 @@ class Newspack_Popups_Exporter {
 		foreach ( $stored_segments as $stored_segment ) {
 			$val = new Newspack\Campaigns\Schemas\Segments( $stored_segment );
 			if ( $val->is_valid() ) {
-				$segments[] = $stored_segment;
+				$segments[] = $this->prepare_segment_for_export( $stored_segment );
 				$this->totals['segments']++;
 			} else {
 				$this->errors['segments'][ $stored_segment->term_id ] = $val->get_errors();
 			}
 		}
 		return $segments;
+	}
+
+	/**
+	 * Prepares the segment from the database for export.
+	 *
+	 * @param array $segment The segment as it is returned from Newspack_Popups_Segmentation::get_segments.
+	 * @return array The segment in the format expected by the exporter.
+	 */
+	private function prepare_segment_for_export( $segment ) {
+		if ( isset( $segment['configuration']['favorite_categories'] ) ) {
+			$segment['configuration']['favorite_categories'] = $this->sanitize_categories( $segment['configuration']['favorite_categories'] );
+		}
+		return $segment;
 	}
 
 	/**
