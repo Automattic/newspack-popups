@@ -19,14 +19,14 @@ class Newspack_Popups_Exporter {
 	 *
 	 * @var int[]
 	 */
-	protected $totals;
+	private $totals;
 
 	/**
 	 * Store the errors of items that could not be exported.
 	 *
 	 * @var int[]
 	 */
-	protected $errors;
+	private $errors;
 
 	/**
 	 * Constructor.
@@ -60,7 +60,7 @@ class Newspack_Popups_Exporter {
 	 *
 	 * @return void
 	 */
-	protected function reset_results() {
+	private function reset_results() {
 		$this->totals = [
 			'prompts'   => 0,
 			'segments'  => 0,
@@ -81,11 +81,11 @@ class Newspack_Popups_Exporter {
 	 *
 	 * @return array
 	 */
-	protected function get_prompts() {
+	private function get_prompts() {
 		$prompts        = [];
 		$stored_prompts = Newspack_Popups_Model::retrieve_popups( true );
 		foreach ( $stored_prompts as $stored_prompt ) {
-			$transformed = self::transform_prompt( $stored_prompt );
+			$transformed = self::prepare_prompt_for_export( $stored_prompt );
 			$val         = new Newspack\Campaigns\Schemas\Prompts( $transformed );
 			if ( $val->is_valid() ) {
 				$prompts[] = $transformed;
@@ -105,7 +105,7 @@ class Newspack_Popups_Exporter {
 	 *
 	 * @return array
 	 */
-	protected function get_campaigns() {
+	private function get_campaigns() {
 		$campaigns        = [];
 		$stored_campaigns = self::sanitize_campaign_groups( Newspack_Popups::get_groups() );
 		foreach ( $stored_campaigns as $stored_campaign ) {
@@ -127,7 +127,7 @@ class Newspack_Popups_Exporter {
 	 *
 	 * @return array
 	 */
-	public function get_segments() {
+	private function get_segments() {
 		$segments        = [];
 		$stored_segments = Newspack_Popups_Segmentation::get_segments();
 		foreach ( $stored_segments as $stored_segment ) {
@@ -148,17 +148,31 @@ class Newspack_Popups_Exporter {
 	 * @param array $prompt The prompt as it is returned from Newspack_Popups_Model::retrieve_popups.
 	 * @return array The prompt in the format expected by the exporter.
 	 */
-	protected function transform_prompt( $prompt ) {
+	private function prepare_prompt_for_export( $prompt ) {
 		unset( $prompt['id'] );
 
-		$prompt['options']['excluded_categories'] = self::sanitize_categories( $prompt['options']['excluded_categories'] );
-		$prompt['options']['excluded_tags']       = self::sanitize_tags( $prompt['options']['excluded_tags'] );
-		$prompt['categories']                     = self::sanitize_categories( $prompt['categories'] );
-		$prompt['tags']                           = self::sanitize_tags( $prompt['tags'] );
+		if ( isset( $prompt['options']['excluded_categories'] ) ) {
+			$prompt['options']['excluded_categories'] = $this->sanitize_categories( $prompt['options']['excluded_categories'] );
+		}
+		if ( isset( $prompt['options']['excluded_tags'] ) ) {
+			$prompt['options']['excluded_tags'] = $this->sanitize_tags( $prompt['options']['excluded_tags'] );
+		}
+		if ( isset( $prompt['categories'] ) ) {
+			$prompt['categories'] = $this->sanitize_categories( $prompt['categories'] );
+		}
+		if ( isset( $prompt['tags'] ) ) {
+			$prompt['tags'] = $this->sanitize_tags( $prompt['tags'] );
+		}
+		if ( isset( $prompt['campaign_groups'] ) ) {
+			$prompt['campaign_groups'] = $this->sanitize_campaign_groups( $prompt['campaign_groups'] );
+		}
 
-		$prompt['campaign_groups'] = self::sanitize_campaign_groups( $prompt['campaign_groups'] );
+		// There was a bug that was saving some overlay_sizes as full instead of full-width. Let's take this into account and fix it.
+		if ( isset( $prompt['options']['overlay_size'] ) && 'full' === $prompt['options']['overlay_size'] ) {
+			$prompt['options']['overlay_size'] = 'full-width';
+		}
 
-		if ( empty( $prompt['options']['utm_suppression'] ) ) {
+		if ( isset( $prompt['options']['utm_suppression'] ) && empty( $prompt['options']['utm_suppression'] ) ) {
 			unset( $prompt['options']['utm_suppression'] );
 		}
 
@@ -174,7 +188,7 @@ class Newspack_Popups_Exporter {
 	 * @param int[]|WP_Term[] $categories An array of categories IDs or WP_Term objects.
 	 * @return array
 	 */
-	public function sanitize_categories( $categories ) {
+	private function sanitize_categories( $categories ) {
 		return $this->sanitize_terms( $categories, 'category' );
 	}
 
@@ -186,7 +200,7 @@ class Newspack_Popups_Exporter {
 	 * @param int[]|WP_Term[] $tags An array of tags IDs or WP_Term objects.
 	 * @return array
 	 */
-	public function sanitize_tags( $tags ) {
+	private function sanitize_tags( $tags ) {
 		return $this->sanitize_terms( $tags, 'post_tag' );
 	}
 
@@ -198,7 +212,7 @@ class Newspack_Popups_Exporter {
 	 * @param int[]|WP_Term[] $campaign_groups An array of campaign_groups IDs or WP_Term objects.
 	 * @return array
 	 */
-	public function sanitize_campaign_groups( $campaign_groups ) {
+	private function sanitize_campaign_groups( $campaign_groups ) {
 		return $this->sanitize_terms( $campaign_groups, Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY );
 	}
 
@@ -211,7 +225,7 @@ class Newspack_Popups_Exporter {
 	 * @param string          $taxonomy Taxonomy slug. Used to fetch the term name if only an ID is informed.
 	 * @return array
 	 */
-	public function sanitize_terms( $terms, $taxonomy ) {
+	private function sanitize_terms( $terms, $taxonomy ) {
 		$sanitized_terms = [];
 		foreach ( $terms as $term ) {
 			if ( is_int( $term ) ) {
@@ -223,7 +237,7 @@ class Newspack_Popups_Exporter {
 					'name' => $term->name,
 				];
 			} else {
-				if ( ! is_array( $this->errors['terms'][ $taxonomy ] ) ) {
+				if ( ! isset( $this->errors['terms'][ $taxonomy ] ) ) {
 					$this->errors['terms'][ $taxonomy ] = [];
 					if ( is_wp_error( $term ) ) {
 						$this->errors['terms'][ $taxonomy ][] = $term->get_error_message();

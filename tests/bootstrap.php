@@ -36,6 +36,7 @@ function _manually_load_plugin() {
 	require dirname( dirname( __FILE__ ) ) . '/api/campaigns/class-maybe-show-campaign.php';
 	require dirname( dirname( __FILE__ ) ) . '/api/campaigns/class-report-campaign-data.php';
 	require dirname( dirname( __FILE__ ) ) . '/api/segmentation/class-segmentation-client-data.php';
+	require dirname( dirname( __FILE__ ) ) . '/includes/class-newspack-popups-exporter.php';
 }
 tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
 
