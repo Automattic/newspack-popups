@@ -5,9 +5,9 @@
  * @package Newspack
  */
 
-require_once dirname( __FILE__ ) . '/schemas/schemas-loader.php';
-
 defined( 'ABSPATH' ) || exit;
+
+require_once dirname( __FILE__ ) . '/schemas/schemas-loader.php';
 
 /**
  * Exporter

@@ -1,4 +1,9 @@
 <?php
+/**
+ * Loads all the Schema files
+ *
+ * @package Newspack
+ */
 
 require_once dirname( __FILE__ ) . '/class-schema.php';
 require_once dirname( __FILE__ ) . '/class-prompts.php';
