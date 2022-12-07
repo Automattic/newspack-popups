@@ -39,6 +39,9 @@ class Export extends WP_CLI_Command {
 		$data     = $exporter->export();
 
 		foreach ( $data['errors'] as $error_type => $error_group ) {
+			if ( empty( $error_group ) ) {
+				continue;
+			}
 			WP_CLI::warning( $error_type );
 			foreach ( $error_group as $error_id => $error ) {
 				WP_CLI::warning( '-- ' . $error_id );

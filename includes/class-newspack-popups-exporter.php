@@ -129,9 +129,10 @@ class Newspack_Popups_Exporter {
 		$segments        = [];
 		$stored_segments = Newspack_Popups_Segmentation::get_segments();
 		foreach ( $stored_segments as $stored_segment ) {
-			$val = new Newspack\Campaigns\Schemas\Segments( $stored_segment );
+			$stored_segment = $this->prepare_segment_for_export( $stored_segment );
+			$val            = new Newspack\Campaigns\Schemas\Segments( $stored_segment );
 			if ( $val->is_valid() ) {
-				$segments[] = $this->prepare_segment_for_export( $stored_segment );
+				$segments[] = $stored_segment;
 				$this->totals['segments']++;
 			} else {
 				$this->errors['segments'][ $stored_segment->term_id ] = $val->get_errors();
@@ -149,6 +150,12 @@ class Newspack_Popups_Exporter {
 	private function prepare_segment_for_export( $segment ) {
 		if ( isset( $segment['configuration']['favorite_categories'] ) ) {
 			$segment['configuration']['favorite_categories'] = $this->sanitize_categories( $segment['configuration']['favorite_categories'] );
+		}
+		if ( isset( $segment['created_at'] ) ) {
+			unset( $segment['created_at'] );
+		}
+		if ( isset( $segment['updated_at'] ) ) {
+			unset( $segment['updated_at'] );
 		}
 		return $segment;
 	}
