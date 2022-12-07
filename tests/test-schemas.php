@@ -46,6 +46,7 @@ class SchemasTest extends WP_UnitTestCase {
 						'selected_segment_id'            => 'asdasd',
 						'post_types'                     => [ 'post' ],
 						'archive_page_types'             => [],
+						'additional_classes'             => '',
 						'excluded_categories'            => [],
 						'excluded_tags'                  => [],
 						'categories'                     => [
