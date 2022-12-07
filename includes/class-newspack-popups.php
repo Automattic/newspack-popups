@@ -462,6 +462,19 @@ final class Newspack_Popups {
 
 		\register_meta(
 			'post',
+			'additional_classes',
+			[
+				'object_subtype' => self::NEWSPACK_POPUPS_CPT,
+				'show_in_rest'   => true,
+				'type'           => 'string',
+				'default'        => '',
+				'single'         => true,
+				'auth_callback'  => '__return_true',
+			]
+		);
+
+		\register_meta(
+			'post',
 			'excluded_categories',
 			[
 				'object_subtype' => self::NEWSPACK_POPUPS_CPT,

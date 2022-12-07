@@ -372,6 +372,7 @@ final class Newspack_Popups_Model {
 			'selected_segment_id'            => get_post_meta( $id, 'selected_segment_id', true ),
 			'post_types'                     => get_post_meta( $id, 'post_types', true ),
 			'archive_page_types'             => get_post_meta( $id, 'archive_page_types', true ),
+			'additional_classes'             => get_post_meta( $id, 'additional_classes', true ),
 			'excluded_categories'            => get_post_meta( $id, 'excluded_categories', true ),
 			'excluded_tags'                  => get_post_meta( $id, 'excluded_tags', true ),
 		];
@@ -416,6 +417,7 @@ final class Newspack_Popups_Model {
 				'selected_segment_id'            => '',
 				'post_types'                     => self::get_default_popup_post_types(),
 				'archive_page_types'             => self::get_supported_archive_page_types(),
+				'additional_classes'             => '',
 				'excluded_categories'            => [],
 				'excluded_tags'                  => [],
 			]
@@ -1084,6 +1086,7 @@ final class Newspack_Popups_Model {
 		$classes[]            = $hide_border ? 'newspack-lightbox-no-border' : null;
 		$classes[]            = $large_border ? 'newspack-lightbox-large-border' : null;
 		$classes[]            = $is_newsletter_prompt ? 'newspack-newsletter-prompt-inline' : null;
+		$classes              = array_merge( $classes, explode( ' ', $popup['options']['additional_classes'] ) );
 
 		$analytics_events = self::get_analytics_events( $popup, $body, $element_id );
 		if ( ! empty( $analytics_events ) ) {
@@ -1164,6 +1167,7 @@ final class Newspack_Popups_Model {
 		$classes[]             = $is_newsletter_prompt ? 'newspack-newsletter-prompt-overlay' : null;
 		$classes[]             = $no_overlay_background ? 'newspack-lightbox-no-overlay' : null;
 		$classes[]             = $has_featured_image ? 'newspack-lightbox-featured-image' : null;
+		$classes               = array_merge( $classes, explode( ' ', $popup['options']['additional_classes'] ) );
 		$wrapper_classes       = [ 'newspack-popup-wrapper' ];
 		$wrapper_classes[]     = 'publish' !== $popup['status'] ? 'newspack-inactive-popup-status' : null;
 		$is_scroll_triggered   = 'scroll' === $popup['options']['trigger_type'];

@@ -53,6 +53,7 @@ class ModelTest extends WP_UnitTestCase {
 				'selected_segment_id'            => '',
 				'post_types'                     => [ 'post', 'page' ],
 				'archive_page_types'             => [ 'category', 'tag', 'author', 'date', 'post-type', 'taxonomy' ],
+				'additional_classes'             => '',
 				'excluded_categories'            => [],
 				'excluded_tags'                  => [],
 			],

@@ -244,6 +244,12 @@ class Prompts extends Schema {
 								'type' => 'string',
 							],
 						],
+						'additional_classes'             => [
+							'name'     => 'additional_classes',
+							'type'     => 'string',
+							'required' => false,
+							'default'  => '',
+						],
 						'excluded_categories'            => [
 							'name'     => 'excluded_categories',
 							'type'     => 'array',
