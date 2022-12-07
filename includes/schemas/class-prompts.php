@@ -270,7 +270,7 @@ class Prompts extends Schema {
 						],
 						'utm_suppression'                => [
 							'name'     => 'utm_suppression',
-							'type'     => [ 'string', 'null' ],
+							'type'     => 'string',
 							'required' => false,
 							'default'  => '',
 						],

@@ -135,7 +135,7 @@ class Newspack_Popups_Exporter {
 				$segments[] = $stored_segment;
 				$this->totals['segments']++;
 			} else {
-				$this->errors['segments'][ $stored_segment->term_id ] = $val->get_errors();
+				$this->errors['segments'][ $stored_segment['id'] ] = $val->get_errors();
 			}
 		}
 		return $segments;
@@ -169,19 +169,19 @@ class Newspack_Popups_Exporter {
 	private function prepare_prompt_for_export( $prompt ) {
 		unset( $prompt['id'] );
 
-		if ( isset( $prompt['options']['excluded_categories'] ) ) {
+		if ( ! empty( $prompt['options']['excluded_categories'] ) ) {
 			$prompt['options']['excluded_categories'] = $this->sanitize_categories( $prompt['options']['excluded_categories'] );
 		}
-		if ( isset( $prompt['options']['excluded_tags'] ) ) {
+		if ( ! empty( $prompt['options']['excluded_tags'] ) ) {
 			$prompt['options']['excluded_tags'] = $this->sanitize_tags( $prompt['options']['excluded_tags'] );
 		}
-		if ( isset( $prompt['categories'] ) ) {
+		if ( ! empty( $prompt['categories'] ) ) {
 			$prompt['categories'] = $this->sanitize_categories( $prompt['categories'] );
 		}
-		if ( isset( $prompt['tags'] ) ) {
+		if ( ! empty( $prompt['tags'] ) ) {
 			$prompt['tags'] = $this->sanitize_tags( $prompt['tags'] );
 		}
-		if ( isset( $prompt['campaign_groups'] ) ) {
+		if ( ! empty( $prompt['campaign_groups'] ) ) {
 			$prompt['campaign_groups'] = $this->sanitize_campaign_groups( $prompt['campaign_groups'] );
 		}
 
@@ -190,7 +190,7 @@ class Newspack_Popups_Exporter {
 			$prompt['options']['overlay_size'] = 'full-width';
 		}
 
-		if ( isset( $prompt['options']['utm_suppression'] ) && empty( $prompt['options']['utm_suppression'] ) ) {
+		if ( empty( $prompt['options']['utm_suppression'] ) ) {
 			unset( $prompt['options']['utm_suppression'] );
 		}
 
