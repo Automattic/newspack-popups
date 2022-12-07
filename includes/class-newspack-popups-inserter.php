@@ -1080,8 +1080,8 @@ final class Newspack_Popups_Inserter {
 	 */
 	public static function filter_scripts_for_amp_plus( $is_sanitized, $error ) {
 		if (
-			method_exists( '\Newspack\AMP_Enhancements', 'is_script_id_matching_strings' ) &&
-			\Newspack\AMP_Enhancements::is_script_id_matching_strings( [ self::ADMIN_SCRIPT_HANDLE ], $error )
+			method_exists( '\Newspack\AMP_Enhancements', 'is_script_body_matching_strings' ) &&
+			\Newspack\AMP_Enhancements::is_script_body_matching_strings( [ 'newspack_popups_admin' ], $error )
 		) {
 			$is_sanitized = false;
 		}
