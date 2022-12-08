@@ -26,7 +26,7 @@ class Export extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp newspack-campaigns export --file=package.json
+	 *     wp newspack-campaigns export --file=newspack-campaigns.json
 	 *
 	 * @param array $args Args.
 	 * @param array $assoc_args Assoc args.
