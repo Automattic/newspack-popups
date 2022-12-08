@@ -71,6 +71,7 @@ final class Newspack_Popups {
 	public function __construct() {
 		add_action( 'admin_init', [ __CLASS__, 'create_lightweight_api_config' ] );
 		add_action( 'admin_notices', [ __CLASS__, 'api_config_missing_notice' ] );
+		add_action( 'cli_init', [ __CLASS__, 'register_cli_commands' ] );
 
 		if ( self::is_api_configured() ) {
 			add_action( 'init', [ __CLASS__, 'register_cpt' ] );
@@ -96,6 +97,15 @@ final class Newspack_Popups {
 			include_once dirname( __FILE__ ) . '/class-newspack-popups-donations.php';
 			include_once dirname( __FILE__ ) . '/class-newspack-popups-view-as.php';
 		}
+	}
+
+	/**
+	 * Register CLI commands.
+	 *
+	 * @return void
+	 */
+	public static function register_cli_commands() {
+		WP_CLI::add_command( 'newspack-popups export', 'Newspack\Campaigns\CLI\Export' );
 	}
 
 	/**

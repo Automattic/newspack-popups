@@ -39,12 +39,66 @@ class Prompts extends Schema {
 					'name'     => 'campaign_groups',
 					'type'     => 'array',
 					'required' => false,
-					'items'    => [
-						'type' => 'integer',
-					],
 					'default'  => [],
+					'items'    => [
+						'type'                 => 'object',
+						'additionalProperties' => false,
+						'properties'           => [
+							'id'   => [
+								'type' => 'integer',
+							],
+							'name' => [
+								'type' => 'string',
+							],
+						],
+					],
 				],
-				'meta'            => [
+				'status'          => [
+					'name'     => 'status',
+					'type'     => 'string',
+					'required' => true,
+					'enum'     => [
+						'publish',
+						'draft',
+					],
+				],
+				'categories'      => [
+					'name'     => 'categories',
+					'type'     => 'array',
+					'required' => false,
+					'default'  => [],
+					'items'    => [
+						'type'                 => 'object',
+						'additionalProperties' => false,
+						'properties'           => [
+							'id'   => [
+								'type' => 'integer',
+							],
+							'name' => [
+								'type' => 'string',
+							],
+						],
+					],
+				],
+				'tags'            => [
+					'name'     => 'tags',
+					'type'     => 'array',
+					'required' => false,
+					'default'  => [],
+					'items'    => [
+						'type'                 => 'object',
+						'additionalProperties' => false,
+						'properties'           => [
+							'id'   => [
+								'type' => 'integer',
+							],
+							'name' => [
+								'type' => 'string',
+							],
+						],
+					],
+				],
+				'options'         => [
 					'type'                 => 'object',
 					'required'             => true,
 					'additionalProperties' => false,
@@ -270,42 +324,6 @@ class Prompts extends Schema {
 						],
 						'excluded_tags'                  => [
 							'name'     => 'excluded_tags',
-							'type'     => 'array',
-							'required' => false,
-							'default'  => [],
-							'items'    => [
-								'type'                 => 'object',
-								'additionalProperties' => false,
-								'properties'           => [
-									'id'   => [
-										'type' => 'integer',
-									],
-									'name' => [
-										'type' => 'string',
-									],
-								],
-							],
-						],
-						'categories'                     => [
-							'name'     => 'categories',
-							'type'     => 'array',
-							'required' => false,
-							'default'  => [],
-							'items'    => [
-								'type'                 => 'object',
-								'additionalProperties' => false,
-								'properties'           => [
-									'id'   => [
-										'type' => 'integer',
-									],
-									'name' => [
-										'type' => 'string',
-									],
-								],
-							],
-						],
-						'tags'                           => [
-							'name'     => 'tags',
 							'type'     => 'array',
 							'required' => false,
 							'default'  => [],
