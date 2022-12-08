@@ -27,6 +27,11 @@ class ImporterTest extends WP_UnitTestCase_PageWithPopups {
 		return $method->invokeArgs( $object, $parameters );
 	}
 
+	/**
+	 * Data fortest_process_terms
+	 *
+	 * @return array
+	 */
 	public function process_terms_data() {
 		return [
 			'all mapped'     => [
@@ -134,7 +139,7 @@ class ImporterTest extends WP_UnitTestCase_PageWithPopups {
 
 		// Clear data created by other tests.
 		global $wpdb;
-		$wpdb->query( $wpdb->prepare( "DELETE FROM $wpdb->posts WHERE post_type = %s", Newspack_Popups::NEWSPACK_POPUPS_CPT ) );
+		$wpdb->query( $wpdb->prepare( "DELETE FROM $wpdb->posts WHERE post_type = %s", Newspack_Popups::NEWSPACK_POPUPS_CPT ) ); // phpcs:ignore
 		delete_option( Newspack_Popups_Segmentation::SEGMENTS_OPTION_NAME );
 
 		$campaigns = [
