@@ -21,7 +21,7 @@ class Package extends Schema {
 	 *
 	 * @return array The schema.
 	 */
-	public function get_schema() {
+	public static function get_schema() {
 		return [
 			'type'                 => 'object',
 			'additionalProperties' => false,
