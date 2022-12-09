@@ -106,6 +106,7 @@ final class Newspack_Popups {
 	 */
 	public static function register_cli_commands() {
 		WP_CLI::add_command( 'newspack-popups export', 'Newspack\Campaigns\CLI\Export' );
+		WP_CLI::add_command( 'newspack-popups import', 'Newspack\Campaigns\CLI\Import' );
 	}
 
 	/**
