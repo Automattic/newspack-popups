@@ -307,4 +307,191 @@ class ImporterTest extends WP_UnitTestCase_PageWithPopups {
 
 	}
 
+	/**
+	 * Data for test_get_missing_terms
+	 *
+	 * @return array
+	 */
+	public function missing_terms_data() {
+		return [
+			'nothing'                        => [
+				[],
+				[],
+				[ 1, 2, 3 ],
+				[ 1, 2 ],
+			],
+			'create 1 category'              => [
+				[ 1 ],
+				[],
+				[ 2, 3 ],
+				[ 1, 2 ],
+			],
+			'create 2 categories'            => [
+				[ 1, 2 ],
+				[],
+				[ 3 ],
+				[ 1, 2 ],
+			],
+			'create 3 categories'            => [
+				[ 1, 2, 3 ],
+				[],
+				[],
+				[ 1, 2 ],
+			],
+			'create 3 categories and 1 tag'  => [
+				[ 1, 2, 3 ],
+				[ 1 ],
+				[],
+				[ 2 ],
+			],
+			'create 3 categories and 2 tags' => [
+				[ 1, 2, 3 ],
+				[ 1, 2 ],
+				[],
+				[],
+			],
+		];
+	}
+
+	/**
+	 * Tests the get_missing_terms_from_input method
+	 *
+	 * @param array $cats_to_create The categories to create.
+	 * @param array $tags_to_create The tags to create.
+	 * @param array $cats_expected The expected categories.
+	 * @param array $tags_expected The expected tags.
+	 * @return void
+	 * @dataProvider missing_terms_data
+	 */
+	public function test_get_missing_terms( $cats_to_create, $tags_to_create, $cats_expected, $tags_expected ) {
+
+		foreach ( $tags_to_create as $tag ) {
+			wp_insert_term( 'Tag ' . $tag, 'post_tag' );
+		}
+		foreach ( $cats_to_create as $cat ) {
+			wp_insert_term( 'Category ' . $cat, 'category' );
+		}
+
+		$prompts  = [
+			[
+				'title'           => 'Test Prompt 1',
+				'content'         => 'Test content',
+				'status'          => 'publish',
+				'categories'      => [
+					[
+						'id'   => 1,
+						'name' => 'Category 1',
+					],
+				],
+				'tags'            => [
+					[
+						'id'   => 1,
+						'name' => 'Tag 1',
+					],
+				],
+				'campaign_groups' => [
+					[
+						'id'   => 10,
+						'name' => 'Campaign 1',
+					],
+				],
+				'options'         => [
+					'background_color'    => '#FFFFFF',
+					'display_title'       => false,
+					'hide_border'         => false,
+					'large_border'        => false,
+					'frequency'           => 'once',
+					'placement'           => 'inline',
+					'selected_segment_id' => 'abc123,abc456',
+					'excluded_categories' => [
+						[
+							'id'   => 2,
+							'name' => 'Category 2',
+						],
+					],
+					'excluded_tags'       => [
+						[
+							'id'   => 1,
+							'name' => 'Tag 1', // repeated tag.
+						],
+						[
+							'id'   => 2,
+							'name' => 'Tag 2',
+						],
+					],
+				],
+			],
+		];
+		$segments = [
+			[
+				'name'          => 'Test Segment',
+				'id'            => 'abc123',
+				'priority'      => 10,
+				'configuration' => [
+					'max_posts'           => 1,
+					'favorite_categories' => [
+						[
+							'id'   => 1,
+							'name' => 'Category 1', // reapeated category.
+						],
+						[
+							'id'   => 3,
+							'name' => 'Category 3',
+						],
+					],
+				],
+			],
+		];
+
+		$package = [
+			'campaigns' => [],
+			'prompts'   => $prompts,
+			'segments'  => $segments,
+		];
+
+		$importer = new Newspack_Popups_Importer( $package );
+
+		$result = $importer->get_missing_terms_from_input();
+
+		$this->assertSame( count( $cats_expected ), count( $result['categories'] ) );
+		$this->assertSame( count( $tags_expected ), count( $result['tags'] ) );
+
+		foreach ( $cats_expected as $cat ) {
+			$cat_obj = [
+				'id'   => $cat,
+				'name' => 'Category ' . $cat,
+			];
+			$this->assertContains( $cat_obj, $result['categories'] );
+		}
+		foreach ( $tags_expected as $tag ) {
+			$tag_obj = [
+				'id'   => $tag,
+				'name' => 'Tag ' . $tag,
+			];
+			$this->assertContains( $tag_obj, $result['tags'] );
+		}
+
+		// clean up.
+		$this->delete_all_terms();
+	}
+
+	/**
+	 * Clear all tags and categories
+	 *
+	 * @return void
+	 */
+	public function delete_all_terms() {
+		foreach ( [ 'category', 'post_tag' ] as $tax ) {
+			$terms = get_terms(
+				array(
+					'taxonomy'   => $tax,
+					'hide_empty' => false,
+				)
+			);
+			foreach ( $terms as $term ) {
+				wp_delete_term( $term->term_id, $tax );
+			}
+		}
+	}
+
 }

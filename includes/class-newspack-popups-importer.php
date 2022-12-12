@@ -78,6 +78,66 @@ class Newspack_Popups_Importer {
 	}
 
 	/**
+	 * Reads the input and returns all references to tags and categories that are not present in the database.
+	 *
+	 * Use this before running the import so you can decide whether to map to other existing terms, create new terms or ignore these terms.
+	 *
+	 * @return array An array with two keys, tags and categories, each of them containing an array of items with IDs and names.
+	 */
+	public function get_missing_terms_from_input() {
+		$tags       = [];
+		$categories = [];
+		$prompts    = $this->input['prompts'];
+		$segments   = $this->input['segments'];
+
+		// get all terms from prompts and segments.
+		foreach ( $prompts as $prompt ) {
+			if ( ! empty( $prompt['tags'] ) ) {
+				$tags = array_merge( $tags, $prompt['tags'] );
+			}
+			if ( ! empty( $prompt['categories'] ) ) {
+				$categories = array_merge( $categories, $prompt['categories'] );
+			}
+			if ( ! empty( $prompt['options']['excluded_tags'] ) ) {
+				$tags = array_merge( $tags, $prompt['options']['excluded_tags'] );
+			}
+			if ( ! empty( $prompt['options']['excluded_categories'] ) ) {
+				$categories = array_merge( $categories, $prompt['options']['excluded_categories'] );
+			}
+		}
+		foreach ( $segments as $segment ) {
+			if ( ! empty( $segment['configuration']['favorite_categories'] ) ) {
+				$categories = array_merge( $categories, $segment['configuration']['favorite_categories'] );
+			}
+		}
+
+		// remove duplicates.
+		$tags_names = array_unique( array_column( $tags, 'name' ) );
+		$tags       = array_intersect_key( $tags, $tags_names );
+		$cats_names = array_unique( array_column( $categories, 'name' ) );
+		$categories = array_intersect_key( $categories, $cats_names );
+
+		// remove existing terms.
+		$tags       = array_filter(
+			$tags,
+			function( $tag ) {
+				return ! get_term_by( 'name', $tag['name'], 'post_tag' );
+			}
+		);
+		$categories = array_filter(
+			$categories,
+			function( $cat ) {
+				return ! get_term_by( 'name', $cat['name'], 'category' );
+			}
+		);
+
+		return [
+			'tags'       => $tags,
+			'categories' => $categories,
+		];
+	}
+
+	/**
 	 * Reset results for a new export
 	 *
 	 * @return void
