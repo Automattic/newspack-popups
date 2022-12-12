@@ -53,6 +53,19 @@ class BlocksTest extends WP_UnitTestCase {
 			'',
 			'Overlay prompt not rendered by the Single Prompt block.'
 		);
+
+		$inline_block_content = Newspack_Popups\Prompt_Block\render_block(
+			[
+				'promptId'  => $inline_popup_id,
+				'className' => 'custom-class',
+			]
+		);
+
+		self::assertEquals(
+			$inline_block_content,
+			'<!-- wp:shortcode -->[newspack-popup id="' . $inline_popup_id . '" class="custom-class"]<!-- /wp:shortcode -->',
+			'Includes inline popup shortcode.'
+		);
 	}
 
 	/**
@@ -66,6 +79,19 @@ class BlocksTest extends WP_UnitTestCase {
 		self::assertEquals(
 			$block_content,
 			'<!-- wp:shortcode -->[newspack-popup id="' . $popup_id . '"]<!-- /wp:shortcode -->',
+			'Includes popup shortcode.'
+		);
+
+		$block_content = Newspack_Popups\Custom_Placement_Block\render_block(
+			[
+				'customPlacement' => $custom_placement_id,
+				'className'       => 'custom-class',
+			]
+		);
+
+		self::assertEquals(
+			$block_content,
+			'<!-- wp:shortcode -->[newspack-popup id="' . $popup_id . '" class="custom-class"]<!-- /wp:shortcode -->',
 			'Includes popup shortcode.'
 		);
 	}
