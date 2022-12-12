@@ -202,7 +202,7 @@ class Newspack_Popups_Importer {
 	private function pre_process_segments_terms( $segments ) {
 		foreach ( $segments as $segment_index => $segment ) {
 			if ( ! empty( $segment['configuration']['favorite_categories'] ) ) {
-				$segments[ $segment_index ]['configuration']['favorite_categories'] = $this->pre_process_terms( $segment['configuration']['favorite_categories'] );
+				$segments[ $segment_index ]['configuration']['favorite_categories'] = $this->pre_process_terms( $segment['configuration']['favorite_categories'], 'category' );
 			}
 		}
 		return $segments;
@@ -275,10 +275,6 @@ class Newspack_Popups_Importer {
 	/**
 	 * Pre process terms in prompts
 	 *
-	 * @TODO: We are not handling tags and categories yet. They need to be handled beforehand and we need to decide what to do with them.
-	 * The best thing to do would be to let the user decide if they want to map them to an existing term or to create a new term.
-	 * For now, we are dropping them from the input and not importing them.
-	 *
 	 * @param array $prompts The prompts from input.
 	 * @return array The prompts with the terms pre processed.
 	 */
@@ -286,19 +282,19 @@ class Newspack_Popups_Importer {
 		foreach ( $prompts as $prompt_index => $prompt ) {
 
 			if ( ! empty( $prompt['campaign_groups'] ) ) {
-				$prompts[ $prompt_index ]['campaign_groups'] = $this->pre_process_terms( $prompt['campaign_groups'] );
+				$prompts[ $prompt_index ]['campaign_groups'] = $this->pre_process_terms( $prompt['campaign_groups'], 'campaign_groups' );
 			}
 			if ( ! empty( $prompt['categories'] ) ) {
-				$prompts[ $prompt_index ]['categories'] = $this->pre_process_terms( $prompt['categories'] );
+				$prompts[ $prompt_index ]['categories'] = $this->pre_process_terms( $prompt['categories'], 'category' );
 			}
 			if ( ! empty( $prompt['tags'] ) ) {
-				$prompts[ $prompt_index ]['tags'] = $this->pre_process_terms( $prompt['tags'] );
+				$prompts[ $prompt_index ]['tags'] = $this->pre_process_terms( $prompt['tags'], 'post_tag' );
 			}
 			if ( ! empty( $prompt['options']['excluded_categories'] ) ) {
-				$prompts[ $prompt_index ]['options']['excluded_categories'] = $this->pre_process_terms( $prompt['options']['excluded_categories'] );
+				$prompts[ $prompt_index ]['options']['excluded_categories'] = $this->pre_process_terms( $prompt['options']['excluded_categories'], 'category' );
 			}
 			if ( ! empty( $prompt['options']['excluded_tags'] ) ) {
-				$prompts[ $prompt_index ]['options']['excluded_tags'] = $this->pre_process_terms( $prompt['options']['excluded_tags'] );
+				$prompts[ $prompt_index ]['options']['excluded_tags'] = $this->pre_process_terms( $prompt['options']['excluded_tags'], 'post_tag' );
 			}
 		}
 		return array_values( $prompts );
@@ -307,17 +303,24 @@ class Newspack_Popups_Importer {
 	/**
 	 * Pre process terms
 	 *
-	 * Check if terms mapping were defined and update their ids, otherwise remove them from the array.
+	 * Check if terms mapping were defined and update their ids.
+	 * Also checks if the term exists and update the mapping to the existing term, otherwise, drop the term.
 	 *
-	 * @param array $terms The terms array in which each item is and array with id and name.
+	 * @param array  $terms The terms array in which each item is and array with id and name.
+	 * @param string $taxonomy The taxonomy of the terms, used to look for existing terms with the same name.
 	 * @return array $terms The processed terms.
 	 */
-	private function pre_process_terms( $terms ) {
+	private function pre_process_terms( $terms, $taxonomy ) {
 		foreach ( $terms as $term_index => $term ) {
 			if ( isset( $this->terms_mapping[ $term['id'] ] ) ) {
 				$terms[ $term_index ]['id'] = $this->terms_mapping[ $term['id'] ];
 			} else {
-				unset( $terms[ $term_index ] );
+				$existing = get_term_by( 'name', $term['name'], $taxonomy );
+				if ( $existing ) {
+					$terms[ $term_index ]['id'] = $existing->term_id;
+				} else {
+					unset( $terms[ $term_index ] );
+				}
 			}
 		}
 		return array_values( $terms );

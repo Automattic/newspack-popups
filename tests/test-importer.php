@@ -99,6 +99,16 @@ class ImporterTest extends WP_UnitTestCase_PageWithPopups {
 				],
 				[],
 			],
+			'test_existing'  => [
+				[
+					[
+						'id'   => 33,
+						'name' => 'Existing',
+					],
+				],
+				[],
+				true,
+			],
 		];
 	}
 
@@ -107,10 +117,11 @@ class ImporterTest extends WP_UnitTestCase_PageWithPopups {
 	 *
 	 * @param array $input_data The array of terms to process.
 	 * @param array $expected The expected result.
+	 * @param bool  $test_existing Flag for a special test case for an existing term.
 	 * @return void
 	 * @dataProvider process_terms_data
 	 */
-	public function test_process_terms( $input_data, $expected ) {
+	public function test_process_terms( $input_data, $expected, $test_existing = false ) {
 		$importer      = new Newspack_Popups_Importer( [] );
 		$r_importer    = new \ReflectionClass( $importer );
 		$terms_mapping = [
@@ -124,9 +135,19 @@ class ImporterTest extends WP_UnitTestCase_PageWithPopups {
 
 		$method = $r_importer->getMethod( 'pre_process_terms' );
 		$method->setAccessible( true );
-		$result = $method->invokeArgs( $importer, [ $input_data ] );
 
-		$this->assertEquals( $expected, $result );
+		if ( $test_existing ) {
+			$existing_term = wp_insert_term( 'Existing', 'category' );
+		}
+
+		$result = $method->invokeArgs( $importer, [ $input_data, 'category' ] );
+
+		if ( $test_existing ) {
+			$this->assertSame( $existing_term['term_id'], $result[0]['id'] );
+		} else {
+			$this->assertEquals( $expected, $result );
+		}
+
 
 	}
 
@@ -141,6 +162,9 @@ class ImporterTest extends WP_UnitTestCase_PageWithPopups {
 		global $wpdb;
 		$wpdb->query( $wpdb->prepare( "DELETE FROM $wpdb->posts WHERE post_type = %s", Newspack_Popups::NEWSPACK_POPUPS_CPT ) ); // phpcs:ignore
 		delete_option( Newspack_Popups_Segmentation::SEGMENTS_OPTION_NAME );
+
+		$existing_category = wp_insert_term( 'Category 10', 'category' );
+		$existing_tag      = wp_insert_term( 'Tag 10', 'post_tag' );
 
 		$campaigns = [
 			[
@@ -161,6 +185,18 @@ class ImporterTest extends WP_UnitTestCase_PageWithPopups {
 					[
 						'id'   => 10,
 						'name' => 'Campaign 1',
+					],
+				],
+				'categories'      => [
+					[
+						'id'   => 40,
+						'name' => 'Category 10',
+					],
+				],
+				'tags'            => [
+					[
+						'id'   => 50,
+						'name' => 'Tag 10',
 					],
 				],
 				'options'         => [
@@ -257,6 +293,10 @@ class ImporterTest extends WP_UnitTestCase_PageWithPopups {
 		$this->assertSame( 1, count( $created_prompts[1]['campaign_groups'] ) );
 		$this->assertSame( 'Campaign 2', $created_prompts[1]['campaign_groups'][0]->name );
 
+		// Check if the category was properly assigned.
+		$this->assertSame( $existing_category['term_id'], $created_prompts[0]['categories'][0]->term_id );
+		// Check if the tag was properly assigned.
+		$this->assertSame( $existing_tag['term_id'], $created_prompts[0]['tags'][0]->term_id );
 	}
 
 	/**
