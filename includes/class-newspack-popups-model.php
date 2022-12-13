@@ -259,10 +259,9 @@ final class Newspack_Popups_Model {
 			'post_type'      => Newspack_Popups::NEWSPACK_POPUPS_CPT,
 			'posts_per_page' => 1,
 			'p'              => $post_id,
+			'post_status'    => $include_drafts ? [ 'draft', 'pending', 'future', 'publish' ] : 'publish',
+
 		];
-		if ( false === $include_drafts ) {
-			$args['post_status'] = 'publish';
-		}
 
 		$popups = self::retrieve_popups_with_query( new WP_Query( $args ) );
 		return count( $popups ) > 0 ? $popups[0] : null;

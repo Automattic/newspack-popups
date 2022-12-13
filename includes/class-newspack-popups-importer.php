@@ -31,14 +31,14 @@ class Newspack_Popups_Importer {
 	 *
 	 * @var int[]
 	 */
-	private $terms_mapping;
+	private $terms_mapping = [];
 
 	/**
 	 * Store the mapping between the ID of the segments in the input data and the ID of the created segments.
 	 *
 	 * @var string[]
 	 */
-	private $segments_mapping;
+	private $segments_mapping = [];
 
 	/**
 	 * Constructor.
@@ -78,11 +78,22 @@ class Newspack_Popups_Importer {
 	}
 
 	/**
+	 * Set a new term mapping.
+	 *
+	 * @param int $from The ID of the term in the input data.
+	 * @param int $to The ID of the term in the database.
+	 * @return void
+	 */
+	public function add_term_mapping( $from, $to ) {
+		$this->terms_mapping[ $from ] = $to;
+	}
+
+	/**
 	 * Reads the input and returns all references to tags and categories that are not present in the database.
 	 *
 	 * Use this before running the import so you can decide whether to map to other existing terms, create new terms or ignore these terms.
 	 *
-	 * @return array An array with two keys, tags and categories, each of them containing an array of items with IDs and names.
+	 * @return array An array with two keys, post_tag and category, each of them containing an array of items with IDs and names.
 	 */
 	public function get_missing_terms_from_input() {
 		$tags       = [];
@@ -132,8 +143,8 @@ class Newspack_Popups_Importer {
 		);
 
 		return [
-			'tags'       => $tags,
-			'categories' => $categories,
+			'post_tag' => $tags,
+			'category' => $categories,
 		];
 	}
 
@@ -143,20 +154,18 @@ class Newspack_Popups_Importer {
 	 * @return void
 	 */
 	private function reset_results() {
-		$this->totals           = [
+		$this->totals = [
 			'prompts'   => 0,
 			'segments'  => 0,
 			'campaigns' => 0,
 		];
-		$this->errors           = [
+		$this->errors = [
 			'prompts'    => [],
 			'segments'   => [],
 			'campaigns'  => [],
 			'terms'      => [],
 			'validation' => [],
 		];
-		$this->terms_mapping    = [];
-		$this->segments_mapping = [];
 	}
 
 	/**
@@ -202,7 +211,14 @@ class Newspack_Popups_Importer {
 	private function pre_process_segments_terms( $segments ) {
 		foreach ( $segments as $segment_index => $segment ) {
 			if ( ! empty( $segment['configuration']['favorite_categories'] ) ) {
-				$segments[ $segment_index ]['configuration']['favorite_categories'] = $this->pre_process_terms( $segment['configuration']['favorite_categories'], 'category' );
+				$terms    = $this->pre_process_terms( $segment['configuration']['favorite_categories'], 'category' );
+				$term_ids = array_map(
+					function( $term ) {
+						return $term['id'];
+					},
+					$terms
+				);
+				$segments[ $segment_index ]['configuration']['favorite_categories'] = $term_ids;
 			}
 		}
 		return $segments;

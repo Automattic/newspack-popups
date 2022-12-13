@@ -212,7 +212,7 @@ class ImporterTest extends WP_UnitTestCase_PageWithPopups {
 			[
 				'title'           => 'Test Prompt 2',
 				'content'         => 'Test content',
-				'status'          => 'publish',
+				'status'          => 'draft',
 				'campaign_groups' => [
 					[
 						'id'   => 20,
@@ -244,7 +244,13 @@ class ImporterTest extends WP_UnitTestCase_PageWithPopups {
 				'id'            => 'abc456',
 				'priority'      => 10,
 				'configuration' => [
-					'max_posts' => 1,
+					'max_posts'           => 1,
+					'favorite_categories' => [
+						[
+							'id'   => 40,
+							'name' => 'Category 10',
+						],
+					],
 				],
 			],
 		];
@@ -284,19 +290,21 @@ class ImporterTest extends WP_UnitTestCase_PageWithPopups {
 
 		// Check if the prompts were properly mapped to the segments.
 		$this->assertStringContainsString( $segment_1_id, $created_prompts[0]['options']['selected_segment_id'] );
-		$this->assertStringContainsString( $segment_2_id, $created_prompts[0]['options']['selected_segment_id'] );
 		$this->assertStringContainsString( $segment_1_id, $created_prompts[1]['options']['selected_segment_id'] );
+		$this->assertStringContainsString( $segment_2_id, $created_prompts[1]['options']['selected_segment_id'] );
 
 		// Check if the campaign groups terms were properly applied to the prompts.
 		$this->assertSame( 1, count( $created_prompts[0]['campaign_groups'] ) );
-		$this->assertSame( 'Campaign 1', $created_prompts[0]['campaign_groups'][0]->name );
+		$this->assertSame( 'Campaign 2', $created_prompts[0]['campaign_groups'][0]->name );
 		$this->assertSame( 1, count( $created_prompts[1]['campaign_groups'] ) );
-		$this->assertSame( 'Campaign 2', $created_prompts[1]['campaign_groups'][0]->name );
+		$this->assertSame( 'Campaign 1', $created_prompts[1]['campaign_groups'][0]->name );
 
 		// Check if the category was properly assigned.
-		$this->assertSame( $existing_category['term_id'], $created_prompts[0]['categories'][0]->term_id );
+		$this->assertSame( $existing_category['term_id'], $created_prompts[1]['categories'][0]->term_id );
 		// Check if the tag was properly assigned.
-		$this->assertSame( $existing_tag['term_id'], $created_prompts[0]['tags'][0]->term_id );
+		$this->assertSame( $existing_tag['term_id'], $created_prompts[1]['tags'][0]->term_id );
+		// Check if the category was assigned to the segment.
+		$this->assertSame( $existing_category['term_id'], $created_segments[1]['configuration']['favorite_categories'][0] );
 	}
 
 	/**
@@ -493,22 +501,22 @@ class ImporterTest extends WP_UnitTestCase_PageWithPopups {
 
 		$result = $importer->get_missing_terms_from_input();
 
-		$this->assertSame( count( $cats_expected ), count( $result['categories'] ) );
-		$this->assertSame( count( $tags_expected ), count( $result['tags'] ) );
+		$this->assertSame( count( $cats_expected ), count( $result['category'] ) );
+		$this->assertSame( count( $tags_expected ), count( $result['post_tag'] ) );
 
 		foreach ( $cats_expected as $cat ) {
 			$cat_obj = [
 				'id'   => $cat,
 				'name' => 'Category ' . $cat,
 			];
-			$this->assertContains( $cat_obj, $result['categories'] );
+			$this->assertContains( $cat_obj, $result['category'] );
 		}
 		foreach ( $tags_expected as $tag ) {
 			$tag_obj = [
 				'id'   => $tag,
 				'name' => 'Tag ' . $tag,
 			];
-			$this->assertContains( $tag_obj, $result['tags'] );
+			$this->assertContains( $tag_obj, $result['post_tag'] );
 		}
 
 		// clean up.
