@@ -18,12 +18,22 @@ use Newspack_Popups_Importer;
 class Import extends WP_CLI_Command {
 
 	/**
-	 * Import Campaigns, Segments and Prompts.
+	 * Import Campaigns, Segments and Prompts from a JSON file generated with the newspac-popups export command.
+	 *
+	 * If the input file contains categories or tags that are not present in the site, the importer will ask you how to proceed.
+	 * Use the --ignore-terms flag to ignore all the missing terms and skip the user interaction.
+	 * Use the --create-terms flag to create all the missing terms automatically and skip the user interaction.
 	 *
 	 * ## OPTIONS
 	 *
 	 * <file>
 	 * : The name of the input file.
+	 *
+	 * [--ignore-terms]
+	 * : Ignore categories and tags that are not present in the site.
+	 *
+	 * [--create-terms]
+	 * : Create categories and tags that are not present in the site.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -33,25 +43,30 @@ class Import extends WP_CLI_Command {
 	 * @param array $assoc_args Assoc args.
 	 */
 	public function __invoke( $args, $assoc_args ) {
+		$ignore_terms = WP_CLI\Utils\get_flag_value( $assoc_args, 'ignore-terms', false );
+		$create_terms = WP_CLI\Utils\get_flag_value( $assoc_args, 'create-terms', false );
+		$file         = $args[0];
 
-		$file = $args[0];
 		if ( ! is_readable( $file ) ) {
-			WP_CLI::error( 'File not found or not readable.' );
+			WP_CLI::error( __( 'File not found or not readable.', 'newspack-popups' ) );
 		}
 
 		$data = wp_json_file_decode( $file, [ 'associative' => true ] ); // phpcs:ignore
 		if ( empty( $data ) ) {
-			WP_CLI::error( 'File is not valid JSON.' );
+			WP_CLI::error( __( 'File is not valid JSON.', 'newspack-popups' ) );
 		}
+
+		WP_CLI::success( __( 'JSON file loaded, initializing the importer...', 'newspack-popups' ) );
 
 		$importer = new Newspack_Popups_Importer( $data );
 
 		$missing_terms = $importer->get_missing_terms_from_input();
 
-		if ( ! empty( $missing_terms ) ) {
+		if ( ! $ignore_terms && ! empty( $missing_terms ) ) {
 			foreach ( $missing_terms as $tax => $terms ) {
 				foreach ( $terms as $term ) {
 					$done = false;
+					// If term creation fails, or if the user cancels the selection, we will reset the strategy and ask again, that's why we have this while loop.
 					while ( ! $done ) {
 						$question = sprintf(
 							// translators: %1$s is the name of the term, %2$s is the taxonomy (category or tag).
@@ -59,34 +74,46 @@ class Import extends WP_CLI_Command {
 							$term['name'],
 							$this->tax_label( $tax )
 						);
-						WP_CLI::warning( $question );
-						$strategy = $this->choose_term_strategy();
-						if ( 3 === $strategy ) {
-							WP_CLI::success( __( 'Ignoring', 'newspack-popups' ) );
-							$done = true;
-						} elseif ( 2 == $strategy ) {
+
+						if ( ! $create_terms ) {
+							WP_CLI::warning( $question );
+							$strategy = $this->choose_term_strategy();
+						} else {
+							$strategy = 1;
+							$done     = true; // avoid infinte loop in case of error.
+						}
+
+						if ( 1 == $strategy ) { // Create term.
+
+							$new_id = $this->create_term( $term['name'], $tax );
+							if ( is_wp_error( $new_id ) ) {
+								WP_CLI::error( $new_id->get_error_message(), false );
+								// Dont set done and ask for the strategy again.
+							} else {
+								WP_CLI::success( __( 'Term created', 'newspack-popups' ) );
+								$done = true;
+							}
+						} elseif ( 2 == $strategy ) { // Map to existing term.
+
 							$new_id = $this->choose_existing_term( $tax );
 							if ( ! is_wp_error( $new_id ) ) {
 								WP_CLI::success( __( 'Term selected', 'newspack-popups' ) );
 								$importer->add_term_mapping( $term['id'], $new_id );
 								$done = true;
-							}
-							// else means the user aborted the selection. Dont set done and try again.
-						} elseif ( 1 == $strategy ) {
-							$new_id = $this->create_term( $term['name'], $tax );
-							if ( is_wp_error( $new_id ) ) {
-								WP_CLI::error( $new_id->get_error_message(), false );
-								// Dont set done and try again.
-							} else {
-								WP_CLI::success( __( 'Term created', 'newspack-popups' ) );
-								$done = true;
-							}
+							} // else means the user aborted the selection. Dont set done and ask for the strategy again.
+
+						} elseif ( 3 === $strategy ) { // Ignore term (do nothing).
+
+							WP_CLI::success( __( 'Ignoring', 'newspack-popups' ) );
+							$done = true;
+
 						}
 					}
 				}
 			}
 		}
 
+		WP_CLI::success( __( 'Running the importer', 'newspack-popups' ) );
 		$result = $importer->import();
 
 		if ( ! empty( $result['errors'] ) && ! empty( $result['errors']['validation'] ) ) {
@@ -94,7 +121,7 @@ class Import extends WP_CLI_Command {
 			foreach ( $result['errors']['validation'] as $message ) {
 				WP_CLI::warning( $message );
 			}
-			WP_CLI::error( 'Could not import JSON file.' );
+			WP_CLI::error( __( 'Could not import JSON file.', 'newspack-popups' ) );
 		}
 
 		foreach ( $result['errors'] as $error_type => $error_group ) {
@@ -110,10 +137,13 @@ class Import extends WP_CLI_Command {
 			}
 		}
 
-		WP_CLI::success( $result['totals']['campaigns'] . ' campaigns imported.' );
-		WP_CLI::success( $result['totals']['segments'] . ' segments imported.' );
-		WP_CLI::success( $result['totals']['prompts'] . ' prompts imported.' );
-		WP_CLI::success( 'Import complete!' );
+		// translators: %d is the number of campaigns imported.
+		WP_CLI::success( sprintf( _n( '%d campaign imported', '%d campaigns imported', $result['totals']['campaigns'], 'newspack-popups' ), $result['totals']['campaigns'] ) );
+		// translators: %d is the number of segments imported.
+		WP_CLI::success( sprintf( _n( '%d segment imported', '%d segments imported', $result['totals']['segments'], 'newspack-popups' ), $result['totals']['segments'] ) );
+		// translators: %d is the number of prompts imported.
+		WP_CLI::success( sprintf( _n( '%d prompt imported', '%d prompts imported', $result['totals']['prompts'], 'newspack-popups' ), $result['totals']['prompts'] ) );
+		WP_CLI::success( __( 'Import complete!', 'newspack-popups' ) );
 
 	}
 
