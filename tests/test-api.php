@@ -82,6 +82,11 @@ class APITest extends WP_UnitTestCase {
 				'favorite_categories' => [ $category_1_id ],
 				'priority'            => 8,
 			],
+			'segmentWithOverlayWall'              => [
+				'min_posts'       => 3,
+				'no_user_account' => true,
+				'undismissible'   => true,
+			],
 		];
 
 		foreach ( $test_segments as $key => $value ) {
@@ -1615,6 +1620,23 @@ class APITest extends WP_UnitTestCase {
 		self::assertTrue(
 			count( Newspack_Popups_Model::retrieve_eligible_popups() ) === $number_of_prompts_to_display,
 			'Can retrieve up to 100 prompts at once.'
+		);
+	}
+
+	/**
+	 * Test overlay wall functionality.
+	 */
+	public function test_overlay_wall() {
+		$segments = [ self::$segment_ids['segmentBetween3And5'], self::$segment_ids['segmentSubscribers'] ];
+		self::assertFalse(
+			Newspack_Popups_Segmentation::is_overlay_wall_enabled( $segments ),
+			'Overlay wall not enabled without the required segmentation criteria.'
+		);
+
+		$segments = [ self::$segment_ids['segmentWithOverlayWall'] ];
+		self::assertTrue(
+			Newspack_Popups_Segmentation::is_overlay_wall_enabled( $segments ),
+			'Overlay wall enabled if the only segment contains the required segmentation criteria.'
 		);
 	}
 }

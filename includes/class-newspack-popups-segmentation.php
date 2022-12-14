@@ -459,6 +459,34 @@ final class Newspack_Popups_Segmentation {
 	}
 
 	/**
+	 * Do the given segments allow for overlay walls?
+	 * An overlay can be a wall if assigned only to segments that allow it.
+	 *
+	 * @param array $segment_ids Array of segment IDs for the prompt to check.
+	 *
+	 * @return boolean True if enabled, otherwise false.
+	 */
+	public static function is_overlay_wall_enabled( $segment_ids = [] ) {
+		if ( empty( $segment_ids ) ) {
+			return false;
+		}
+
+		$is_enabled = true;
+		foreach ( $segment_ids as $segment_id ) {
+			$segment = self::get_segment( $segment_id );
+			if (
+				( empty( $segment['configuration']['undismissible'] ) ) ||
+				( empty( $segment['configuration']['min_posts'] ) && empty( $segment['configuration']['min_session_posts'] ) ) ||
+				( empty( $segment['configuration']['is_not_logged_in'] ) && empty( $segment['configuration']['no_user_account'] ) )
+			) {
+				$is_enabled = false;
+			}
+		}
+
+		return $is_enabled;
+	}
+
+	/**
 	 * Mock a preview CID for logged-in admin and editor users.
 	 *
 	 * @return string Preview client ID.
