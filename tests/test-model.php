@@ -163,6 +163,9 @@ class ModelTest extends WP_UnitTestCase {
 	 * Tests retrieve_popup_by_id
 	 */
 	public function test_retrieve_popup_by_id() {
+		$popup = Newspack_Popups_Model::retrieve_popup_by_id( self::$popup_id );
+		self::assertSame( self::$popup_id, $popup['id'], 'Unable to retrieve popup by id.' );
+
 		$popup = Newspack_Popups_Model::retrieve_popup_by_id( self::$popup_id, true );
 		self::assertSame( self::$popup_id, $popup['id'], 'Unable to retrieve popup by id.' );
 
@@ -174,6 +177,9 @@ class ModelTest extends WP_UnitTestCase {
 				'post_status'  => 'draft',
 			]
 		);
+
+		$popup = Newspack_Popups_Model::retrieve_popup_by_id( $draf_prompt );
+		self::assertNull( $popup, 'Draft prompt should not be returned unless explictly required.' );
 
 		$popup = Newspack_Popups_Model::retrieve_popup_by_id( $draf_prompt, true );
 		self::assertNotNull( $popup, 'Unable to retrieve popup by id.' );
