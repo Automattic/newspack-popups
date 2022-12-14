@@ -220,7 +220,7 @@ class ImporterTest extends WP_UnitTestCase_PageWithPopups {
 					],
 				],
 				'options'         => [
-					'background_color'    => '#FFFFFF',
+					'background_color'    => '#FFFF00',
 					'display_title'       => false,
 					'hide_border'         => false,
 					'large_border'        => false,
@@ -298,6 +298,8 @@ class ImporterTest extends WP_UnitTestCase_PageWithPopups {
 		$this->assertSame( 'Campaign 2', $created_prompts[0]['campaign_groups'][0]->name );
 		$this->assertSame( 1, count( $created_prompts[1]['campaign_groups'] ) );
 		$this->assertSame( 'Campaign 1', $created_prompts[1]['campaign_groups'][0]->name );
+
+		$this->assertSame( '#FFFF00', $created_prompts[0]['options']['background_color'] );
 
 		// Check if the category was properly assigned.
 		$this->assertSame( $existing_category['term_id'], $created_prompts[1]['categories'][0]->term_id );
