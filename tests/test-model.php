@@ -158,4 +158,25 @@ class ModelTest extends WP_UnitTestCase {
 			'The position marker is set at position passed in options.'
 		);
 	}
+
+	/**
+	 * Tests retrieve_popup_by_id
+	 */
+	public function test_retrieve_popup_by_id() {
+		$popup = Newspack_Popups_Model::retrieve_popup_by_id( self::$popup_id, true );
+		self::assertSame( self::$popup_id, $popup['id'], 'Unable to retrieve popup by id.' );
+
+		$draf_prompt = self::factory()->post->create(
+			[
+				'post_type'    => Newspack_Popups::NEWSPACK_POPUPS_CPT,
+				'post_title'   => 'Platea fames',
+				'post_content' => 'Faucibus placerat senectus.',
+				'post_status'  => 'draft',
+			]
+		);
+
+		$popup = Newspack_Popups_Model::retrieve_popup_by_id( $draf_prompt, true );
+		self::assertNotNull( $popup, 'Unable to retrieve popup by id.' );
+		self::assertSame( $draf_prompt, $popup['id'], 'Unable to retrieve popup by id.' );
+	}
 }
