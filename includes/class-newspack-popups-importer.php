@@ -211,14 +211,7 @@ class Newspack_Popups_Importer {
 	private function pre_process_segments_terms( $segments ) {
 		foreach ( $segments as $segment_index => $segment ) {
 			if ( ! empty( $segment['configuration']['favorite_categories'] ) ) {
-				$terms    = $this->pre_process_terms( $segment['configuration']['favorite_categories'], 'category' );
-				$term_ids = array_map(
-					function( $term ) {
-						return $term['id'];
-					},
-					$terms
-				);
-				$segments[ $segment_index ]['configuration']['favorite_categories'] = $term_ids;
+				$segments[ $segment_index ]['configuration']['favorite_categories'] = $this->pre_process_terms( $segment['configuration']['favorite_categories'], 'category', true );
 			}
 		}
 		return $segments;
@@ -307,10 +300,10 @@ class Newspack_Popups_Importer {
 				$prompts[ $prompt_index ]['tags'] = $this->pre_process_terms( $prompt['tags'], 'post_tag' );
 			}
 			if ( ! empty( $prompt['options']['excluded_categories'] ) ) {
-				$prompts[ $prompt_index ]['options']['excluded_categories'] = $this->pre_process_terms( $prompt['options']['excluded_categories'], 'category' );
+				$prompts[ $prompt_index ]['options']['excluded_categories'] = $this->pre_process_terms( $prompt['options']['excluded_categories'], 'category', true );
 			}
 			if ( ! empty( $prompt['options']['excluded_tags'] ) ) {
-				$prompts[ $prompt_index ]['options']['excluded_tags'] = $this->pre_process_terms( $prompt['options']['excluded_tags'], 'post_tag' );
+				$prompts[ $prompt_index ]['options']['excluded_tags'] = $this->pre_process_terms( $prompt['options']['excluded_tags'], 'post_tag', true );
 			}
 		}
 		return array_values( $prompts );
@@ -324,9 +317,10 @@ class Newspack_Popups_Importer {
 	 *
 	 * @param array  $terms The terms array in which each item is and array with id and name.
 	 * @param string $taxonomy The taxonomy of the terms, used to look for existing terms with the same name.
+	 * @param bool   $return_only_ids Whether to return only the ids of the terms, instead of a pair with id and name.
 	 * @return array $terms The processed terms.
 	 */
-	private function pre_process_terms( $terms, $taxonomy ) {
+	private function pre_process_terms( $terms, $taxonomy, $return_only_ids = false ) {
 		foreach ( $terms as $term_index => $term ) {
 			if ( isset( $this->terms_mapping[ $term['id'] ] ) ) {
 				$terms[ $term_index ]['id'] = $this->terms_mapping[ $term['id'] ];
@@ -338,6 +332,14 @@ class Newspack_Popups_Importer {
 					unset( $terms[ $term_index ] );
 				}
 			}
+		}
+		if ( $return_only_ids ) {
+			$terms = array_map(
+				function( $term ) {
+					return $term['id'];
+				},
+				$terms
+			);
 		}
 		return array_values( $terms );
 	}
