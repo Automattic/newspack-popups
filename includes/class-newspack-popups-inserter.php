@@ -556,7 +556,7 @@ final class Newspack_Popups_Inserter {
 		$is_amp      = self::is_amp();
 		$is_amp_plus = $is_amp && self::is_amp_plus();
 
-		return Newspack_Popups_Segmentation::is_admin_user() && ( ! $is_amp || $is_amp_plus );
+		return Newspack_Popups_Segmentation::is_admin_user() && ( ! $is_amp || $is_amp_plus ) && ! is_admin();
 	}
 
 	/**
