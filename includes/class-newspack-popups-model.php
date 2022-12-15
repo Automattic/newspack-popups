@@ -251,7 +251,7 @@ final class Newspack_Popups_Model {
 	 * Retrieve popup CPT post by ID.
 	 *
 	 * The query for prompts relies on the dynamic default value of the post_status parameter.
-	 * In admin context, it will include the drafts, in non-admin context is will be just published posts.
+	 * In admin context, it will include the drafts, and in non-admin context it will only return published posts.
 	 *
 	 * @param string $post_id Post id.
 	 * @param bool   $use_default_status_query Whether to rely on the default behavior of the post_status parameter. If false, only published posts will be returned.
