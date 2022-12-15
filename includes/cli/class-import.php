@@ -113,7 +113,7 @@ class Import extends WP_CLI_Command {
 			}
 		}
 
-		WP_CLI::success( __( 'Running the importer', 'newspack-popups' ) );
+		WP_CLI::log( __( 'Running the importer', 'newspack-popups' ) );
 		$result = $importer->import();
 
 		if ( ! empty( $result['errors'] ) && ! empty( $result['errors']['validation'] ) ) {
