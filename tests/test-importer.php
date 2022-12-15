@@ -99,6 +99,16 @@ class ImporterTest extends WP_UnitTestCase_PageWithPopups {
 				],
 				[],
 			],
+			'test_existing'  => [
+				[
+					[
+						'id'   => 33,
+						'name' => 'Existing',
+					],
+				],
+				[],
+				true,
+			],
 		];
 	}
 
@@ -107,10 +117,11 @@ class ImporterTest extends WP_UnitTestCase_PageWithPopups {
 	 *
 	 * @param array $input_data The array of terms to process.
 	 * @param array $expected The expected result.
+	 * @param bool  $test_existing Flag for a special test case for an existing term.
 	 * @return void
 	 * @dataProvider process_terms_data
 	 */
-	public function test_process_terms( $input_data, $expected ) {
+	public function test_process_terms( $input_data, $expected, $test_existing = false ) {
 		$importer      = new Newspack_Popups_Importer( [] );
 		$r_importer    = new \ReflectionClass( $importer );
 		$terms_mapping = [
@@ -124,9 +135,19 @@ class ImporterTest extends WP_UnitTestCase_PageWithPopups {
 
 		$method = $r_importer->getMethod( 'pre_process_terms' );
 		$method->setAccessible( true );
-		$result = $method->invokeArgs( $importer, [ $input_data ] );
 
-		$this->assertEquals( $expected, $result );
+		if ( $test_existing ) {
+			$existing_term = wp_insert_term( 'Existing', 'category' );
+		}
+
+		$result = $method->invokeArgs( $importer, [ $input_data, 'category' ] );
+
+		if ( $test_existing ) {
+			$this->assertSame( $existing_term['term_id'], $result[0]['id'] );
+		} else {
+			$this->assertEquals( $expected, $result );
+		}
+
 
 	}
 
@@ -141,6 +162,9 @@ class ImporterTest extends WP_UnitTestCase_PageWithPopups {
 		global $wpdb;
 		$wpdb->query( $wpdb->prepare( "DELETE FROM $wpdb->posts WHERE post_type = %s", Newspack_Popups::NEWSPACK_POPUPS_CPT ) ); // phpcs:ignore
 		delete_option( Newspack_Popups_Segmentation::SEGMENTS_OPTION_NAME );
+
+		$existing_category = wp_insert_term( 'Category 10', 'category' );
+		$existing_tag      = wp_insert_term( 'Tag 10', 'post_tag' );
 
 		$campaigns = [
 			[
@@ -163,6 +187,18 @@ class ImporterTest extends WP_UnitTestCase_PageWithPopups {
 						'name' => 'Campaign 1',
 					],
 				],
+				'categories'      => [
+					[
+						'id'   => 40,
+						'name' => 'Category 10',
+					],
+				],
+				'tags'            => [
+					[
+						'id'   => 50,
+						'name' => 'Tag 10',
+					],
+				],
 				'options'         => [
 					'background_color'    => '#FFFFFF',
 					'display_title'       => false,
@@ -176,7 +212,7 @@ class ImporterTest extends WP_UnitTestCase_PageWithPopups {
 			[
 				'title'           => 'Test Prompt 2',
 				'content'         => 'Test content',
-				'status'          => 'publish',
+				'status'          => 'draft',
 				'campaign_groups' => [
 					[
 						'id'   => 20,
@@ -184,7 +220,7 @@ class ImporterTest extends WP_UnitTestCase_PageWithPopups {
 					],
 				],
 				'options'         => [
-					'background_color'    => '#FFFFFF',
+					'background_color'    => '#FFFF00',
 					'display_title'       => false,
 					'hide_border'         => false,
 					'large_border'        => false,
@@ -208,7 +244,13 @@ class ImporterTest extends WP_UnitTestCase_PageWithPopups {
 				'id'            => 'abc456',
 				'priority'      => 10,
 				'configuration' => [
-					'max_posts' => 1,
+					'max_posts'           => 1,
+					'favorite_categories' => [
+						[
+							'id'   => 40,
+							'name' => 'Category 10',
+						],
+					],
 				],
 			],
 		];
@@ -248,15 +290,23 @@ class ImporterTest extends WP_UnitTestCase_PageWithPopups {
 
 		// Check if the prompts were properly mapped to the segments.
 		$this->assertStringContainsString( $segment_1_id, $created_prompts[0]['options']['selected_segment_id'] );
-		$this->assertStringContainsString( $segment_2_id, $created_prompts[0]['options']['selected_segment_id'] );
 		$this->assertStringContainsString( $segment_1_id, $created_prompts[1]['options']['selected_segment_id'] );
+		$this->assertStringContainsString( $segment_2_id, $created_prompts[1]['options']['selected_segment_id'] );
 
 		// Check if the campaign groups terms were properly applied to the prompts.
 		$this->assertSame( 1, count( $created_prompts[0]['campaign_groups'] ) );
-		$this->assertSame( 'Campaign 1', $created_prompts[0]['campaign_groups'][0]->name );
+		$this->assertSame( 'Campaign 2', $created_prompts[0]['campaign_groups'][0]->name );
 		$this->assertSame( 1, count( $created_prompts[1]['campaign_groups'] ) );
-		$this->assertSame( 'Campaign 2', $created_prompts[1]['campaign_groups'][0]->name );
+		$this->assertSame( 'Campaign 1', $created_prompts[1]['campaign_groups'][0]->name );
 
+		$this->assertSame( '#FFFF00', $created_prompts[0]['options']['background_color'] );
+
+		// Check if the category was properly assigned.
+		$this->assertSame( $existing_category['term_id'], $created_prompts[1]['categories'][0]->term_id );
+		// Check if the tag was properly assigned.
+		$this->assertSame( $existing_tag['term_id'], $created_prompts[1]['tags'][0]->term_id );
+		// Check if the category was assigned to the segment.
+		$this->assertSame( $existing_category['term_id'], $created_segments[1]['configuration']['favorite_categories'][0] );
 	}
 
 	/**
@@ -305,6 +355,193 @@ class ImporterTest extends WP_UnitTestCase_PageWithPopups {
 		$this->assertNotEmpty( $result['errors'] );
 		$this->assertNotEmpty( $result['errors']['validation'] );
 
+	}
+
+	/**
+	 * Data for test_get_missing_terms
+	 *
+	 * @return array
+	 */
+	public function missing_terms_data() {
+		return [
+			'nothing'                        => [
+				[],
+				[],
+				[ 1, 2, 3 ],
+				[ 1, 2 ],
+			],
+			'create 1 category'              => [
+				[ 1 ],
+				[],
+				[ 2, 3 ],
+				[ 1, 2 ],
+			],
+			'create 2 categories'            => [
+				[ 1, 2 ],
+				[],
+				[ 3 ],
+				[ 1, 2 ],
+			],
+			'create 3 categories'            => [
+				[ 1, 2, 3 ],
+				[],
+				[],
+				[ 1, 2 ],
+			],
+			'create 3 categories and 1 tag'  => [
+				[ 1, 2, 3 ],
+				[ 1 ],
+				[],
+				[ 2 ],
+			],
+			'create 3 categories and 2 tags' => [
+				[ 1, 2, 3 ],
+				[ 1, 2 ],
+				[],
+				[],
+			],
+		];
+	}
+
+	/**
+	 * Tests the get_missing_terms_from_input method
+	 *
+	 * @param array $cats_to_create The categories to create.
+	 * @param array $tags_to_create The tags to create.
+	 * @param array $cats_expected The expected categories.
+	 * @param array $tags_expected The expected tags.
+	 * @return void
+	 * @dataProvider missing_terms_data
+	 */
+	public function test_get_missing_terms( $cats_to_create, $tags_to_create, $cats_expected, $tags_expected ) {
+
+		foreach ( $tags_to_create as $tag ) {
+			wp_insert_term( 'Tag ' . $tag, 'post_tag' );
+		}
+		foreach ( $cats_to_create as $cat ) {
+			wp_insert_term( 'Category ' . $cat, 'category' );
+		}
+
+		$prompts  = [
+			[
+				'title'           => 'Test Prompt 1',
+				'content'         => 'Test content',
+				'status'          => 'publish',
+				'categories'      => [
+					[
+						'id'   => 1,
+						'name' => 'Category 1',
+					],
+				],
+				'tags'            => [
+					[
+						'id'   => 1,
+						'name' => 'Tag 1',
+					],
+				],
+				'campaign_groups' => [
+					[
+						'id'   => 10,
+						'name' => 'Campaign 1',
+					],
+				],
+				'options'         => [
+					'background_color'    => '#FFFFFF',
+					'display_title'       => false,
+					'hide_border'         => false,
+					'large_border'        => false,
+					'frequency'           => 'once',
+					'placement'           => 'inline',
+					'selected_segment_id' => 'abc123,abc456',
+					'excluded_categories' => [
+						[
+							'id'   => 2,
+							'name' => 'Category 2',
+						],
+					],
+					'excluded_tags'       => [
+						[
+							'id'   => 1,
+							'name' => 'Tag 1', // repeated tag.
+						],
+						[
+							'id'   => 2,
+							'name' => 'Tag 2',
+						],
+					],
+				],
+			],
+		];
+		$segments = [
+			[
+				'name'          => 'Test Segment',
+				'id'            => 'abc123',
+				'priority'      => 10,
+				'configuration' => [
+					'max_posts'           => 1,
+					'favorite_categories' => [
+						[
+							'id'   => 1,
+							'name' => 'Category 1', // reapeated category.
+						],
+						[
+							'id'   => 3,
+							'name' => 'Category 3',
+						],
+					],
+				],
+			],
+		];
+
+		$package = [
+			'campaigns' => [],
+			'prompts'   => $prompts,
+			'segments'  => $segments,
+		];
+
+		$importer = new Newspack_Popups_Importer( $package );
+
+		$result = $importer->get_missing_terms_from_input();
+
+		$this->assertSame( count( $cats_expected ), count( $result['category'] ) );
+		$this->assertSame( count( $tags_expected ), count( $result['post_tag'] ) );
+
+		foreach ( $cats_expected as $cat ) {
+			$cat_obj = [
+				'id'   => $cat,
+				'name' => 'Category ' . $cat,
+			];
+			$this->assertContains( $cat_obj, $result['category'] );
+		}
+		foreach ( $tags_expected as $tag ) {
+			$tag_obj = [
+				'id'   => $tag,
+				'name' => 'Tag ' . $tag,
+			];
+			$this->assertContains( $tag_obj, $result['post_tag'] );
+		}
+
+		// clean up.
+		$this->delete_all_terms();
+	}
+
+	/**
+	 * Clear all tags and categories
+	 *
+	 * @return void
+	 */
+	public function delete_all_terms() {
+		foreach ( [ 'category', 'post_tag' ] as $tax ) {
+			$terms = get_terms(
+				array(
+					'taxonomy'   => $tax,
+					'hide_empty' => false,
+				)
+			);
+			foreach ( $terms as $term ) {
+				wp_delete_term( $term->term_id, $tax );
+			}
+		}
 	}
 
 }

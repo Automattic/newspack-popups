@@ -51,13 +51,18 @@ class Export extends WP_CLI_Command {
 			}
 		}
 
-		WP_CLI::success( $data['totals']['campaigns'] . ' campaigns exported.' );
-		WP_CLI::success( $data['totals']['segments'] . ' segments exported.' );
-		WP_CLI::success( $data['totals']['prompts'] . ' prompts exported.' );
+		// translators: %d is the number of campaigns imported.
+		WP_CLI::success( sprintf( _n( '%d campaign exported', '%d campaigns exported', $data['totals']['campaigns'], 'newspack-popups' ), $data['totals']['campaigns'] ) );
+		// translators: %d is the number of segments exported.
+		WP_CLI::success( sprintf( _n( '%d segment exported', '%d segments exported', $data['totals']['segments'], 'newspack-popups' ), $data['totals']['segments'] ) );
+		// translators: %d is the number of prompts exported.
+		WP_CLI::success( sprintf( _n( '%d prompt exported', '%d prompts exported', $data['totals']['prompts'], 'newspack-popups' ), $data['totals']['prompts'] ) );
 
 		file_put_contents( $output, wp_json_encode( $data['data'], JSON_PRETTY_PRINT ) ); // phpcs:ignore
 
-		WP_CLI::success( 'Exported to ' . $output );
+		// translators: %s is the name of the output file.
+		WP_CLI::success( sprintf( __( 'Exported to %s', 'newspack-popups' ), $output ) );
+		WP_CLI::success( __( 'Export complete!', 'newspack-popups' ) );
 
 	}
 }

@@ -70,7 +70,7 @@ final class Newspack_Popups_Model {
 	 * @param string  $taxonomy Taxonomy slug.
 	 */
 	public static function set_popup_terms( $id, $terms, $taxonomy ) {
-		$popup = self::retrieve_popup_by_id( $id, true );
+		$popup = self::retrieve_popup_by_id( $id, false, true );
 		if ( ! $popup ) {
 			return new \WP_Error(
 				'newspack_popups_popup_doesnt_exist',
@@ -107,7 +107,7 @@ final class Newspack_Popups_Model {
 	 * @param array   $options Array of options to update.
 	 */
 	public static function set_popup_options( $id, $options ) {
-		$popup = self::retrieve_popup_by_id( $id, true );
+		$popup = self::retrieve_popup_by_id( $id, false, true );
 		if ( ! $popup ) {
 			return new \WP_Error(
 				'newspack_popups_popup_doesnt_exist',
@@ -250,18 +250,23 @@ final class Newspack_Popups_Model {
 	/**
 	 * Retrieve popup CPT post by ID.
 	 *
+	 * The query for prompts relies on the dynamic default value of the post_status parameter.
+	 * In admin context, it will include the drafts, and in non-admin context it will only return published posts.
+	 *
 	 * @param string $post_id Post id.
-	 * @param bool   $include_drafts Include drafts.
+	 * @param bool   $use_default_status_query Whether to rely on the default behavior of the post_status parameter. If false, only published posts will be returned.
+	 * @param bool   $include_unpublished Whether to include unpublished prompts. $use_default_status_query must be false.
 	 * @return object Popup object.
 	 */
-	public static function retrieve_popup_by_id( $post_id, $include_drafts = false ) {
+	public static function retrieve_popup_by_id( $post_id, $use_default_status_query = false, $include_unpublished = false ) {
 		$args = [
 			'post_type'      => Newspack_Popups::NEWSPACK_POPUPS_CPT,
 			'posts_per_page' => 1,
 			'p'              => $post_id,
 		];
-		if ( false === $include_drafts ) {
-			$args['post_status'] = 'publish';
+
+		if ( false === $use_default_status_query ) {
+			$args['post_status'] = $include_unpublished ? [ 'draft', 'pending', 'future', 'publish' ] : 'publish';
 		}
 
 		$popups = self::retrieve_popups_with_query( new WP_Query( $args ) );
