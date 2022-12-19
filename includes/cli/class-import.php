@@ -52,7 +52,7 @@ class Import extends WP_CLI_Command {
 		$file         = $args[0] ?? null;
 
 		if ( ! $file && ! $ras_defaults ) {
-			WP_CLI::error( __( 'You must either inform a json file name or use the --ras-defaults flag.', 'newspack-popups' ) );
+			WP_CLI::error( __( 'You must either supply a json file path or use the --ras-defaults flag.', 'newspack-popups' ) );
 		}
 
 		if ( $ras_defaults ) {
