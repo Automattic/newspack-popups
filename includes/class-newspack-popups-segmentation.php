@@ -67,9 +67,7 @@ final class Newspack_Popups_Segmentation {
 		add_action( 'wp_footer', [ __CLASS__, 'insert_amp_analytics' ], 20 );
 
 		add_filter( 'newspack_custom_dimensions', [ __CLASS__, 'register_custom_dimensions' ] );
-		// Temporarily removed this filter on 2022-12-20. It's causing blank pages to get cached intermittently on production sites.
-		// phpcs:ignore Squiz.Commenting.InlineComment.InvalidEndChar
-		// add_filter( 'newspack_custom_dimensions_values', [ __CLASS__, 'report_custom_dimensions' ] );
+		add_filter( 'newspack_custom_dimensions_values', [ __CLASS__, 'report_custom_dimensions' ] );
 
 		// Data pruning CRON job.
 		register_deactivation_hook( NEWSPACK_POPUPS_PLUGIN_FILE, [ __CLASS__, 'cron_deactivate' ] );
