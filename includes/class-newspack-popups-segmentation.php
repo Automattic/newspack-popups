@@ -67,7 +67,9 @@ final class Newspack_Popups_Segmentation {
 		add_action( 'wp_footer', [ __CLASS__, 'insert_amp_analytics' ], 20 );
 
 		add_filter( 'newspack_custom_dimensions', [ __CLASS__, 'register_custom_dimensions' ] );
-		add_filter( 'newspack_custom_dimensions_values', [ __CLASS__, 'report_custom_dimensions' ] );
+		// Temporarily removed this filter on 2022-12-20. It's causing blank pages to get cached intermittently on production sites.
+		// phpcs:ignore Squiz.Commenting.InlineComment.InvalidEndChar
+		// add_filter( 'newspack_custom_dimensions_values', [ __CLASS__, 'report_custom_dimensions' ] );
 
 		// Data pruning CRON job.
 		register_deactivation_hook( NEWSPACK_POPUPS_PLUGIN_FILE, [ __CLASS__, 'cron_deactivate' ] );
@@ -134,6 +136,25 @@ final class Newspack_Popups_Segmentation {
 			$custom_dimensions = Newspack\Analytics_Wizard::list_configured_custom_dimensions();
 		}
 		if ( empty( $custom_dimensions ) ) {
+			return $custom_dimensions_values;
+		}
+
+		$campaigns_custom_dimensions = [
+			Segmentation::CUSTOM_DIMENSIONS_OPTION_NAME_READER_FREQUENCY,
+			Segmentation::CUSTOM_DIMENSIONS_OPTION_NAME_IS_SUBSCRIBER,
+			Segmentation::CUSTOM_DIMENSIONS_OPTION_NAME_IS_DONOR,
+		];
+		$all_campaign_dimensions     = array_values(
+			array_map(
+				function( $custom_dimension ) {
+					return $custom_dimension['role'];
+				},
+				$custom_dimensions
+			)
+		);
+
+		// No need to proceed if the configured custom dimensions do not include any Campaigns data.
+		if ( 0 === count( array_intersect( $campaigns_custom_dimensions, $all_campaign_dimensions ) ) ) {
 			return $custom_dimensions_values;
 		}
 
