@@ -1,3 +1,10 @@
+## [2.9.2-hotfix.1](https://github.com/Automattic/newspack-popups/compare/v2.9.1...v2.9.2-hotfix.1) (2022-12-20)
+
+
+### Bug Fixes
+
+* prevent API bot exit without referer ([b9f5c56](https://github.com/Automattic/newspack-popups/commit/b9f5c5646580f7f354dac1279a33a7398bc6491c))
+
 ## [2.9.1](https://github.com/Automattic/newspack-popups/compare/v2.9.0...v2.9.1) (2022-12-20)
 
 

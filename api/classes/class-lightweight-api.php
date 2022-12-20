@@ -78,7 +78,7 @@ class Lightweight_API {
 	 * @codeCoverageIgnore
 	 */
 	public function __construct( $nonce = null, $ignore_referer_validation = false ) {
-		if ( $this->is_a_web_crawler() ) {
+		if ( $this->is_a_web_crawler() && ! $ignore_referer_validation ) {
 			header( 'X-Robots-Tag: noindex' );
 			exit;
 		}
