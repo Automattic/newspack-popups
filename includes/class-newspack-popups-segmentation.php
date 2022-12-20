@@ -137,6 +137,25 @@ final class Newspack_Popups_Segmentation {
 			return $custom_dimensions_values;
 		}
 
+		$campaigns_custom_dimensions = [
+			Segmentation::CUSTOM_DIMENSIONS_OPTION_NAME_READER_FREQUENCY,
+			Segmentation::CUSTOM_DIMENSIONS_OPTION_NAME_IS_SUBSCRIBER,
+			Segmentation::CUSTOM_DIMENSIONS_OPTION_NAME_IS_DONOR,
+		];
+		$all_campaign_dimensions     = array_values(
+			array_map(
+				function( $custom_dimension ) {
+					return $custom_dimension['role'];
+				},
+				$custom_dimensions
+			)
+		);
+
+		// No need to proceed if the configured custom dimensions do not include any Campaigns data.
+		if ( 0 === count( array_intersect( $campaigns_custom_dimensions, $all_campaign_dimensions ) ) ) {
+			return $custom_dimensions_values;
+		}
+
 		$client_id           = self::get_client_id();
 		$api                 = self::load_lightweight_api();
 		$subscription_events = $api->get_reader_events( $client_id, 'subscription' );
