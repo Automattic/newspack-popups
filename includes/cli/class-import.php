@@ -51,12 +51,12 @@ class Import extends WP_CLI_Command {
 		$ras_defaults = WP_CLI\Utils\get_flag_value( $assoc_args, 'ras-defaults', false );
 		$file         = $args[0] ?? null;
 
-		if ( ! $file && ! $ras_defaults ) {
-			WP_CLI::error( __( 'You must either supply a json file path or use the --ras-defaults flag.', 'newspack-popups' ) );
-		}
-
 		if ( $ras_defaults ) {
 			$file = dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/presets/ras-defaults.json';
+		}
+
+		if ( ! $file && ! $ras_defaults ) {
+			WP_CLI::error( __( 'You must either supply a json file path or use the --ras-defaults flag.', 'newspack-popups' ) );
 		}
 
 		if ( ! is_readable( $file ) ) {
