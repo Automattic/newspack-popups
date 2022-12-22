@@ -23,13 +23,12 @@ import { without } from 'lodash';
 /**
  * Internal dependencies
  */
-import { isOverlayPlacement, getPlacementHelpMessage } from './utils';
+import { getPlacementHelpMessage } from './utils';
 import PositionPlacementControl from './PositionPlacementControl';
 
 const Sidebar = props => {
 	const {
 		display_title,
-		frequency,
 		onMetaFieldChange,
 		placement,
 		overlay_size,
