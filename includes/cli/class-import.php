@@ -26,7 +26,7 @@ class Import extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <file>
+	 * [<file>]
 	 * : The name of the input file.
 	 *
 	 * [--ignore-terms]
@@ -34,6 +34,9 @@ class Import extends WP_CLI_Command {
 	 *
 	 * [--create-terms]
 	 * : Create categories and tags that are not present in the site.
+	 *
+	 * [--ras-defaults]
+	 * : Import from the RAS defaults preset located at presets/ras-defaults.json. This will ignore the <file> argument.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -45,7 +48,16 @@ class Import extends WP_CLI_Command {
 	public function __invoke( $args, $assoc_args ) {
 		$ignore_terms = WP_CLI\Utils\get_flag_value( $assoc_args, 'ignore-terms', false );
 		$create_terms = WP_CLI\Utils\get_flag_value( $assoc_args, 'create-terms', false );
-		$file         = $args[0];
+		$ras_defaults = WP_CLI\Utils\get_flag_value( $assoc_args, 'ras-defaults', false );
+		$file         = $args[0] ?? null;
+
+		if ( $ras_defaults ) {
+			$file = dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/presets/ras-defaults.json';
+		}
+
+		if ( ! $file ) {
+			WP_CLI::error( __( 'You must either supply a json file path or use the --ras-defaults flag.', 'newspack-popups' ) );
+		}
 
 		if ( ! is_readable( $file ) ) {
 			WP_CLI::error( __( 'File not found or not readable.', 'newspack-popups' ) );
