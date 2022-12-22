@@ -44,9 +44,6 @@ const Sidebar = props => {
 	} = props;
 	const updatePlacement = value => {
 		onMetaFieldChange( { placement: value } );
-		if ( isOverlayPlacement( value ) && frequency === 'always' ) {
-			onMetaFieldChange( { frequency: 'once' } );
-		}
 	};
 	const updatePlacementWhenPopupIsFullWidth = () => {
 		switch ( placement ) {
