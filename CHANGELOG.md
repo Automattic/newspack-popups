@@ -1,3 +1,15 @@
+# [2.10.0-alpha.2](https://github.com/Automattic/newspack-popups/compare/v2.10.0-alpha.1...v2.10.0-alpha.2) (2022-12-22)
+
+
+### Bug Fixes
+
+* allow every pageview frequency for overlays in editor ([#1036](https://github.com/Automattic/newspack-popups/issues/1036)) ([d792ea6](https://github.com/Automattic/newspack-popups/commit/d792ea6d6d41075f7227d08fb23a161a693d4211))
+
+
+### Features
+
+* CLI command to add ras defaults segments and prompts ([#1032](https://github.com/Automattic/newspack-popups/issues/1032)) ([7cf8898](https://github.com/Automattic/newspack-popups/commit/7cf88985e2792482bc6e013d5d79de655341ab86))
+
 # [2.10.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v2.9.2...v2.10.0-alpha.1) (2022-12-20)
 
 
