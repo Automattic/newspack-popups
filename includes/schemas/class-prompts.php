@@ -340,6 +340,12 @@ class Prompts extends Schema {
 								],
 							],
 						],
+						'dismiss_action'                 => [
+							'name'     => 'dismiss_action',
+							'type'     => 'string',
+							'required' => false,
+							'default'  => 'close_button',
+						],
 						'duplicate_of'                   => [
 							'name'     => 'duplicate_of',
 							'type'     => 'integer',

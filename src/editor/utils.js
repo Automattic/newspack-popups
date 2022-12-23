@@ -36,6 +36,7 @@ export const optionsFieldsSelector = select => {
 		additional_classes,
 		excluded_categories,
 		excluded_tags,
+		dismiss_action,
 	} = meta || {};
 
 	const isOverlay = isOverlayPlacement( placement );
@@ -69,6 +70,7 @@ export const optionsFieldsSelector = select => {
 		additional_classes,
 		excluded_categories,
 		excluded_tags,
+		dismiss_action,
 	};
 };
 

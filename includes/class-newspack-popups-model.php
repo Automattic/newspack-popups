@@ -380,6 +380,7 @@ final class Newspack_Popups_Model {
 			'additional_classes'             => get_post_meta( $id, 'additional_classes', true ),
 			'excluded_categories'            => get_post_meta( $id, 'excluded_categories', true ),
 			'excluded_tags'                  => get_post_meta( $id, 'excluded_tags', true ),
+			'dismiss_action'                 => get_post_meta( $id, 'dismiss_action', true ),
 		];
 
 		// Remove empty options, except for those whose value might actually be 0.
@@ -425,6 +426,7 @@ final class Newspack_Popups_Model {
 				'additional_classes'             => '',
 				'excluded_categories'            => [],
 				'excluded_tags'                  => [],
+				'dismiss_action'                 => 'close_button',
 			]
 		);
 	}
@@ -1176,6 +1178,7 @@ final class Newspack_Popups_Model {
 		$wrapper_classes       = [ 'newspack-popup-wrapper' ];
 		$wrapper_classes[]     = 'publish' !== $popup['status'] ? 'newspack-inactive-popup-status' : null;
 		$is_scroll_triggered   = 'scroll' === $popup['options']['trigger_type'];
+		$dismiss_action        = $popup['options']['dismiss_action'];
 
 		add_filter(
 			'newspack_analytics_events',
@@ -1185,6 +1188,26 @@ final class Newspack_Popups_Model {
 		);
 
 		$animation_id = 'a_' . $element_id;
+
+		// If the dismiss action is by form submission, dismiss the prompt when the form is submitted.
+		if ( 'form_submission' === $dismiss_action ) {
+			$newspack_form_class = apply_filters( 'newspack_campaigns_form_class', 'newspack-subscribe-form' );
+			$has_form            = preg_match( '/<form\s|mc4wp-form|\[gravityforms\s|' . $newspack_form_class . '/', $body ) !== 0;
+			if ( $has_form ) {
+				$body = str_replace(
+					'<form',
+					'<form data-submit-success on="submit-success:' . esc_attr( $element_id ) . '-close.show"',
+					$body
+				);
+			} else {
+				// If the prompt doesn't contain a form, fall back to the default close button.
+				$dismiss_action = 'close_button';
+			}
+		}
+
+		if ( 'form_submission' === $dismiss_action ) {
+			$classes[] = 'form-submit-close';
+		}
 
 		ob_start();
 		?>
@@ -1209,10 +1232,14 @@ final class Newspack_Popups_Model {
 						<?php endif; ?>
 						<?php echo do_shortcode( $body ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					</div>
-					<form class="popup-dismiss-form <?php echo esc_attr( self::get_form_class( 'dismiss', $element_id ) ); ?> popup-action-form <?php echo esc_attr( self::get_form_class( 'action', $element_id ) ); ?>"
+					<form id="<?php echo esc_attr( $element_id ); ?>-close" class="popup-dismiss-form <?php echo esc_attr( self::get_form_class( 'dismiss', $element_id ) ); ?> popup-action-form <?php echo esc_attr( self::get_form_class( 'action', $element_id ) ); ?>"
 						method="POST"
 						action-xhr="<?php echo esc_url( $endpoint ); ?>"
-						target="_top">
+						target="_top"
+						<?php if ( 'form_submission' === $dismiss_action ) : ?>
+							hidden
+						<?php endif; ?>
+						>
 						<?php echo $hidden_fields; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 						<button on="tap:<?php echo esc_attr( $element_id ); ?>.hide" class="newspack-lightbox__close" aria-label="<?php esc_html_e( 'Close Pop-up', 'newspack-popups' ); // phpcs:ignore WordPressVIPMinimum.Security.ProperEscapingFunction.htmlAttrNotByEscHTML ?>">
 							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" role="img" aria-hidden="true" focusable="false"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
@@ -1222,7 +1249,26 @@ final class Newspack_Popups_Model {
 			</div>
 			<?php if ( ! $no_overlay_background ) : ?>
 				<div style="opacity: <?php echo floatval( $overlay_opacity ); ?>;background-color:<?php echo esc_attr( $overlay_color ); ?>;" class="newspack-lightbox-shim"></div>
-				</form>
+			<?php endif; ?>
+			<?php if ( 'form_submission' === $dismiss_action ) : ?>
+				<script data-amp-plus-allowed type="text/javascript">
+					var s = document.querySelector('form[data-submit-success]');
+					var d = document.getElementById('<?php echo esc_attr( $element_id . '-close' ); ?>');
+					if ( s && d ) {
+						s.addEventListener('submit',function(e){
+							var observer = new MutationObserver(function(){
+								if (!document.body.contains(e.submitter)){
+									d.removeAttribute('hidden');
+								}
+							});
+							observer.observe(e.submitter,{
+								attributes: true,
+								subtree: false,
+								childList: false,
+							});
+						});
+					}
+				</script>
 			<?php endif; ?>
 		</amp-layout>
 		<?php if ( $is_scroll_triggered ) : ?>

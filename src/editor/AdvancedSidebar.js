@@ -12,13 +12,15 @@ import { BaseControl } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import { CategoryAutocomplete, TextControl } from 'newspack-components';
+import { CategoryAutocomplete, SelectControl, TextControl } from 'newspack-components';
 
 const AdvancedSidebar = ( {
 	onMetaFieldChange,
 	excluded_categories = [],
 	excluded_tags = [],
 	additional_classes = '',
+	dismiss_action,
+	isOverlay,
 } ) => {
 	return (
 		<Fragment>
@@ -62,6 +64,20 @@ const AdvancedSidebar = ( {
 						} )
 					}
 				/>
+				{ isOverlay && (
+					<>
+						<hr />
+						<SelectControl
+							label={ __( 'Dismiss action', 'newspack-popups' ) }
+							value={ dismiss_action }
+							options={ [
+								{ value: 'close_button', label: __( 'Close Button', 'newspack-popups' ) },
+								{ value: 'form_submission', label: __( 'Form Submission', 'newspack-popups' ) },
+							] }
+							onChange={ value => onMetaFieldChange( { dismiss_action: value } ) }
+						/>
+					</>
+				) }
 			</BaseControl>
 		</Fragment>
 	);
