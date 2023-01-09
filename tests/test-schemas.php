@@ -19,9 +19,20 @@ class SchemasTest extends WP_UnitTestCase {
 		return [
 			'complete and valid' => [
 				[
-					'title'   => 'Test Campaign',
-					'content' => 'Test content',
-					'meta'    => [
+					'title'      => 'Test Campaign',
+					'content'    => 'Test content',
+					'status'     => 'publish',
+					'categories' => [
+						[
+							'id'   => 1,
+							'name' => 'Category 1',
+						],
+						[
+							'id'   => 2,
+							'name' => 'Category 2',
+						],
+					],
+					'options'    => [
 						'background_color'               => '#FFFFFF',
 						'display_title'                  => false,
 						'hide_border'                    => false,
@@ -46,18 +57,9 @@ class SchemasTest extends WP_UnitTestCase {
 						'selected_segment_id'            => 'asdasd',
 						'post_types'                     => [ 'post' ],
 						'archive_page_types'             => [],
+						'additional_classes'             => '',
 						'excluded_categories'            => [],
 						'excluded_tags'                  => [],
-						'categories'                     => [
-							[
-								'id'   => 1,
-								'name' => 'Category 1',
-							],
-							[
-								'id'   => 2,
-								'name' => 'Category 2',
-							],
-						],
 						'duplicate_of'                   => 0,
 						'newspack_popups_has_disabled_popups' => false,
 					],
@@ -68,7 +70,8 @@ class SchemasTest extends WP_UnitTestCase {
 				[
 					'title'   => 'Test Campaign',
 					'content' => 'Test content',
-					'meta'    => [
+					'status'  => 'publish',
+					'options' => [
 						'background_color' => '#FFFFFF',
 						'display_title'    => false,
 						'hide_border'      => false,
@@ -83,7 +86,8 @@ class SchemasTest extends WP_UnitTestCase {
 				[
 					'title'   => 'Test Campaign',
 					'content' => 'Test content',
-					'meta'    => [
+					'status'  => 'publish',
+					'options' => [
 						'background_color' => '#FFFFFF',
 						'display_title'    => false,
 						'hide_border'      => false,
@@ -97,7 +101,8 @@ class SchemasTest extends WP_UnitTestCase {
 				[
 					'title'   => 'Test Campaign',
 					'content' => 'Test content',
-					'meta'    => [
+					'status'  => 'publish',
+					'options' => [
 						'background_color' => 33,
 						'display_title'    => false,
 						'hide_border'      => false,
@@ -112,7 +117,8 @@ class SchemasTest extends WP_UnitTestCase {
 				[
 					'title'   => 'Test Campaign',
 					'content' => 'Test content',
-					'meta'    => [
+					'status'  => 'publish',
+					'options' => [
 						'background_color' => '#FFFFFF',
 						'display_title'    => 'string',
 						'hide_border'      => false,
@@ -127,7 +133,8 @@ class SchemasTest extends WP_UnitTestCase {
 				[
 					'title'   => 'Test Campaign',
 					'content' => 'Test content',
-					'meta'    => [
+					'status'  => 'publish',
+					'options' => [
 						'background_color' => 'not a color',
 						'display_title'    => false,
 						'hide_border'      => false,
@@ -142,7 +149,8 @@ class SchemasTest extends WP_UnitTestCase {
 				[
 					'title'   => 'Test Campaign',
 					'content' => 'Test content',
-					'meta'    => [
+					'status'  => 'publish',
+					'options' => [
 						'background_color' => '#FFFFFF',
 						'display_title'    => false,
 						'hide_border'      => false,
@@ -158,7 +166,8 @@ class SchemasTest extends WP_UnitTestCase {
 				[
 					'title'   => 'Test Campaign',
 					'content' => 'Test content',
-					'meta'    => [
+					'status'  => 'publish',
+					'options' => [
 						'background_color' => '#FFFFFF',
 						'display_title'    => false,
 						'hide_border'      => false,
@@ -173,7 +182,8 @@ class SchemasTest extends WP_UnitTestCase {
 				[
 					'title'   => 'Test Campaign',
 					'content' => 'Test content',
-					'meta'    => [
+					'status'  => 'publish',
+					'options' => [
 						'background_color' => '#FFFFFF',
 						'display_title'    => false,
 						'hide_border'      => false,
@@ -189,7 +199,8 @@ class SchemasTest extends WP_UnitTestCase {
 				[
 					'title'   => 'Test Campaign',
 					'content' => 'Test content',
-					'meta'    => [
+					'status'  => 'publish',
+					'options' => [
 						'background_color' => '#FFFFFF',
 						'display_title'    => false,
 						'hide_border'      => false,
