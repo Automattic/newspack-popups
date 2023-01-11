@@ -1191,9 +1191,10 @@ final class Newspack_Popups_Model {
 
 		// If the dismiss action is by form submission, dismiss the prompt when the form is submitted.
 		if ( 'form_submission' === $dismiss_action ) {
+			$site_is_amp         = Newspack_Popups_Inserter::is_amp() && ! Newspack_Popups_Inserter::is_amp_plus();
 			$newspack_form_class = apply_filters( 'newspack_campaigns_form_class', 'newspack-subscribe-form' );
 			$has_form            = preg_match( '/<form\s|mc4wp-form|\[gravityforms\s|' . $newspack_form_class . '/', $body ) !== 0;
-			if ( $has_form ) {
+			if ( $has_form && ! $site_is_amp ) {
 				$body = str_replace(
 					'<form',
 					'<form data-submit-success on="submit-success:' . esc_attr( $element_id ) . '-close.show"',

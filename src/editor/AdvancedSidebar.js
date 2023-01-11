@@ -22,6 +22,7 @@ const AdvancedSidebar = ( {
 	dismiss_action,
 	isOverlay,
 } ) => {
+	const siteIsAMP = window.newspack_popups_data?.site_is_amp;
 	return (
 		<Fragment>
 			<BaseControl>
@@ -64,7 +65,7 @@ const AdvancedSidebar = ( {
 						} )
 					}
 				/>
-				{ isOverlay && (
+				{ isOverlay && ! siteIsAMP && (
 					<>
 						<hr />
 						<SelectControl

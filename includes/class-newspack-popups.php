@@ -703,6 +703,7 @@ final class Newspack_Popups {
 					)
 				),
 				'preview_query_keys'           => self::PREVIEW_QUERY_KEYS,
+				'site_is_amp'                  => Newspack_Popups_Inserter::is_amp() && ! Newspack_Popups_Inserter::is_amp_plus(),
 			]
 		);
 		\wp_enqueue_style(
