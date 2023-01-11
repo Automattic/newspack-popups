@@ -56,6 +56,7 @@ class ModelTest extends WP_UnitTestCase {
 				'additional_classes'             => '',
 				'excluded_categories'            => [],
 				'excluded_tags'                  => [],
+				'dismiss_action'                 => 'close_button',
 			],
 			'Default options are as expected.'
 		);
