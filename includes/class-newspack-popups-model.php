@@ -26,6 +26,23 @@ final class Newspack_Popups_Model {
 	protected static $inline_placements = [ 'inline', 'above_header', 'archives' ];
 
 	/**
+	 * List of hooks that can be used to insert hidden inputs in forms that will be rendered inside a popup.
+	 *
+	 * @var array
+	 */
+	protected static $form_hooks = [
+		'newspack_registration_before_form_fields',
+		'newspack_newsletters_subscribe_block_before_form_fields',
+	];
+
+	/**
+	 * Attribute to temporarily hold the current popup ID and use it in the form_hooks.
+	 *
+	 * @var ?int
+	 */
+	protected static $form_hooks_popup_id;
+
+	/**
 	 * Retrieve all Popups (first 100).
 	 *
 	 * @param  boolean $include_unpublished Whether to include unpublished posts.
@@ -1061,6 +1078,47 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
+	 * Adds a hook to print a hidden field with the current popup ID in forms redendered inside the popup.
+	 *
+	 * @param array $popup The popup data.
+	 * @return void
+	 */
+	protected static function add_form_hooks( $popup ) {
+		self::$form_hooks_popup_id = $popup['id'];
+		foreach ( self::$form_hooks as $hook ) {
+			add_action( $hook, [ __CLASS__, 'print_form_hidden_fields' ] );
+		}
+	}
+
+	/**
+	 * Removes the hook to print a hidden field with the current popup ID in forms redendered inside the popup.
+	 *
+	 * @param array $popup The popup data.
+	 * @return void
+	 */
+	protected static function remove_form_hooks( $popup ) {
+		self::$form_hooks_popup_id = null;
+		foreach ( self::$form_hooks as $hook ) {
+			remove_action( $hook, [ __CLASS__, 'print_form_hidden_fields' ] );
+		}
+	}
+
+	/**
+	 * Prints a hidden field with the current popup ID.
+	 *
+	 * @return void
+	 */
+	public static function print_form_hidden_fields() {
+		?>
+			<input
+				name="newspack_popup_id"
+				type="hidden"
+				value="<?php echo esc_attr( self::$form_hooks_popup_id ); ?>"
+			/>
+		<?php
+	}
+
+	/**
 	 * Generate markup for an inline popup.
 	 *
 	 * @param string $popup The popup object.
@@ -1072,9 +1130,11 @@ final class Newspack_Popups_Model {
 		do_action( 'newspack_campaigns_before_campaign_render', $popup );
 		$blocks = parse_blocks( $popup['content'] );
 		$body   = '';
+		self::add_form_hooks( $popup );
 		foreach ( $blocks as $block ) {
 			$body .= render_block( $block );
 		}
+		self::remove_form_hooks( $popup );
 		do_action( 'newspack_campaigns_after_campaign_render', $popup );
 
 		$element_id           = self::get_uniqid();
@@ -1148,9 +1208,11 @@ final class Newspack_Popups_Model {
 		do_action( 'newspack_campaigns_before_campaign_render', $popup );
 		$blocks = parse_blocks( $popup['content'] );
 		$body   = '';
+		self::add_form_hooks( $popup );
 		foreach ( $blocks as $block ) {
 			$body .= render_block( $block );
 		}
+		self::remove_form_hooks( $popup );
 		do_action( 'newspack_campaigns_after_campaign_render', $popup );
 
 		$element_id            = self::get_uniqid();
