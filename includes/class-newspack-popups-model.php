@@ -33,6 +33,7 @@ final class Newspack_Popups_Model {
 	protected static $form_hooks = [
 		'newspack_registration_before_form_fields',
 		'newspack_newsletters_subscribe_block_before_form_fields',
+		'newspack_blocks_donate_before_form_fields',
 	];
 
 	/**
