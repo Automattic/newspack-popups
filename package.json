@@ -31,7 +31,7 @@
     "js-cookie": "^3.0.1",
     "lodash": "^4.17.21",
     "newspack-components": "^2.1.0",
-    "qs": "^6.11.0",
+    "qs": "^6.11.1",
     "whatwg-fetch": "^3.6.2"
   },
   "devDependencies": {
