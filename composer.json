@@ -1,6 +1,7 @@
 {
   "name": "automattic/newspack-popups",
   "description": "AMP-compatible popup notifications.",
+  "type": "wordpress-plugin",
   "require-dev": {
     "automattic/vipwpcs": "^2.0",
     "wp-coding-standards/wpcs": "^2.1",
