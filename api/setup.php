@@ -40,6 +40,10 @@ function __( $in ) { return $in; }
 function wp_load_translations_early() {return null;}
 function add_filter() {}
 function do_action() {}
+function add_action() {}
+function wp_cache_init() {}
+function wp_cache_get() {}
+function wp_cache_set() {}
 function has_filter() { return false;}
 function apply_filters( $f, $in ) { return $in; }
 function is_multisite() { return false; }
