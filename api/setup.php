@@ -41,9 +41,6 @@ function wp_load_translations_early() {return null;}
 function add_filter() {}
 function do_action() {}
 function add_action() {}
-function wp_cache_init() {}
-function wp_cache_get() {}
-function wp_cache_set() {}
 function has_filter() { return false;}
 function apply_filters( $f, $in ) { return $in; }
 function is_multisite() { return false; }
@@ -76,7 +73,13 @@ $wpdb->set_prefix( $db_prefix );
 global $table_prefix;
 $table_prefix = $db_prefix;
 
-wp_cache_init();
+if ( function_exists( 'wp_cache_init' ) ) {
+	wp_cache_init();
+} else {
+	function wp_cache_init() {}
+	function wp_cache_get() {}
+	function wp_cache_set() {}
+}
 
 // phpcs:enable
 
