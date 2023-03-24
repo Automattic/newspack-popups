@@ -106,7 +106,7 @@
         {
             "status": "draft",
             "title": "Inline Newsletter Signup (secondary)",
-            "content": "<!-- wp:paragraph -->\n<p>Signup for our free newsletter to receive the latest news<\/p>\n<!-- \/wp:paragraph -->\n\n<!-- wp:newspack-newsletters\/subscribe \/-->\n\n<!-- wp:separator -->\n<hr class=\"wp-block-separator has-alpha-channel-opacity\"\/>\n<!-- \/wp:separator -->",
+            "content": "<!-- wp:group {\"className\":\"is-style-border\",\"layout\":{\"type\":\"constrained\"}} -->\n<div class=\"wp-block-group is-style-border\"><!-- wp:paragraph -->\n<p>Signup for our free newsletter to receive the latest news<\/p>\n<!-- \/wp:paragraph -->\n\n<!-- wp:newspack-newsletters\/subscribe \/--><\/div>\n<!-- \/wp:group -->",
             "options": {
                 "background_color": "#FFFFFF",
                 "display_title": false,
@@ -122,10 +122,10 @@
                 "overlay_size": "medium",
                 "no_overlay_background": false,
                 "placement": "inline",
-                "trigger_type": "scroll",
+                "trigger_type": "blocks_count",
                 "trigger_delay": "3",
                 "trigger_scroll_progress": 0,
-                "trigger_blocks_count": 0,
+                "trigger_blocks_count": 2,
                 "archive_insertion_posts_count": 1,
                 "archive_insertion_is_repeating": false,
                 "selected_segment_id": "639b333b41025,639b337fdbf33",
