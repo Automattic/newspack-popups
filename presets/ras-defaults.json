@@ -106,7 +106,7 @@
         {
             "status": "draft",
             "title": "Inline Newsletter Signup (secondary)",
-            "content": "<!-- wp:paragraph -->\n<p>Signup for our free newsletter to receive the latest news</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:newspack-newsletters/subscribe /-->",
+            "content": "<!-- wp:paragraph -->\n<p>Sign up for our free newsletter to receive the latest news</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:newspack-newsletters/subscribe /-->",
             "options": {
                 "background_color": "#FFFFFF",
                 "display_title": false,
