@@ -223,14 +223,31 @@ class Newspack_Popups_Importer {
 	 * @return void
 	 */
 	private function process_prompts() {
-		$prompts = $this->input['prompts'];
-		$prompts = $this->pre_process_prompt_segments( $prompts );
-		$prompts = $this->pre_process_prompts_terms( $prompts );
+		$prompts    = $this->input['prompts'];
+		$prompts    = $this->pre_process_prompt_segments( $prompts );
+		$prompts    = $this->pre_process_prompts_terms( $prompts );
+		$user_input = isset( $this->input['user_input'] ) ? $this->input['user_input'] : [];
 
 		foreach ( $prompts as $prompt ) {
+			$prompt_slug       = isset( $prompt['slug'] ) ? $prompt['slug'] : null;
+			$prompt_content    = $prompt['content'];
+			$user_input_fields = isset( $prompt['user_input_fields'] ) ? $prompt['user_input_fields'] : [];
+
+			foreach ( $user_input_fields as $user_input_field ) {
+				$field_name = $user_input_field['name'];
+				$value      = $prompt_slug && isset( $user_input[ $prompt_slug ][ $field_name ] ) ? $user_input[ $prompt_slug ][ $field_name ] : $user_input_field['default'];
+
+				// Crop the value if max_length is set.
+				if ( isset( $user_input_field['max_length'] ) ) {
+					$value = substr( $value, 0, $user_input_field['max_length'] );
+				}
+
+				$prompt_content = str_replace( '{{' . $field_name . '}}', $value, $prompt_content );
+			}
+
 			$post_data = [
 				'post_title'   => $prompt['title'],
-				'post_content' => $prompt['content'],
+				'post_content' => $prompt_content,
 				'post_status'  => $prompt['status'],
 				'post_type'    => Newspack_Popups::NEWSPACK_POPUPS_CPT,
 			];
@@ -252,6 +269,11 @@ class Newspack_Popups_Importer {
 			}
 			if ( ! empty( $prompt['tags'] ) ) {
 				Newspack_Popups_Model::set_popup_terms( $new_post, $prompt['tags'], 'post_tag' );
+			}
+
+			// If there's a featured image.
+			if ( ! empty( $prompt['featured_image_id'] ) && false !== wp_get_attachment_url( (int) $prompt['featured_image_id'] ) ) {
+				set_post_thumbnail( $new_post, (int) $prompt['featured_image_id'] );
 			}
 		}
 	}
