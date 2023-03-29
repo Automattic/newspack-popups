@@ -421,6 +421,8 @@ final class Newspack_Popups_Inserter {
 	 * Whether the given post is being restricted by Woo Memberships.
 	 *
 	 * @param int $post_id The post ID.
+	 *
+	 * @return bool
 	 */
 	private static function is_memberships_restricted( $post_id = null ) {
 		if ( ! function_exists( 'wc_memberships_is_post_content_restricted' ) ) {
