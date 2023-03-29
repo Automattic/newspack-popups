@@ -19,10 +19,10 @@ class SchemasTest extends WP_UnitTestCase {
 		return [
 			'complete and valid' => [
 				[
-					'title'       => 'Test Campaign',
-					'content'     => 'Test content',
-					'status'      => 'publish',
-					'categories'  => [
+					'title'             => 'Test Campaign',
+					'content'           => 'Test content',
+					'status'            => 'publish',
+					'categories'        => [
 						[
 							'id'   => 1,
 							'name' => 'Category 1',
@@ -32,7 +32,7 @@ class SchemasTest extends WP_UnitTestCase {
 							'name' => 'Category 2',
 						],
 					],
-					'options'     => [
+					'options'           => [
 						'background_color'               => '#FFFFFF',
 						'display_title'                  => false,
 						'hide_border'                    => false,
@@ -63,7 +63,7 @@ class SchemasTest extends WP_UnitTestCase {
 						'duplicate_of'                   => 0,
 						'newspack_popups_has_disabled_popups' => false,
 					],
-					'user_inputs' => [
+					'user_input_fields' => [
 						[
 							'name'        => 'heading',
 							'type'        => 'string',

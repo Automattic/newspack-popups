@@ -49,7 +49,7 @@
                     "name": "Reader Activation Defaults"
                 }
             ],
-            "user_inputs": [
+            "user_input_fields": [
                 {
                     "name": "heading",
                     "type": "string",
@@ -140,7 +140,7 @@
                     "name": "Reader Activation Defaults"
                 }
             ],
-            "user_inputs": [
+            "user_input_fields": [
                 {
                     "name": "heading",
                     "type": "string",
@@ -228,7 +228,7 @@
                     "name": "Reader Activation Defaults"
                 }
             ],
-            "user_inputs": [
+            "user_input_fields": [
                 {
                     "name": "body",
                     "type": "string",
@@ -310,7 +310,7 @@
                     "name": "Reader Activation Defaults"
                 }
             ],
-            "user_inputs": [
+            "user_input_fields": [
                 {
                     "name": "heading",
                     "type": "string",
@@ -401,7 +401,7 @@
                     "name": "Reader Activation Defaults"
                 }
             ],
-            "user_inputs": [
+            "user_input_fields": [
                 {
                     "name": "heading",
                     "type": "string",

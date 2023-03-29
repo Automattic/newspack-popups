@@ -361,8 +361,8 @@ class Prompts extends Schema {
 					],
 				],
 				// Required user inputs when auto-generating a prompt. These will be shown as fields in the UI.
-				'user_inputs'       => [
-					'name'     => 'user_inputs',
+				'user_input_fields'       => [
+					'name'     => 'user_input_fields',
 					'type'     => 'array',
 					'required' => false,
 					'default'  => [],
@@ -392,20 +392,7 @@ class Prompts extends Schema {
 							],
 							// Default value of the input. This will be populated by default in the UI.
 							'default'     => [
-								'type' => [
-									'string',
-									'integer',
-									'boolean',
-								],
-							],
-							// Value of the input as inputted by the user.
-							'value'       => [
-								'type'     => [
-									'string',
-									'integer',
-									'boolean',
-								],
-								'required' => false,
+								'type' => 'string',
 							],
 							// If a string, maximum length for the input value. This will be used to validate the input in the UI.
 							'max_length'  => [
