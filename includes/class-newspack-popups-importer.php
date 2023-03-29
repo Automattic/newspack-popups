@@ -229,13 +229,13 @@ class Newspack_Popups_Importer {
 		$user_input = isset( $this->input['user_input'] ) ? $this->input['user_input'] : [];
 
 		foreach ( $prompts as $prompt ) {
-			$prompt_slug       = $prompt['slug'];
+			$prompt_slug       = isset( $prompt['slug'] ) ? $prompt['slug'] : null;
 			$prompt_content    = $prompt['content'];
 			$user_input_fields = isset( $prompt['user_input_fields'] ) ? $prompt['user_input_fields'] : [];
 
 			foreach ( $user_input_fields as $user_input_field ) {
 				$field_name = $user_input_field['name'];
-				$value      = isset( $user_input[ $prompt_slug ][ $field_name ] ) ? $user_input[ $prompt_slug ][ $field_name ] : $user_input_field['default'];
+				$value      = $prompt_slug && isset( $user_input[ $prompt_slug ][ $field_name ] ) ? $user_input[ $prompt_slug ][ $field_name ] : $user_input_field['default'];
 
 				// Crop the value if max_length is set.
 				if ( isset( $user_input_field['max_length'] ) ) {
