@@ -361,7 +361,7 @@ class Prompts extends Schema {
 					],
 				],
 				// Required user inputs when auto-generating a prompt. These will be shown as fields in the UI.
-				'user_input_fields'       => [
+				'user_input_fields' => [
 					'name'     => 'user_input_fields',
 					'type'     => 'array',
 					'required' => false,
