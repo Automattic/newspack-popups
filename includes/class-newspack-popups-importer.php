@@ -230,7 +230,7 @@ class Newspack_Popups_Importer {
 
 		foreach ( $prompts as $prompt ) {
 			$prompt_content    = $prompt['content'];
-			$user_input_fields = isset( $prompt['user_inputs'] ) ? $prompt['user_inputs'] : [];
+			$user_input_fields = isset( $prompt['user_input_fields'] ) ? $prompt['user_input_fields'] : [];
 
 			foreach ( $user_input_fields as $user_input_field ) {
 				$field_name = $user_input_field['name'];
