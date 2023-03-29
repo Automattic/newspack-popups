@@ -19,6 +19,7 @@ class SchemasTest extends WP_UnitTestCase {
 		return [
 			'complete and valid' => [
 				[
+					'slug'              => 'test_campaign',
 					'title'             => 'Test Campaign',
 					'content'           => 'Test content',
 					'status'            => 'publish',

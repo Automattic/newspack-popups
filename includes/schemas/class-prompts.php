@@ -25,6 +25,11 @@ class Prompts extends Schema {
 			'type'                 => 'object',
 			'additionalProperties' => false,
 			'properties'           => [
+				'slug'              => [
+					'name'     => 'slug', // An optional unique slug to describe the purpose of the prompt.
+					'type'     => 'string',
+					'required' => false,
+				],
 				'title'             => [
 					'name'     => 'title',
 					'type'     => 'string',
