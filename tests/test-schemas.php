@@ -257,6 +257,7 @@ class SchemasTest extends WP_UnitTestCase {
 						'favorite_categories' => [],
 						'referrers'           => '',
 						'referrers_not'       => '',
+						'is_disabled'         => false,
 					],
 				],
 				true,

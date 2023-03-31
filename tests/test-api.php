@@ -44,6 +44,10 @@ class APITest extends WP_UnitTestCase {
 		self::$category_ids = [ $category_1_id, $category_2_id ];
 		$test_segments      = [
 			'defaultSegment'                      => [],
+			'disabledSegment'                     => [
+				'is_not_subscribed' => true,
+				'is_disabled'       => true,
+			],
 			'segmentBetween3And5'                 => [
 				'min_posts' => 2,
 				'max_posts' => 3,
@@ -136,6 +140,24 @@ class APITest extends WP_UnitTestCase {
 			'context'      => $context,
 			'value'        => $value,
 		];
+	}
+
+	/**
+	 * Test disabled segment.
+	 */
+	public function test_disabled_segment() {
+		$test_popup = self::create_test_popup(
+			[
+				'placement'           => 'inline',
+				'frequency'           => 'always',
+				'selected_segment_id' => self::$segment_ids['disabledSegment'],
+			]
+		);
+
+		self::assertFalse(
+			self::$maybe_show_campaign->should_popup_be_shown( self::$client_id, $test_popup['payload'], self::$settings ),
+			'Assert not shown if segment is disabled.'
+		);
 	}
 
 	/**
