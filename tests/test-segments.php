@@ -105,6 +105,16 @@ class SegmentsTest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Make sure we have a clear environment
+	 */
+	public static function set_up_before_class() {
+		$segments = Newspack_Popups_Segmentation::get_segments();
+		foreach ( $segments as $segment ) {
+			Newspack_Popups_Segmentation::delete_segment( $segment['id'] );
+		}
+	}
+
+	/**
 	 * Test create_segment
 	 *
 	 * @param array $segment The segment.
