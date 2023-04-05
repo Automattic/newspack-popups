@@ -51,7 +51,7 @@ class SegmentsTest extends WP_UnitTestCase {
 	];
 
 	/**
-	 * A segment missint required properties.
+	 * A segment missing required properties.
 	 *
 	 * @var array
 	 */
