@@ -30,26 +30,10 @@ function domReady( callback ) {
  */
 import './style.scss';
 import './patterns.scss';
-import { getClientIDValue, waitUntil } from './utils';
-import { manageAnalyticsLinkers, manageAnalyticsEvents } from './analytics';
-import { manageForms } from './form';
-import { manageAnimations } from './animation';
-import { managePositionObservers } from './position-observer';
-import { manageBinds } from './bind';
-import { manageAccess } from './access';
+import { initReader } from './reader';
+import { initSegmentation } from './segmentation';
 
 if ( typeof window !== 'undefined' ) {
-	domReady( () => {
-		// Handle linkers right away, before amp-access sets a cookie value.
-		manageAnalyticsLinkers();
-
-		// But don't manage analytics events until the client ID is available.
-		waitUntil( getClientIDValue, manageAnalyticsEvents );
-
-		manageForms();
-		manageAnimations();
-		managePositionObservers();
-		manageBinds();
-		manageAccess();
-	} );
+	initReader(); // localStorage doesn't need the DOM
+	domReady( initSegmentation );
 }

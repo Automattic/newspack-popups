@@ -27,16 +27,22 @@ $width__tablet: 782px;
 	left: 0;
 	margin: 0 !important;
 	max-width: 100% !important;
-	opacity: 0;
+	opacity: 1;
 	position: fixed;
 	right: 0;
 	top: 0;
-	// Popup needs to be initially out of the viewport,
-	// so that analytics work when checking visibility.
-	transform: translateY( 90vh );
-	visibility: hidden;
+	transition: opacity 0.2s ease-in-out;
 	width: 100% !important;
 	z-index: 99999;
+
+	&[amp-access-hide] {
+		opacity: 0;
+		z-index: -1;
+
+		.newspack-popup-wrapper {
+			transform: translateY( 5rem );
+		}
+	}
 
 	.admin-bar & {
 		@media only screen and ( min-width: #{$width__mobile + 1} ) {
@@ -70,6 +76,8 @@ $width__tablet: 782px;
 		box-shadow: 0 0 1em 0.5em rgba( black, 0.1 );
 		overflow-x: hidden;
 		position: relative;
+		transform: none;
+		transition: transform 0.2s ease-in-out;
 		z-index: 1;
 	}
 

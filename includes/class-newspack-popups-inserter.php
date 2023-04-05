@@ -580,6 +580,63 @@ final class Newspack_Popups_Inserter {
 	}
 
 	/**
+	 * Get info on the current pageview/visit.
+	 *
+	 * @return array
+	 */
+	public static function get_visit() {
+		$visit = [];
+
+		if ( \is_singular() ) {
+			$visit['post_type'] = \get_post_type();
+			$visit['post_id']   = \get_the_ID();
+
+			$categories   = \get_the_category();
+			$category_ids = '';
+			if ( ! empty( $categories ) ) {
+				$category_ids = implode(
+					',',
+					array_map(
+						function( $cat ) {
+							return $cat->term_id;
+						},
+						$categories
+					)
+				);
+			}
+
+			if ( ! empty( $category_ids ) ) {
+				$visit['categories'] = esc_attr( $category_ids );
+			}
+		} else {
+			global $wp;
+			$non_singular_query_type = 'unknown';
+			$request                 = $wp->query_vars;
+
+			if ( is_archive() ) {
+				$non_singular_query_type = 'archive';
+			}
+			if ( is_search() ) {
+				$non_singular_query_type = 'search';
+			}
+			if ( is_feed() ) {
+				$non_singular_query_type = 'feed';
+			}
+			if ( is_home() ) {
+				$non_singular_query_type = 'posts_page';
+			}
+			if ( is_404() ) {
+				$non_singular_query_type = '404';
+			}
+
+			$visit['request']      = $request;
+			$visit['request_type'] = $non_singular_query_type;
+		}
+
+		return $visit;
+	}
+
+	/**
 	 * Enqueue the assets needed to display the popups.
 	 */
 	public static function enqueue_scripts() {
@@ -634,7 +691,8 @@ final class Newspack_Popups_Inserter {
 				true
 			);
 			$script_data = [
-				'cid_cookie_name' => Newspack_Popups_Segmentation::NEWSPACK_SEGMENTATION_CID_NAME,
+				'visit'    => self::get_visit(),
+				'segments' => Newspack_Popups_Segmentation::get_segments(),
 			];
 			\wp_localize_script( $script_handle, 'newspack_popups_view', $script_data );
 			\wp_enqueue_script( $script_handle );
