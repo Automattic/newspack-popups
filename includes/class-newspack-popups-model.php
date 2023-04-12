@@ -56,7 +56,7 @@ final class Newspack_Popups_Model {
 		}
 
 		$lists = array_reduce(
-			method_exists( '\Newspack_Newsletters_Subscription', 'get_lists' ) ? \Newspack_Newsletters_Subscription::get_lists() : [],
+			$provider_lists,
 			function( $acc, $list ) {
 				if ( ! empty( $list['active'] ) ) {
 					$acc[] = [
