@@ -395,7 +395,7 @@ final class Newspack_Popups_Inserter {
 				$insert_for_blocks = 'blocks_count' === $trigger_type && $block_index >= $position;
 
 				if ( $insert_at_zero || $insert_for_scroll || $insert_for_blocks ) {
-					$output                     .= '<!-- wp:html --><aside>' . Newspack_Popups_Model::generate_popup( $inline_popup ) . '</aside><!-- /wp:html -->';
+					$output                     .= '<!-- wp:shortcode -->[newspack-popup id="' . $inline_popup['id'] . '"]<!-- /wp:shortcode -->';
 					$inline_popup['is_inserted'] = true;
 				}
 			}
@@ -409,7 +409,7 @@ final class Newspack_Popups_Inserter {
 		// 3. Insert any remaining inline prompts at the end.
 		foreach ( $inline_popups as &$inline_popup ) {
 			if ( ! $inline_popup['is_inserted'] ) {
-				$output                     .= '<!-- wp:html --><aside>' . Newspack_Popups_Model::generate_popup( $inline_popup ) . '</aside><!-- /wp:html -->';
+				$output                     .= '<!-- wp:shortcode -->[newspack-popup id="' . $inline_popup['id'] . '"]<!-- /wp:shortcode -->';
 				$inline_popup['is_inserted'] = true;
 			}
 		}

@@ -381,7 +381,7 @@ class Prompts extends Schema {
 							],
 							// Data type for the input.
 							'type'        => [
-								'type' => [ 'array', 'int', 'string' ],
+								'type' => [ 'array', 'integer', 'string' ],
 							],
 							// Label for the input.
 							'label'       => [

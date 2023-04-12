@@ -540,7 +540,7 @@ final class Newspack_Popups_Model {
 			'utm_suppression'                => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['utm_suppression'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
 		];
 
-		if ( $preset['featured_image_id'] ) {
+		if ( ! empty( $preset['featured_image_id'] ) ) {
 			$options['featured_image_id'] = $preset['featured_image_id'];
 		}
 
@@ -1552,7 +1552,7 @@ final class Newspack_Popups_Model {
 				<div class="newspack-popup__content-wrapper" style="<?php echo $hide_border ? esc_attr( self::container_style( $popup ) ) : ''; ?>">
 					<?php if ( $has_featured_image ) : ?>
 						<div class="newspack-popup__featured-image">
-							<?php echo ! empty( $popup['options']['featured_image_id'] ) ? wp_get_attachment_image( $popup['options']['featured_image_id'] ) : get_the_post_thumbnail( $popup['id'], 'large' ); ?>
+							<?php echo ! empty( $popup['options']['featured_image_id'] ) ? wp_get_attachment_image( $popup['options']['featured_image_id'], 'large' ) : get_the_post_thumbnail( $popup['id'], 'large' ); ?>
 						</div>
 					<?php endif; ?>
 					<div class="newspack-popup__content">
