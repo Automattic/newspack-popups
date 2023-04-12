@@ -98,7 +98,7 @@ final class Newspack_Popups_Model {
 				if ( ! empty( $saved_inputs[ $prompt['slug'] ] ) ) {
 					$fields                      = array_map(
 						function ( $field ) use ( $saved_inputs, $prompt ) {
-							if ( isset( $saved_inputs[ $prompt['slug'] ][ $field['name'] ] ) ) {
+							if ( ! empty( $saved_inputs[ $prompt['slug'] ][ $field['name'] ] ) ) {
 								$field['value'] = $saved_inputs[ $prompt['slug'] ][ $field['name'] ];
 							}
 							return $field;
