@@ -381,7 +381,7 @@ class Prompts extends Schema {
 							],
 							// Data type for the input.
 							'type'        => [
-								'type' => 'string',
+								'type' => [ 'array', 'int', 'string' ],
 							],
 							// Label for the input.
 							'label'       => [
@@ -402,6 +402,11 @@ class Prompts extends Schema {
 							// If a string, maximum length for the input value. This will be used to validate the input in the UI.
 							'max_length'  => [
 								'type'     => 'integer',
+								'required' => false,
+							],
+							// If an array, selectable options.
+							'options'     => [
+								'type'     => 'array',
 								'required' => false,
 							],
 						],

@@ -44,6 +44,216 @@ final class Newspack_Popups_Model {
 	protected static $form_hooks_popup_id;
 
 	/**
+	 * Get subscribable lists from the Newspack Newsletters plugin.
+	 *
+	 * @return array Array of lists.
+	 */
+	private static function get_newsletter_lists() {
+		// TODO: There's a race condition here.
+		$lists = array_reduce(
+			method_exists( '\Newspack_Newsletters_Subscription', 'get_lists' ) ? \Newspack_Newsletters_Subscription::get_lists() : [],
+			function( $acc, $list ) {
+				if ( ! empty( $list['active'] ) ) {
+					$acc[] = [
+						'id'          => $list['id'] ?? 0,
+						'label'       => $list['title'] ?? '',
+						'description' => $list['description'] ?? '',
+						'checked'     => false,
+					];
+				}
+
+				return $acc;
+			},
+			[]
+		);
+
+		return $lists;
+	}
+
+	/**
+	 * Retrieve default prompts + segments.
+	 *
+	 * @return array Array of prompt and segment default configs.
+	 */
+	public static function get_ras_presets() {
+		$file = dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/presets/ras-defaults.json';
+
+		if ( ! is_readable( $file ) ) {
+			return new \WP_Error( 'newspack_popups_file_read_error', __( 'File not found or not readable.', 'newspack-popups' ) );
+		}
+
+		$data = wp_json_file_decode( $file, [ 'associative' => true ] );
+
+		if ( empty( $data ) || empty( $data['prompts'] ) || empty( $data['segments'] ) ) {
+			return new \WP_Error( 'newspack_popups_file_read_error', __( 'File is empty or invalid JSON.', 'newspack-popups' ) );
+		}
+
+		$saved_inputs = \get_option( Newspack_Popups::NEWSPACK_POPUPS_RAS_PROMPTS_OPTION, [] );
+		$lists        = self::get_newsletter_lists();
+
+		// Populate prompt configs with saved inputs.
+		$data['prompts'] = array_map(
+			function( $prompt ) use ( $lists, $saved_inputs ) {
+				// Check for saved inputs.
+				if ( ! empty( $saved_inputs[ $prompt['slug'] ] ) ) {
+					$fields                      = array_map(
+						function ( $field ) use ( $saved_inputs, $prompt ) {
+							if ( isset( $saved_inputs[ $prompt['slug'] ][ $field['name'] ] ) ) {
+								$field['value'] = $saved_inputs[ $prompt['slug'] ][ $field['name'] ];
+							}
+							return $field;
+						},
+						$prompt['user_input_fields']
+					);
+					$prompt['user_input_fields'] = $fields;
+
+					// Mark as ready if all required inputs are filled.
+					if ( ! empty( $saved_inputs[ $prompt['slug'] ]['ready'] ) ) {
+						$prompt['ready'] = true;
+					}
+				}
+
+				// Populate placeholder content with saved inputs or default values.
+				foreach ( $prompt['user_input_fields'] as $field ) {
+					if ( 'array' === $field['type'] || 'string' === $field['type'] ) {
+						$prompt['content'] = self::process_user_inputs( $prompt['content'], $field );
+					}
+					if ( 'int' === $field['type'] && 'featured_image_id' === $field['name'] && isset( $field['value'] ) ) {
+						$prompt['featured_image_id'] = $field['value'];
+					}
+				}
+
+				// Append newsletter list IDs as a selectable field.
+				if ( false !== strpos( $prompt['slug'], '_registration_' ) || false !== strpos( $prompt['slug'], '_newsletter_' ) ) {
+					$fields                      = array_map(
+						function( $field ) use ( $lists ) {
+							if ( 'lists' === $field['name'] ) {
+								$field['options'] = $lists;
+							}
+
+							return $field;
+						},
+						$prompt['user_input_fields']
+					);
+					$prompt['user_input_fields'] = $fields;
+				}
+
+				return $prompt;
+			},
+			$data['prompts']
+		);
+
+		return $data;
+	}
+
+	/**
+	 * Replace placeholders in a prompt's content with user input or default values.
+	 *
+	 * @param string $prompt_content Prompt content.
+	 * @param array  $field Field config.
+	 *               $field['name'] string Field name. Required.
+	 *               $field['type'] string Field value type: array or string. Required.
+	 *               $field['default'] string Field default value. Required.
+	 *               $field['value'] string Field user input value.
+	 *               $field['max_length'] int Max length of string-type user input value.
+	 *
+	 * @return string Prompt content with placeholders replaced.
+	 */
+	public static function process_user_inputs( $prompt_content, $field ) {
+		if ( ! isset( $field['name'] ) || ! isset( $field['type'] ) || ! isset( $field['default'] ) ) {
+			return $prompt_content;
+		}
+
+		$field_name = $field['name'];
+		$value      = isset( $field['value'] ) ? $field['value'] : $field['default'];
+
+		// If a string, crop to max_length if set.
+		if ( 'string' === $field['type'] && isset( $field['max_length'] ) ) {
+			$value = substr( trim( $value ), 0, $field['max_length'] );
+		}
+		// If an array, stringify with field name.
+		if ( 'array' === $field['type'] ) {
+			$value = '"' . $field_name . '": ' . \wp_json_encode( $value );
+		}
+
+		$prompt_content = str_replace( '{{' . $field_name . '}}', $value, $prompt_content );
+
+		return $prompt_content;
+	}
+
+	/**
+	 * Update saved inputs for a prompt preset.
+	 *
+	 * @param string $slug Slug name of the preset.
+	 * @param array  $inputs Array of user inputs, keyed by field name.
+	 * @return boolean True if updated, false if not.
+	 */
+	public static function update_preset_prompt( $slug, $inputs ) {
+		$defaults       = self::get_ras_presets();
+		$saved_inputs   = \get_option( Newspack_Popups::NEWSPACK_POPUPS_RAS_PROMPTS_OPTION, [] );
+		$updated        = false;
+		$ready          = true;
+		$default_slugs  = array_map(
+			function( $default_prompt ) {
+				return $default_prompt['slug'];
+			},
+			$defaults['prompts']
+		);
+		$default_fields = array_reduce(
+			$defaults['prompts'],
+			function( $acc, $prompt ) use ( $slug ) {
+				if ( $prompt['slug'] === $slug ) {
+					$acc = $prompt['user_input_fields'];
+				}
+				return $acc;
+			},
+			[]
+		);
+
+		// Validate prompt slug.
+		if ( ! in_array( $slug, $default_slugs, true ) ) {
+			return new \WP_Error( 'newspack_popups_update_ras_prompt_error', __( 'Invalid prompt slug.', 'newspack-popups' ) );
+		}
+
+		foreach ( $inputs as $field_name => $input ) {
+			$field_info = array_values(
+				array_filter(
+					$default_fields,
+					function( $field ) use ( $field_name ) {
+						return $field['name'] === $field_name;
+					}
+				)
+			);
+
+			// Validate prompt fields.
+			if ( empty( $field_info ) ) {
+				return new \WP_Error( 'newspack_popups_update_ras_prompt_error', __( 'Invalid field name.', 'newspack-popups' ) );
+			}
+			$field_info = $field_info[0];
+
+			// Save input value.
+			if ( isset( $input ) ) {
+				$saved_inputs[ $slug ][ $field_name ] = $input;
+			}
+
+			// Determine ready state.
+			if ( $field_info['required'] && empty( $input ) ) {
+				$ready = false;
+			}
+		}
+
+		if ( $ready ) {
+			$saved_inputs[ $slug ]['ready'] = true;
+		} else {
+			unset( $saved_inputs[ $slug ]['ready'] );
+		}
+
+		\update_option( Newspack_Popups::NEWSPACK_POPUPS_RAS_PROMPTS_OPTION, $saved_inputs );
+
+		return self::get_ras_presets();
+	}
+
+	/**
 	 * Retrieve all Popups (first 100).
 	 *
 	 * @param  boolean $include_unpublished Whether to include unpublished posts.
@@ -240,28 +450,104 @@ final class Newspack_Popups_Model {
 			$post_object,
 			false,
 			[
-				'background_color'               => filter_input( INPUT_GET, 'n_bc', FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
-				'display_title'                  => filter_input( INPUT_GET, 'n_ti', FILTER_VALIDATE_BOOLEAN ),
-				'hide_border'                    => filter_input( INPUT_GET, 'n_hb', FILTER_VALIDATE_BOOLEAN ),
-				'large_border'                   => filter_input( INPUT_GET, 'n_lb', FILTER_VALIDATE_BOOLEAN ),
-				'frequency'                      => filter_input( INPUT_GET, 'n_fr', FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
-				'frequency_max'                  => filter_input( INPUT_GET, 'n_fm', FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
-				'frequency_start'                => filter_input( INPUT_GET, 'n_fs', FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
-				'frequency_between'              => filter_input( INPUT_GET, 'n_fb', FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
-				'frequency_reset'                => filter_input( INPUT_GET, 'n_ft', FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
-				'overlay_color'                  => filter_input( INPUT_GET, 'n_oc', FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
-				'overlay_opacity'                => filter_input( INPUT_GET, 'n_oo', FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
-				'overlay_size'                   => filter_input( INPUT_GET, 'n_os', FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
-				'no_overlay_background'          => filter_input( INPUT_GET, 'n_bg', FILTER_VALIDATE_BOOLEAN ),
-				'placement'                      => filter_input( INPUT_GET, 'n_pl', FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
-				'trigger_type'                   => filter_input( INPUT_GET, 'n_tt', FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
-				'trigger_delay'                  => filter_input( INPUT_GET, 'n_td', FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
-				'trigger_scroll_progress'        => filter_input( INPUT_GET, 'n_ts', FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
-				'trigger_blocks_count'           => filter_input( INPUT_GET, 'n_tb', FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
-				'archive_insertion_posts_count'  => filter_input( INPUT_GET, 'n_ac', FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
-				'archive_insertion_is_repeating' => filter_input( INPUT_GET, 'n_ar', FILTER_VALIDATE_BOOLEAN ),
-				'utm_suppression'                => filter_input( INPUT_GET, 'n_ut', FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
+				'background_color'               => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['background_color'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
+				'display_title'                  => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['display_title'], FILTER_VALIDATE_BOOLEAN ),
+				'hide_border'                    => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['hide_border'], FILTER_VALIDATE_BOOLEAN ),
+				'large_border'                   => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['large_border'], FILTER_VALIDATE_BOOLEAN ),
+				'frequency'                      => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['frequency'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
+				'frequency_max'                  => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['frequency_max'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
+				'frequency_start'                => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['frequency_start'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
+				'frequency_between'              => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['frequency_between'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
+				'frequency_reset'                => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['frequency_reset'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
+				'overlay_color'                  => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['overlay_color'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
+				'overlay_opacity'                => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['overlay_opacity'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
+				'overlay_size'                   => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['overlay_size'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
+				'no_overlay_background'          => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['no_overlay_background'], FILTER_VALIDATE_BOOLEAN ),
+				'placement'                      => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['placement'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
+				'trigger_type'                   => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['trigger_type'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
+				'trigger_delay'                  => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['trigger_delay'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
+				'trigger_scroll_progress'        => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['trigger_scroll_progress'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
+				'trigger_blocks_count'           => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['trigger_blocks_count'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
+				'archive_insertion_posts_count'  => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['archive_insertion_posts_count'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
+				'archive_insertion_is_repeating' => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['archive_insertion_is_repeating'], FILTER_VALIDATE_BOOLEAN ),
+				'utm_suppression'                => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['utm_suppression'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
 			]
+		);
+	}
+
+	/**
+	 * Retrieve popup preview preset prompt.
+	 *
+	 * @param string $slug Preset slug.
+	 * @return object Popup object.
+	 */
+	public static function retrieve_preset_popup( $slug ) {
+		$presets = self::get_ras_presets();
+
+		if ( \is_wp_error( $presets ) || ! $presets || ! isset( $presets['prompts'] ) ) {
+			return null;
+		}
+
+		$preset = array_filter(
+			$presets['prompts'],
+			function( $preset ) use ( $slug ) {
+				return $preset['slug'] === $slug;
+			}
+		);
+
+		if ( empty( $preset ) ) {
+			return null;
+		}
+
+		// Create a fake post object from the preset data.
+		$preset                      = reset( $preset );
+		$post_object                 = new stdClass();
+		$post_object->ID             = \wp_rand( 10000000, 10001000 ); // Make the ID really high to avoid collision with real post IDs.
+		$post_object->post_title     = $preset['title'];
+		$post_object->post_author    = 1;
+		$post_object->post_date      = current_time( 'mysql' );
+		$post_object->post_date_gmt  = current_time( 'mysql', 1 );
+		$post_object->post_content   = $preset['content'];
+		$post_object->post_status    = 'publish';
+		$post_object->comment_status = 'closed';
+		$post_object->ping_status    = 'closed';
+		$post_object->post_name      = $slug;
+		$post_object->post_type      = Newspack_Popups::NEWSPACK_POPUPS_CPT;
+		$post_object->filter         = 'raw'; // Don't try to fetch from the wp_posts table.
+		$post_object                 = new \WP_Post( $post_object );
+
+		$options = [
+			'background_color'               => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['background_color'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
+			'display_title'                  => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['display_title'], FILTER_VALIDATE_BOOLEAN ),
+			'hide_border'                    => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['hide_border'], FILTER_VALIDATE_BOOLEAN ),
+			'large_border'                   => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['large_border'], FILTER_VALIDATE_BOOLEAN ),
+			'frequency'                      => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['frequency'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
+			'frequency_max'                  => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['frequency_max'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
+			'frequency_start'                => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['frequency_start'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
+			'frequency_between'              => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['frequency_between'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
+			'frequency_reset'                => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['frequency_reset'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
+			'overlay_color'                  => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['overlay_color'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
+			'overlay_opacity'                => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['overlay_opacity'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
+			'overlay_size'                   => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['overlay_size'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
+			'no_overlay_background'          => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['no_overlay_background'], FILTER_VALIDATE_BOOLEAN ),
+			'placement'                      => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['placement'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
+			'trigger_type'                   => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['trigger_type'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
+			'trigger_delay'                  => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['trigger_delay'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
+			'trigger_scroll_progress'        => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['trigger_scroll_progress'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
+			'trigger_blocks_count'           => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['trigger_blocks_count'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
+			'archive_insertion_posts_count'  => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['archive_insertion_posts_count'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
+			'archive_insertion_is_repeating' => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['archive_insertion_is_repeating'], FILTER_VALIDATE_BOOLEAN ),
+			'utm_suppression'                => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['utm_suppression'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
+		];
+
+		if ( $preset['featured_image_id'] ) {
+			$options['featured_image_id'] = $preset['featured_image_id'];
+		}
+
+		return self::create_popup_object(
+			$post_object,
+			false,
+			$options
 		);
 	}
 
@@ -1055,7 +1341,7 @@ final class Newspack_Popups_Model {
 		if ( Newspack_Popups_Settings::is_non_interactive() ) {
 			return '';
 		}
-		if ( Newspack_Popups::previewed_popup_id() ) {
+		if ( Newspack_Popups::previewed_popup_id() || Newspack_Popups::preset_popup_id() ) {
 			return '';
 		}
 		// The amp-access endpoint is queried only once (on page load), but after changing block settings,
@@ -1196,6 +1482,9 @@ final class Newspack_Popups_Model {
 		if ( Newspack_Popups::previewed_popup_id() ) {
 			$popup = self::retrieve_preview_popup( Newspack_Popups::previewed_popup_id() );
 		}
+		if ( Newspack_Popups::preset_popup_id() ) {
+			$popup = self::retrieve_preset_popup( Newspack_Popups::preset_popup_id() );
+		}
 
 		if ( self::is_overlay( $popup ) && self::is_overlay( $popup ) && has_block( 'newspack-blocks/homepage-articles', $popup['content'] ) ) {
 			add_filter( 'newspack_blocks_homepage_enable_duplication', '__return_true' );
@@ -1227,7 +1516,7 @@ final class Newspack_Popups_Model {
 		$no_overlay_background = $popup['options']['no_overlay_background'];
 		$hidden_fields         = self::get_hidden_fields( $popup );
 		$is_newsletter_prompt  = self::has_newsletter_prompt( $popup );
-		$has_featured_image    = has_post_thumbnail( $popup['id'] );
+		$has_featured_image    = has_post_thumbnail( $popup['id'] ) || ! empty( $popup['options']['featured_image_id'] );
 		$classes               = array( 'newspack-lightbox', 'newspack-popup', 'newspack-lightbox-placement-' . $popup['options']['placement'], 'newspack-lightbox-size-' . $overlay_size );
 		$classes[]             = ( ! empty( $popup['title'] ) && $display_title ) ? 'newspack-lightbox-has-title' : null;
 		$classes[]             = $hide_border ? 'newspack-lightbox-no-border' : null;
@@ -1263,7 +1552,7 @@ final class Newspack_Popups_Model {
 				<div class="newspack-popup__content-wrapper" style="<?php echo $hide_border ? esc_attr( self::container_style( $popup ) ) : ''; ?>">
 					<?php if ( $has_featured_image ) : ?>
 						<div class="newspack-popup__featured-image">
-							<?php echo get_the_post_thumbnail( $popup['id'], 'large' ); ?>
+							<?php echo ! empty( $popup['options']['featured_image_id'] ) ? wp_get_attachment_image( $popup['options']['featured_image_id'] ) : get_the_post_thumbnail( $popup['id'], 'large' ); ?>
 						</div>
 					<?php endif; ?>
 					<div class="newspack-popup__content">

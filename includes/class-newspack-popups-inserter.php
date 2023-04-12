@@ -48,6 +48,10 @@ final class Newspack_Popups_Inserter {
 			$preview_popup = Newspack_Popups_Model::retrieve_preview_popup( Newspack_Popups::previewed_popup_id() );
 			return [ $preview_popup ];
 		}
+		if ( Newspack_Popups::preset_popup_id() ) {
+			$preset_popup = Newspack_Popups_Model::retrieve_preset_popup( Newspack_Popups::preset_popup_id() );
+			return [ $preset_popup ];
+		}
 
 		// Popups disabled for this page.
 		if ( self::assess_has_disabled_popups() ) {
@@ -391,7 +395,7 @@ final class Newspack_Popups_Inserter {
 				$insert_for_blocks = 'blocks_count' === $trigger_type && $block_index >= $position;
 
 				if ( $insert_at_zero || $insert_for_scroll || $insert_for_blocks ) {
-					$output                     .= '<!-- wp:shortcode -->[newspack-popup id="' . $inline_popup['id'] . '"]<!-- /wp:shortcode -->';
+					$output                     .= '<!-- wp:html --><aside>' . Newspack_Popups_Model::generate_popup( $inline_popup ) . '</aside><!-- /wp:html -->';
 					$inline_popup['is_inserted'] = true;
 				}
 			}
@@ -405,7 +409,7 @@ final class Newspack_Popups_Inserter {
 		// 3. Insert any remaining inline prompts at the end.
 		foreach ( $inline_popups as &$inline_popup ) {
 			if ( ! $inline_popup['is_inserted'] ) {
-				$output                     .= '<!-- wp:shortcode -->[newspack-popup id="' . $inline_popup['id'] . '"]<!-- /wp:shortcode -->';
+				$output                     .= '<!-- wp:html --><aside>' . Newspack_Popups_Model::generate_popup( $inline_popup ) . '</aside><!-- /wp:html -->';
 				$inline_popup['is_inserted'] = true;
 			}
 		}
@@ -659,7 +663,9 @@ final class Newspack_Popups_Inserter {
 	 * @return HTML
 	 */
 	public static function popup_shortcode( $atts = array() ) {
-		if ( isset( $atts['id'] ) ) {
+		if ( Newspack_Popups::preset_popup_id() ) {
+			$found_popup = Newspack_Popups_Model::retrieve_preset_popup( Newspack_Popups::preset_popup_id() );
+		} elseif ( isset( $atts['id'] ) ) {
 			$include_unpublished = Newspack_Popups::is_preview_request();
 			$found_popup         = Newspack_Popups_Model::retrieve_popup_by_id( $atts['id'], $include_unpublished );
 		}
@@ -786,6 +792,11 @@ final class Newspack_Popups_Inserter {
 			'authorization' => esc_url( Newspack_Popups_Model::get_reader_endpoint() ) . '?cid=' . Newspack_Popups_Segmentation::get_cid_param(),
 			'noPingback'    => true,
 		];
+
+		// If previewing a preset prompt, no need to include config for any prompts.
+		if ( Newspack_Popups::preset_popup_id() ) {
+			return;
+		}
 
 		// If previewing a specific prompt, no need to include config for all prompts.
 		$previewed_popup_id = Newspack_Popups::previewed_popup_id();
