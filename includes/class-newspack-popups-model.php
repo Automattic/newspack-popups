@@ -477,9 +477,10 @@ final class Newspack_Popups_Model {
 
 	/**
 	 * Retrieve popup preview preset prompt.
+	 * Because presets don't exist yet as real WP posts, we need to mock a post object using the preset config.
 	 *
 	 * @param string $slug Preset slug.
-	 * @return object Popup object.
+	 * @return object|null Popup object, or null if no preset is found for the given slug.
 	 */
 	public static function retrieve_preset_popup( $slug ) {
 		$presets = self::get_ras_presets();
@@ -499,7 +500,7 @@ final class Newspack_Popups_Model {
 			return null;
 		}
 
-		// Create a fake post object from the preset data.
+		// Create a fake post object from the preset config.
 		$preset                      = reset( $preset );
 		$post_object                 = new stdClass();
 		$post_object->ID             = \wp_rand( 10000000, 10001000 ); // Make the ID really high to avoid collision with real post IDs.
