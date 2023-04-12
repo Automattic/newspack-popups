@@ -46,10 +46,15 @@ final class Newspack_Popups_Model {
 	/**
 	 * Get subscribable lists from the Newspack Newsletters plugin.
 	 *
-	 * @return array Array of lists.
+	 * @return array|WP_Error Array of lists.
 	 */
 	private static function get_newsletter_lists() {
-		// TODO: There's a race condition here.
+		$provider_lists = method_exists( '\Newspack_Newsletters_Subscription', 'get_lists' ) ? \Newspack_Newsletters_Subscription::get_lists() : [];
+
+		if ( \is_wp_error( $provider_lists ) ) {
+			return $provider_lists;
+		}
+
 		$lists = array_reduce(
 			method_exists( '\Newspack_Newsletters_Subscription', 'get_lists' ) ? \Newspack_Newsletters_Subscription::get_lists() : [],
 			function( $acc, $list ) {
@@ -73,7 +78,7 @@ final class Newspack_Popups_Model {
 	/**
 	 * Retrieve default prompts + segments.
 	 *
-	 * @return array Array of prompt and segment default configs.
+	 * @return array|WP_Error Array of prompt and segment default configs.
 	 */
 	public static function get_ras_presets() {
 		$file = dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/presets/ras-defaults.json';
@@ -90,6 +95,10 @@ final class Newspack_Popups_Model {
 
 		$saved_inputs = \get_option( Newspack_Popups::NEWSPACK_POPUPS_RAS_PROMPTS_OPTION, [] );
 		$lists        = self::get_newsletter_lists();
+
+		if ( \is_wp_error( $lists ) ) {
+			return $lists;
+		}
 
 		// Populate prompt configs with saved inputs.
 		$data['prompts'] = array_map(
