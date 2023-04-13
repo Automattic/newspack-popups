@@ -259,6 +259,10 @@ final class Newspack_Popups_Model {
 
 		\update_option( Newspack_Popups::NEWSPACK_POPUPS_RAS_PROMPTS_OPTION, $saved_inputs );
 
+		if ( ! $ready ) {
+			return new \WP_Error( 'newspack_popups_update_ras_prompt_required_missing', __( 'Prompt saved. All required fields must be filled out to complete setup.', 'newspack-popups' ) );
+		}
+
 		return self::get_ras_presets();
 	}
 
