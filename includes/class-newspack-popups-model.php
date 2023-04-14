@@ -138,6 +138,12 @@ final class Newspack_Popups_Model {
 						function( $field ) use ( $lists ) {
 							if ( 'lists' === $field['name'] ) {
 								$field['options'] = $lists;
+								$field['default'] = array_map(
+									function( $list ) {
+										return $list['id'];
+									},
+									$lists
+								);
 							}
 
 							return $field;
@@ -198,17 +204,18 @@ final class Newspack_Popups_Model {
 	 * @return boolean True if updated, false if not.
 	 */
 	public static function update_preset_prompt( $slug, $inputs ) {
-		$defaults       = self::get_ras_presets();
-		$saved_inputs   = \get_option( Newspack_Popups::NEWSPACK_POPUPS_RAS_PROMPTS_OPTION, [] );
-		$updated        = false;
-		$ready          = true;
-		$default_slugs  = array_map(
+		$defaults         = self::get_ras_presets();
+		$saved_inputs     = \get_option( Newspack_Popups::NEWSPACK_POPUPS_RAS_PROMPTS_OPTION, [] );
+		$updated          = false;
+		$ready            = true;
+		$missing_required = [];
+		$default_slugs    = array_map(
 			function( $default_prompt ) {
 				return $default_prompt['slug'];
 			},
 			$defaults['prompts']
 		);
-		$default_fields = array_reduce(
+		$default_fields   = array_reduce(
 			$defaults['prompts'],
 			function( $acc, $prompt ) use ( $slug ) {
 				if ( $prompt['slug'] === $slug ) {
@@ -246,9 +253,21 @@ final class Newspack_Popups_Model {
 			}
 
 			// Determine ready state.
-			if ( $field_info['required'] && empty( $input ) ) {
-				$ready = false;
+			if ( isset( $field_info['required'] ) && $field_info['required'] && empty( $input ) ) {
+				$ready              = false;
+				$missing_required[] = $field_info['label'];
 			}
+		}
+
+		if ( 0 < count( $missing_required ) ) {
+			return new \WP_Error(
+				'newspack_popups_update_ras_prompt_required_missing',
+				sprintf(
+					// Translators: %s is a list of missing required fields.
+					__( 'Missing required fields: %s', 'newspack-popups' ),
+					implode( ', ', $missing_required )
+				)
+			);
 		}
 
 		if ( $ready ) {
@@ -258,10 +277,6 @@ final class Newspack_Popups_Model {
 		}
 
 		\update_option( Newspack_Popups::NEWSPACK_POPUPS_RAS_PROMPTS_OPTION, $saved_inputs );
-
-		if ( ! $ready ) {
-			return new \WP_Error( 'newspack_popups_update_ras_prompt_required_missing', __( 'Prompt saved. All required fields must be filled out to complete setup.', 'newspack-popups' ) );
-		}
 
 		return self::get_ras_presets();
 	}
