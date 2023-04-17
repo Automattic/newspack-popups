@@ -462,6 +462,44 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
+	 * Get an array of options from abbreviated query parameters.
+	 *
+	 * @return array Array of options.
+	 */
+	public static function get_preview_query_keys() {
+		$options_filters = [
+			'background_color'               => FILTER_SANITIZE_FULL_SPECIAL_CHARS,
+			'display_title'                  => FILTER_VALIDATE_BOOLEAN,
+			'hide_border'                    => FILTER_VALIDATE_BOOLEAN,
+			'large_border'                   => FILTER_VALIDATE_BOOLEAN,
+			'frequency'                      => FILTER_SANITIZE_FULL_SPECIAL_CHARS,
+			'frequency_max'                  => FILTER_SANITIZE_FULL_SPECIAL_CHARS,
+			'frequency_start'                => FILTER_SANITIZE_FULL_SPECIAL_CHARS,
+			'frequency_between'              => FILTER_SANITIZE_FULL_SPECIAL_CHARS,
+			'frequency_reset'                => FILTER_SANITIZE_FULL_SPECIAL_CHARS,
+			'overlay_color'                  => FILTER_SANITIZE_FULL_SPECIAL_CHARS,
+			'overlay_opacity'                => FILTER_SANITIZE_FULL_SPECIAL_CHARS,
+			'overlay_size'                   => FILTER_SANITIZE_FULL_SPECIAL_CHARS,
+			'no_overlay_background'          => FILTER_VALIDATE_BOOLEAN,
+			'placement'                      => FILTER_SANITIZE_FULL_SPECIAL_CHARS,
+			'trigger_type'                   => FILTER_SANITIZE_FULL_SPECIAL_CHARS,
+			'trigger_delay'                  => FILTER_SANITIZE_FULL_SPECIAL_CHARS,
+			'trigger_scroll_progress'        => FILTER_SANITIZE_FULL_SPECIAL_CHARS,
+			'trigger_blocks_count'           => FILTER_SANITIZE_FULL_SPECIAL_CHARS,
+			'archive_insertion_posts_count'  => FILTER_SANITIZE_FULL_SPECIAL_CHARS,
+			'archive_insertion_is_repeating' => FILTER_VALIDATE_BOOLEAN,
+			'utm_suppression'                => FILTER_SANITIZE_FULL_SPECIAL_CHARS,
+		];
+
+		$options = [];
+		foreach ( $options_filters as $option => $filter ) {
+			$options[ $option ] = filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS[ $option ], $filter );
+		}
+
+		return $options;
+	}
+
+	/**
 	 * Retrieve popup preview CPT post.
 	 *
 	 * @param string $post_id Post id.
@@ -474,33 +512,7 @@ final class Newspack_Popups_Model {
 		// Setting proper id for correct API calls.
 		$post_object->ID = $post_id;
 
-		return self::create_popup_object(
-			$post_object,
-			false,
-			[
-				'background_color'               => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['background_color'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
-				'display_title'                  => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['display_title'], FILTER_VALIDATE_BOOLEAN ),
-				'hide_border'                    => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['hide_border'], FILTER_VALIDATE_BOOLEAN ),
-				'large_border'                   => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['large_border'], FILTER_VALIDATE_BOOLEAN ),
-				'frequency'                      => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['frequency'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
-				'frequency_max'                  => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['frequency_max'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
-				'frequency_start'                => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['frequency_start'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
-				'frequency_between'              => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['frequency_between'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
-				'frequency_reset'                => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['frequency_reset'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
-				'overlay_color'                  => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['overlay_color'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
-				'overlay_opacity'                => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['overlay_opacity'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
-				'overlay_size'                   => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['overlay_size'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
-				'no_overlay_background'          => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['no_overlay_background'], FILTER_VALIDATE_BOOLEAN ),
-				'placement'                      => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['placement'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
-				'trigger_type'                   => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['trigger_type'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
-				'trigger_delay'                  => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['trigger_delay'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
-				'trigger_scroll_progress'        => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['trigger_scroll_progress'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
-				'trigger_blocks_count'           => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['trigger_blocks_count'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
-				'archive_insertion_posts_count'  => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['archive_insertion_posts_count'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
-				'archive_insertion_is_repeating' => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['archive_insertion_is_repeating'], FILTER_VALIDATE_BOOLEAN ),
-				'utm_suppression'                => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['utm_suppression'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
-			]
-		);
+		return self::create_popup_object( $post_object, false, self::get_preview_query_keys() );
 	}
 
 	/**
@@ -545,39 +557,11 @@ final class Newspack_Popups_Model {
 		$post_object->filter         = 'raw'; // Don't try to fetch from the wp_posts table.
 		$post_object                 = new \WP_Post( $post_object );
 
-		$options = [
-			'background_color'               => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['background_color'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
-			'display_title'                  => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['display_title'], FILTER_VALIDATE_BOOLEAN ),
-			'hide_border'                    => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['hide_border'], FILTER_VALIDATE_BOOLEAN ),
-			'large_border'                   => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['large_border'], FILTER_VALIDATE_BOOLEAN ),
-			'frequency'                      => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['frequency'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
-			'frequency_max'                  => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['frequency_max'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
-			'frequency_start'                => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['frequency_start'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
-			'frequency_between'              => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['frequency_between'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
-			'frequency_reset'                => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['frequency_reset'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
-			'overlay_color'                  => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['overlay_color'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
-			'overlay_opacity'                => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['overlay_opacity'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
-			'overlay_size'                   => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['overlay_size'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
-			'no_overlay_background'          => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['no_overlay_background'], FILTER_VALIDATE_BOOLEAN ),
-			'placement'                      => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['placement'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
-			'trigger_type'                   => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['trigger_type'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
-			'trigger_delay'                  => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['trigger_delay'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
-			'trigger_scroll_progress'        => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['trigger_scroll_progress'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
-			'trigger_blocks_count'           => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['trigger_blocks_count'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
-			'archive_insertion_posts_count'  => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['archive_insertion_posts_count'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
-			'archive_insertion_is_repeating' => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['archive_insertion_is_repeating'], FILTER_VALIDATE_BOOLEAN ),
-			'utm_suppression'                => filter_input( INPUT_GET, Newspack_Popups::PREVIEW_QUERY_KEYS['utm_suppression'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ),
-		];
-
 		if ( ! empty( $preset['featured_image_id'] ) ) {
 			$options['featured_image_id'] = $preset['featured_image_id'];
 		}
 
-		return self::create_popup_object(
-			$post_object,
-			false,
-			$options
-		);
+		return self::create_popup_object( $post_object, false, self::get_preview_query_keys() );
 	}
 
 	/**
