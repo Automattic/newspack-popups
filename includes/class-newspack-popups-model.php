@@ -466,7 +466,7 @@ final class Newspack_Popups_Model {
 	 *
 	 * @return array Array of options.
 	 */
-	public static function get_preview_query_keys() {
+	public static function get_preview_query_options() {
 		$options_filters = [
 			'background_color'               => FILTER_SANITIZE_FULL_SPECIAL_CHARS,
 			'display_title'                  => FILTER_VALIDATE_BOOLEAN,
@@ -512,7 +512,7 @@ final class Newspack_Popups_Model {
 		// Setting proper id for correct API calls.
 		$post_object->ID = $post_id;
 
-		return self::create_popup_object( $post_object, false, self::get_preview_query_keys() );
+		return self::create_popup_object( $post_object, false, self::get_preview_query_options() );
 	}
 
 	/**
@@ -561,7 +561,7 @@ final class Newspack_Popups_Model {
 			$options['featured_image_id'] = $preset['featured_image_id'];
 		}
 
-		return self::create_popup_object( $post_object, false, self::get_preview_query_keys() );
+		return self::create_popup_object( $post_object, false, self::get_preview_query_options() );
 	}
 
 	/**
