@@ -223,26 +223,17 @@ class Newspack_Popups_Importer {
 	 * @return void
 	 */
 	private function process_prompts() {
-		$prompts    = $this->input['prompts'];
-		$prompts    = $this->pre_process_prompt_segments( $prompts );
-		$prompts    = $this->pre_process_prompts_terms( $prompts );
-		$user_input = isset( $this->input['user_input'] ) ? $this->input['user_input'] : [];
+		$prompts = $this->input['prompts'];
+		$prompts = $this->pre_process_prompt_segments( $prompts );
+		$prompts = $this->pre_process_prompts_terms( $prompts );
 
 		foreach ( $prompts as $prompt ) {
 			$prompt_slug       = isset( $prompt['slug'] ) ? $prompt['slug'] : null;
 			$prompt_content    = $prompt['content'];
 			$user_input_fields = isset( $prompt['user_input_fields'] ) ? $prompt['user_input_fields'] : [];
 
-			foreach ( $user_input_fields as $user_input_field ) {
-				$field_name = $user_input_field['name'];
-				$value      = $prompt_slug && isset( $user_input[ $prompt_slug ][ $field_name ] ) ? $user_input[ $prompt_slug ][ $field_name ] : $user_input_field['default'];
-
-				// Crop the value if max_length is set.
-				if ( isset( $user_input_field['max_length'] ) ) {
-					$value = substr( $value, 0, $user_input_field['max_length'] );
-				}
-
-				$prompt_content = str_replace( '{{' . $field_name . '}}', $value, $prompt_content );
+			foreach ( $user_input_fields as $field ) {
+				$prompt_content = Newspack_Popups_Model::process_user_inputs( $prompt_content, $field );
 			}
 
 			$post_data = [

@@ -2,98 +2,9 @@
     "prompts": [
         {
             "status": "draft",
-            "slug": "ras_donation_inline",
-            "title": "Inline Donation (secondary)",
-            "content": "<!-- wp:separator -->\n<hr class=\"wp-block-separator has-alpha-channel-opacity\"\/>\n<!-- \/wp:separator -->\n\n<!-- wp:heading -->\n<h2>{{heading}}<\/h2>\n<!-- \/wp:heading -->\n\n<!-- wp:paragraph -->\n<p>{{body}}<\/p>\n<!-- \/wp:paragraph -->\n\n<!-- wp:newspack-blocks\/donate {\"className\":\"is-style-alternate\",\"amounts\":{\"once\":[9,20,90,20],\"month\":[7,15,30,15],\"year\":[84,180,360,180]},\"disabledFrequencies\":{\"once\":false,\"month\":false,\"year\":false},\"thanksText\":\"{{thanks_message}}\",\"buttonText\": \"{{button_label}}\",\"minimumDonation\":5} \/-->",
-            "options": {
-                "background_color": "#FFFFFF",
-                "display_title": false,
-                "hide_border": false,
-                "large_border": false,
-                "frequency": "always",
-                "frequency_max": 0,
-                "frequency_start": 0,
-                "frequency_between": 0,
-                "frequency_reset": "month",
-                "overlay_color": "#000000",
-                "overlay_opacity": "30",
-                "overlay_size": "medium",
-                "no_overlay_background": false,
-                "placement": "inline",
-                "trigger_type": "scroll",
-                "trigger_delay": "3",
-                "trigger_scroll_progress": "100",
-                "trigger_blocks_count": 0,
-                "archive_insertion_posts_count": 1,
-                "archive_insertion_is_repeating": false,
-                "selected_segment_id": "",
-                "post_types": [
-                    "post"
-                ],
-                "archive_page_types": [
-                    "category",
-                    "tag",
-                    "author",
-                    "date",
-                    "post-type",
-                    "taxonomy"
-                ],
-                "additional_classes": "",
-                "excluded_categories": [],
-                "excluded_tags": []
-            },
-            "categories": [],
-            "tags": false,
-            "campaign_groups": [
-                {
-                    "id": 30,
-                    "name": "Reader Activation Defaults"
-                }
-            ],
-            "user_input_fields": [
-                {
-                    "name": "heading",
-                    "type": "string",
-                    "label": "Heading",
-                    "description": "A heading to describe the prompt.",
-                    "required": true,
-                    "default": "Support Our Work",
-                    "max_length": 40
-                },
-                {
-                    "name": "body",
-                    "type": "string",
-                    "label": "Body",
-                    "description": "The primary call to action for the prompt.",
-                    "required": true,
-                    "default": "As an independent publication, we rely on donations to fund our journalism.",
-                    "max_length": 300
-                },
-                {
-                    "name": "thanks_message",
-                    "type": "string",
-                    "label": "Thanks Message",
-                    "description": "A message to thank the reader for their contribution.",
-                    "required": true,
-                    "default": "Thanks for your contribution!",
-                    "max_length": 300
-                },
-                {
-                    "name": "button_label",
-                    "type": "string",
-                    "label": "Button Label",
-                    "description": "The label for the primary CTA button.",
-                    "required": true,
-                    "default": "Donate Now",
-                    "max_length": 20
-                }
-            ]
-        },
-        {
-            "status": "draft",
             "slug": "ras_registration_overlay",
             "title": "Registration Overlay",
-            "content": "<!-- wp:newspack\/reader-registration {\"title\":\"{{heading}}\",\"description\":\"{{body}}\",\"label\":\"{{button_label}}\"} -->\n<div class=\"wp-block-newspack-reader-registration\"><!-- wp:paragraph {\"align\":\"center\"} --><p class=\"has-text-align-center\">{{success_message}}</p><!-- /wp:paragraph --><\/div>\n<!-- \/wp:newspack\/reader-registration -->",
+            "content": "<!-- wp:newspack\/reader-registration {\"title\":\"{{heading}}\",\"description\":\"{{body}}\",\"label\":\"{{button_label}}\",{{lists}}} -->\n<div class=\"wp-block-newspack-reader-registration\"><!-- wp:paragraph {\"align\":\"center\"} --><p class=\"has-text-align-center\">{{success_message}}</p><!-- /wp:paragraph --><\/div>\n<!-- \/wp:newspack\/reader-registration -->",
             "options": {
                 "background_color": "#FFFFFF",
                 "display_title": false,
@@ -178,94 +89,29 @@
                     "required": true,
                     "default": "Thank you for registering!",
                     "max_length": 300
-                }
-            ]
-        },
-        {
-            "status": "draft",
-            "slug": "ras_newsletter_inline",
-            "title": "Inline Newsletter Signup (secondary)",
-            "content": "<!-- wp:paragraph -->\n<p>{{body}}</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:newspack-newsletters/subscribe {\"label\":\"{{button_label}}\",\"successMessage\":\"{{success_message}}\"} /-->",
-            "options": {
-                "background_color": "#FFFFFF",
-                "display_title": false,
-                "hide_border": false,
-                "large_border": false,
-                "frequency": "always",
-                "frequency_max": 0,
-                "frequency_start": 0,
-                "frequency_between": 0,
-                "frequency_reset": "month",
-                "overlay_color": "#000000",
-                "overlay_opacity": "30",
-                "overlay_size": "medium",
-                "no_overlay_background": false,
-                "placement": "inline",
-                "trigger_type": "blocks_count",
-                "trigger_delay": "3",
-                "trigger_scroll_progress": 0,
-                "trigger_blocks_count": 2,
-                "archive_insertion_posts_count": 1,
-                "archive_insertion_is_repeating": false,
-                "selected_segment_id": "639b333b41025,639b337fdbf33",
-                "post_types": [
-                    "post"
-                ],
-                "archive_page_types": [
-                    "category",
-                    "tag",
-                    "author",
-                    "date",
-                    "post-type",
-                    "taxonomy"
-                ],
-                "additional_classes": "",
-                "excluded_categories": [],
-                "excluded_tags": []
-            },
-            "categories": [],
-            "tags": false,
-            "campaign_groups": [
-                {
-                    "id": 30,
-                    "name": "Reader Activation Defaults"
-                }
-            ],
-            "user_input_fields": [
-                {
-                    "name": "body",
-                    "type": "string",
-                    "label": "Body",
-                    "description": "The primary call to action for the prompt.",
-                    "required": true,
-                    "default": "Sign up for our free newsletter to receive the latest news.",
-                    "max_length": 300
                 },
                 {
-                    "name": "button_label",
-                    "type": "string",
-                    "label": "Button Label",
-                    "description": "The label for the primary CTA button.",
-                    "required": true,
-                    "default": "Sign up",
-                    "max_length": 20
+                    "name": "featured_image_id",
+                    "type": "int",
+                    "label": "Header Image (optional)",
+                    "description": "Banner image to show at the top of the prompt.",
+                    "default": 0
                 },
                 {
-                    "name": "success_message",
-                    "type": "string",
-                    "label": "Success Message",
-                    "description": "The message shown to readers after completing the signup.",
+                    "name": "lists",
+                    "type": "array",
+                    "label": "Select Newsletters",
+                    "description": "Newsletter lists the reader can subscribe to.",
                     "required": true,
-                    "default": "Thank you for signing up!",
-                    "max_length": 300
+                    "default": []
                 }
             ]
         },
         {
             "status": "draft",
             "slug": "ras_newsletter_overlay",
-            "title": "Newsletter Sign-up Overlay",
-            "content": "<!-- wp:heading -->\n<h2>{{heading}}<\/h2>\n<!-- \/wp:heading -->\n\n<!-- wp:paragraph -->\n<p>{{body}}<\/p>\n<!-- \/wp:paragraph -->\n\n<!-- wp:newspack-newsletters/subscribe {\"label\":\"{{button_label}}\",\"successMessage\":\"{{success_message}}\"} /-->",
+            "title": "Newsletter Signup Overlay",
+            "content": "<!-- wp:heading -->\n<h2>{{heading}}<\/h2>\n<!-- \/wp:heading -->\n\n<!-- wp:paragraph -->\n<p>{{body}}<\/p>\n<!-- \/wp:paragraph -->\n\n<!-- wp:newspack-newsletters/subscribe {\"label\":\"{{button_label}}\",\"successMessage\":\"{{success_message}}\",{{lists}}} /-->",
             "options": {
                 "background_color": "#FFFFFF",
                 "display_title": false,
@@ -350,6 +196,21 @@
                     "required": true,
                     "default": "Thank you for signing up!",
                     "max_length": 300
+                },
+                {
+                    "name": "featured_image_id",
+                    "type": "int",
+                    "label": "Header Image (optional)",
+                    "description": "Banner image to show at the top of the prompt.",
+                    "default": 0
+                },
+                {
+                    "name": "lists",
+                    "type": "array",
+                    "label": "Select Newsletters",
+                    "description": "Newsletter lists the reader can subscribe to.",
+                    "required": true,
+                    "default": []
                 }
             ]
         },
@@ -442,6 +303,190 @@
                     "required": true,
                     "default": "Donate Now",
                     "max_length": 20
+                },
+                {
+                    "name": "featured_image_id",
+                    "type": "int",
+                    "label": "Header Image (optional)",
+                    "description": "Banner image to show at the top of the prompt.",
+                    "default": 0
+                }
+            ]
+        },
+        {
+            "status": "draft",
+            "slug": "ras_donation_inline",
+            "title": "Inline Donation (secondary)",
+            "content": "<!-- wp:separator -->\n<hr class=\"wp-block-separator has-alpha-channel-opacity\"\/>\n<!-- \/wp:separator -->\n\n<!-- wp:heading -->\n<h2>{{heading}}<\/h2>\n<!-- \/wp:heading -->\n\n<!-- wp:paragraph -->\n<p>{{body}}<\/p>\n<!-- \/wp:paragraph -->\n\n<!-- wp:newspack-blocks\/donate {\"className\":\"is-style-alternate\",\"amounts\":{\"once\":[9,20,90,20],\"month\":[7,15,30,15],\"year\":[84,180,360,180]},\"disabledFrequencies\":{\"once\":false,\"month\":false,\"year\":false},\"thanksText\":\"{{thanks_message}}\",\"buttonText\": \"{{button_label}}\",\"minimumDonation\":5} \/-->",
+            "options": {
+                "background_color": "#FFFFFF",
+                "display_title": false,
+                "hide_border": false,
+                "large_border": false,
+                "frequency": "always",
+                "frequency_max": 0,
+                "frequency_start": 0,
+                "frequency_between": 0,
+                "frequency_reset": "month",
+                "overlay_color": "#000000",
+                "overlay_opacity": "30",
+                "overlay_size": "medium",
+                "no_overlay_background": false,
+                "placement": "inline",
+                "trigger_type": "scroll",
+                "trigger_delay": "3",
+                "trigger_scroll_progress": "100",
+                "trigger_blocks_count": 0,
+                "archive_insertion_posts_count": 1,
+                "archive_insertion_is_repeating": false,
+                "selected_segment_id": "",
+                "post_types": [
+                    "post"
+                ],
+                "archive_page_types": [
+                    "category",
+                    "tag",
+                    "author",
+                    "date",
+                    "post-type",
+                    "taxonomy"
+                ],
+                "additional_classes": "",
+                "excluded_categories": [],
+                "excluded_tags": []
+            },
+            "categories": [],
+            "tags": false,
+            "campaign_groups": [
+                {
+                    "id": 30,
+                    "name": "Reader Activation Defaults"
+                }
+            ],
+            "user_input_fields": [
+                {
+                    "name": "heading",
+                    "type": "string",
+                    "label": "Heading",
+                    "description": "A heading to describe the prompt.",
+                    "required": true,
+                    "default": "Support Our Work",
+                    "max_length": 40
+                },
+                {
+                    "name": "body",
+                    "type": "string",
+                    "label": "Body",
+                    "description": "The primary call to action for the prompt.",
+                    "required": true,
+                    "default": "As an independent publication, we rely on donations to fund our journalism.",
+                    "max_length": 300
+                },
+                {
+                    "name": "thanks_message",
+                    "type": "string",
+                    "label": "Thanks Message",
+                    "description": "A message to thank the reader for their contribution.",
+                    "required": true,
+                    "default": "Thanks for your contribution!",
+                    "max_length": 300
+                },
+                {
+                    "name": "button_label",
+                    "type": "string",
+                    "label": "Button Label",
+                    "description": "The label for the primary CTA button.",
+                    "required": true,
+                    "default": "Donate Now",
+                    "max_length": 20
+                }
+            ]
+        },
+        {
+            "status": "draft",
+            "slug": "ras_newsletter_inline",
+            "title": "Inline Newsletter Signup (secondary)",
+            "content": "<!-- wp:paragraph -->\n<p>{{body}}</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:newspack-newsletters/subscribe {\"label\":\"{{button_label}}\",\"successMessage\":\"{{success_message}}\",{{lists}}} /-->",
+            "options": {
+                "background_color": "#FFFFFF",
+                "display_title": false,
+                "hide_border": false,
+                "large_border": false,
+                "frequency": "always",
+                "frequency_max": 0,
+                "frequency_start": 0,
+                "frequency_between": 0,
+                "frequency_reset": "month",
+                "overlay_color": "#000000",
+                "overlay_opacity": "30",
+                "overlay_size": "medium",
+                "no_overlay_background": false,
+                "placement": "inline",
+                "trigger_type": "blocks_count",
+                "trigger_delay": "3",
+                "trigger_scroll_progress": 0,
+                "trigger_blocks_count": 2,
+                "archive_insertion_posts_count": 1,
+                "archive_insertion_is_repeating": false,
+                "selected_segment_id": "639b333b41025,639b337fdbf33",
+                "post_types": [
+                    "post"
+                ],
+                "archive_page_types": [
+                    "category",
+                    "tag",
+                    "author",
+                    "date",
+                    "post-type",
+                    "taxonomy"
+                ],
+                "additional_classes": "",
+                "excluded_categories": [],
+                "excluded_tags": []
+            },
+            "categories": [],
+            "tags": false,
+            "campaign_groups": [
+                {
+                    "id": 30,
+                    "name": "Reader Activation Defaults"
+                }
+            ],
+            "user_input_fields": [
+                {
+                    "name": "body",
+                    "type": "string",
+                    "label": "Body",
+                    "description": "The primary call to action for the prompt.",
+                    "required": true,
+                    "default": "Sign up for our free newsletter to receive the latest news.",
+                    "max_length": 300
+                },
+                {
+                    "name": "button_label",
+                    "type": "string",
+                    "label": "Button Label",
+                    "description": "The label for the primary CTA button.",
+                    "required": true,
+                    "default": "Sign up",
+                    "max_length": 20
+                },
+                {
+                    "name": "success_message",
+                    "type": "string",
+                    "label": "Success Message",
+                    "description": "The message shown to readers after completing the signup.",
+                    "required": true,
+                    "default": "Thank you for signing up!",
+                    "max_length": 300
+                },
+                {
+                    "name": "lists",
+                    "type": "array",
+                    "label": "Select Newsletters",
+                    "description": "Newsletter lists the reader can subscribe to.",
+                    "required": true,
+                    "default": []
                 }
             ]
         }

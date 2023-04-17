@@ -397,11 +397,20 @@ class Prompts extends Schema {
 							],
 							// Default value of the input. This will be populated by default in the UI.
 							'default'     => [
-								'type' => 'string',
+								'type' => [ 'array', 'integer', 'string' ],
+							],
+							// User-inputted value of the input, if available.
+							'value'       => [
+								'type' => [ 'array', 'integer', 'string' ],
 							],
 							// If a string, maximum length for the input value. This will be used to validate the input in the UI.
 							'max_length'  => [
 								'type'     => 'integer',
+								'required' => false,
+							],
+							// If an array, selectable options.
+							'options'     => [
+								'type'     => 'array',
 								'required' => false,
 							],
 						],
