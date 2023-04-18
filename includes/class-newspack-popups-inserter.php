@@ -1063,7 +1063,7 @@ final class Newspack_Popups_Inserter {
 			 *
 			 * Additional checks will be checked alongside regular checks for taxonomies and post types, but will not override them. All checks must pass for the prompt to be displayed.
 			 *
-			 * @param bool   $addidional_checks Whether additional checks should be performed.
+			 * @param bool   $addidional_checks_result Whether the popup should be displayed.
 			 * @param object $popup The popup to assess.
 			 * @param bool   $check_if_is_post Should the post type of post be taken into account.
 			 */
