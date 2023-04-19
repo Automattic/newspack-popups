@@ -1057,20 +1057,17 @@ final class Newspack_Popups_Inserter {
 		}
 		$is_post_context_matching = $is_taxonomy_matching && in_array( $post_type, $supported_post_types );
 
-		if ( $is_post_context_matching ) {
-			/**
-			 * Allow additional checks to be performed before displaying a prompt.
-			 *
-			 * Additional checks will be checked alongside regular checks for taxonomies and post types, but will not override them. All checks must pass for the prompt to be displayed.
-			 *
-			 * @param bool   $addidional_checks_result Whether the popup should be displayed.
-			 * @param object $popup The popup to assess.
-			 * @param bool   $check_if_is_post Should the post type of post be taken into account.
-			 */
-			$is_post_context_matching = apply_filters( 'newspack_popups_should_display_prompt_additional_checks', true, $popup, $check_if_is_post );
-		}
-
-		return $is_post_context_matching;
+		/**
+		 * Filters the result of the should_display check for each prompt.
+		 *
+		 * If $check_result is false, it means it failed the previous checks. Changing this to true will make the prompt appear.
+		 * Use it with caution as this might result in unexpected behavior.
+		 *
+		 * @param bool   $check_result Whether the popup should be displayed.
+		 * @param object $popup The popup to assess.
+		 * @param bool   $check_if_is_post Should the post type of post be taken into account.
+		 */
+		return apply_filters( 'newspack_popups_should_display_prompt', $is_post_context_matching, $popup, $check_if_is_post );
 	}
 
 	/**
