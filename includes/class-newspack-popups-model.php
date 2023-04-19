@@ -153,6 +153,14 @@ final class Newspack_Popups_Model {
 					$prompt['user_input_fields'] = $fields;
 				}
 
+				// Get full URLs for help info screenshots.
+				if ( isset( $prompt['help_info']['screenshot'] ) ) {
+					$file = dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/src/assets/' . $prompt['help_info']['screenshot'];
+					if ( file_exists( $file ) ) {
+						$prompt['help_info']['screenshot'] = \plugin_dir_url( NEWSPACK_POPUPS_PLUGIN_FILE ) . 'src/assets/' . $prompt['help_info']['screenshot'];
+					}
+				}
+
 				return $prompt;
 			},
 			$data['prompts']
@@ -557,11 +565,13 @@ final class Newspack_Popups_Model {
 		$post_object->filter         = 'raw'; // Don't try to fetch from the wp_posts table.
 		$post_object                 = new \WP_Post( $post_object );
 
+		$options = self::get_preview_query_options();
+
 		if ( ! empty( $preset['featured_image_id'] ) ) {
 			$options['featured_image_id'] = $preset['featured_image_id'];
 		}
 
-		return self::create_popup_object( $post_object, false, self::get_preview_query_options() );
+		return self::create_popup_object( $post_object, false, $options );
 	}
 
 	/**
