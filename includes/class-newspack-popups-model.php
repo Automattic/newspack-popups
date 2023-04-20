@@ -158,6 +158,8 @@ final class Newspack_Popups_Model {
 					$file = dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/src/assets/' . $prompt['help_info']['screenshot'];
 					if ( file_exists( $file ) ) {
 						$prompt['help_info']['screenshot'] = \plugin_dir_url( NEWSPACK_POPUPS_PLUGIN_FILE ) . 'src/assets/' . $prompt['help_info']['screenshot'];
+					} else {
+						unset( $prompt['help_info']['screenshot'] ); // Avoid a 404 if the referenced file doesn't exist.
 					}
 				}
 
