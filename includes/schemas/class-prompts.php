@@ -416,6 +416,40 @@ class Prompts extends Schema {
 						],
 					],
 				],
+				'help_info'         => [
+					'type'                 => 'object',
+					'required'             => false,
+					'additionalProperties' => false,
+					'properties'           => [
+						'screenshot'      => [
+							'name'     => 'screenshot',
+							'type'     => 'string',
+							'required' => false,
+							'default'  => '', // Filename of a screenshot to display. Will look for it in the plugin's src/assets folder.
+						],
+						'description'     => [
+							'name'     => 'description',
+							'type'     => 'string',
+							'required' => false,
+							'default'  => '',
+						],
+						'recommendations' => [
+							'name'     => 'recommendations',
+							'type'     => 'array',
+							'required' => false,
+							'items'    => [
+								'type' => 'string',
+							],
+							'default'  => [],
+						],
+						'url'             => [
+							'name'     => 'url',
+							'type'     => 'string',
+							'required' => false,
+							'default'  => '',
+						],
+					],
+				],
 			],
 		];
 	}
