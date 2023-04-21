@@ -49,7 +49,7 @@ final class Newspack_Popups_Inserter {
 			return [ $preview_popup ];
 		}
 		if ( Newspack_Popups::preset_popup_id() ) {
-			$preset_popup = Newspack_Popups_Model::retrieve_preset_popup( Newspack_Popups::preset_popup_id() );
+			$preset_popup = Newspack_Popups_Presets::retrieve_preset_popup( Newspack_Popups::preset_popup_id() );
 			return [ $preset_popup ];
 		}
 
@@ -664,7 +664,7 @@ final class Newspack_Popups_Inserter {
 	 */
 	public static function popup_shortcode( $atts = array() ) {
 		if ( Newspack_Popups::preset_popup_id() ) {
-			$found_popup = Newspack_Popups_Model::retrieve_preset_popup( Newspack_Popups::preset_popup_id() );
+			$found_popup = Newspack_Popups_Presets::retrieve_preset_popup( Newspack_Popups::preset_popup_id() );
 		} elseif ( isset( $atts['id'] ) ) {
 			$include_unpublished = Newspack_Popups::is_preview_request();
 			$found_popup         = Newspack_Popups_Model::retrieve_popup_by_id( $atts['id'], $include_unpublished );
