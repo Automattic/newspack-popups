@@ -42,7 +42,6 @@ class ExporterTest extends WP_UnitTestCase_PageWithPopups {
 					'status'  => 'publish',
 					'options' => [
 						'background_color' => '#FFFFFF',
-						'display_title'    => false,
 						'hide_border'      => false,
 						'large_border'     => false,
 						'frequency'        => 'once',
@@ -55,7 +54,6 @@ class ExporterTest extends WP_UnitTestCase_PageWithPopups {
 					'status'  => 'publish',
 					'options' => [
 						'background_color' => '#FFFFFF',
-						'display_title'    => false,
 						'hide_border'      => false,
 						'large_border'     => false,
 						'frequency'        => 'once',
@@ -71,12 +69,11 @@ class ExporterTest extends WP_UnitTestCase_PageWithPopups {
 					'content' => 'Test content',
 					'status'  => 'publish',
 					'options' => [
-						'overlay_size'  => 'full',
-						'display_title' => false,
-						'hide_border'   => false,
-						'large_border'  => false,
-						'frequency'     => 'once',
-						'placement'     => 'inline',
+						'overlay_size' => 'full',
+						'hide_border'  => false,
+						'large_border' => false,
+						'frequency'    => 'once',
+						'placement'    => 'inline',
 					],
 				],
 				[
@@ -84,12 +81,11 @@ class ExporterTest extends WP_UnitTestCase_PageWithPopups {
 					'content' => 'Test content',
 					'status'  => 'publish',
 					'options' => [
-						'overlay_size'  => 'full-width',
-						'display_title' => false,
-						'hide_border'   => false,
-						'large_border'  => false,
-						'frequency'     => 'once',
-						'placement'     => 'inline',
+						'overlay_size' => 'full-width',
+						'hide_border'  => false,
+						'large_border' => false,
+						'frequency'    => 'once',
+						'placement'    => 'inline',
 					],
 				],
 
@@ -102,7 +98,6 @@ class ExporterTest extends WP_UnitTestCase_PageWithPopups {
 					'status'  => 'publish',
 					'options' => [
 						'utm_suppression' => false,
-						'display_title'   => false,
 						'hide_border'     => false,
 						'large_border'    => false,
 						'frequency'       => 'once',
@@ -114,11 +109,10 @@ class ExporterTest extends WP_UnitTestCase_PageWithPopups {
 					'content' => 'Test content',
 					'status'  => 'publish',
 					'options' => [
-						'display_title' => false,
-						'hide_border'   => false,
-						'large_border'  => false,
-						'frequency'     => 'once',
-						'placement'     => 'inline',
+						'hide_border'  => false,
+						'large_border' => false,
+						'frequency'    => 'once',
+						'placement'    => 'inline',
 					],
 				],
 

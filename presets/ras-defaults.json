@@ -6,7 +6,6 @@
             "content": "<!-- wp:separator -->\n<hr class=\"wp-block-separator has-alpha-channel-opacity\"\/>\n<!-- \/wp:separator -->\n\n<!-- wp:heading -->\n<h2>Support our work<\/h2>\n<!-- \/wp:heading -->\n\n<!-- wp:paragraph -->\n<p>As an independent publication, we rely on donations to fund our journalism<\/p>\n<!-- \/wp:paragraph -->\n\n<!-- wp:newspack-blocks\/donate {\"className\":\"is-style-alternate\",\"amounts\":{\"once\":[9,20,90,20],\"month\":[7,15,30,15],\"year\":[84,180,360,180]},\"disabledFrequencies\":{\"once\":false,\"month\":false,\"year\":false},\"minimumDonation\":5} \/-->",
             "options": {
                 "background_color": "#FFFFFF",
-                "display_title": false,
                 "hide_border": false,
                 "large_border": false,
                 "frequency": "always",
@@ -56,7 +55,6 @@
             "content": "<!-- wp:newspack\/reader-registration {\"title\":\"Sign Up\",\"description\":\"Sign up for our free newsletters to receive the latest news.\"} -->\n<div class=\"wp-block-newspack-reader-registration\"><\/div>\n<!-- \/wp:newspack\/reader-registration -->",
             "options": {
                 "background_color": "#FFFFFF",
-                "display_title": false,
                 "hide_border": false,
                 "large_border": false,
                 "frequency": "custom",
@@ -109,7 +107,6 @@
             "content": "<!-- wp:paragraph -->\n<p>Sign up for our free newsletter to receive the latest news</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:newspack-newsletters/subscribe /-->",
             "options": {
                 "background_color": "#FFFFFF",
-                "display_title": false,
                 "hide_border": false,
                 "large_border": false,
                 "frequency": "always",
@@ -159,7 +156,6 @@
             "content": "<!-- wp:heading -->\n<h2>Stay in the know<\/h2>\n<!-- \/wp:heading -->\n\n<!-- wp:paragraph -->\n<p>Sign up for our free newsletters to receive the latest news directly in your inbox.<\/p>\n<!-- \/wp:paragraph -->\n\n<!-- wp:newspack-newsletters\/subscribe \/-->",
             "options": {
                 "background_color": "#FFFFFF",
-                "display_title": false,
                 "hide_border": false,
                 "large_border": false,
                 "frequency": "custom",
@@ -212,7 +208,6 @@
             "content": "<!-- wp:heading -->\n<h2>Support our work<\/h2>\n<!-- \/wp:heading -->\n\n<!-- wp:paragraph -->\n<p>As an independent publication, we rely on donations to fund our journalism<\/p>\n<!-- \/wp:paragraph -->\n\n<!-- wp:newspack-blocks\/donate {\"className\":\"is-style-alternate\",\"amounts\":{\"once\":[9,20,90,20],\"month\":[7,15,30,15],\"year\":[84,180,360,180]},\"disabledFrequencies\":{\"once\":false,\"month\":false,\"year\":false},\"minimumDonation\":5} \/-->",
             "options": {
                 "background_color": "#FFFFFF",
-                "display_title": false,
                 "hide_border": false,
                 "large_border": false,
                 "frequency": "custom",
