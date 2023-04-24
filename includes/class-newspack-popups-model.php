@@ -613,6 +613,12 @@ final class Newspack_Popups_Model {
 			$popup['categories']      = get_the_category( $id );
 			$popup['tags']            = get_the_tags( $id );
 			$popup['campaign_groups'] = get_the_terms( $id, Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY );
+
+			$all_taxonomies = self::get_custom_taxonomies();
+
+			foreach ( $all_taxonomies as $custom_taxonomy ) {
+				$popup[ $custom_taxonomy ] = get_the_terms( $id, $custom_taxonomy );
+			}
 		}
 
 		$duplicate_of = get_post_meta( $id, 'duplicate_of', true );
@@ -652,6 +658,16 @@ final class Newspack_Popups_Model {
 		}
 
 		return $popup;
+	}
+
+	/**
+	 * Gets custom taxonomies that are assigned to the popup post type.
+	 *
+	 * @return array
+	 */
+	public static function get_custom_taxonomies() {
+		$all_taxonomies = get_object_taxonomies( Newspack_Popups::NEWSPACK_POPUPS_CPT );
+		return array_diff( $all_taxonomies, [ Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY, 'category', 'post_tag' ] );
 	}
 
 	/**
