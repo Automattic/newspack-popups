@@ -18,7 +18,6 @@ final class Newspack_Popups {
 	const NEWSPACK_POPUP_PREVIEW_QUERY_PARAM    = 'pid';
 	const NEWSPACK_POPUP_PRESET_QUERY_PARAM     = 'preset';
 	const NEWSPACK_POPUPS_TAXONOMY_STATUS       = 'newspack_popups_taxonomy_status';
-	const NEWSPACK_POPUPS_RAS_PROMPTS_OPTION    = 'newspack_popups_ras_prompts';
 
 	const LIGHTWEIGHT_API_CONFIG_FILE_PATH_LEGACY = WP_CONTENT_DIR . '/../newspack-popups-config.php';
 	const LIGHTWEIGHT_API_CONFIG_FILE_PATH        = WP_CONTENT_DIR . '/newspack-popups-config.php';
@@ -89,6 +88,7 @@ final class Newspack_Popups {
 			add_filter( 'show_admin_bar', [ __CLASS__, 'show_admin_bar' ], 10, 2 ); // phpcs:ignore WordPressVIPMinimum.UserExperience.AdminBarRemoval.RemovalDetected
 
 			include_once dirname( __FILE__ ) . '/class-newspack-popups-model.php';
+			include_once dirname( __FILE__ ) . '/class-newspack-popups-presets.php';
 			include_once dirname( __FILE__ ) . '/class-newspack-popups-inserter.php';
 			include_once dirname( __FILE__ ) . '/class-newspack-popups-api.php';
 			include_once dirname( __FILE__ ) . '/class-newspack-popups-settings.php';

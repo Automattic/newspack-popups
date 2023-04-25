@@ -311,7 +311,7 @@ final class Newspack_Popups_API {
 	 * @return WP_REST_Response
 	 */
 	public function api_get_reader_activation_campaign_settings( $request ) {
-		$response = Newspack_Popups_Model::get_ras_presets();
+		$response = Newspack_Popups_Presets::get_ras_presets();
 
 		if ( \is_wp_error( $response ) ) {
 			return new \WP_REST_Response( [ 'message' => $response->get_error_message() ], 400 );
@@ -330,7 +330,7 @@ final class Newspack_Popups_API {
 		$slug = $request['slug'];
 		$data = $request['data'];
 
-		$response = Newspack_Popups_Model::update_preset_prompt( $slug, $data );
+		$response = Newspack_Popups_Presets::update_preset_prompt( $slug, $data );
 
 		if ( \is_wp_error( $response ) ) {
 			return new \WP_REST_Response( [ 'message' => $response->get_error_message() ], 400 );

@@ -45,6 +45,11 @@ class Prompts extends Schema {
 					'type'     => 'integer', // Attachment ID to be used as the featured image.
 					'required' => false,
 				],
+				'ready'             => [
+					'name'     => 'ready',
+					'type'     => 'boolean',
+					'required' => false,
+				],
 				'campaign_groups'   => [
 					'name'     => 'campaign_groups',
 					'type'     => 'array',
