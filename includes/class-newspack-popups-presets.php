@@ -326,7 +326,7 @@ final class Newspack_Popups_Presets {
 			},
 			Newspack_Popups_Segmentation::get_segments()
 		);
-		update_option( Newspack_Popups_Segmentation::SEGMENTS_OPTION_NAME, $existing_segments );
+		\update_option( Newspack_Popups_Segmentation::SEGMENTS_OPTION_NAME, $existing_segments );
 
 		// Deactivate all existing prompts.
 		$existing_prompts = Newspack_Popups_Model::retrieve_active_popups();
