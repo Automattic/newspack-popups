@@ -453,7 +453,7 @@
             "options": {
                 "background_color": "#FFFFFF",
                 "display_title": false,
-                "hide_border": false,
+                "hide_border": true,
                 "large_border": false,
                 "frequency": "always",
                 "frequency_max": 0,
