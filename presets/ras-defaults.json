@@ -60,7 +60,7 @@
                     "label": "Heading",
                     "description": "A heading to describe the prompt.",
                     "required": true,
-                    "default": "Sign Up",
+                    "default": "Join our community for free. Sign up now.",
                     "max_length": 40
                 },
                 {
@@ -69,7 +69,7 @@
                     "label": "Body",
                     "description": "The primary call to action for the prompt.",
                     "required": true,
-                    "default": "Sign up for our free newsletter to receive the latest news.",
+                    "default": "Register today to stay up-to-date with the latest news.",
                     "max_length": 300
                 },
                 {
@@ -115,7 +115,7 @@
                     "Use action-oriented verbs like “join,” “register,” and “sign up.”",
                     "Create a sense of urgency/Encourage readers to take immediate action by using words like “now” and “today.”"
                 ],
-                "url": "https://newspack.com"
+                "url": "https://help.newspack.com/engagement/reader-activation-system"
             }
         },
         {
@@ -187,7 +187,7 @@
                     "label": "Body",
                     "description": "The primary call to action for the prompt.",
                     "required": true,
-                    "default": "Sign up for our free newsletters to receive the latest news directly in your inbox.",
+                    "default": "Sign up to our free newsletter to get the latest news delivered straight to your inbox.",
                     "max_length": 300
                 },
                 {
@@ -231,9 +231,9 @@
                     "Highlight the value the reader will get from the newsletter(s).",
                     "Emphasize that signing up is free.",
                     "Use action-oriented verbs like “join,” “register,” and “sign up.”",
-                    "Create a sense of urgency/Encourage readers to take immediate action by using words like “now” and “today.”"
+                    "Create a sense of urgency. Encourage readers to take immediate action by using words like “now” and “today.”"
                 ],
-                "url": "https://newspack.com"
+                "url": "https://help.newspack.com/engagement/reader-activation-system"
             }
         },
         {
@@ -296,7 +296,7 @@
                     "label": "Heading",
                     "description": "A heading to describe the prompt.",
                     "required": true,
-                    "default": "Support Our Work",
+                    "default": "Support our work",
                     "max_length": 40
                 },
                 {
@@ -305,7 +305,7 @@
                     "label": "Body",
                     "description": "The primary call to action for the prompt.",
                     "required": true,
-                    "default": "As an independent publication, we rely on donations to fund our journalism.",
+                    "default": "As an independent publication, we rely on contributions from readers like you to fund our journalism.",
                     "max_length": 300
                 },
                 {
@@ -323,7 +323,7 @@
                     "label": "Button Label",
                     "description": "The label for the primary CTA button.",
                     "required": true,
-                    "default": "Donate Now",
+                    "default": "Contribute Now",
                     "max_length": 20
                 },
                 {
@@ -338,12 +338,12 @@
                 "screenshot": "donation-overlay.png",
                 "description": "The <strong>Donation Overlay</strong> is shown to readers who have registered and are signed up for at least one newsletter, but haven’t contributed yet. It’s triggered on the first pageview, and then again every four pageviews.",
                 "recommendations": [
-                    "Focus on the value readers add by contributing financially.",
                     "Highlight the importance of supporting your publication.",
+                    "Focus on the value readers add by contributing financially.",
                     "Use action-oriented verbs like “donate,” “give,” and “contribute.”",
-                    "Create a sense of urgency/Encourage readers to take immediate action by using words like “now” and “today.”"
+                    "Create a sense of urgency. Encourage readers to take immediate action by using words like “now” and “today.”"
                 ],
-                "url": "https://newspack.com"
+                "url": "https://help.newspack.com/engagement/reader-activation-system"
             }
         },
         {
@@ -403,7 +403,7 @@
                     "label": "Body",
                     "description": "The primary call to action for the prompt.",
                     "required": true,
-                    "default": "Sign up for our free newsletter to receive the latest news.",
+                    "default": "Sign up for our free newsletter.",
                     "max_length": 300
                 },
                 {
@@ -442,7 +442,7 @@
                     "Use action-oriented verbs like “join,” “register,” and “sign up.”",
                     "Consider including the sending frequency to set expectations."
                 ],
-                "url": "https://newspack.com"
+                "url": "https://help.newspack.com/engagement/reader-activation-system"
             }
         },
         {
@@ -453,7 +453,7 @@
             "options": {
                 "background_color": "#FFFFFF",
                 "display_title": false,
-                "hide_border": false,
+                "hide_border": true,
                 "large_border": false,
                 "frequency": "always",
                 "frequency_max": 0,
@@ -502,7 +502,7 @@
                     "label": "Heading",
                     "description": "A heading to describe the prompt.",
                     "required": true,
-                    "default": "Support Our Work",
+                    "default": "Support our work",
                     "max_length": 40
                 },
                 {
@@ -511,7 +511,7 @@
                     "label": "Body",
                     "description": "The primary call to action for the prompt.",
                     "required": true,
-                    "default": "As an independent publication, we rely on donations to fund our journalism.",
+                    "default": "As an independent publication, we rely on contributions from readers like you to fund our journalism.",
                     "max_length": 300
                 },
                 {
@@ -529,7 +529,7 @@
                     "label": "Button Label",
                     "description": "The label for the primary CTA button.",
                     "required": true,
-                    "default": "Donate Now",
+                    "default": "Contribute Now",
                     "max_length": 20
                 }
             ],
@@ -540,9 +540,9 @@
                     "Focus on the value readers add by contributing financially.",
                     "Highlight the importance of supporting your publication.",
                     "Use action-oriented verbs like “donate,” “give,” and “contribute.”",
-                    "Create a sense of urgency/Encourage readers to take immediate action by using words like “now” and “today.”"
+                    "Create a sense of urgency. Encourage readers to take immediate action by using words like “now” and “today.”"
                 ],
-                "url": "https://newspack.com"
+                "url": "https://help.newspack.com/engagement/reader-activation-system"
             }
         }
     ],
