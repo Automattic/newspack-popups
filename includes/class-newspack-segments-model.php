@@ -20,12 +20,82 @@ final class Newspack_Segments_Model {
 	const TAX_SLUG = 'popup_segment';
 
 	/**
+	 * The current DB version, used to perform updates in the data in case of change in the structure
+	 *
+	 * @var int
+	 */
+	const DB_VERSION = 1;
+
+	/**
+	 * The DB version option name. Where the current option is stored.
+	 *
+	 * @var string
+	 */
+	const DB_VERSION_OPTION_NAME = 'newspack_segments_db_version';
+
+	/**
 	 * Initializes the class and registers the taxonomy
 	 *
 	 * @return void
 	 */
 	public static function init() {
 		add_action( 'init', array( __CLASS__, 'register_segments_taxonomy' ) );
+		add_action( 'init', array( __CLASS__, 'maybe_update_db_version' ) );
+	}
+
+	/**
+	 * Checks if the DB version has changed and updates the data if needed
+	 *
+	 * @return void
+	 */
+	public static function maybe_update_db_version() {
+		$current_db_version = (int) get_option( self::DB_VERSION_OPTION_NAME, 0 );
+		if ( $current_db_version < self::DB_VERSION ) {
+			self::update_db_version( $current_db_version );
+		}
+	}
+
+	/**
+	 * Updates the DB version option and performs the needed updates
+	 *
+	 * @param int $current_db_version The current DB version.
+	 * @return void
+	 */
+	public static function update_db_version( $current_db_version ) {
+		if ( $current_db_version < 1 ) {
+			self::update_db_version_to_1();
+		}
+		update_option( self::DB_VERSION_OPTION_NAME, self::DB_VERSION );
+	}
+
+	/**
+	 * Updates the DB version to 1, when the segments were migrated from a single option entry into terms of a taxonomy
+	 *
+	 * @return void
+	 */
+	public static function update_db_version_to_1() {
+		$old_segments = get_option( Newspack_Popups_Segmentation::SEGMENTS_OPTION_NAME );
+		$id_mapping   = [];
+		foreach ( $old_segments as $old_segment ) {
+			$insert      = self::create_segment( $old_segment );
+			$new_segment = end( $insert );
+			// Confirm it's the same segment.
+			if ( $old_segment['name'] !== $new_segment['name'] ) {
+				continue;
+			}
+			$id_mapping[ $old_segment['id'] ] = $new_segment['id'];
+		}
+
+		$popups = Newspack_Popups_Model::retrieve_popups( true, true );
+		foreach ( $popups as $popup ) {
+			$current_meta = get_post_meta( $popup['id'], 'selected_segment_id', true );
+			if ( $current_meta ) {
+				foreach ( $id_mapping as $old_id => $new_id ) {
+					$new_meta = str_replace( $old_id, $new_id, $current_meta );
+				}
+				update_post_meta( $popup['id'], 'selected_segment_id', $new_meta );
+			}
+		}
 	}
 
 	/**
