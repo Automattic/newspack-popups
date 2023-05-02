@@ -240,24 +240,24 @@ final class Newspack_Segments_Model {
 		if ( ! is_array( $segment ) ) {
 			throw new TypeError();
 		}
-		$term = wp_insert_term(
+		$existing_segments = self::get_segments();
+		$term              = wp_insert_term(
 			$segment['name'] ?? 'Unnamed Segment',
 			self::TAX_SLUG
 		);
 
 		if ( ! is_wp_error( $term ) ) {
-			add_term_meta( $term['term_id'], 'created_at', gmdate( 'Y-m-d' ) );
-			add_term_meta( $term['term_id'], 'updated_at', gmdate( 'Y-m-d' ) );
+			update_term_meta( $term['term_id'], 'created_at', gmdate( 'Y-m-d' ) );
+			update_term_meta( $term['term_id'], 'updated_at', gmdate( 'Y-m-d' ) );
 			foreach ( $segment as $meta_key => $meta_value ) {
 				if ( 'name' === $meta_key ) {
 					continue;
 				}
-				add_term_meta( $term['term_id'], $meta_key, $meta_value );
+				update_term_meta( $term['term_id'], $meta_key, $meta_value );
 			}
+			// Add it to the end of the list.
+			update_term_meta( $term['term_id'], 'priority', count( $existing_segments ) );
 		}
-
-		$all_segments = self::get_segments();
-		self::sort_segments( wp_list_pluck( $all_segments, 'id' ) );
 		return self::get_segments();
 	}
 
@@ -386,6 +386,19 @@ final class Newspack_Segments_Model {
 	public static function delete_segment( $id ) {
 		wp_delete_term( $id, self::TAX_SLUG );
 		return self::get_segments();
+	}
+
+	/**
+	 * Delete all segments.
+	 *
+	 * @return bool True.
+	 */
+	public static function delete_all_segments() {
+		$segments = self::get_segments();
+		foreach ( $segments as $segment ) {
+			wp_delete_term( $segment['id'], self::TAX_SLUG );
+		}
+		return true;
 	}
 
 	/**

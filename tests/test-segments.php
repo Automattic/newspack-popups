@@ -522,4 +522,65 @@ class SegmentsTest extends WP_UnitTestCase {
 		$this->assertSame( $expected, Newspack_Popups_Segmentation::validate_segment_ids( $segment_ids, $segments ) );
 	}
 
+	/**
+	 * Test that the priority order is preserved when creating segments.
+	 *
+	 * New segments should be added to the end of the list, regardless of the informed priority.
+	 */
+	public function test_create_preserves_order() {
+		$test_segments = [
+			'defaultSegment'                      => [],
+			'disabledSegment'                     => [
+				'is_not_subscribed' => true,
+				'is_disabled'       => true,
+			],
+			'segmentBetween3And5'                 => [
+				'min_posts' => 2,
+				'max_posts' => 3,
+				'priority'  => 0,
+			],
+			'segmentSessionReadCountBetween3And5' => [
+				'min_session_posts' => 2,
+				'max_session_posts' => 3,
+				'priority'          => 1,
+			],
+			'segmentSubscribers'                  => [
+				'is_subscribed' => true,
+				'priority'      => 2,
+			],
+			'segmentLoggedIn'                     => [
+				'has_user_account' => true,
+				'priority'         => 3,
+			],
+			'segmentNonSubscribers'               => [
+				'is_not_subscribed' => true,
+				'priority'          => 4,
+			],
+			'segmentWithReferrers'                => [
+				'referrers' => 'foobar.com, newspack.pub',
+				'priority'  => 5,
+			],
+			'anotherSegmentWithReferrers'         => [
+				'referrers' => 'bar.com',
+				'priority'  => 6,
+			],
+			'segmentWithNegativeReferrer'         => [
+				'referrers_not' => 'baz.com',
+				'priority'      => 7,
+			],
+		];
+
+		foreach ( $test_segments as $key => $value ) {
+			$segments = Newspack_Popups_Segmentation::create_segment(
+				[
+					'name'          => $key,
+					'configuration' => $value,
+				]
+			);
+
+			$last_segment = end( $segments );
+			$this->assertSame( $key, $last_segment['name'] );
+		}
+	}
+
 }

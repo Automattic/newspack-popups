@@ -161,7 +161,7 @@ class ImporterTest extends WP_UnitTestCase_PageWithPopups {
 		// Clear data created by other tests.
 		global $wpdb;
 		$wpdb->query( $wpdb->prepare( "DELETE FROM $wpdb->posts WHERE post_type = %s", Newspack_Popups::NEWSPACK_POPUPS_CPT ) ); // phpcs:ignore
-		delete_option( Newspack_Popups_Segmentation::SEGMENTS_OPTION_NAME );
+		Newspack_Segments_Model::delete_all_segments();
 
 		$existing_category = wp_insert_term( 'Category 10', 'category' );
 		$existing_tag      = wp_insert_term( 'Tag 10', 'post_tag' );
@@ -276,9 +276,10 @@ class ImporterTest extends WP_UnitTestCase_PageWithPopups {
 		$created_segments = Newspack_Popups_Segmentation::get_segments();
 		$this->assertSame( 2, count( $created_segments ) );
 		$this->assertSame( 'Test Segment', $created_segments[0]['name'] );
-		$this->assertSame( 10, $created_segments[0]['priority'] );
+		$this->assertSame( 0, $created_segments[0]['priority'] );
 		$this->assertSame( 1, $created_segments[0]['configuration']['max_posts'] );
 		$this->assertSame( 'Test Segment 2', $created_segments[1]['name'] );
+		$this->assertSame( 1, $created_segments[1]['priority'] );
 
 		// Get the IDs of the created segments to see if they were properly mapped in the prompts.
 		$segment_1_id = $created_segments[0]['id'];
