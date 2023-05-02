@@ -62,10 +62,10 @@ final class Newspack_Segments_Model {
 	 * @return void
 	 */
 	public static function update_db_version( $current_db_version ) {
-		if ( $current_db_version < 1 ) {
-			self::update_db_version_to_1();
-		}
-		update_option( self::DB_VERSION_OPTION_NAME, self::DB_VERSION );
+		// if ( $current_db_version < 1 ) {
+		// self::update_db_version_to_1();
+		// }
+		// update_option( self::DB_VERSION_OPTION_NAME, self::DB_VERSION );
 	}
 
 	/**
@@ -77,23 +77,24 @@ final class Newspack_Segments_Model {
 		$old_segments = get_option( Newspack_Popups_Segmentation::SEGMENTS_OPTION_NAME );
 		$id_mapping   = [];
 		foreach ( $old_segments as $old_segment ) {
-			$insert      = self::create_segment( $old_segment );
-			$new_segment = end( $insert );
-			// Confirm it's the same segment.
-			if ( $old_segment['name'] !== $new_segment['name'] ) {
-				continue;
-			}
+			$insert                           = self::create_segment( $old_segment );
+			$new_segment                      = end( $insert );
 			$id_mapping[ $old_segment['id'] ] = $new_segment['id'];
 		}
 
 		$popups = Newspack_Popups_Model::retrieve_popups( true, true );
+		var_dump( $id_mapping );
 		foreach ( $popups as $popup ) {
-			$current_meta = get_post_meta( $popup['id'], 'selected_segment_id', true );
-			if ( $current_meta ) {
+			$meta_value = get_post_meta( $popup['id'], 'selected_segment_id', true );
+			var_dump( $popup['id'] );
+			var_dump( $meta_value );
+			if ( $meta_value ) {
 				foreach ( $id_mapping as $old_id => $new_id ) {
-					$new_meta = str_replace( $old_id, $new_id, $current_meta );
+					$meta_value = str_replace( $old_id, $new_id, $meta_value );
 				}
-				update_post_meta( $popup['id'], 'selected_segment_id', $new_meta );
+
+				var_dump( $meta_value );
+				update_post_meta( $popup['id'], 'selected_segment_id', $meta_value );
 			}
 		}
 	}
@@ -311,8 +312,24 @@ final class Newspack_Segments_Model {
 			throw new TypeError();
 		}
 		$existing_segments = self::get_segments();
-		$term              = wp_insert_term(
-			$segment['name'] ?? 'Unnamed Segment',
+		$existing_names    = wp_list_pluck( $existing_segments, 'name' );
+
+		if ( empty( $segment['name'] ) ) {
+			$segment['name'] = 'Unnamed Segment';
+		}
+
+		// address edge case of segments with the same name.
+		if ( in_array( $segment['name'], $existing_names, true ) ) {
+			$i             = 2;
+			$original_name = $segment['name'];
+			while ( in_array( $segment['name'], $existing_names, true ) ) {
+				$segment['name'] = $original_name . ' ' . $i;
+				$i++;
+			}
+		}
+
+		$term = wp_insert_term(
+			$segment['name'],
 			self::TAX_SLUG
 		);
 
