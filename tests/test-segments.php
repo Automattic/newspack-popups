@@ -127,6 +127,10 @@ class SegmentsTest extends WP_UnitTestCase {
 		// Assert everything passed in was stored.
 		// As of today, any arbitrary properties are allowed.
 		foreach ( $segment as $key => $value ) {
+			if ( 'priority' === $key ) {
+				$this->assertSame( 0, $result[0][ $key ] );
+				continue;
+			}
 			$this->assertSame( $value, $result[0][ $key ] );
 		}
 
@@ -299,7 +303,7 @@ class SegmentsTest extends WP_UnitTestCase {
 
 		$this->assertSame( 'Edited', $result[0]['name'] );
 		$this->assertSame( 30, $result[0]['configuration']['min_posts'] );
-		$this->assertSame( 10, $result[0]['priority'], 'Priority should not be updated' );
+		$this->assertSame( 0, $result[0]['priority'], 'Priority should not be updated' );
 		$this->assertNotContains( 'other_properties', $result[0], 'additional properties should not be included' );
 
 		$this->assertSame( $this->valid['name'], $result[1]['name'] );
@@ -325,7 +329,7 @@ class SegmentsTest extends WP_UnitTestCase {
 			$this->valid,
 		];
 
-		// Remove priority from the first segment. This will be populated with priority 0 and will be persisted when the second segment is created.
+		// Remove priority from the first segment. This will be populated with priority 0.
 		unset( $segments_to_create_in_different_order[0]['priority'] );
 
 		foreach ( $segments_to_create_in_different_order as $segment ) {
@@ -334,24 +338,12 @@ class SegmentsTest extends WP_UnitTestCase {
 
 		$segments = Newspack_Popups_Segmentation::get_segments();
 
-		$reindexed = Newspack_Popups_Segmentation::reindex_segments( $segments );
-		$index     = 0;
-		foreach ( $reindexed as $segment ) {
+		$index = 0;
+		foreach ( $segments as $segment ) {
 			$this->assertSame( $index, $segment['priority'] );
 			$this->assertSame( $segments_to_create_in_different_order[ $index ]['name'], $segment['name'] );
 			$index++;
 		}
-
-		// Assert that the reindexed segments were not persisted.
-		$segments = Newspack_Popups_Segmentation::get_segments();
-		$index    = 0;
-		foreach ( $segments as $segment ) {
-			$expected_priority = $segments_to_create_in_different_order[ $index ]['priority'] ?? 0;
-			$this->assertSame( $segments_to_create_in_different_order[ $index ]['name'], $segment['name'] );
-			$this->assertSame( $expected_priority, $segment['priority'] );
-			$index++;
-		}
-
 	}
 
 	/**
