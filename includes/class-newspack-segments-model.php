@@ -62,10 +62,10 @@ final class Newspack_Segments_Model {
 	 * @return void
 	 */
 	public static function update_db_version( $current_db_version ) {
-		// if ( $current_db_version < 1 ) {
-		// self::update_db_version_to_1();
-		// }
-		// update_option( self::DB_VERSION_OPTION_NAME, self::DB_VERSION );
+		update_option( self::DB_VERSION_OPTION_NAME, self::DB_VERSION );
+		if ( $current_db_version < 1 ) {
+			self::update_db_version_to_1();
+		}
 	}
 
 	/**
@@ -83,17 +83,12 @@ final class Newspack_Segments_Model {
 		}
 
 		$popups = Newspack_Popups_Model::retrieve_popups( true, true );
-		var_dump( $id_mapping );
 		foreach ( $popups as $popup ) {
 			$meta_value = get_post_meta( $popup['id'], 'selected_segment_id', true );
-			var_dump( $popup['id'] );
-			var_dump( $meta_value );
 			if ( $meta_value ) {
 				foreach ( $id_mapping as $old_id => $new_id ) {
 					$meta_value = str_replace( $old_id, $new_id, $meta_value );
 				}
-
-				var_dump( $meta_value );
 				update_post_meta( $popup['id'], 'selected_segment_id', $meta_value );
 			}
 		}
@@ -449,7 +444,7 @@ final class Newspack_Segments_Model {
 	 */
 	public static function get_segment_from_term( WP_Term $segment ) {
 		$segment = [
-			'id'   => $segment->term_id,
+			'id'   => (string) $segment->term_id, // This typecast is very important for the front-end to work, as previously segment IDs were string.
 			'name' => $segment->name,
 		];
 		foreach ( self::get_meta_schema() as $meta_key => $schema ) {
