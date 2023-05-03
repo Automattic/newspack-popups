@@ -1,3 +1,10 @@
+# [2.16.0-alpha.3](https://github.com/Automattic/newspack-popups/compare/v2.16.0-alpha.2...v2.16.0-alpha.3) (2023-05-03)
+
+
+### Features
+
+* increase max length of default prompt input fields ([#1109](https://github.com/Automattic/newspack-popups/issues/1109)) ([6b759a1](https://github.com/Automattic/newspack-popups/commit/6b759a13716359e79d822f726e0366c5e0063314))
+
 # [2.16.0-alpha.2](https://github.com/Automattic/newspack-popups/compare/v2.16.0-alpha.1...v2.16.0-alpha.2) (2023-05-03)
 
 
