@@ -121,9 +121,12 @@ final class Newspack_Popups_Presets {
 			return $lists;
 		}
 
+		// Get override values if previewing a preset.
+		$override_values = filter_input( INPUT_GET, 'values', FILTER_SANITIZE_FULL_SPECIAL_CHARS, FILTER_REQUIRE_ARRAY );
+
 		// Populate prompt configs with saved inputs.
 		$data['prompts'] = array_map(
-			function( $prompt ) use ( $lists, $saved_inputs ) {
+			function( $prompt ) use ( $lists, $saved_inputs, $override_values ) {
 				// Check for saved inputs.
 				if ( ! empty( $saved_inputs[ $prompt['slug'] ] ) ) {
 					$fields                      = array_map(
@@ -145,11 +148,16 @@ final class Newspack_Popups_Presets {
 
 				// Populate placeholder content with saved inputs or default values.
 				foreach ( $prompt['user_input_fields'] as $field ) {
+					$override = ! empty( $override_values[ $field['name'] ] ) ? $override_values[ $field['name'] ] : null;
 					if ( 'array' === $field['type'] || 'string' === $field['type'] ) {
-						$prompt['content'] = self::process_user_inputs( $prompt['content'], $field );
+						$prompt['content'] = self::process_user_inputs( $prompt['content'], $field, $override );
 					}
-					if ( 'int' === $field['type'] && 'featured_image_id' === $field['name'] && isset( $field['value'] ) ) {
-						$prompt['featured_image_id'] = $field['value'];
+					if ( 'int' === $field['type'] && 'featured_image_id' === $field['name'] ) {
+						if ( ! empty( $override_values['featured_image_id'] ) ) {
+							$prompt['featured_image_id'] = $override_values['featured_image_id'];
+						} elseif ( isset( $field['value'] ) ) {
+							$prompt['featured_image_id'] = $field['value'];
+						}
 					}
 				}
 
@@ -202,16 +210,20 @@ final class Newspack_Popups_Presets {
 	 *               $field['default'] string Field default value. Required.
 	 *               $field['value'] string Field user input value.
 	 *               $field['max_length'] int Max length of string-type user input value.
+	 * @param string $value Optional. Override value to use instead of $field['value'].
 	 *
 	 * @return string Prompt content with placeholders replaced.
 	 */
-	public static function process_user_inputs( $prompt_content, $field ) {
+	public static function process_user_inputs( $prompt_content, $field, $value = null ) {
 		if ( ! isset( $field['name'] ) || ! isset( $field['type'] ) || ! isset( $field['default'] ) ) {
 			return $prompt_content;
 		}
 
 		$field_name = $field['name'];
-		$value      = isset( $field['value'] ) ? $field['value'] : $field['default'];
+
+		if ( ! $value ) {
+			$value = isset( $field['value'] ) ? $field['value'] : $field['default'];
+		}
 
 		// If a string, crop to max_length if set.
 		if ( 'string' === $field['type'] && isset( $field['max_length'] ) ) {
