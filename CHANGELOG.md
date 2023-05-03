@@ -1,3 +1,10 @@
+# [2.16.0-alpha.2](https://github.com/Automattic/newspack-popups/compare/v2.16.0-alpha.1...v2.16.0-alpha.2) (2023-05-03)
+
+
+### Bug Fixes
+
+* **ras-defaults:** allow override values via $_GET for previewing presets ([#1107](https://github.com/Automattic/newspack-popups/issues/1107)) ([58736a5](https://github.com/Automattic/newspack-popups/commit/58736a5fc955630eec079335ce0658ab1db1d78f))
+
 # [2.16.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v2.15.0...v2.16.0-alpha.1) (2023-04-28)
 
 
