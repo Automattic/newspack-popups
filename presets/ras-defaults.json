@@ -61,7 +61,7 @@
                     "description": "A heading to describe the prompt.",
                     "required": true,
                     "default": "Join our community for free. Sign up now.",
-                    "max_length": 40
+                    "max_length": 120
                 },
                 {
                     "name": "body",
@@ -79,7 +79,7 @@
                     "description": "The label for the primary CTA button.",
                     "required": true,
                     "default": "Sign up",
-                    "max_length": 20
+                    "max_length": 40
                 },
                 {
                     "name": "success_message",
@@ -179,7 +179,7 @@
                     "description": "A heading to describe the prompt.",
                     "required": true,
                     "default": "Stay in the know",
-                    "max_length": 40
+                    "max_length": 120
                 },
                 {
                     "name": "body",
@@ -197,7 +197,7 @@
                     "description": "The label for the primary CTA button.",
                     "required": true,
                     "default": "Sign up",
-                    "max_length": 20
+                    "max_length": 40
                 },
                 {
                     "name": "success_message",
@@ -297,7 +297,7 @@
                     "description": "A heading to describe the prompt.",
                     "required": true,
                     "default": "Support our work",
-                    "max_length": 40
+                    "max_length": 120
                 },
                 {
                     "name": "body",
@@ -324,7 +324,7 @@
                     "description": "The label for the primary CTA button.",
                     "required": true,
                     "default": "Contribute Now",
-                    "max_length": 20
+                    "max_length": 40
                 },
                 {
                     "name": "featured_image_id",
@@ -413,7 +413,7 @@
                     "description": "The label for the primary CTA button.",
                     "required": true,
                     "default": "Sign up",
-                    "max_length": 20
+                    "max_length": 40
                 },
                 {
                     "name": "success_message",
@@ -503,7 +503,7 @@
                     "description": "A heading to describe the prompt.",
                     "required": true,
                     "default": "Support our work",
-                    "max_length": 40
+                    "max_length": 120
                 },
                 {
                     "name": "body",
@@ -530,7 +530,7 @@
                     "description": "The label for the primary CTA button.",
                     "required": true,
                     "default": "Contribute Now",
-                    "max_length": 20
+                    "max_length": 40
                 }
             ],
             "help_info": {
