@@ -1,3 +1,10 @@
+# [2.16.0-alpha.4](https://github.com/Automattic/newspack-popups/compare/v2.16.0-alpha.3...v2.16.0-alpha.4) (2023-05-08)
+
+
+### Bug Fixes
+
+* **ras-defaults:** turn on feature to always subscribe to newsletters by default ([#1111](https://github.com/Automattic/newspack-popups/issues/1111)) ([283e0d8](https://github.com/Automattic/newspack-popups/commit/283e0d845c54a8d4f122fe3f4da2fc692f07ccd5))
+
 # [2.16.0-alpha.3](https://github.com/Automattic/newspack-popups/compare/v2.16.0-alpha.2...v2.16.0-alpha.3) (2023-05-03)
 
 
