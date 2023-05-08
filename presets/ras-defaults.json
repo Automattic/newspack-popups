@@ -4,7 +4,7 @@
             "status": "draft",
             "slug": "ras_registration_overlay",
             "title": "Registration Overlay",
-            "content": "<!-- wp:newspack\/reader-registration {\"title\":\"{{heading}}\",\"description\":\"{{body}}\",\"label\":\"{{button_label}}\",{{lists}}} -->\n<div class=\"wp-block-newspack-reader-registration\"><!-- wp:paragraph {\"align\":\"center\"} --><p class=\"has-text-align-center\">{{success_message}}</p><!-- /wp:paragraph --><\/div>\n<!-- \/wp:newspack\/reader-registration -->",
+            "content": "<!-- wp:newspack\/reader-registration {\"title\":\"{{heading}}\",\"description\":\"{{body}}\",\"label\":\"{{button_label}}\",\"hideSubscriptionInput\":true,{{lists}}} -->\n<div class=\"wp-block-newspack-reader-registration\"><!-- wp:paragraph {\"align\":\"center\"} --><p class=\"has-text-align-center\">{{success_message}}</p><!-- /wp:paragraph --><\/div>\n<!-- \/wp:newspack\/reader-registration -->",
             "options": {
                 "background_color": "#FFFFFF",
                 "display_title": false,
