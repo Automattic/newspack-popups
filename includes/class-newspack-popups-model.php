@@ -231,7 +231,6 @@ final class Newspack_Popups_Model {
 	public static function get_preview_query_options() {
 		$options_filters = [
 			'background_color'               => FILTER_SANITIZE_FULL_SPECIAL_CHARS,
-			'display_title'                  => FILTER_VALIDATE_BOOLEAN,
 			'hide_border'                    => FILTER_VALIDATE_BOOLEAN,
 			'large_border'                   => FILTER_VALIDATE_BOOLEAN,
 			'frequency'                      => FILTER_SANITIZE_FULL_SPECIAL_CHARS,
