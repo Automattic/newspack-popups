@@ -1,6 +1,6 @@
 {
   "name": "newspack-popups",
-  "version": "2.15.0",
+  "version": "2.16.0",
   "main": "Gruntfile.js",
   "author": "Automattic",
   "scripts": {
@@ -24,8 +24,8 @@
   },
   "lint-staged": {
     "*.js": "npm run lint:js:staged",
-		"*.scss": "npm run lint:scss:staged",
-		"*.php": "npm run lint:php:staged"
+    "*.scss": "npm run lint:scss:staged",
+    "*.php": "npm run lint:php:staged"
   },
   "dependencies": {
     "classnames": "^2.3.2",
@@ -33,13 +33,13 @@
     "js-cookie": "^3.0.5",
     "lodash": "^4.17.21",
     "newspack-components": "^2.1.0",
-    "qs": "^6.11.1",
+    "qs": "^6.11.2",
     "whatwg-fetch": "^3.6.2"
   },
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.2.0",
     "eslint": "^7.32.0",
-    "lint-staged": "^13.2.1",
+    "lint-staged": "^13.2.2",
     "newspack-scripts": "^5.1.0",
     "postcss-scss": "^4.0.6",
     "prettier": "npm:wp-prettier@^2.2.1-beta-1",

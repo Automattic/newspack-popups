@@ -19,10 +19,11 @@ class SchemasTest extends WP_UnitTestCase {
 		return [
 			'complete and valid' => [
 				[
-					'title'      => 'Test Campaign',
-					'content'    => 'Test content',
-					'status'     => 'publish',
-					'categories' => [
+					'slug'              => 'test_campaign',
+					'title'             => 'Test Campaign',
+					'content'           => 'Test content',
+					'status'            => 'publish',
+					'categories'        => [
 						[
 							'id'   => 1,
 							'name' => 'Category 1',
@@ -32,7 +33,7 @@ class SchemasTest extends WP_UnitTestCase {
 							'name' => 'Category 2',
 						],
 					],
-					'options'    => [
+					'options'           => [
 						'background_color'               => '#FFFFFF',
 						'hide_border'                    => false,
 						'large_border'                   => false,
@@ -61,6 +62,44 @@ class SchemasTest extends WP_UnitTestCase {
 						'excluded_tags'                  => [],
 						'duplicate_of'                   => 0,
 						'newspack_popups_has_disabled_popups' => false,
+					],
+					'user_input_fields' => [
+						[
+							'name'        => 'heading',
+							'type'        => 'string',
+							'label'       => 'Heading',
+							'description' => 'A heading to describe the prompt.',
+							'required'    => true,
+							'default'     => 'Sign Up',
+							'max_length'  => 40,
+						],
+						[
+							'name'        => 'body',
+							'type'        => 'string',
+							'label'       => 'Body',
+							'description' => 'The primary call to action for the prompt.',
+							'required'    => true,
+							'default'     => 'Sign up for our free newsletter to receive the latest news.',
+							'max_length'  => 300,
+						],
+						[
+							'name'        => 'button_label',
+							'type'        => 'string',
+							'label'       => 'Button Label',
+							'description' => 'The label for the primary CTA button.',
+							'required'    => true,
+							'default'     => 'Sign up',
+							'max_length'  => 20,
+						],
+						[
+							'name'        => 'success_message',
+							'type'        => 'string',
+							'label'       => 'Success Message',
+							'description' => 'The message shown to readers after completing the signup.',
+							'required'    => true,
+							'default'     => 'Thank you for registering!',
+							'max_length'  => 300,
+						],
 					],
 				],
 				true,
