@@ -880,7 +880,7 @@ final class Newspack_Popups {
 		) {
 			return;
 		}
-		// Don't create a config file if the directory is not writeable.
+		// Don't create a config file if the directory is not writable.
 		if ( ! is_writable( dirname( self::LIGHTWEIGHT_API_CONFIG_FILE_PATH ) ) ) { // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_is_writable
 			return;
 		}
