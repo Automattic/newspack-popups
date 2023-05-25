@@ -201,7 +201,6 @@ class ImporterTest extends WP_UnitTestCase_PageWithPopups {
 				],
 				'options'         => [
 					'background_color'    => '#FFFFFF',
-					'display_title'       => false,
 					'hide_border'         => false,
 					'large_border'        => false,
 					'frequency'           => 'once',
@@ -221,7 +220,6 @@ class ImporterTest extends WP_UnitTestCase_PageWithPopups {
 				],
 				'options'         => [
 					'background_color'    => '#FFFF00',
-					'display_title'       => false,
 					'hide_border'         => false,
 					'large_border'        => false,
 					'frequency'           => 'once',
@@ -447,7 +445,6 @@ class ImporterTest extends WP_UnitTestCase_PageWithPopups {
 				],
 				'options'         => [
 					'background_color'    => '#FFFFFF',
-					'display_title'       => false,
 					'hide_border'         => false,
 					'large_border'        => false,
 					'frequency'           => 'once',
