@@ -1,3 +1,10 @@
+# [2.17.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v2.16.0...v2.17.0-alpha.1) (2023-05-25)
+
+
+### Features
+
+* deprecate "display title" option ([#1101](https://github.com/Automattic/newspack-popups/issues/1101)) ([e3de495](https://github.com/Automattic/newspack-popups/commit/e3de495e1885bb1eebb7dd12d7d523ea2846f6fd))
+
 # [2.16.0](https://github.com/Automattic/newspack-popups/compare/v2.15.0...v2.16.0) (2023-05-08)
 
 
