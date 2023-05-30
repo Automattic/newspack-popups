@@ -1,3 +1,10 @@
+# [2.17.0](https://github.com/Automattic/newspack-popups/compare/v2.16.0...v2.17.0) (2023-05-30)
+
+
+### Features
+
+* record timestamp when RAS setup wizard is completed ([#1118](https://github.com/Automattic/newspack-popups/issues/1118)) ([c6b225c](https://github.com/Automattic/newspack-popups/commit/c6b225cdf043a79fe3044052cb0c99a9a2a6425c))
+
 # [2.16.0](https://github.com/Automattic/newspack-popups/compare/v2.15.0...v2.16.0) (2023-05-08)
 
 
