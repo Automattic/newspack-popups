@@ -1,9 +1,28 @@
-/* globals newspack_popups_view, newspackPopups */
+/* globals newspack_popups_view */
+
+// Ensure we have a newspackRAS array.
+window.newspackRAS = window.newspackRAS || [];
+
+// Cached instance of RAS reader data object.
+let readerData;
 
 /**
- * Log the current pageview as a visit event in reader data.
+ * Log debugging data if WP_DEBUG is set.
  *
- * @return {boolean} True if logged, false if not.
+ * @param {string} key  Key name for debug data.
+ * @param {any}    data Data to log.
+ */
+const debug = ( key, data ) => {
+	if ( ! newspack_popups_view.debug ) {
+		return;
+	}
+
+	window.newspack_popups_debug = window.newspack_popups_debug || {};
+	window.newspack_popups_debug[ key ] = data;
+};
+
+/**
+ * Log the current pageview as a visit event in reader activity data.
  */
 const logVisit = () => {
 	const { visit } = newspack_popups_view;
@@ -12,15 +31,28 @@ const logVisit = () => {
 		return;
 	}
 
-	const event = { ...visit, date_created: new Date() };
-	const toUpdate = { events: [ event ] };
-
-	// If the visit is an article, increment the lifetie view count.
+	// If the visit is an article, increment the lifetime view count.
 	if ( 'post' === visit.post_type ) {
-		toUpdate.articles = ( newspackPopups.reader?.articles || 0 ) + 1;
+		const articleViewCount = readerData.store.get( 'articleViewCount' ) || 0;
+		readerData.store.set( 'articleViewCount', articleViewCount + 1 );
 	}
 
-	return newspackPopups.updateReader( toUpdate );
+	// If the visit has categories.
+	if ( visit.categories ) {
+		visit.categories = visit.categories.split( ',' ).map( id => parseInt( id ) );
+
+		// Add categories to lifetime category view count.
+		const categoryViewCounts = readerData.store.get( 'categoryViewCounts' ) || {};
+		visit.categories.forEach( categoryId => {
+			if ( ! categoryViewCounts[ 'cat' + categoryId ] ) {
+				categoryViewCounts[ 'cat' + categoryId ] = 0;
+			}
+			categoryViewCounts[ 'cat' + categoryId ]++;
+		} );
+		readerData.store.set( 'categoryViewCounts', categoryViewCounts );
+	}
+
+	window.newspackRAS.push( [ 'view', visit ] );
 };
 
 /**
@@ -39,50 +71,59 @@ const getPrompts = () => {
  * @return {boolean} True if the reader matches the segment, false if not.
  */
 const doesReaderMatchSegment = segment => {
-	const reader = newspackPopups.reader;
 	const { configuration = {} } = segment;
 	let matches = true;
 
 	// Article view count.
+	const articleViewCount = readerData.store.get( 'articleViewCount' ) || 0;
 	if (
 		configuration.min_posts &&
 		configuration.min_posts > 0 &&
-		reader.articles < configuration.min_posts
+		articleViewCount < configuration.min_posts
 	) {
 		matches = false;
 	}
 	if (
 		configuration.max_posts &&
 		configuration.max_posts > 0 &&
-		reader.articles > configuration.max_posts
+		articleViewCount > configuration.max_posts
 	) {
 		matches = false;
 	}
 
 	// Newsletter signup status.
-	if ( configuration.is_subscribed && ! reader.isSubscriber ) {
+	const isSubscriber = readerData.store.get( 'isSubscriber' ) || false;
+	if ( configuration.is_subscribed && ! isSubscriber ) {
 		matches = false;
 	}
-	if ( configuration.is_not_subscribed && reader.isSubscriber ) {
+	if ( configuration.is_not_subscribed && isSubscriber ) {
 		matches = false;
 	}
 
 	// Donation status.
-	if ( configuration.is_donor && ( ! reader.isDonor || ! reader.isDonorRecurring ) ) {
+	const donorStatus = readerData.store.get( 'donorStatus' ) || {};
+	if ( configuration.is_donor && ( ! donorStatus.isDonor || ! donorStatus.isDonorRecurring ) ) {
 		matches = false;
 	}
-	if ( configuration.is_not_donor && ( reader.isDonor || reader.isDonorRecurring ) ) {
+	if ( configuration.is_not_donor && ( donorStatus.isDonor || donorStatus.isDonorRecurring ) ) {
 		matches = false;
 	}
-	if ( configuration.is_former_donor && ! reader.isDonorFormer ) {
+	if ( configuration.is_former_donor && ! donorStatus.isDonorFormer ) {
 		matches = false;
 	}
 
-	// User account.
-	if ( ( configuration.is_logged_in || configuration.has_user_account ) && ! reader.id ) {
+	// Is currently logged in.
+	const reader = readerData.getReader() || {};
+	if (
+		( configuration.is_logged_in || configuration.has_user_account ) &&
+		! reader.authenticated
+	) {
 		matches = false;
 	}
-	if ( ( configuration.is_not_logged_in || configuration.no_user_account ) && reader.id ) {
+	if (
+		( configuration.is_not_logged_in || configuration.no_user_account ) &&
+		reader.authenticated
+	) {
 		matches = false;
 	}
 
@@ -159,6 +200,7 @@ const closeOverlay = event => {
 const shouldPromptsBeDisplayed = () => {
 	const prompts = getPrompts();
 	const matchingSegment = getBestPrioritySegment();
+	debug( 'matchingSegment', matchingSegment );
 
 	prompts.forEach( prompt => {
 		// Attach event listners to overlay close buttons.
@@ -182,6 +224,10 @@ const shouldPromptsBeDisplayed = () => {
 				prompt.removeAttribute( 'amp-access-hide' );
 			}, delay );
 		}
+
+		// Debug logging for prompt display.
+		const promptId = prompt.getAttribute( 'id' );
+		debug( promptId, shouldDisplay );
 	} );
 };
 
@@ -189,11 +235,14 @@ const shouldPromptsBeDisplayed = () => {
  * Init segmentation.
  */
 export const initSegmentation = () => {
-	// Must have a reader and segments to check against.
-	if ( ! window.newspackPopups?.reader || ! newspack_popups_view?.segments ) {
+	// Must have segments to check against.
+	if ( ! newspack_popups_view?.segments ) {
 		return;
 	}
 
-	logVisit();
-	shouldPromptsBeDisplayed();
+	window.newspackRAS.push( ras => {
+		readerData = ras;
+		logVisit();
+		shouldPromptsBeDisplayed();
+	} );
 };

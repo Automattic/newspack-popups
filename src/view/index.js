@@ -30,10 +30,8 @@ function domReady( callback ) {
  */
 import './style.scss';
 import './patterns.scss';
-import { initReader } from './reader';
 import { initSegmentation } from './segmentation';
 
 if ( typeof window !== 'undefined' ) {
-	initReader(); // localStorage doesn't need the DOM
 	domReady( initSegmentation );
 }

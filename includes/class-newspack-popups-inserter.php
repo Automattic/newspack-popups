@@ -697,6 +697,7 @@ final class Newspack_Popups_Inserter {
 			$script_data = [
 				'visit'    => self::get_visit(),
 				'segments' => Newspack_Popups_Segmentation::get_segments(),
+				'debug'    => defined( 'WP_DEBUG' ) && WP_DEBUG,
 			];
 			\wp_localize_script( $script_handle, 'newspack_popups_view', $script_data );
 			\wp_enqueue_script( $script_handle );
