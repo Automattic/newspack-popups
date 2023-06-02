@@ -117,7 +117,7 @@ class Newspack_Popups_Settings {
 	 *
 	 * @return bool|WP_Error Whether the value was updated or error if key does not match settings configuration.
 	 */
-	private static function update_setting( $section, $key, $value ) {
+	public static function update_setting( $section, $key, $value ) {
 		$config = self::get_setting_config( $section, $key );
 		if ( ! $config ) {
 			return new WP_Error( 'newspack_ads_invalid_setting_update', __( 'Invalid setting.', 'newspack-ads' ) );
