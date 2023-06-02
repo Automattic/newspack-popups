@@ -917,6 +917,7 @@ final class Newspack_Popups {
 						if ( ! isset( $value ) ) {
 							return '';
 						}
+						$value = addslashes( $value );
 						return "define( '" . $config_var . "', '" . $value . "' );";
 					},
 					$config_vars
