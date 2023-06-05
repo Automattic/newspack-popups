@@ -37,6 +37,7 @@ import { manageAnimations } from './animation';
 import { managePositionObservers } from './position-observer';
 import { manageBinds } from './bind';
 import { manageAccess } from './access';
+import { manageAnalytics } from './analytics/ga4';
 
 if ( typeof window !== 'undefined' ) {
 	domReady( () => {
@@ -51,5 +52,7 @@ if ( typeof window !== 'undefined' ) {
 		managePositionObservers();
 		manageBinds();
 		manageAccess();
+
+		manageAnalytics();
 	} );
 }

@@ -1145,6 +1145,35 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
+	 * Get a description of a prompt's custom frequency settings, for analytics purposes.
+	 *
+	 * @param array $popup The popup object for the prompt.
+	 *
+	 * @return string Frequency summary.
+	 */
+	private static function get_custom_frequency_summary( $popup ) {
+		$custom_settings = [];
+
+		if ( 0 < $popup['options']['frequency_between'] ) {
+			// Translators: %d is the number of pageviews in between prompt displays, if greater than 0 (every pageview).
+			$custom_settings[] = sprintf( __( 'every %d pageviews', 'newspack-popups' ), $popup['options']['frequency_between'] + 1 );
+		}
+		if ( 0 < $popup['options']['frequency_start'] ) {
+			// Translators: %d is the pageview when the prompt starts to be displayed, if greater than 0 (first pageview).
+			$custom_settings[] = sprintf( __( 'starting on pageview %d', 'newspack-popups' ), $popup['options']['frequency_start'] + 1 );
+		}
+		if ( 0 < $popup['options']['frequency_max'] ) {
+			// Translators: %d is the max number number of displays for the prompt, if greater than 0 (no max).
+			$custom_settings[] = sprintf( __( 'max %d times', 'newspack-popups' ), $popup['options']['frequency_max'] );
+
+			// Translators: %s is the time period for when the prompt can be displayed again after the max number of displays.
+			$custom_settings[] = sprintf( __( 'resetting every %s', 'newspack-popups' ), $popup['options']['frequency_reset'] );
+		}
+
+		return implode( ',', $custom_settings );
+	}
+
+	/**
 	 * Generate markup for an inline popup.
 	 *
 	 * @param string $popup The popup object.
@@ -1163,7 +1192,7 @@ final class Newspack_Popups_Model {
 		self::remove_form_hooks( $popup );
 		do_action( 'newspack_campaigns_after_campaign_render', $popup );
 
-		$element_id           = self::get_uniqid();
+		$element_id           = self::canonize_popup_id( $popup['id'] );
 		$endpoint             = self::get_reader_endpoint();
 		$hide_border          = $popup['options']['hide_border'];
 		$large_border         = $popup['options']['large_border'];
@@ -1176,6 +1205,7 @@ final class Newspack_Popups_Model {
 		$classes[]            = $large_border ? 'newspack-lightbox-large-border' : null;
 		$classes[]            = $is_newsletter_prompt ? 'newspack-newsletter-prompt-inline' : null;
 		$classes              = array_merge( $classes, explode( ' ', $popup['options']['additional_classes'] ) );
+		$frequency            = 'custom' === $popup['options']['frequency'] ? self::get_custom_frequency_summary( $popup ) : $popup['options']['frequency'];
 
 		$analytics_events = self::get_analytics_events( $popup, $body, $element_id );
 		if ( ! empty( $analytics_events ) ) {
@@ -1198,6 +1228,9 @@ final class Newspack_Popups_Model {
 				tabindex="0"
 				style="<?php echo esc_attr( self::container_style( $popup ) ); ?>"
 				id="<?php echo esc_attr( $element_id ); ?>"
+				data-frequency="<?php echo esc_attr( $frequency ); ?>"
+				data-placement="<?php echo esc_attr( $popup['options']['placement'] ); ?>"
+				data-title="<?php echo esc_attr( $popup['title'] ); ?>"
 			>
 				<?php echo do_shortcode( $body ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 			</amp-layout>
@@ -1239,7 +1272,7 @@ final class Newspack_Popups_Model {
 		self::remove_form_hooks( $popup );
 		do_action( 'newspack_campaigns_after_campaign_render', $popup );
 
-		$element_id            = self::get_uniqid();
+		$element_id            = self::canonize_popup_id( $popup['id'] );
 		$endpoint              = self::get_reader_endpoint();
 		$hide_border           = $popup['options']['hide_border'];
 		$large_border          = $popup['options']['large_border'];
@@ -1260,6 +1293,7 @@ final class Newspack_Popups_Model {
 		$wrapper_classes       = [ 'newspack-popup-wrapper' ];
 		$wrapper_classes[]     = 'publish' !== $popup['status'] ? 'newspack-inactive-popup-status' : null;
 		$is_scroll_triggered   = 'scroll' === $popup['options']['trigger_type'];
+		$frequency             = 'custom' === $popup['options']['frequency'] ? self::get_custom_frequency_summary( $popup ) : $popup['options']['frequency'];
 
 		add_filter(
 			'newspack_analytics_events',
@@ -1279,6 +1313,9 @@ final class Newspack_Popups_Model {
 			role="button"
 			tabindex="0"
 			id="<?php echo esc_attr( $element_id ); ?>"
+			data-frequency="<?php echo esc_attr( $frequency ); ?>"
+			data-placement="<?php echo esc_attr( $popup['options']['placement'] ); ?>"
+			data-title="<?php echo esc_attr( $popup['title'] ); ?>"
 		>
 			<div class="<?php echo esc_attr( implode( ' ', $wrapper_classes ) ); ?>" data-popup-status="<?php echo esc_attr( $popup['status'] ); ?>" style="<?php echo ! $hide_border ? esc_attr( self::container_style( $popup ) ) : ''; ?>">
 				<div class="newspack-popup__content-wrapper" style="<?php echo $hide_border ? esc_attr( self::container_style( $popup ) ) : ''; ?>">
