@@ -1,6 +1,6 @@
 /* global gtag */
 
-import { manageLoadEvents } from './load';
+import { manageLoadedEvents } from './loaded';
 import { getPrompts } from '../utils';
 
 export const manageAnalytics = () => {
@@ -9,6 +9,6 @@ export const manageAnalytics = () => {
 		// Fetch all prompts on the page just once.
 		const prompts = getPrompts();
 
-		manageLoadEvents( prompts );
+		manageLoadedEvents( prompts );
 	}
 };
