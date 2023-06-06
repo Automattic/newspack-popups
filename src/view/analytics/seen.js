@@ -10,24 +10,23 @@ const MINIMUM_VISIBLE_PERCENTAGE = 0.5;
  * Execute a callback function to send a GA event when a prompt becomes visible.
  *
  * @param {Function} handleEvent Callback function to execute when the prompt becomes eligible for display.
- * @param {number}   promptId    ID of the prompt being observed.
  * @return {IntersectionObserver} Observer instance.
  */
-const getObserver = ( handleEvent, promptId ) => {
-	const timers = {};
+const getObserver = handleEvent => {
+	let timer;
 	const observer = new IntersectionObserver(
 		entries => {
 			entries.forEach( observerEntry => {
 				if ( observerEntry.isIntersecting ) {
-					if ( ! timers[ promptId ] ) {
-						timers[ promptId ] = setTimeout( () => {
+					if ( ! timer ) {
+						timer = setTimeout( () => {
 							handleEvent();
 							observer.unobserve( observerEntry.target );
 						}, MINIMUM_VISIBLE_TIME || 0 );
 					}
-				} else if ( timers[ promptId ] ) {
-					clearTimeout( timers[ promptId ] );
-					timers[ promptId ] = false;
+				} else if ( timer ) {
+					clearTimeout( timer );
+					timer = false;
 				}
 			} );
 		},
@@ -46,13 +45,12 @@ const getObserver = ( handleEvent, promptId ) => {
  */
 export const manageSeenEvents = prompts => {
 	prompts.forEach( prompt => {
-		const promptId = getRawId( prompt.getAttribute( 'id' ) );
-		const payload = getEventPayload( 'seen', promptId );
+		const payload = getEventPayload( 'seen', getRawId( prompt.getAttribute( 'id' ) ) );
 		const handleEvent = () => {
 			console.log( 'event name', 'prompt_interaction' );
 			console.log( 'event payload', payload );
 		};
 
-		getObserver( handleEvent, promptId ).observe( prompt, { attributes: true } );
+		getObserver( handleEvent ).observe( prompt, { attributes: true } );
 	} );
 };
