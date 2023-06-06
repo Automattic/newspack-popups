@@ -25,8 +25,41 @@ final class Newspack_Popups_Data_Api {
 	 * Registers the hooks.
 	 */
 	public static function init() {
-		add_action( 'newspack_campaigns_after_campaign_render', [ __CLASS__, 'get_rendered_popups' ] );
-		add_action( 'wp_footer', [ __CLASS__, 'print_popups_data' ], 999 );
+		\add_action( 'newspack_campaigns_after_campaign_render', [ __CLASS__, 'get_rendered_popups' ] );
+		\add_action( 'wp_footer', [ __CLASS__, 'print_popups_data' ], 999 );
+	}
+
+	/**
+	 * Get a description of a prompt's frequency settings, for analytics purposes.
+	 *
+	 * @param array $popup The popup object for the prompt.
+	 *
+	 * @return string Frequency summary.
+	 */
+	public static function get_frequency_summary( $popup ) {
+		if ( 'custom' !== $popup['options']['frequency'] ) {
+			return $popup['options']['frequency'];
+		}
+
+		$custom_settings = [];
+
+		if ( 0 < $popup['options']['frequency_between'] ) {
+			// Translators: %d is the number of pageviews in between prompt displays, if greater than 0 (every pageview).
+			$custom_settings[] = sprintf( __( 'every %d pageviews', 'newspack-popups' ), $popup['options']['frequency_between'] + 1 );
+		}
+		if ( 0 < $popup['options']['frequency_start'] ) {
+			// Translators: %d is the pageview when the prompt starts to be displayed, if greater than 0 (first pageview).
+			$custom_settings[] = sprintf( __( 'starting on pageview %d', 'newspack-popups' ), $popup['options']['frequency_start'] + 1 );
+		}
+		if ( 0 < $popup['options']['frequency_max'] ) {
+			// Translators: %d is the max number number of displays for the prompt, if greater than 0 (no max).
+			$custom_settings[] = sprintf( __( 'max %d times', 'newspack-popups' ), $popup['options']['frequency_max'] );
+
+			// Translators: %s is the time period for when the prompt can be displayed again after the max number of displays.
+			$custom_settings[] = sprintf( __( 'resetting every %s', 'newspack-popups' ), $popup['options']['frequency_reset'] );
+		}
+
+		return implode( ',', $custom_settings );
 	}
 
 	/**
@@ -50,7 +83,7 @@ final class Newspack_Popups_Data_Api {
 		$data['prompt_title'] = $popup['title'];
 
 		if ( isset( $popup['options'] ) ) {
-			$data['prompt_frequency'] = $popup['options']['frequency'] ?? '';
+			$data['prompt_frequency'] = self::get_frequency_summary( $popup );
 			$data['prompt_placement'] = $popup['options']['placement'] ?? '';
 		}
 
@@ -63,7 +96,7 @@ final class Newspack_Popups_Data_Api {
 		$data['prompt_blocks'] = [];
 
 		foreach ( $watched_blocks as $key => $block_name ) {
-			if ( has_block( $block_name, $popup['content'] ) ) {
+			if ( \has_block( $block_name, $popup['content'] ) ) {
 				$data['prompt_blocks'][] = $key;
 			}
 		}
@@ -101,14 +134,15 @@ final class Newspack_Popups_Data_Api {
 		if ( ! is_array( $popup_params ) || ! isset( $popup_params['prompt_id'] ) ) {
 			return [];
 		}
-		$santized = $popup_params;
 
-		unset( $santized['interaction_data'] );
-		$santized = array_merge( $santized, $popup_params['interaction_data'] );
+		$sanitized = $popup_params;
 
-		unset( $santized['prompt_blocks'] );
+		unset( $sanitized['interaction_data'] );
+		$sanitized = array_merge( $sanitized, $popup_params['interaction_data'] );
+
+		unset( $sanitized['prompt_blocks'] );
 		foreach ( $popup_params['prompt_blocks'] as $block ) {
-			$santized[ 'prompt_has_' . $block ] = 1;
+			$sanitized[ 'prompt_has_' . $block ] = 1;
 		}
 
 		// @TODO: How to handle prompts with more than one block?
@@ -116,9 +150,9 @@ final class Newspack_Popups_Data_Api {
 		if ( 1 === count( $popup_params['prompt_blocks'] ) ) {
 			$action_type = $popup_params['prompt_blocks'][0];
 		}
-		$santized['action_type'] = $action_type;
+		$sanitized['action_type'] = $action_type;
 
-		return $santized;
+		return $sanitized;
 	}
 
 	/**
@@ -133,7 +167,7 @@ final class Newspack_Popups_Data_Api {
 		$popups = array_map( [ __CLASS__, 'prepare_popup_params_for_ga' ], self::$popups );
 		?>
 		<script>
-			var newspackPopupsData = <?php echo wp_json_encode( $popups ); ?>;
+			var newspackPopupsData = <?php echo \wp_json_encode( $popups ); ?>;
 		</script>
 		<?php
 	}

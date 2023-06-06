@@ -1,4 +1,4 @@
-/* globals newspack_popups_view */
+/* globals newspackPopupsData, newspack_popups_view */
 
 /**
  * WordPress dependencies
@@ -207,38 +207,17 @@ export const getRawId = id => {
 };
 
 /**
- * Get a GA4 event payload for a given prompt element.
+ * Get a GA4 event payload for a given prompt.
  *
- * @param {string}      action     Action name for the event.
- * @param {string}      actionType Action type for the event.
- * @param {HTMLElement} prompt     HTML element for a prompt.
+ * @param {string} action   Action name for the event.
+ * @param {number} promptId ID of the prompt
  *
  * @return {Object} Event payload.
  */
-export const getEventPayload = ( action, actionType, prompt ) => {
-	const blocksToTrack = {
-		donation: '.wp-block-newspack-blocks-donate',
-		newsletter_subscription: '.newspack-newsletters-subscribe',
-		registration: '.newspack-registration',
-	};
-	const promptBlocks = Object.keys( blocksToTrack ).reduce( ( acc, blockType ) => {
-		const selector = blocksToTrack[ blockType ];
+export const getEventPayload = ( action, promptId ) => {
+	if ( ! newspackPopupsData || ! newspackPopupsData[ promptId ] ) {
+		return false;
+	}
 
-		if ( prompt.querySelector( selector ) ) {
-			acc.push( blockType );
-		}
-
-		return acc;
-	}, [] );
-
-	return {
-		action,
-		action_type: actionType,
-		prompt_id: getRawId( prompt.getAttribute( 'id' ) ),
-		prompt_title: prompt.getAttribute( 'data-title' ),
-		prompt_frequency: prompt.getAttribute( 'data-frequency' ),
-		prompt_placement: prompt.getAttribute( 'data-placement' ),
-		prompt_blocks: promptBlocks,
-		interaction_data: {}, // TK
-	};
+	return { ...newspackPopupsData[ promptId ], action };
 };
