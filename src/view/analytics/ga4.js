@@ -2,6 +2,7 @@
 
 import { manageLoadedEvents } from './loaded';
 import { manageSeenEvents } from './seen';
+import { manageDismissals } from './dismissed';
 import { getPrompts } from '../utils';
 
 export const manageAnalytics = () => {
@@ -12,5 +13,6 @@ export const manageAnalytics = () => {
 
 		manageLoadedEvents( prompts );
 		manageSeenEvents( prompts );
+		manageDismissals( prompts );
 	}
 };
