@@ -98,6 +98,42 @@ final class Newspack_Popups_Data_Api {
 		foreach ( $watched_blocks as $key => $block_name ) {
 			if ( \has_block( $block_name, $popup['content'] ) ) {
 				$data['prompt_blocks'][] = $key;
+
+				// Get the suggested donation values for the donation block.
+				if ( 'donation' === $key ) {
+					$prompt_blocks = \parse_blocks( $popup['content'] );
+					$donate_block  = array_shift(
+						array_filter(
+							$prompt_blocks,
+							function( $block ) use ( $block_name ) {
+								return $block_name === $block['blockName'];
+							}
+						)
+					);
+
+					if ( $donate_block && method_exists( '\Newspack\Donations', 'get_donation_settings' ) ) {
+						$is_manual         = $donate_block['attrs']['manual'] ?? false;
+						$default_settings  = \Newspack\Donations::get_donation_settings();
+						$donation_settings = $is_manual ? \wp_parse_args( $donate_block['attrs'], $default_settings ) : $default_settings;
+						$is_tiered         = $donation_settings['tiered'] ?? false;
+						$suggested_amounts = $donation_settings['amounts'] ?? [];
+						$disabled_tiers    = $donation_settings['disabledFrequencies'] ?? [];
+						$suggested_summary = [];
+
+						foreach ( $suggested_amounts as $frequency => $amounts ) {
+							if ( empty( $disabled_tiers[ $frequency ] ) ) {
+								if ( ! $is_tiered ) {
+									$amounts = [ end( $amounts ) ];
+								}
+								$suggested_summary[] = $frequency . ': ' . implode( ',', $amounts );
+							}
+						}
+
+						if ( ! empty( $suggested_summary ) ) {
+							$data['action_value'] = implode( ' | ', $suggested_summary );
+						}
+					}
+				}
 			}
 		}
 
