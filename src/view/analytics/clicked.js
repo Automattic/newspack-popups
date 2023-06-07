@@ -16,8 +16,6 @@ export const manageClickedEvents = prompts => {
 			sendEvent( payload );
 		};
 
-		anchorLinks.forEach( function ( link ) {
-			link.addEventListener( 'click', handleEvent );
-		} );
+		anchorLinks.forEach( link => link.addEventListener( 'click', handleEvent ) );
 	} );
 };
