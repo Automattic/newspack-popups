@@ -1,4 +1,4 @@
-import { getEventPayload, getRawId } from '../utils';
+import { getEventPayload, getRawId, sendEvent } from '../utils';
 
 /**
  * Execute a callback function to send a GA event when a prompt becomes unhidden.
@@ -27,10 +27,9 @@ const getObserver = handleEvent => {
  */
 export const manageLoadedEvents = prompts => {
 	prompts.forEach( prompt => {
-		const payload = getEventPayload( 'loaded', getRawId( prompt.getAttribute( 'id' ) ) );
 		const handleEvent = () => {
-			console.log( 'event name', 'prompt_interaction' );
-			console.log( 'event payload', payload );
+			const payload = getEventPayload( 'loaded', getRawId( prompt.getAttribute( 'id' ) ) );
+			sendEvent( payload );
 		};
 
 		getObserver( handleEvent ).observe( prompt, { attributes: true } );

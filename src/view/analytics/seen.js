@@ -1,4 +1,4 @@
-import { getEventPayload, getRawId } from '../utils';
+import { getEventPayload, getRawId, sendEvent } from '../utils';
 
 // The minimum continuous amount of time the prompt must be in the viewport before being considered visible.
 const MINIMUM_VISIBLE_TIME = 250;
@@ -45,10 +45,9 @@ const getObserver = handleEvent => {
  */
 export const manageSeenEvents = prompts => {
 	prompts.forEach( prompt => {
-		const payload = getEventPayload( 'seen', getRawId( prompt.getAttribute( 'id' ) ) );
 		const handleEvent = () => {
-			console.log( 'event name', 'prompt_interaction' );
-			console.log( 'event payload', payload );
+			const payload = getEventPayload( 'seen', getRawId( prompt.getAttribute( 'id' ) ) );
+			sendEvent( payload );
 		};
 
 		getObserver( handleEvent ).observe( prompt, { attributes: true } );
