@@ -209,17 +209,18 @@ export const getRawId = id => {
 /**
  * Get a GA4 event payload for a given prompt.
  *
- * @param {string} action   Action name for the event.
- * @param {number} promptId ID of the prompt
+ * @param {string} action      Action name for the event.
+ * @param {number} promptId    ID of the prompt
+ * @param {Object} extraParams Additional key/value pairs to add as params to the event payload.
  *
  * @return {Object} Event payload.
  */
-export const getEventPayload = ( action, promptId ) => {
+export const getEventPayload = ( action, promptId, extraParams = {} ) => {
 	if ( ! newspackPopupsData || ! newspackPopupsData[ promptId ] ) {
 		return false;
 	}
 
-	return { ...newspackPopupsData[ promptId ], action };
+	return { ...newspackPopupsData[ promptId ], ...extraParams, action };
 };
 
 /**
