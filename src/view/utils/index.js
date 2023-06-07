@@ -1,4 +1,4 @@
-/* globals newspack_popups_view */
+/* globals newspackPopupsData, newspack_popups_view */
 
 /**
  * WordPress dependencies
@@ -184,3 +184,40 @@ export const parseOnHandlers = onAttributeValue =>
 		.split( ';' )
 		.filter( Boolean )
 		.map( onHandler => /(?<action>\w*):(?<id>(\w|-)*)\.(?<method>.*)/.exec( onHandler ).groups );
+
+/**
+ * Get all prompts on the page.
+ *
+ * @return {Array} Array of prompt elements.
+ */
+export const getPrompts = () => {
+	return [ ...document.querySelectorAll( '.newspack-popup' ) ];
+};
+
+/**
+ * Get raw prompt ID number from element ID name.
+ *
+ * @param {string} id Element ID of the prompt.
+ *
+ * @return {number} Raw ID number from the element ID.
+ */
+export const getRawId = id => {
+	const parts = id.split( '_' );
+	return parseInt( parts[ parts.length - 1 ] );
+};
+
+/**
+ * Get a GA4 event payload for a given prompt.
+ *
+ * @param {string} action   Action name for the event.
+ * @param {number} promptId ID of the prompt
+ *
+ * @return {Object} Event payload.
+ */
+export const getEventPayload = ( action, promptId ) => {
+	if ( ! newspackPopupsData || ! newspackPopupsData[ promptId ] ) {
+		return false;
+	}
+
+	return { ...newspackPopupsData[ promptId ], action };
+};
