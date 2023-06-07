@@ -1,6 +1,7 @@
 /* global gtag */
 
 import { manageLoadedEvents } from './loaded';
+import { manageSeenEvents } from './seen';
 import { getPrompts } from '../utils';
 
 export const manageAnalytics = () => {
@@ -10,5 +11,6 @@ export const manageAnalytics = () => {
 		const prompts = getPrompts();
 
 		manageLoadedEvents( prompts );
+		manageSeenEvents( prompts );
 	}
 };

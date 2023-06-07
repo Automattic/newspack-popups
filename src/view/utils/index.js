@@ -1,4 +1,4 @@
-/* globals newspackPopupsData, newspack_popups_view */
+/* globals gtag, newspackPopupsData, newspack_popups_view */
 
 /**
  * WordPress dependencies
@@ -220,4 +220,16 @@ export const getEventPayload = ( action, promptId ) => {
 	}
 
 	return { ...newspackPopupsData[ promptId ], action };
+};
+
+/**
+ * Send an event to GA4.
+ *
+ * @param {Object} payload   Event payload.
+ * @param {string} eventName Name of the event. Defaults to `np_prompt_interaction` but can be overriden if necessary.
+ */
+export const sendEvent = ( payload, eventName = 'np_prompt_interaction' ) => {
+	if ( 'function' === typeof gtag && payload ) {
+		gtag( 'event', eventName, payload );
+	}
 };
