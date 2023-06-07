@@ -1,4 +1,4 @@
-import { getEventPayload, getRawId } from '../utils';
+import { getEventPayload, getRawId, sendEvent } from '../utils';
 
 /**
  * Execute a callback function to send a GA event when a prompt is dismissed.
@@ -9,9 +9,9 @@ import { getEventPayload, getRawId } from '../utils';
 export const manageDismissals = prompts => {
 	prompts.forEach( prompt => {
 		const closeButton = prompt.querySelector( '.newspack-lightbox__close' );
-		const payload = getEventPayload( 'dismiss', getRawId( prompt.getAttribute( 'id' ) ) );
 		const handleEvent = () => {
-			console.log( payload );
+			const payload = getEventPayload( 'dismissed', getRawId( prompt.getAttribute( 'id' ) ) );
+			sendEvent( payload );
 		};
 
 		closeButton.addEventListener( 'click', handleEvent );
