@@ -9,11 +9,14 @@ import { getEventPayload, getRawId, sendEvent } from '../utils';
 export const manageDismissals = prompts => {
 	prompts.forEach( prompt => {
 		const closeButton = prompt.querySelector( '.newspack-lightbox__close' );
-		const handleEvent = () => {
-			const payload = getEventPayload( 'dismissed', getRawId( prompt.getAttribute( 'id' ) ) );
-			sendEvent( payload );
-		};
 
-		closeButton.addEventListener( 'click', handleEvent );
+		if ( closeButton ) {
+			const handleEvent = () => {
+				const payload = getEventPayload( 'dismissed', getRawId( prompt.getAttribute( 'id' ) ) );
+				sendEvent( payload );
+			};
+
+			closeButton.addEventListener( 'click', handleEvent );
+		}
 	} );
 };
