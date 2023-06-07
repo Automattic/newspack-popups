@@ -8,7 +8,9 @@ import { getEventPayload, getRawId, sendEvent } from '../utils';
 
 export const manageFormSubmissions = prompts => {
 	prompts.forEach( prompt => {
-		const forms = [ ...prompt.querySelectorAll( '.newspack-popup__content form' ) ];
+		const forms = [
+			...prompt.querySelectorAll( '.newspack-popup__content form, .newspack-inline-popup form' ),
+		];
 		const handleEvent = () => {
 			const payload = getEventPayload( 'submitted', getRawId( prompt.getAttribute( 'id' ) ) );
 			sendEvent( payload );
