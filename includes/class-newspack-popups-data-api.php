@@ -102,17 +102,18 @@ final class Newspack_Popups_Data_Api {
 				// Get the suggested donation values for the donation block.
 				if ( 'donation' === $key ) {
 					$prompt_blocks = \parse_blocks( $popup['content'] );
-					$donate_block  = array_shift(
+					$donate_block  = array_values(
 						array_filter(
 							$prompt_blocks,
 							function( $block ) use ( $block_name ) {
 								return $block_name === $block['blockName'];
 							}
 						)
-					);
+					)[0];
 
 					if ( $donate_block && method_exists( '\Newspack\Donations', 'get_donation_settings' ) ) {
 						$is_manual         = $donate_block['attrs']['manual'] ?? false;
+						$is_layout_tiers   = isset( $donate_block['attrs']['layoutOption'] ) && 'tiers' === $donate_block['attrs']['layoutOption'];
 						$default_settings  = \Newspack\Donations::get_donation_settings();
 						$donation_settings = $is_manual ? \wp_parse_args( $donate_block['attrs'], $default_settings ) : $default_settings;
 						$is_tiered         = $donation_settings['tiered'] ?? false;
@@ -120,9 +121,22 @@ final class Newspack_Popups_Data_Api {
 						$disabled_tiers    = $donation_settings['disabledFrequencies'] ?? [];
 						$suggested_summary = [];
 
+						// The tiers block layout doesn't allow for one-time donations.
+						if ( $is_layout_tiers ) {
+							// So we can differentiate between standard and tiers layouts.
+							$suggested_summary[]    = __( 'tiers layout', 'newspack-popup' );
+							$disabled_tiers['once'] = true;
+						} else {
+							$suggested_summary[] = __( 'standard layout', 'newspack-popup' );
+						}
+
 						foreach ( $suggested_amounts as $frequency => $amounts ) {
 							if ( empty( $disabled_tiers[ $frequency ] ) ) {
-								if ( ! $is_tiered ) {
+								if ( $is_layout_tiers ) {
+									// The tiers block layout doesn't allow for "other" inputs.
+									array_pop( $amounts );
+								} elseif ( ! $is_tiered ) {
+									// If standard layout + untiered, only show the suggested amount for "other".
 									$amounts = [ end( $amounts ) ];
 								}
 								$suggested_summary[] = $frequency . ': ' . implode( ',', $amounts );
