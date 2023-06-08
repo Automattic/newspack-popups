@@ -1,7 +1,7 @@
 import { getEventPayload, getRawId, sendEvent } from '../utils';
 
 /**
- * Execute a callback function to send a GA event when a prompt is dismissed.
+ * Send a GA event when a link inside a prompt is clicked.
  *
  * @param {Array} prompts Array of prompts loaded in the DOM.
  */
