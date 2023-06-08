@@ -124,10 +124,10 @@ final class Newspack_Popups_Data_Api {
 						// The tiers block layout doesn't allow for one-time donations.
 						if ( $is_layout_tiers ) {
 							// So we can differentiate between standard and tiers layouts.
-							$suggested_summary[]    = __( 'tiers layout', 'newspack-popup' );
-							$disabled_tiers['once'] = true;
+							$suggested_summary['layout'] = __( 'tiers', 'newspack-popup' );
+							$disabled_tiers['once']      = true;
 						} else {
-							$suggested_summary[] = __( 'standard layout', 'newspack-popup' );
+							$suggested_summary['layout'] = __( 'standard', 'newspack-popup' );
 						}
 
 						foreach ( $suggested_amounts as $frequency => $amounts ) {
@@ -139,12 +139,12 @@ final class Newspack_Popups_Data_Api {
 									// If standard layout + untiered, only show the suggested amount for "other".
 									$amounts = [ end( $amounts ) ];
 								}
-								$suggested_summary[] = $frequency . ': ' . implode( ',', $amounts );
+								$suggested_summary[ $frequency ] = $amounts;
 							}
 						}
 
 						if ( ! empty( $suggested_summary ) ) {
-							$data['action_value'] = implode( ' | ', $suggested_summary );
+							$data['action_value'] = \wp_json_encode( $suggested_summary );
 						}
 					}
 				}
