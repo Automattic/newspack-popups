@@ -461,6 +461,8 @@ final class Newspack_Popups_Inserter {
 			// Don't inject inline popups on paywalled posts.
 			// It doesn't make sense with a paywall message and also causes an infinite loop.
 			|| self::is_memberships_restricted()
+			// At filter priority 1, $content should be the same as the unfiltered post_content. This guards against inserting in other content such as featured image captions/descriptions.
+			|| get_post()->post_content !== $content
 		) {
 			return $content;
 		}
