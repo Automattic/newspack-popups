@@ -1,15 +1,9 @@
-# [2.19.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v2.18.0...v2.19.0-alpha.1) (2023-06-08)
+## [2.18.1](https://github.com/Automattic/newspack-popups/compare/v2.18.0...v2.18.1) (2023-06-13)
 
 
 ### Bug Fixes
 
-* attempt to create config file on every host ([#1121](https://github.com/Automattic/newspack-popups/issues/1121)) ([8ba33b7](https://github.com/Automattic/newspack-popups/commit/8ba33b733889068b709b5179beb3cc180901b9ad))
-* escape value when creating config file ([#1123](https://github.com/Automattic/newspack-popups/issues/1123)) ([53232e5](https://github.com/Automattic/newspack-popups/commit/53232e5c431c0628bb0cca421277f2cb7faf8189))
-
-
-### Features
-
-* **ras:** add segmentation support for NRH donations ([#1124](https://github.com/Automattic/newspack-popups/issues/1124)) ([d2b0ca8](https://github.com/Automattic/newspack-popups/commit/d2b0ca8fa9d35c610f616af334fa555c425f421d))
+* don’t include inactive segments in API request payload ([#1127](https://github.com/Automattic/newspack-popups/issues/1127)) ([f913e13](https://github.com/Automattic/newspack-popups/commit/f913e1336469b5e95a4c9048d98307ec713c3d92))
 
 # [2.18.0](https://github.com/Automattic/newspack-popups/compare/v2.17.0...v2.18.0) (2023-06-05)
 
