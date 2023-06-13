@@ -9,6 +9,7 @@ import { getEventPayload, getRawId, sendEvent } from '../utils';
 export const manageDismissals = prompts => {
 	prompts.forEach( prompt => {
 		const closeButton = prompt.querySelector( '.newspack-lightbox__close' );
+		const forms = [ ...prompt.querySelectorAll( '.newspack-popup__content form' ) ];
 		if ( closeButton ) {
 			const handleEvent = () => {
 				const payload = getEventPayload( 'dismissed', getRawId( prompt.getAttribute( 'id' ) ) );
@@ -16,6 +17,13 @@ export const manageDismissals = prompts => {
 			};
 
 			closeButton.addEventListener( 'click', handleEvent );
+
+			// If a form inside an overlay prompt is submitted, closing it should not result in a `dismissed` action.
+			forms.forEach( form => {
+				form.addEventListener( 'submit', () =>
+					closeButton.removeEventListener( 'click', handleEvent )
+				);
+			} );
 		}
 	} );
 };
