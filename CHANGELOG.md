@@ -1,3 +1,10 @@
+# [2.19.0-alpha.2](https://github.com/Automattic/newspack-popups/compare/v2.19.0-alpha.1...v2.19.0-alpha.2) (2023-06-13)
+
+
+### Bug Fixes
+
+* don’t include inactive segments in API request payload ([#1127](https://github.com/Automattic/newspack-popups/issues/1127)) ([f913e13](https://github.com/Automattic/newspack-popups/commit/f913e1336469b5e95a4c9048d98307ec713c3d92))
+
 ## [2.18.1](https://github.com/Automattic/newspack-popups/compare/v2.18.0...v2.18.1) (2023-06-13)
 
 
