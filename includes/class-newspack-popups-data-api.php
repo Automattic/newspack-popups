@@ -93,7 +93,8 @@ final class Newspack_Popups_Data_Api {
 			'newsletters_subscription' => 'newspack-newsletters/subscribe',
 		];
 
-		$data['prompt_blocks'] = [];
+		$data['prompt_blocks']    = [];
+		$data['interaction_data'] = [];
 
 		foreach ( $watched_blocks as $key => $block_name ) {
 			if ( \has_block( $block_name, $popup['content'] ) ) {
@@ -144,14 +145,12 @@ final class Newspack_Popups_Data_Api {
 						}
 
 						if ( ! empty( $suggested_summary ) ) {
-							$data['action_value'] = \wp_json_encode( $suggested_summary );
+							$data['interaction_data']['donation_suggested_values'] = \wp_json_encode( $suggested_summary );
 						}
 					}
 				}
 			}
 		}
-
-		$data['interaction_data'] = [];
 
 		return $data;
 	}
