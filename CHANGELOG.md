@@ -1,3 +1,16 @@
+# [2.19.0](https://github.com/Automattic/newspack-popups/compare/v2.18.1...v2.19.0) (2023-06-15)
+
+
+### Bug Fixes
+
+* remove dismissed event after form is submitted ([#1143](https://github.com/Automattic/newspack-popups/issues/1143)) ([1e85c26](https://github.com/Automattic/newspack-popups/commit/1e85c26e3c70716dfc4e319c6721cf372e00945f))
+
+
+### Features
+
+* front-end GA4 events for prompt interactions ([#1136](https://github.com/Automattic/newspack-popups/issues/1136)) ([15a6286](https://github.com/Automattic/newspack-popups/commit/15a6286fa72ec2c6cc62213840a903db3339828e)), closes [#1133](https://github.com/Automattic/newspack-popups/issues/1133)
+* rearrange info on popup metadta events ([#1144](https://github.com/Automattic/newspack-popups/issues/1144)) ([f3267e1](https://github.com/Automattic/newspack-popups/commit/f3267e10c5890f9e974775a6e89b0910dbef2ec8))
+
 ## [2.18.1](https://github.com/Automattic/newspack-popups/compare/v2.18.0...v2.18.1) (2023-06-13)
 
 
