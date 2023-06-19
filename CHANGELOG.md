@@ -1,3 +1,29 @@
+# [2.20.0](https://github.com/Automattic/newspack-popups/compare/v2.19.0...v2.20.0) (2023-06-19)
+
+
+### Bug Fixes
+
+* attempt to create config file on every host ([#1121](https://github.com/Automattic/newspack-popups/issues/1121)) ([8ba33b7](https://github.com/Automattic/newspack-popups/commit/8ba33b733889068b709b5179beb3cc180901b9ad))
+* escape value when creating config file ([#1123](https://github.com/Automattic/newspack-popups/issues/1123)) ([53232e5](https://github.com/Automattic/newspack-popups/commit/53232e5c431c0628bb0cca421277f2cb7faf8189))
+
+
+### Features
+
+* **ras:** add segmentation support for NRH donations ([#1124](https://github.com/Automattic/newspack-popups/issues/1124)) ([d2b0ca8](https://github.com/Automattic/newspack-popups/commit/d2b0ca8fa9d35c610f616af334fa555c425f421d))
+
+# [2.20.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v2.19.0...v2.20.0-alpha.1) (2023-06-15)
+
+
+### Bug Fixes
+
+* attempt to create config file on every host ([#1121](https://github.com/Automattic/newspack-popups/issues/1121)) ([8ba33b7](https://github.com/Automattic/newspack-popups/commit/8ba33b733889068b709b5179beb3cc180901b9ad))
+* escape value when creating config file ([#1123](https://github.com/Automattic/newspack-popups/issues/1123)) ([53232e5](https://github.com/Automattic/newspack-popups/commit/53232e5c431c0628bb0cca421277f2cb7faf8189))
+
+
+### Features
+
+* **ras:** add segmentation support for NRH donations ([#1124](https://github.com/Automattic/newspack-popups/issues/1124)) ([d2b0ca8](https://github.com/Automattic/newspack-popups/commit/d2b0ca8fa9d35c610f616af334fa555c425f421d))
+
 # [2.19.0](https://github.com/Automattic/newspack-popups/compare/v2.18.1...v2.19.0) (2023-06-15)
 
 
