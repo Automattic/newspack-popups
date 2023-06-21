@@ -49,6 +49,7 @@ const matchingFunctions = {
  * @param {string}   config.description       Description.
  * @param {string}   config.category          Category.
  * @param {string}   config.type              Type. One of 'range', 'dropdown' or 'list'.
+ * @param {Function} config.init              Criteria initialization function.
  * @param {string}   config.matchingAttribute The attribute to match against from the reader data library store.
  * @param {Function} config.matchingFunction  A custom function to use for matching.
  * @param {Array}    config.options           The options for criteria of type 'dropdown'.
@@ -64,7 +65,12 @@ function registerCriteria( config ) {
 
 /**
  * Registering a criteria that will use the default matching function based on
- * type and matchingAttribute.
+ * type and matching attribute.
+ *
+ * The initialization function for this criteria will set the matching attribute
+ * based on the number of article views in the set time period. The views are
+ * set as reader activity through ras.dispatchActivity(), which also belong in
+ * the reader data library store.
  */
 const articles_read = {
 	id: 'articles_read',
@@ -73,6 +79,11 @@ const articles_read = {
 	category: 'reader_engagement',
 	type: 'range',
 	matchingAttribute: 'articles_read_30_days',
+	init: ( store, ras ) => {
+		const views = ras.getActivities( 'article_view' );
+		views.filter( view => view.timestamp > Date.now() - 30 * 24 * 60 * 60 * 1000 );
+		store.set( 'articles_read_30_days', views.length );
+	},
 };
 registerCriteria( articles_read );
 
@@ -83,11 +94,21 @@ const articles_read_in_session = {
 	category: 'reader_engagement',
 	type: 'range',
 	matchingAttribute: 'articles_read_in_session',
+	init: ( store, ras ) => {
+		const views = ras.getActivities( 'article_view' );
+		views.filter( view => view.timestamp > Date.now() - 45 * 60 * 1000 );
+		store.set( 'articles_read_in_session', views.length );
+	},
 };
 registerCriteria( articles_read_in_session );
 
 /**
  * Registering a criteria that will use dropdown and a custom matching function.
+ *
+ * This criteria may not need an initialization function and have its matching
+ * attribute set by another logic, likely through the backend.
+ *
+ * Check the \Newspack\Reader_Data class from newspack-plugin for more details.
  */
 const newsletter = {
 	id: 'newsletter',
@@ -118,7 +139,8 @@ const newsletter = {
 registerCriteria( newsletter );
 
 /**
- * Registering a criteria that will use the comma-separated list matching function.
+ * Registering a criteria that will use the comma-separated list matching
+ * function.
  */
 const referrer_sources = {
 	id: 'referrer_sources',
@@ -128,6 +150,11 @@ const referrer_sources = {
 	category: 'referrer_sources',
 	type: 'list',
 	matchingAttribute: 'referrer',
+	init: store =>
+		store.set(
+			'referrer',
+			( new URL( document.referrer ).hostname.replace( 'www.', '' ) || '' ).toLowerCase()
+		),
 };
 registerCriteria( referrer_sources );
 
@@ -153,12 +180,27 @@ const sampleSegment = {
 	},
 };
 
-/**
- * Run the sample segment against the registered criteria.
- */
 window.newspackRAS = window.newspackRAS || [];
 window.newspackRAS.push( ras => {
 	const { store } = ras;
+
+	/**
+	 * Initialize criteria before executing matching logic so that the
+	 * matchingAttribute can be set.
+	 *
+	 * This may not be the case for all criteria, but the `init()` function is an
+	 * appropriate place to handle the matchingAttribute in the front-end.
+	 */
+	for ( const id in registeredCriteria ) {
+		const criteria = registeredCriteria[ id ];
+		if ( criteria.init && typeof criteria.init === 'function' ) {
+			criteria.init( store, ras );
+		}
+	}
+
+	/**
+	 * Execute matching logic for each criteria in the sample segment.
+	 */
 	for ( const criteriaId in sampleSegment.criteria ) {
 		const criteria = registeredCriteria[ criteriaId ];
 		// Bail if criteria is not registered.
