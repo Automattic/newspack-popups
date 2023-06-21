@@ -109,11 +109,10 @@ const newsletter = {
 		},
 	],
 	matchingFunction: ( store, config ) => {
-		const isSubscriber = store.get( 'is_subscriber' );
-		if ( ! isSubscriber ) {
-			return config.value === 2;
+		if ( store.get( 'is_subscriber' ) ) {
+			return config.value === 1;
 		}
-		return config.value === 1;
+		return config.value === 2;
 	},
 };
 registerCriteria( newsletter );
@@ -133,7 +132,7 @@ const referrer_sources = {
 registerCriteria( referrer_sources );
 
 /**
- * Sample segment configuration to test agains the registered criteria.
+ * Sample segment configuration to test against the registered criteria.
  */
 const sampleSegment = {
 	criteria: {
