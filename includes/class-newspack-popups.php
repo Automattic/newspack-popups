@@ -78,6 +78,7 @@ final class Newspack_Popups {
 			add_action( 'init', [ __CLASS__, 'register_meta' ] );
 			add_action( 'init', [ __CLASS__, 'register_taxonomy' ] );
 			add_action( 'init', [ __CLASS__, 'disable_prompts_for_protected_pages' ] );
+			add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_assets' ] );
 			add_action( 'enqueue_block_editor_assets', [ __CLASS__, 'enqueue_block_editor_assets' ] );
 			add_action( 'customize_controls_enqueue_scripts', [ __CLASS__, 'enqueue_customizer_assets' ] );
 			add_filter( 'display_post_states', [ __CLASS__, 'display_post_states' ], 10, 2 );
@@ -577,6 +578,19 @@ final class Newspack_Popups {
 		);
 		$recent_posts = $query->get_posts();
 		return $recent_posts && count( $recent_posts ) > 0 ? get_the_permalink( $recent_posts[0] ) : '';
+	}
+
+	/**
+	 * Enqueue front-end assets.
+	 */
+	public static function enqueue_assets() {
+		\wp_enqueue_script(
+			'newspack-popups-criteria',
+			plugins_url( '../dist/criteria.js', __FILE__ ),
+			[],
+			filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/criteria.js' ),
+			true
+		);
 	}
 
 	/**
