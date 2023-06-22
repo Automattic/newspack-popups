@@ -15,16 +15,16 @@ const registeredCriteria = {};
  */
 const matchingFunctions = {
 	/**
-	 * The 'default' matching function will match the exact value of the attribute
-	 * from the given segment config.
+	 * The 'default' matching function will match the exact value from the
+	 * criteria with the given segment config.
 	 */
 	default: ( criteria, config ) => criteria.value === config.value,
 	/**
-	 * The 'list' matching function will match the value of the attribute against
-	 * a list of values from the given segment config.
+	 * The 'list' matching function will match the criteria value against a list
+	 * provided by the segment config.
 	 *
 	 * The list can be a string of comma-separated values or an array and returns
-	 * true if the value is in the list.
+	 * true if the value exists in the list.
 	 */
 	list: ( criteria, config ) => {
 		let list = config.value;
@@ -40,8 +40,8 @@ const matchingFunctions = {
 		return true;
 	},
 	/**
-	 * The 'range' matching function will match the value of the attribute against
-	 * a range of values from the given segment config.
+	 * The 'range' matching function will match the criteria value against a range
+	 * between 'min' and 'max' provided by the segment config.
 	 */
 	range: ( criteria, config ) => {
 		const { min, max } = config;
@@ -96,12 +96,7 @@ function registerCriteria( config ) {
 }
 
 /**
- * Registering 'Articles Read' criteria.
- *
- * The initialization function for this criteria will set the matching attribute
- * based on the number of article views in the set time period. The views are
- * set as reader activity through ras.dispatchActivity(), which also belong in
- * the reader data library store.
+ * Registers the 'Articles Read' criteria.
  */
 const articles_read = {
 	id: 'articles_read',
@@ -130,13 +125,9 @@ const articles_read_in_session = {
 registerCriteria( articles_read_in_session );
 
 /**
- * Registering a criteria that will use a custom matching function and 'options'
- * to render in the segment UI.
+ * Registers the 'Newsletter' criteria.
  *
- * This criteria may not need an initialization function and have its matching
- * attribute set by another logic, likely through the backend.
- *
- * Check the \Newspack\Reader_Data class from newspack-plugin for more details.
+ * This criteria's matching attribute will likely be set by another logic.
  */
 const newsletter = {
 	id: 'newsletter',
@@ -166,9 +157,7 @@ const newsletter = {
 registerCriteria( newsletter );
 
 /**
- * Registering the 'Sources to match' criteria.
- *
- * This criteria will use the comma-separated list matching function.
+ * Registers the 'Sources to match' criteria.
  */
 const referrer_sources = {
 	id: 'referrer_sources',
@@ -191,13 +180,11 @@ const referrer_sources = {
 registerCriteria( referrer_sources );
 
 /**
- * Registering 'Favorite Categories' criteria.
+ * Registers the 'Favorite Categories' criteria.
  *
- * This criteria will use the 'list' type and matching function, but the UI
- * should be tweaked in the editor UI to render a category selector.
- *
- * This selector UI shouldn't be here due to the number of components it needs,
- * which cannot be in the frontend.
+ * The UI should be tweaked in the editor UI to render a category selector and
+ * can be achieved by using @wordpress/hooks/applyFilters while iterating
+ * through the criteria to render.
  */
 const favorite_categories = {
 	id: 'favorite_categories',
