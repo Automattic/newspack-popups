@@ -18,7 +18,7 @@ const matchingFunctions = {
 	 * The 'default' matching function will match the exact value of the attribute
 	 * from the given segment config.
 	 */
-	default: ( criteria, store, config ) => store.get( criteria.matchingAttribute ) === config.value,
+	default: ( criteria, config ) => criteria.value === config.value,
 	/**
 	 * The 'list' matching function will match the value of the attribute against
 	 * a list of values from the given segment config.
@@ -26,7 +26,7 @@ const matchingFunctions = {
 	 * The list can be a string of comma-separated values or an array and returns
 	 * true if the value is in the list.
 	 */
-	list: ( criteria, store, config ) => {
+	list: ( criteria, config ) => {
 		let list = config.value;
 		if ( typeof list === 'string' ) {
 			list = config.value.split( ',' ).map( item => item.trim() );
@@ -34,8 +34,7 @@ const matchingFunctions = {
 		if ( ! Array.isArray( list ) ) {
 			return false;
 		}
-		const value = store.get( criteria.matchingAttribute );
-		if ( ! value || ! list.includes( value ) ) {
+		if ( ! criteria.value || ! list.includes( criteria.value ) ) {
 			return false;
 		}
 		return true;
@@ -44,10 +43,9 @@ const matchingFunctions = {
 	 * The 'range' matching function will match the value of the attribute against
 	 * a range of values from the given segment config.
 	 */
-	range: ( criteria, store, config ) => {
-		const value = store.get( criteria.matchingAttribute );
+	range: ( criteria, config ) => {
 		const { min, max } = config;
-		if ( ! value || ( min && value < min ) || ( max && value > max ) ) {
+		if ( ! criteria.value || ( min && criteria.value < min ) || ( max && criteria.value > max ) ) {
 			return false;
 		}
 		return true;
@@ -109,14 +107,11 @@ const articles_read = {
 	name: 'Articles read',
 	help: 'Number of articles read in the last 30 day period.',
 	category: 'reader_engagement',
-	matchingAttribute: ( store, ras ) => {
-		const attribute = 'articles_read_30_days';
-		const views = ras.getActivities( 'article_view' );
-		views.filter( view => view.timestamp > Date.now() - 30 * 24 * 60 * 60 * 1000 );
-		store.set( attribute, views.length );
-		return attribute;
-	},
 	matchingFunction: 'range',
+	matchingAttribute: ras => {
+		const views = ras.getActivities( 'article_view' );
+		return views.filter( view => view.timestamp > Date.now() - 30 * 24 * 60 * 60 * 1000 );
+	},
 };
 registerCriteria( articles_read );
 
@@ -125,14 +120,11 @@ const articles_read_in_session = {
 	name: 'Articles read in session',
 	help: 'Number of articles read in the current session (45 minutes).',
 	category: 'reader_engagement',
-	matchingAttribute: ( store, ras ) => {
-		const attribute = 'articles_read_in_session';
-		const views = ras.getActivities( 'article_view' );
-		views.filter( view => view.timestamp > Date.now() - 45 * 60 * 1000 );
-		store.set( attribute, views.length );
-		return attribute;
-	},
 	matchingFunction: 'range',
+	matchingAttribute: ras => {
+		const views = ras.getActivities( 'article_view' );
+		return views.filter( view => view.timestamp > Date.now() - 45 * 60 * 1000 );
+	},
 };
 registerCriteria( articles_read_in_session );
 
@@ -163,7 +155,7 @@ const newsletter = {
 			value: 2,
 		},
 	],
-	matchingFunction: ( store, config ) => {
+	matchingFunction: ( config, store ) => {
 		if ( store.get( 'is_subscriber' ) ) {
 			return config.value === 1;
 		}
@@ -183,17 +175,22 @@ const referrer_sources = {
 	help: 'Segment based on traffic source',
 	description: 'A comma-separated list of domains.',
 	category: 'referrer_sources',
-	matchingAttribute: store => {
-		const attribute = 'referrer';
-		store.set(
-			attribute,
-			document.referrer
-				? ( new URL( document?.referrer ).hostname.replace( 'www.', '' ) || '' ).toLowerCase()
-				: ''
-		);
-		return attribute;
-	},
 	matchingFunction: 'list',
+	matchingAttribute: ( { store } ) => {
+		const value = document.referrer
+			? ( new URL( document?.referrer ).hostname.replace( 'www.', '' ) || '' ).toLowerCase()
+			: '';
+		// Persist the referrer in the store.
+		if ( value ) {
+			store.set(
+				'referrer',
+				document.referrer
+					? ( new URL( document?.referrer ).hostname.replace( 'www.', '' ) || '' ).toLowerCase()
+					: ''
+			);
+		}
+		return store.get( 'referrer' );
+	},
 };
 registerCriteria( referrer_sources );
 
@@ -211,8 +208,8 @@ const favorite_categories = {
 	name: 'Favorite categories',
 	help: 'Most-read categories of the reader',
 	category: 'reader_engagement',
-	matchingAttribute: 'favorite_categories',
 	matchingFunction: 'list',
+	matchingAttribute: 'favorite_categories',
 };
 registerCriteria( favorite_categories );
 
@@ -243,12 +240,14 @@ window.newspackRAS.push( ras => {
 	const { store } = ras;
 
 	/**
-	 * Run the matching attribute functions for criteria before matching.
+	 * Get the criteria value for each registered criteria.
 	 */
 	for ( const id in registeredCriteria ) {
 		const criteria = registeredCriteria[ id ];
 		if ( typeof criteria.matchingAttribute === 'function' ) {
-			criteria.matchingAttribute = criteria.matchingAttribute( store, ras );
+			criteria.value = criteria.matchingAttribute( ras );
+		} else if ( typeof criteria.matchingAttribute === 'string' ) {
+			criteria.value = store.get( criteria.matchingAttribute );
 		}
 	}
 
@@ -257,7 +256,7 @@ window.newspackRAS.push( ras => {
 	 */
 	for ( const criteriaId in sampleSegment.criteria ) {
 		const criteria = registeredCriteria[ criteriaId ];
-		// Bail if criteria is not registered.
+		// Bail if criteria is not registered or has no value
 		if ( ! criteria ) {
 			continue;
 		}
@@ -266,7 +265,7 @@ window.newspackRAS.push( ras => {
 		if ( ! config.value && ! config.min && ! config.max ) {
 			continue;
 		}
-		const matched = criteria.matchingFunction( store, config );
+		const matched = criteria.matchingFunction( config, store );
 		console.log( { criteriaId, matched } ); // eslint-disable-line no-console
 	}
 } );
