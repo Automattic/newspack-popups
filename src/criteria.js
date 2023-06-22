@@ -57,12 +57,13 @@ const matchingFunctions = {
  *
  * @param {Object}          config                   The criteria configuration.
  * @param {string}          config.id                ID. (required)
- * @param {string}          config.name              Name. Defaults to ID.
+ * @param {string}          config.name              Name. Defaults to the ID.
  * @param {string}          config.help              Help text.
  * @param {string}          config.description       Description.
  * @param {string}          config.category          Category. Defaults to 'reader_activity'.
- * @param {string|Function} config.matchingAttribute Either the attribute name to match or a function that return the attribute name. Defaults to ID.
  * @param {string|Function} config.matchingFunction  Function to use for matching. Defaults to 'default'.
+ * @param {string|Function} config.matchingAttribute Either the attribute name to match from the reader data library
+ *                                                   store or a function that returns the value. Defaults to the ID.
  * @param {Array}           config.options           The options for criteria that will be rendered in the segment UI.
  * @param {number}          config.options[].value   Option value.
  * @param {string}          config.options[].label   Option label.
