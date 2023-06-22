@@ -57,19 +57,17 @@ const matchingFunctions = {
 /**
  * Registers a criteria.
  *
- * @param {Object}   config                   The criteria configuration.
- * @param {string}   config.id                ID. (required)
- * @param {string}   config.name              Name. Defaults to ID.
- * @param {string}   config.help              Help text.
- * @param {string}   config.description       Description.
- * @param {string}   config.category          Category. Defaults to 'reader_activity'.
- * @param {string}   config.type              Type. One of 'default', 'range' or 'list'. Defaults to 'default'.
- * @param {Function} config.init              Criteria initialization function.
- * @param {string}   config.matchingAttribute The attribute to match against from the reader data library store.
- * @param {Function} config.matchingFunction  A custom function to use for matching. Defaults to 'default'.
- * @param {Array}    config.options           The options for criteria of type 'dropdown'.
- * @param {number}   config.options[].value   Option value.
- * @param {string}   config.options[].label   Option label.
+ * @param {Object}          config                   The criteria configuration.
+ * @param {string}          config.id                ID. (required)
+ * @param {string}          config.name              Name. Defaults to ID.
+ * @param {string}          config.help              Help text.
+ * @param {string}          config.description       Description.
+ * @param {string}          config.category          Category. Defaults to 'reader_activity'.
+ * @param {string|Function} config.matchingAttribute Either the attribute name to match or a function that return the attribute name.
+ * @param {string|Function} config.matchingFunction  Function to use for matching. Defaults to 'default'.
+ * @param {Array}           config.options           The options for criteria of type 'dropdown'.
+ * @param {number}          config.options[].value   Option value.
+ * @param {string}          config.options[].label   Option label.
  */
 function registerCriteria( config ) {
 	if ( ! config.id ) {
@@ -77,7 +75,7 @@ function registerCriteria( config ) {
 	}
 	config = {
 		category: 'reader_activity',
-		type: 'default',
+		matchingFunction: 'default',
 		...config,
 	};
 	if ( ! config.name ) {
@@ -86,8 +84,14 @@ function registerCriteria( config ) {
 	if ( ! config.matchingAttribute ) {
 		config.matchingAttribute = config.id;
 	}
-	if ( ! config.matchingFunction && matchingFunctions[ config.type ] && config.matchingAttribute ) {
-		config.matchingFunction = matchingFunctions[ config.type ].bind( null, config );
+	if (
+		typeof config.matchingFunction === 'string' &&
+		matchingFunctions[ config.matchingFunction ]
+	) {
+		config.matchingFunction = matchingFunctions[ config.matchingFunction ].bind( null, config );
+	}
+	if ( typeof config.matchingFunction !== 'function' ) {
+		throw new Error( 'Criteria must have a matching function.' );
 	}
 	registeredCriteria[ config.id ] = config;
 }
@@ -105,13 +109,14 @@ const articles_read = {
 	name: 'Articles read',
 	help: 'Number of articles read in the last 30 day period.',
 	category: 'reader_engagement',
-	type: 'range',
-	matchingAttribute: 'articles_read_30_days',
-	init: ( store, ras ) => {
+	matchingAttribute: ( store, ras ) => {
+		const attribute = 'articles_read_30_days';
 		const views = ras.getActivities( 'article_view' );
 		views.filter( view => view.timestamp > Date.now() - 30 * 24 * 60 * 60 * 1000 );
-		store.set( 'articles_read_30_days', views.length );
+		store.set( attribute, views.length );
+		return attribute;
 	},
+	matchingFunction: 'range',
 };
 registerCriteria( articles_read );
 
@@ -120,13 +125,14 @@ const articles_read_in_session = {
 	name: 'Articles read in session',
 	help: 'Number of articles read in the current session (45 minutes).',
 	category: 'reader_engagement',
-	type: 'range',
-	matchingAttribute: 'articles_read_in_session',
-	init: ( store, ras ) => {
+	matchingAttribute: ( store, ras ) => {
+		const attribute = 'articles_read_in_session';
 		const views = ras.getActivities( 'article_view' );
 		views.filter( view => view.timestamp > Date.now() - 45 * 60 * 1000 );
-		store.set( 'articles_read_in_session', views.length );
+		store.set( attribute, views.length );
+		return attribute;
 	},
+	matchingFunction: 'range',
 };
 registerCriteria( articles_read_in_session );
 
@@ -177,15 +183,17 @@ const referrer_sources = {
 	help: 'Segment based on traffic source',
 	description: 'A comma-separated list of domains.',
 	category: 'referrer_sources',
-	type: 'list',
-	matchingAttribute: 'referrer',
-	init: store =>
+	matchingAttribute: store => {
+		const attribute = 'referrer';
 		store.set(
-			'referrer',
+			attribute,
 			document.referrer
 				? ( new URL( document?.referrer ).hostname.replace( 'www.', '' ) || '' ).toLowerCase()
 				: ''
-		),
+		);
+		return attribute;
+	},
+	matchingFunction: 'list',
 };
 registerCriteria( referrer_sources );
 
@@ -203,8 +211,8 @@ const favorite_categories = {
 	name: 'Favorite categories',
 	help: 'Most-read categories of the reader',
 	category: 'reader_engagement',
-	type: 'list',
 	matchingAttribute: 'favorite_categories',
+	matchingFunction: 'list',
 };
 registerCriteria( favorite_categories );
 
@@ -235,16 +243,12 @@ window.newspackRAS.push( ras => {
 	const { store } = ras;
 
 	/**
-	 * Initialize criteria before executing matching logic so that the
-	 * matchingAttribute can be set.
-	 *
-	 * This may not be the case for all criteria, but the `init()` function is an
-	 * appropriate place to handle the matchingAttribute in the front-end.
+	 * Run the matching attribute functions for criteria before matching.
 	 */
 	for ( const id in registeredCriteria ) {
 		const criteria = registeredCriteria[ id ];
-		if ( criteria.init && typeof criteria.init === 'function' ) {
-			criteria.init( store, ras );
+		if ( typeof criteria.matchingAttribute === 'function' ) {
+			criteria.matchingAttribute = criteria.matchingAttribute( store, ras );
 		}
 	}
 
