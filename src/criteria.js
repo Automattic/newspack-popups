@@ -182,12 +182,7 @@ const referrer_sources = {
 			: '';
 		// Persist the referrer in the store.
 		if ( value ) {
-			store.set(
-				'referrer',
-				document.referrer
-					? ( new URL( document?.referrer ).hostname.replace( 'www.', '' ) || '' ).toLowerCase()
-					: ''
-			);
+			store.set( 'referrer', value );
 		}
 		return store.get( 'referrer' );
 	},
