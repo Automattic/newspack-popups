@@ -45,7 +45,11 @@ const matchingFunctions = {
 	 */
 	range: ( criteria, config ) => {
 		const { min, max } = config;
-		if ( ! criteria.value || ( min && criteria.value < min ) || ( max && criteria.value > max ) ) {
+		if (
+			! criteria.value ||
+			( min && criteria.value <= min ) ||
+			( max && criteria.value >= max )
+		) {
 			return false;
 		}
 		return true;
