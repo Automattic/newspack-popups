@@ -14,25 +14,40 @@ const registeredCriteria = {};
  * Common matching functions that can be used by criteria.
  */
 const matchingFunctions = {
+	/**
+	 * The 'default' matching function will match the exact value of the attribute
+	 * from the given segment config.
+	 */
+	default: ( criteria, store, config ) => store.get( criteria.matchingAttribute ) === config.value,
+	/**
+	 * The 'list' matching function will match the value of the attribute against
+	 * a list of values from the given segment config.
+	 *
+	 * The list can be a string of comma-separated values or an array and returns
+	 * true if the value is in the list.
+	 */
+	list: ( criteria, store, config ) => {
+		let list = config.value;
+		if ( typeof list === 'string' ) {
+			list = config.value.split( ',' ).map( item => item.trim() );
+		}
+		if ( ! Array.isArray( list ) ) {
+			return false;
+		}
+		const value = store.get( criteria.matchingAttribute );
+		if ( ! value || ! list.includes( value ) ) {
+			return false;
+		}
+		return true;
+	},
+	/**
+	 * The 'range' matching function will match the value of the attribute against
+	 * a range of values from the given segment config.
+	 */
 	range: ( criteria, store, config ) => {
 		const value = store.get( criteria.matchingAttribute );
 		const { min, max } = config;
 		if ( ! value || ( min && value < min ) || ( max && value > max ) ) {
-			return false;
-		}
-		return true;
-	},
-	dropdown: ( criteria, store, config ) => {
-		const value = store.get( criteria.matchingAttribute );
-		if ( ! value || value !== config.value ) {
-			return false;
-		}
-		return true;
-	},
-	list: ( criteria, store, config ) => {
-		const list = config.value.split( ',' ).map( item => item.trim() );
-		const value = store.get( criteria.matchingAttribute );
-		if ( ! value || ! list.includes( value ) ) {
 			return false;
 		}
 		return true;
@@ -43,20 +58,34 @@ const matchingFunctions = {
  * Registers a criteria.
  *
  * @param {Object}   config                   The criteria configuration.
- * @param {string}   config.id                ID.
- * @param {string}   config.name              Name.
+ * @param {string}   config.id                ID. (required)
+ * @param {string}   config.name              Name. Defaults to ID.
  * @param {string}   config.help              Help text.
  * @param {string}   config.description       Description.
- * @param {string}   config.category          Category.
- * @param {string}   config.type              Type. One of 'range', 'dropdown' or 'list'.
+ * @param {string}   config.category          Category. Defaults to 'reader_activity'.
+ * @param {string}   config.type              Type. One of 'default', 'range' or 'list'. Defaults to 'default'.
  * @param {Function} config.init              Criteria initialization function.
  * @param {string}   config.matchingAttribute The attribute to match against from the reader data library store.
- * @param {Function} config.matchingFunction  A custom function to use for matching.
+ * @param {Function} config.matchingFunction  A custom function to use for matching. Defaults to 'default'.
  * @param {Array}    config.options           The options for criteria of type 'dropdown'.
  * @param {number}   config.options[].value   Option value.
  * @param {string}   config.options[].label   Option label.
  */
 function registerCriteria( config ) {
+	if ( ! config.id ) {
+		throw new Error( 'Criteria must have an ID.' );
+	}
+	config = {
+		category: 'reader_activity',
+		type: 'default',
+		...config,
+	};
+	if ( ! config.name ) {
+		config.name = config.id;
+	}
+	if ( ! config.matchingAttribute ) {
+		config.matchingAttribute = config.id;
+	}
 	if ( ! config.matchingFunction && matchingFunctions[ config.type ] && config.matchingAttribute ) {
 		config.matchingFunction = matchingFunctions[ config.type ].bind( null, config );
 	}
@@ -64,8 +93,7 @@ function registerCriteria( config ) {
 }
 
 /**
- * Registering a criteria that will use the default matching function based on
- * type and matching attribute.
+ * Registering 'Articles Read' criteria.
  *
  * The initialization function for this criteria will set the matching attribute
  * based on the number of article views in the set time period. The views are
@@ -103,7 +131,8 @@ const articles_read_in_session = {
 registerCriteria( articles_read_in_session );
 
 /**
- * Registering a criteria that will use dropdown and a custom matching function.
+ * Registering a criteria that will use a custom matching function and 'options'
+ * to render in the segment UI.
  *
  * This criteria may not need an initialization function and have its matching
  * attribute set by another logic, likely through the backend.
@@ -114,7 +143,6 @@ const newsletter = {
 	id: 'newsletter',
 	name: 'Newsletter',
 	category: 'reader_activity',
-	type: 'dropdown',
 	options: [
 		{
 			label: 'Subscribers and non-subscribers',
@@ -139,8 +167,9 @@ const newsletter = {
 registerCriteria( newsletter );
 
 /**
- * Registering a criteria that will use the comma-separated list matching
- * function.
+ * Registering the 'Sources to match' criteria.
+ *
+ * This criteria will use the comma-separated list matching function.
  */
 const referrer_sources = {
 	id: 'referrer_sources',
@@ -153,10 +182,31 @@ const referrer_sources = {
 	init: store =>
 		store.set(
 			'referrer',
-			( new URL( document.referrer ).hostname.replace( 'www.', '' ) || '' ).toLowerCase()
+			document.referrer
+				? ( new URL( document?.referrer ).hostname.replace( 'www.', '' ) || '' ).toLowerCase()
+				: ''
 		),
 };
 registerCriteria( referrer_sources );
+
+/**
+ * Registering 'Favorite Categories' criteria.
+ *
+ * This criteria will use the 'list' type and matching function, but the UI
+ * should be tweaked in the editor UI to render a category selector.
+ *
+ * This selector UI shouldn't be here due to the number of components it needs,
+ * which cannot be in the frontend.
+ */
+const favorite_categories = {
+	id: 'favorite_categories',
+	name: 'Favorite categories',
+	help: 'Most-read categories of the reader',
+	category: 'reader_engagement',
+	type: 'list',
+	matchingAttribute: 'favorite_categories',
+};
+registerCriteria( favorite_categories );
 
 /**
  * Sample segment configuration to test against the registered criteria.
