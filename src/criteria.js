@@ -256,7 +256,7 @@ window.newspackRAS.push( ras => {
 	 */
 	for ( const criteriaId in sampleSegment.criteria ) {
 		const criteria = registeredCriteria[ criteriaId ];
-		// Bail if criteria is not registered or has no value
+		// Bail if criteria is not registered.
 		if ( ! criteria ) {
 			continue;
 		}
