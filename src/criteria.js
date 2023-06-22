@@ -63,9 +63,9 @@ const matchingFunctions = {
  * @param {string}          config.help              Help text.
  * @param {string}          config.description       Description.
  * @param {string}          config.category          Category. Defaults to 'reader_activity'.
- * @param {string|Function} config.matchingAttribute Either the attribute name to match or a function that return the attribute name.
+ * @param {string|Function} config.matchingAttribute Either the attribute name to match or a function that return the attribute name. Defaults to ID.
  * @param {string|Function} config.matchingFunction  Function to use for matching. Defaults to 'default'.
- * @param {Array}           config.options           The options for criteria of type 'dropdown'.
+ * @param {Array}           config.options           The options for criteria that will be rendered in the segment UI.
  * @param {number}          config.options[].value   Option value.
  * @param {string}          config.options[].label   Option label.
  */
