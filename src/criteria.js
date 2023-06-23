@@ -104,6 +104,9 @@ function registerCriteria( config ) {
  */
 const articles_read = {
 	id: 'articles_read',
+	name: 'Articles read',
+	help: 'Number of articles read in the last 30 day period.',
+	category: 'reader_engagement',
 	matchingFunction: 'range',
 	matchingAttribute: ras => {
 		const views = ras.getActivities( 'article_view' );
@@ -114,6 +117,9 @@ registerCriteria( articles_read );
 
 const articles_read_in_session = {
 	id: 'articles_read_in_session',
+	name: 'Articles read in session',
+	help: 'Number of articles read in the current session (45 minutes).',
+	category: 'reader_engagement',
 	matchingFunction: 'range',
 	matchingAttribute: ras => {
 		const views = ras.getActivities( 'article_view' );
@@ -129,6 +135,22 @@ registerCriteria( articles_read_in_session );
  */
 const newsletter = {
 	id: 'newsletter',
+	name: 'Newsletter',
+	category: 'reader_activity',
+	options: [
+		{
+			label: 'Subscribers and non-subscribers',
+			value: 0,
+		},
+		{
+			label: 'Subscribers',
+			value: 1,
+		},
+		{
+			label: 'Non-Subscribers',
+			value: 2,
+		},
+	],
 	matchingFunction: ( config, store ) => {
 		if ( store.get( 'is_subscriber' ) ) {
 			return config.value === 1;
@@ -143,6 +165,10 @@ registerCriteria( newsletter );
  */
 const referrer_sources = {
 	id: 'referrer_sources',
+	name: 'Sources to match',
+	help: 'Segment based on traffic source',
+	description: 'A comma-separated list of domains.',
+	category: 'referrer_sources',
 	matchingFunction: 'list',
 	matchingAttribute: ( { store } ) => {
 		const value = document.referrer
@@ -166,6 +192,9 @@ registerCriteria( referrer_sources );
  */
 const favorite_categories = {
 	id: 'favorite_categories',
+	name: 'Favorite categories',
+	help: 'Most-read categories of the reader',
+	category: 'reader_engagement',
 	matchingFunction: 'list',
 	matchingAttribute: 'favorite_categories',
 };
@@ -174,7 +203,50 @@ registerCriteria( favorite_categories );
 /**
  * Sample segments to match.
  */
-const segments = [];
+const segments = [
+	{
+		id: 'segment-1',
+		name: 'Segment 1',
+		description: 'Segment 1 description',
+		criteria: {
+			articles_read: {
+				min: 1,
+				max: 10,
+			},
+		},
+	},
+	{
+		id: 'segment-2',
+		name: 'Segment 2',
+		description: 'Segment 2 description',
+		criteria: {
+			articles_read_in_session: {
+				min: 1,
+				max: 10,
+			},
+		},
+	},
+	{
+		id: 'segment-3',
+		name: 'Segment 3',
+		description: 'Segment 3 description',
+		criteria: {
+			newsletter: {
+				value: 1,
+			},
+		},
+	},
+	{
+		id: 'segment-4',
+		name: 'Segment 4',
+		description: 'Segment 4 description',
+		criteria: {
+			referrer_sources: {
+				value: 'google.com,facebook.com',
+			},
+		},
+	},
+];
 
 window.newspackRAS = window.newspackRAS || [];
 window.newspackRAS.push( ras => {
@@ -193,7 +265,7 @@ window.newspackRAS.push( ras => {
 	}
 
 	/**
-	 * Whether the reader matches the segment criteria.
+	 * Whether the segment matches the criteria.
 	 */
 	function matchSegment( segment ) {
 		for ( const criteriaId in segment.criteria ) {
