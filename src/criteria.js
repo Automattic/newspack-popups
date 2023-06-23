@@ -265,7 +265,7 @@ window.newspackRAS.push( ras => {
 	}
 
 	/**
-	 * Whether the segment matches the criteria.
+	 * Whether the reader matches the segment criteria.
 	 */
 	function matchSegment( segment ) {
 		for ( const criteriaId in segment.criteria ) {
