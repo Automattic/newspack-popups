@@ -2,6 +2,7 @@
  **** WARNING: No ES6 modules here. Not transpiled! ****
  */
 /* eslint-disable import/no-nodejs-modules */
+/* eslint-disable @typescript-eslint/no-var-requires */
 
 /**
  * External dependencies
@@ -19,6 +20,7 @@ const documentSettings = path.join( __dirname, 'src', 'document-settings' );
 const settings = path.join( __dirname, 'src', 'settings' );
 const blocks = path.join( __dirname, 'src', 'blocks' );
 const customizer = path.join( __dirname, 'src', 'customizer' );
+const criteria = path.join( __dirname, 'src', 'criteria' );
 
 const webpackConfig = getBaseWebpackConfig(
 	{ WP: true },
@@ -31,6 +33,7 @@ const webpackConfig = getBaseWebpackConfig(
 			settings,
 			blocks,
 			customizer,
+			criteria,
 		},
 		'output-path': path.join( __dirname, 'dist' ),
 	}
