@@ -282,7 +282,7 @@ window.newspackRAS.push( ras => {
 	}
 
 	/**
-	 * Execute matching logic for each criteria in the sample segment.
+	 * Match each segment.
 	 */
 	for ( const segment of segments ) {
 		console.log( { segmentId: segment.id, matched: matchSegment( segment ) } ); // eslint-disable-line no-console
