@@ -84,36 +84,48 @@ function registerCriteria( config ) {
 	if ( ! criteria.name ) {
 		criteria.name = criteria.id;
 	}
-	if ( ! criteria.matchingAttribute ) {
-		criteria.matchingAttribute = criteria.id;
-	}
-	if (
-		typeof criteria.matchingFunction === 'string' &&
-		matchingFunctions[ criteria.matchingFunction ]
-	) {
-		criteria.matchingFunction = matchingFunctions[ criteria.matchingFunction ].bind(
-			null,
-			criteria
-		);
-	}
-	if ( typeof criteria.matchingFunction !== 'function' ) {
-		throw new Error( 'Criteria must have a matching function.' );
-	}
-	// Fetch the value for the criteria.
-	criteria.fetchValue = ras => {
-		// Bail if value has already been fetched.
-		if ( criteria.hasOwnProperty( 'value' ) ) {
+
+	// Setup matching for the criteria.
+	const setupMatching = ras => {
+		// Run setup only once.
+		if ( criteria._configured ) {
 			return;
 		}
+		criteria._configured = true;
+
+		// Default attribute to the criteria ID.
+		if ( ! criteria.matchingAttribute ) {
+			criteria.matchingAttribute = criteria.id;
+		}
+
+		// Configure matching function.
+		if (
+			typeof criteria.matchingFunction === 'string' &&
+			matchingFunctions[ criteria.matchingFunction ]
+		) {
+			criteria.matchingFunction = matchingFunctions[ criteria.matchingFunction ].bind(
+				null,
+				criteria
+			);
+		}
+
+		// Bail if unable to configure matching function.
+		if ( typeof criteria.matchingFunction !== 'function' ) {
+			console.warn( `Unable to configure matching function for criteria ${ criteria.id }.` ); // eslint-disable-line no-console
+			return;
+		}
+
+		// Set criteria value.
 		if ( typeof criteria.matchingAttribute === 'function' ) {
 			criteria.value = criteria.matchingAttribute( ras );
 		} else if ( typeof criteria.matchingAttribute === 'string' ) {
 			criteria.value = ras.store.get( criteria.matchingAttribute );
 		}
 	};
+
 	// Check if the criteria matches the segment config.
 	criteria.matches = ( ras, segmentConfig ) => {
-		criteria.fetchValue( ras );
+		setupMatching( ras );
 		return criteria.matchingFunction( segmentConfig, ras.store );
 	};
 	registeredCriteria[ criteria.id ] = criteria;
