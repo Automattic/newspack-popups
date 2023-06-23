@@ -99,9 +99,9 @@ function registerCriteria( config ) {
 	if ( typeof criteria.matchingFunction !== 'function' ) {
 		throw new Error( 'Criteria must have a matching function.' );
 	}
-	// Set the value of the criteria.
-	criteria.setValue = ras => {
-		// Bail if value has already been set.
+	// Fetch the value for the criteria.
+	criteria.fetchValue = ras => {
+		// Bail if value has already been fetched.
 		if ( criteria.hasOwnProperty( 'value' ) ) {
 			return;
 		}
@@ -113,7 +113,7 @@ function registerCriteria( config ) {
 	};
 	// Check if the criteria matches the segment config.
 	criteria.matches = ( ras, segmentConfig ) => {
-		criteria.setValue( ras );
+		criteria.fetchValue( ras );
 		return criteria.matchingFunction( segmentConfig, ras.store );
 	};
 	registeredCriteria[ criteria.id ] = criteria;
