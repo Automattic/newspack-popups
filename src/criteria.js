@@ -76,27 +76,47 @@ function registerCriteria( config ) {
 	if ( ! config.id ) {
 		throw new Error( 'Criteria must have an ID.' );
 	}
-	config = {
+	const criteria = {
 		category: 'reader_activity',
 		matchingFunction: 'default',
 		...config,
 	};
-	if ( ! config.name ) {
-		config.name = config.id;
+	if ( ! criteria.name ) {
+		criteria.name = criteria.id;
 	}
-	if ( ! config.matchingAttribute ) {
-		config.matchingAttribute = config.id;
+	if ( ! criteria.matchingAttribute ) {
+		criteria.matchingAttribute = criteria.id;
 	}
 	if (
-		typeof config.matchingFunction === 'string' &&
-		matchingFunctions[ config.matchingFunction ]
+		typeof criteria.matchingFunction === 'string' &&
+		matchingFunctions[ criteria.matchingFunction ]
 	) {
-		config.matchingFunction = matchingFunctions[ config.matchingFunction ].bind( null, config );
+		criteria.matchingFunction = matchingFunctions[ criteria.matchingFunction ].bind(
+			null,
+			criteria
+		);
 	}
-	if ( typeof config.matchingFunction !== 'function' ) {
+	if ( typeof criteria.matchingFunction !== 'function' ) {
 		throw new Error( 'Criteria must have a matching function.' );
 	}
-	registeredCriteria[ config.id ] = config;
+	// Set the value of the criteria.
+	criteria.setValue = ras => {
+		// Bail if value has already been set.
+		if ( criteria.hasOwnProperty( 'value' ) ) {
+			return;
+		}
+		if ( typeof criteria.matchingAttribute === 'function' ) {
+			criteria.value = criteria.matchingAttribute( ras );
+		} else if ( typeof criteria.matchingAttribute === 'string' ) {
+			criteria.value = ras.store.get( criteria.matchingAttribute );
+		}
+	};
+	// Check if the criteria matches the segment config.
+	criteria.matches = ( ras, segmentConfig ) => {
+		criteria.setValue( ras );
+		return criteria.matchingFunction( segmentConfig, ras.store );
+	};
+	registeredCriteria[ criteria.id ] = criteria;
 }
 
 /**
@@ -250,20 +270,6 @@ const segments = [
 
 window.newspackRAS = window.newspackRAS || [];
 window.newspackRAS.push( ras => {
-	const { store } = ras;
-
-	/**
-	 * Get the criteria value for each registered criteria.
-	 */
-	for ( const id in registeredCriteria ) {
-		const criteria = registeredCriteria[ id ];
-		if ( typeof criteria.matchingAttribute === 'function' ) {
-			criteria.value = criteria.matchingAttribute( ras );
-		} else if ( typeof criteria.matchingAttribute === 'string' ) {
-			criteria.value = store.get( criteria.matchingAttribute );
-		}
-	}
-
 	/**
 	 * Whether the reader matches the segment criteria.
 	 */
@@ -274,13 +280,12 @@ window.newspackRAS.push( ras => {
 				continue;
 			}
 			const config = segment.criteria[ criteriaId ];
-			if ( ! criteria.matchingFunction( config, store ) ) {
+			if ( ! criteria.matches( ras, config ) ) {
 				return false;
 			}
 		}
 		return true;
 	}
-
 	/**
 	 * Match each segment.
 	 */
