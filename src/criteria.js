@@ -201,26 +201,52 @@ const favorite_categories = {
 registerCriteria( favorite_categories );
 
 /**
- * Sample segment configuration to test against the registered criteria.
+ * Sample segments to match.
  */
-const sampleSegment = {
-	criteria: {
-		articles_read: {
-			min: 1,
-			max: 10,
-		},
-		articles_read_in_session: {
-			min: 1,
-			max: 10,
-		},
-		newsletter: {
-			value: 1,
-		},
-		referrer_sources: {
-			value: 'google.com,facebook.com',
+const segments = [
+	{
+		id: 'segment-1',
+		name: 'Segment 1',
+		description: 'Segment 1 description',
+		criteria: {
+			articles_read: {
+				min: 1,
+				max: 10,
+			},
 		},
 	},
-};
+	{
+		id: 'segment-2',
+		name: 'Segment 2',
+		description: 'Segment 2 description',
+		criteria: {
+			articles_read_in_session: {
+				min: 1,
+				max: 10,
+			},
+		},
+	},
+	{
+		id: 'segment-3',
+		name: 'Segment 3',
+		description: 'Segment 3 description',
+		criteria: {
+			newsletter: {
+				value: 1,
+			},
+		},
+	},
+	{
+		id: 'segment-4',
+		name: 'Segment 4',
+		description: 'Segment 4 description',
+		criteria: {
+			referrer_sources: {
+				value: 'google.com,facebook.com',
+			},
+		},
+	},
+];
 
 window.newspackRAS = window.newspackRAS || [];
 window.newspackRAS.push( ras => {
@@ -239,20 +265,26 @@ window.newspackRAS.push( ras => {
 	}
 
 	/**
+	 * Whether the segment matches the criteria.
+	 */
+	function matchSegment( segment ) {
+		for ( const criteriaId in segment.criteria ) {
+			const criteria = registeredCriteria[ criteriaId ];
+			if ( ! criteria ) {
+				continue;
+			}
+			const config = segment.criteria[ criteriaId ];
+			if ( ! criteria.matchingFunction( config, store ) ) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
 	 * Execute matching logic for each criteria in the sample segment.
 	 */
-	for ( const criteriaId in sampleSegment.criteria ) {
-		const criteria = registeredCriteria[ criteriaId ];
-		// Bail if criteria is not registered.
-		if ( ! criteria ) {
-			continue;
-		}
-		const config = sampleSegment.criteria[ criteriaId ];
-		// Bail if there's no value to match against.
-		if ( ! config.value && ! config.min && ! config.max ) {
-			continue;
-		}
-		const matched = criteria.matchingFunction( config, store );
-		console.log( { criteriaId, matched } ); // eslint-disable-line no-console
+	for ( const segment of segments ) {
+		console.log( { segmentId: segment.id, matched: matchSegment( segment ) } ); // eslint-disable-line no-console
 	}
 } );
