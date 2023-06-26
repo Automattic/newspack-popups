@@ -346,9 +346,11 @@ final class Newspack_Segments_Model {
 	/**
 	 * Gets all segments, ordered by priority.
 	 *
+	 * @param boolean $include_inactive If true, fetch both inactive and active segments. If false, only fetch active segments.
+	 *
 	 * @return array
 	 */
-	public static function get_segments() {
+	public static function get_segments( $include_inactive = true ) {
 		$terms = get_terms(
 			[
 				'taxonomy'   => self::TAX_SLUG,
@@ -385,6 +387,16 @@ final class Newspack_Segments_Model {
 		// Failsafe to ensure that all segments have an assigned priority.
 		if ( 0 < count( $segments_without_priority ) ) {
 			$segments = self::reindex_segments( $segments );
+		}
+
+		// Filter out inactive segments, if needed.
+		if ( ! $include_inactive ) {
+			$segments = array_filter(
+				$segments,
+				function( $segment ) {
+					return empty( $segment['configuration']['is_disabled'] );
+				}
+			);
 		}
 
 		// Filter out non-existing categories.

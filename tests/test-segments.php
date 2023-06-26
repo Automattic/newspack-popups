@@ -90,6 +90,20 @@ class SegmentsTest extends WP_UnitTestCase {
 	];
 
 	/**
+	 * An inactive segment.
+	 *
+	 * @var array
+	 */
+	public $inactive = [
+		'name'          => 'Inactive Segment',
+		'priority'      => 50,
+		'configuration' => [
+			'max_posts'   => 'string',
+			'is_disabled' => true,
+		],
+	];
+
+	/**
 	 * Make sure we have a clear environment
 	 */
 	public static function set_up_before_class() {
@@ -111,6 +125,7 @@ class SegmentsTest extends WP_UnitTestCase {
 			'missing_required'      => [ $this->missing_required ],
 			'additional_properties' => [ $this->additional_properties ],
 			'invalid_int'           => [ $this->invalid_int ],
+			'inactive'              => [ $this->inactive ],
 		];
 	}
 
@@ -155,8 +170,15 @@ class SegmentsTest extends WP_UnitTestCase {
 		$this->assertSame( [], Newspack_Popups_Segmentation::get_segments() );
 		Newspack_Popups_Segmentation::create_segment( $this->complete_and_valid );
 		Newspack_Popups_Segmentation::create_segment( $this->valid );
+		Newspack_Popups_Segmentation::create_segment( $this->inactive );
 
 		$segments = Newspack_Popups_Segmentation::get_segments();
+		$this->assertSame( 3, count( $segments ) );
+		$this->assertSame( $this->complete_and_valid['name'], $segments[0]['name'] );
+		$this->assertSame( $this->valid['name'], $segments[1]['name'] );
+		$this->assertSame( $this->inactive['name'], $segments[2]['name'] );
+
+		$segments = Newspack_Popups_Segmentation::get_segments( false );
 
 		$this->assertSame( 2, count( $segments ) );
 		$this->assertSame( $this->complete_and_valid['name'], $segments[0]['name'] );

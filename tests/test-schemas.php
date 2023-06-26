@@ -35,7 +35,6 @@ class SchemasTest extends WP_UnitTestCase {
 					],
 					'options'           => [
 						'background_color'               => '#FFFFFF',
-						'display_title'                  => false,
 						'hide_border'                    => false,
 						'large_border'                   => false,
 						'frequency'                      => 'once',
@@ -112,7 +111,6 @@ class SchemasTest extends WP_UnitTestCase {
 					'status'  => 'publish',
 					'options' => [
 						'background_color' => '#FFFFFF',
-						'display_title'    => false,
 						'hide_border'      => false,
 						'large_border'     => false,
 						'frequency'        => 'once',
@@ -128,7 +126,6 @@ class SchemasTest extends WP_UnitTestCase {
 					'status'  => 'publish',
 					'options' => [
 						'background_color' => '#FFFFFF',
-						'display_title'    => false,
 						'hide_border'      => false,
 						'large_border'     => false,
 						'placement'        => 'inline',
@@ -143,7 +140,6 @@ class SchemasTest extends WP_UnitTestCase {
 					'status'  => 'publish',
 					'options' => [
 						'background_color' => 33,
-						'display_title'    => false,
 						'hide_border'      => false,
 						'large_border'     => false,
 						'frequency'        => 'once',
@@ -159,8 +155,7 @@ class SchemasTest extends WP_UnitTestCase {
 					'status'  => 'publish',
 					'options' => [
 						'background_color' => '#FFFFFF',
-						'display_title'    => 'string',
-						'hide_border'      => false,
+						'hide_border'      => 'string',
 						'large_border'     => false,
 						'frequency'        => 'once',
 						'placement'        => 'inline',
@@ -175,7 +170,6 @@ class SchemasTest extends WP_UnitTestCase {
 					'status'  => 'publish',
 					'options' => [
 						'background_color' => 'not a color',
-						'display_title'    => false,
 						'hide_border'      => false,
 						'large_border'     => false,
 						'frequency'        => 'once',
@@ -191,7 +185,6 @@ class SchemasTest extends WP_UnitTestCase {
 					'status'  => 'publish',
 					'options' => [
 						'background_color' => '#FFFFFF',
-						'display_title'    => false,
 						'hide_border'      => false,
 						'large_border'     => false,
 						'frequency'        => 'once',
@@ -208,7 +201,6 @@ class SchemasTest extends WP_UnitTestCase {
 					'status'  => 'publish',
 					'options' => [
 						'background_color' => '#FFFFFF',
-						'display_title'    => false,
 						'hide_border'      => false,
 						'large_border'     => false,
 						'frequency'        => 'invalid',
@@ -224,7 +216,6 @@ class SchemasTest extends WP_UnitTestCase {
 					'status'  => 'publish',
 					'options' => [
 						'background_color' => '#FFFFFF',
-						'display_title'    => false,
 						'hide_border'      => false,
 						'large_border'     => false,
 						'frequency'        => 'once',
@@ -241,7 +232,6 @@ class SchemasTest extends WP_UnitTestCase {
 					'status'  => 'publish',
 					'options' => [
 						'background_color' => '#FFFFFF',
-						'display_title'    => false,
 						'hide_border'      => false,
 						'large_border'     => false,
 						'frequency'        => 'once',
