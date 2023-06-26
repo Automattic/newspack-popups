@@ -76,6 +76,11 @@ final class Newspack_Segments_Model {
 	public static function update_db_version_to_1() {
 		$old_segments = get_option( Newspack_Popups_Segmentation::SEGMENTS_OPTION_NAME );
 		$id_mapping   = [];
+
+		if ( ! is_array( $old_segments ) || empty( $old_segments ) ) {
+			return;
+		}
+
 		foreach ( $old_segments as $old_segment ) {
 			$insert                           = self::create_segment( $old_segment );
 			$new_segment                      = end( $insert );
