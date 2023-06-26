@@ -134,12 +134,14 @@ final class Newspack_Popups_Criteria {
 				'name'              => __( 'Sources to match', 'newspack-popups' ),
 				'help'              => __( 'Segment based on traffic source', 'newspack-popups' ),
 				'description'       => __( 'A comma-separated list of domains.', 'newspack-popups' ),
+				'category'          => 'referrer_sources',
 				'matching_function' => 'list',
 			],
 			'sources_to_exclude'       => [
 				'name'        => __( 'Sources to exclude', 'newspack-popups' ),
 				'help'        => __( 'Segment based on traffic source - hide campaigns for visitors coming from specific sources.', 'newspack-popups' ),
 				'description' => __( 'A comma-separated list of domains.', 'newspack-popups' ),
+				'category'    => 'referrer_sources',
 			],
 		];
 		foreach ( $criteria as $slug => $config ) {
