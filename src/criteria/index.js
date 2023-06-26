@@ -48,17 +48,18 @@ const matchingFunctions = {
 /**
  * Registers a criteria.
  *
- * @param {Object}          config                   The criteria configuration.
- * @param {string}          config.id                ID. (required)
+ * @param {string}          id                       The criteria ID. (required)
+ * @param {Object}          config                   Criteria configuration.
  * @param {string|Function} config.matchingFunction  Function to use for matching. Defaults to 'default'.
  * @param {string|Function} config.matchingAttribute Either the attribute name to match from the reader data library
  *                                                   store or a function that returns the value. Defaults to the ID.
  */
-function registerCriteria( config ) {
-	if ( ! config.id ) {
+function registerCriteria( id, config = {} ) {
+	if ( ! id ) {
 		throw new Error( 'Criteria must have an ID.' );
 	}
 	const criteria = {
+		id,
 		matchingFunction: 'default',
 		...config,
 	};
@@ -112,6 +113,10 @@ function registerCriteria( config ) {
 	};
 	registeredCriteria[ criteria.id ] = criteria;
 }
-if ( newspackPopupsCriteria?.config?.length ) {
-	newspackPopupsCriteria.config.forEach( registerCriteria );
+
+// Register criteria from the global newspackPopupsCriteria object.
+if ( newspackPopupsCriteria?.config ) {
+	for ( const id in newspackPopupsCriteria.config ) {
+		registerCriteria( id, newspackPopupsCriteria.config[ id ] );
+	}
 }

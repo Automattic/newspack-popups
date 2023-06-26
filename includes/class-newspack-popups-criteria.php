@@ -144,8 +144,8 @@ final class Newspack_Popups_Criteria {
 				'category'    => 'referrer_sources',
 			],
 		];
-		foreach ( $criteria as $slug => $config ) {
-			self::register_criteria( $slug, $config );
+		foreach ( $criteria as $id => $config ) {
+			self::register_criteria( $id, $config );
 		}
 	}
 
@@ -202,36 +202,35 @@ final class Newspack_Popups_Criteria {
 	 */
 	public static function get_criteria_config() {
 		$config = [];
-		foreach ( self::$registered_criteria as $slug => $criteria ) {
-			$config[ $slug ] = [
-				'id'                => $slug,
+		foreach ( self::$registered_criteria as $id => $criteria ) {
+			$config[ $id ] = [
 				'matchingFunction'  => $criteria['matching_function'],
 				'matchingAttribute' => $criteria['matching_attribute'],
 			];
 		}
-		return array_values( $config );
+		return $config;
 	}
 
 	/**
 	 * Register a new criteria.
 	 *
-	 * @param string $slug   The criteria slug.
+	 * @param string $id     The criteria id.
 	 * @param array  $config The criteria config.
 	 *
 	 * @return void|WP_Error
 	 */
-	public static function register_criteria( $slug, $config = [] ) {
-		if ( isset( self::$registered_criteria[ $slug ] ) ) {
+	public static function register_criteria( $id, $config = [] ) {
+		if ( isset( self::$registered_criteria[ $id ] ) ) {
 			return new WP_Error( 'newspack_popups_criteria_already_registered', __( 'Criteria already registered.', 'newspack-popups' ) );
 		}
 		$criteria = wp_parse_args( $config, self::$default_config );
 		if ( empty( $criteria['name'] ) ) {
-			$criteria['name'] = ucwords( str_replace( '_', ' ', $slug ) );
+			$criteria['name'] = ucwords( str_replace( '_', ' ', $id ) );
 		}
 		if ( empty( $criteria['matching_attribute'] ) ) {
-			$criteria['matching_attribute'] = $slug;
+			$criteria['matching_attribute'] = $id;
 		}
-		self::$registered_criteria[ $slug ] = $criteria;
+		self::$registered_criteria[ $id ] = $criteria;
 	}
 }
 Newspack_Popups_Criteria::init();
