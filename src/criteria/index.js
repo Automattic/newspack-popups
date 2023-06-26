@@ -1,13 +1,12 @@
 /* globals newspackPopupsCriteria */
 
-import './default-criteria';
-
 /**
  * This is the object that will hold all the registered criteria.
  *
  * @type {Object}
  */
 const registeredCriteria = {};
+newspackPopupsCriteria.criteria = registeredCriteria;
 
 /**
  * Common matching functions that can be used by criteria.
@@ -49,7 +48,6 @@ const matchingFunctions = {
 		return true;
 	},
 };
-newspackPopupsCriteria.matchingFunctions = matchingFunctions;
 
 /**
  * Registers a criteria.
@@ -114,15 +112,12 @@ function registerCriteria( config ) {
 	};
 	registeredCriteria[ criteria.id ] = criteria;
 }
+if ( newspackPopupsCriteria?.config?.length ) {
+	newspackPopupsCriteria.config.forEach( registerCriteria );
+}
 
 window.newspackRAS = window.newspackRAS || [];
 window.newspackRAS.push( ras => {
-	// Bail if not criteria were provided.
-	if ( ! newspackPopupsCriteria?.config?.length ) {
-		return;
-	}
-	newspackPopupsCriteria.config.forEach( registerCriteria );
-
 	/**
 	 * Whether the reader matches the segment criteria.
 	 */

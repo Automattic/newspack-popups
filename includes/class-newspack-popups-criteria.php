@@ -163,9 +163,18 @@ final class Newspack_Popups_Criteria {
 			self::SCRIPT_HANDLE,
 			'newspackPopupsCriteria',
 			[
-				'config' => self::get_criteria_config(),
+				'config'   => self::get_criteria_config(),
+				'segments' => Newspack_Popups_Segmentation::get_segments( false ),
 			]
 		);
+		wp_enqueue_script(
+			'newspack-popups-default-criteria',
+			plugins_url( '../dist/defaultCriteria.js', __FILE__ ),
+			[ self::SCRIPT_HANDLE ],
+			filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/defaultCriteria.js' ),
+			true
+		);
+		wp_script_add_data( 'newspack-popups-default-criteria', 'async', true );
 	}
 
 	/**

@@ -21,6 +21,7 @@ const settings = path.join( __dirname, 'src', 'settings' );
 const blocks = path.join( __dirname, 'src', 'blocks' );
 const customizer = path.join( __dirname, 'src', 'customizer' );
 const criteria = path.join( __dirname, 'src', 'criteria' );
+const defaultCriteria = path.join( __dirname, 'src', 'criteria', 'default' );
 
 const webpackConfig = getBaseWebpackConfig(
 	{ WP: true },
@@ -34,6 +35,7 @@ const webpackConfig = getBaseWebpackConfig(
 			blocks,
 			customizer,
 			criteria,
+			defaultCriteria,
 		},
 		'output-path': path.join( __dirname, 'dist' ),
 	}
