@@ -64,7 +64,7 @@ function registerCriteria( config ) {
 	};
 
 	// Setup matching for the criteria.
-	const setupMatching = () => {
+	const setupMatching = ras => {
 		// Run setup only once.
 		if ( criteria._configured ) {
 			return;
@@ -94,10 +94,6 @@ function registerCriteria( config ) {
 		}
 
 		// Set criteria value.
-		const ras = window.newspackReaderActivation;
-		if ( ! ras ) {
-			console.warn( 'Reader activation script not loaded.' ); // eslint-disable-line no-console
-		}
 		if ( typeof criteria.matchingAttribute === 'function' ) {
 			criteria.value = criteria.matchingAttribute( ras );
 		} else if ( typeof criteria.matchingAttribute === 'string' ) {
@@ -107,8 +103,12 @@ function registerCriteria( config ) {
 
 	// Check if the criteria matches the segment config.
 	criteria.matches = segmentConfig => {
-		setupMatching();
-		return criteria.matchingFunction( segmentConfig );
+		const ras = window.newspackReaderActivation;
+		if ( ! ras ) {
+			console.warn( 'Reader activation script not loaded.' ); // eslint-disable-line no-console
+		}
+		setupMatching( ras );
+		return criteria.matchingFunction( segmentConfig, ras );
 	};
 	registeredCriteria[ criteria.id ] = criteria;
 }
