@@ -2,7 +2,7 @@ import { setMatchingAttribute, setMatchingFunction } from '../utils';
 
 const matchingAttribute = ( { store } ) => {
 	const value = document.referrer
-		? ( new URL( document?.referrer ).hostname.replace( 'www.', '' ) || '' ).toLowerCase()
+		? ( new URL( document.referrer ).hostname.replace( 'www.', '' ) || '' ).toLowerCase()
 		: '';
 	// Persist the referrer in the store.
 	if ( value ) {

@@ -68,7 +68,7 @@ function registerCriteria( config ) {
 	};
 
 	// Setup matching for the criteria.
-	const setupMatching = ras => {
+	const setupMatching = () => {
 		// Run setup only once.
 		if ( criteria._configured ) {
 			return;
@@ -98,17 +98,21 @@ function registerCriteria( config ) {
 		}
 
 		// Set criteria value.
+		const ras = window.newspackReaderActivation;
+		if ( ! ras ) {
+			console.warn( `Reader activation script has not loaded.` ); // eslint-disable-line no-console
+		}
 		if ( typeof criteria.matchingAttribute === 'function' ) {
 			criteria.value = criteria.matchingAttribute( ras );
 		} else if ( typeof criteria.matchingAttribute === 'string' ) {
-			criteria.value = ras.store.get( criteria.matchingAttribute );
+			criteria.value = ras?.store?.get( criteria.matchingAttribute ) || null;
 		}
 	};
 
 	// Check if the criteria matches the segment config.
-	criteria.matches = ( ras, segmentConfig ) => {
-		setupMatching( ras );
-		return criteria.matchingFunction( segmentConfig, ras );
+	criteria.matches = segmentConfig => {
+		setupMatching();
+		return criteria.matchingFunction( segmentConfig );
 	};
 	registeredCriteria[ criteria.id ] = criteria;
 }
@@ -117,7 +121,7 @@ if ( newspackPopupsCriteria?.config?.length ) {
 }
 
 window.newspackRAS = window.newspackRAS || [];
-window.newspackRAS.push( ras => {
+window.newspackRAS.push( () => {
 	/**
 	 * Whether the reader matches the segment criteria.
 	 */
@@ -128,7 +132,7 @@ window.newspackRAS.push( ras => {
 				continue;
 			}
 			const config = segment.criteria[ criteriaId ];
-			if ( ! criteria.matches( ras, config ) ) {
+			if ( ! criteria.matches( config ) ) {
 				return false;
 			}
 		}

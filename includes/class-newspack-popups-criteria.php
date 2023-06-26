@@ -174,7 +174,7 @@ final class Newspack_Popups_Criteria {
 			filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/defaultCriteria.js' ),
 			true
 		);
-		wp_script_add_data( 'newspack-popups-default-criteria', 'async', true );
+		wp_script_add_data( 'newspack-popups-default-criteria', 'defer', true );
 	}
 
 	/**

@@ -7,7 +7,7 @@
  *                                            a function that returns the value.
  */
 export function setMatchingAttribute( criteriaId, matchingAttribute ) {
-	const criteria = newspackPopupsCriteria.registeredCriteria[ criteriaId ];
+	const criteria = newspackPopupsCriteria?.criteria[ criteriaId ];
 	if ( ! criteria ) {
 		throw new Error( `Criteria ${ criteriaId } not found.` );
 	}
@@ -21,7 +21,7 @@ export function setMatchingAttribute( criteriaId, matchingAttribute ) {
  * @param {string|Function} matchingFunction Function to use for matching
  */
 export function setMatchingFunction( criteriaId, matchingFunction ) {
-	const criteria = newspackPopupsCriteria.registeredCriteria[ criteriaId ];
+	const criteria = newspackPopupsCriteria?.criteria[ criteriaId ];
 	if ( ! criteria ) {
 		throw new Error( `Criteria ${ criteriaId } not found.` );
 	}
@@ -35,7 +35,7 @@ export function setMatchingFunction( criteriaId, matchingFunction ) {
  */
 export function getCriteria( key ) {
 	if ( key ) {
-		return newspackPopupsCriteria.registeredCriteria[ key ];
+		return newspackPopupsCriteria?.criteria[ key ];
 	}
-	return newspackPopupsCriteria.registeredCriteria;
+	return newspackPopupsCriteria?.criteria;
 }
