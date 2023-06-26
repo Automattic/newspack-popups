@@ -91,6 +91,8 @@ final class Newspack_Segments_Model {
 		foreach ( $popups as $popup ) {
 			$meta_value = get_post_meta( $popup['id'], 'selected_segment_id', true );
 			if ( $meta_value ) {
+				// Create a backup of the old value.
+				update_post_meta( $popup['id'], 'selected_segment_id_bkp', $meta_value );
 				foreach ( $id_mapping as $old_id => $new_id ) {
 					$meta_value = str_replace( $old_id, $new_id, $meta_value );
 				}
