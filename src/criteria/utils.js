@@ -10,6 +10,10 @@ import matchingFunctions from './matching-functions';
  * @param {string|Function} config.matchingFunction  Function to use for matching. Defaults to 'default'.
  * @param {string|Function} config.matchingAttribute Either the attribute name to match from the reader data library
  *                                                   store or a function that returns the value. Defaults to the ID.
+ *
+ * @return {Object} The criteria object.
+ *
+ * @throws {Error} If the criteria ID is not provided.
  */
 export function registerCriteria( id, config = {} ) {
 	if ( ! id ) {
@@ -74,6 +78,23 @@ export function registerCriteria( id, config = {} ) {
 		newspackPopupsCriteria.criteria = {};
 	}
 	newspackPopupsCriteria.criteria[ id ] = criteria;
+
+	return criteria;
+}
+
+/**
+ * Get all registered criteria or a specific by ID.
+ *
+ * @param {string} id The criteria ID.
+ *
+ * @return {Object|undefined} The criteria object or an object of all criteria.
+ *                            undefined if the criteria ID is not found.
+ */
+export function getCriteria( id ) {
+	if ( id ) {
+		return newspackPopupsCriteria?.criteria[ id ];
+	}
+	return newspackPopupsCriteria?.criteria;
 }
 
 /**
@@ -103,19 +124,4 @@ export function setMatchingFunction( criteriaId, matchingFunction ) {
 		throw new Error( `Criteria ${ criteriaId } not found.` );
 	}
 	criteria.matchingFunction = matchingFunction;
-}
-
-/**
- * Get all registered criteria or a specific by ID.
- *
- * @param {string} id The criteria ID.
- */
-export function getCriteria( id ) {
-	if ( ! newspackPopupsCriteria?.criteria ) {
-		return null;
-	}
-	if ( id ) {
-		return newspackPopupsCriteria?.criteria[ id ];
-	}
-	return newspackPopupsCriteria?.criteria;
 }
