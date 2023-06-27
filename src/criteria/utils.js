@@ -92,22 +92,24 @@ export function registerCriteria( id, config = {} ) {
  */
 export function getCriteria( id ) {
 	if ( id ) {
-		return newspackPopupsCriteria?.criteria[ id ];
+		return newspackPopupsCriteria.criteria[ id ];
 	}
-	return newspackPopupsCriteria?.criteria;
+	return newspackPopupsCriteria.criteria;
 }
 
 /**
  * Set the criteria matching attribute.
  *
- * @param {string}          criteriaId        The criteria ID.
+ * @param {string}          id                The criteria ID.
  * @param {string|Function} matchingAttribute Either the attribute name to match from the reader data library store or
  *                                            a function that returns the value.
+ *
+ * @throws {Error} If the criteria ID is not found.
  */
-export function setMatchingAttribute( criteriaId, matchingAttribute ) {
-	const criteria = newspackPopupsCriteria?.criteria[ criteriaId ];
+export function setMatchingAttribute( id, matchingAttribute ) {
+	const criteria = getCriteria( id );
 	if ( ! criteria ) {
-		throw new Error( `Criteria ${ criteriaId } not found.` );
+		throw new Error( `Criteria ${ id } not found.` );
 	}
 	criteria.matchingAttribute = matchingAttribute;
 }
@@ -115,13 +117,15 @@ export function setMatchingAttribute( criteriaId, matchingAttribute ) {
 /**
  * Set the criteria matching function.
  *
- * @param {string}          criteriaId       The criteria ID.
+ * @param {string}          id               The criteria ID.
  * @param {string|Function} matchingFunction Function to use for matching
+ *
+ * @throws {Error} If the criteria ID is not found.
  */
-export function setMatchingFunction( criteriaId, matchingFunction ) {
-	const criteria = newspackPopupsCriteria?.criteria[ criteriaId ];
+export function setMatchingFunction( id, matchingFunction ) {
+	const criteria = getCriteria( id );
 	if ( ! criteria ) {
-		throw new Error( `Criteria ${ criteriaId } not found.` );
+		throw new Error( `Criteria ${ id } not found.` );
 	}
 	criteria.matchingFunction = matchingFunction;
 }
