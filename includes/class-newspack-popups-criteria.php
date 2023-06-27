@@ -63,7 +63,7 @@ final class Newspack_Popups_Criteria {
 				'name'              => __( 'Favorite Categories', 'newspack-popups' ),
 				'help'              => __( 'Most read categories of reader.', 'newspack-popups' ),
 				'category'          => 'reader_engagement',
-				'matching_function' => 'list',
+				'matching_function' => 'list__in',
 			],
 			/**
 			 * Reader Activity.
@@ -135,13 +135,14 @@ final class Newspack_Popups_Criteria {
 				'help'              => __( 'Segment based on traffic source', 'newspack-popups' ),
 				'description'       => __( 'A comma-separated list of domains.', 'newspack-popups' ),
 				'category'          => 'referrer_sources',
-				'matching_function' => 'list',
+				'matching_function' => 'list__in',
 			],
 			'sources_to_exclude'       => [
-				'name'        => __( 'Sources to exclude', 'newspack-popups' ),
-				'help'        => __( 'Segment based on traffic source - hide campaigns for visitors coming from specific sources.', 'newspack-popups' ),
-				'description' => __( 'A comma-separated list of domains.', 'newspack-popups' ),
-				'category'    => 'referrer_sources',
+				'name'              => __( 'Sources to exclude', 'newspack-popups' ),
+				'help'              => __( 'Segment based on traffic source - hide campaigns for visitors coming from specific sources.', 'newspack-popups' ),
+				'description'       => __( 'A comma-separated list of domains.', 'newspack-popups' ),
+				'category'          => 'referrer_sources',
+				'matching_function' => 'list__not_in',
 			],
 		];
 		foreach ( $criteria as $id => $config ) {
