@@ -62,10 +62,10 @@ final class Newspack_Segments_Model {
 	 * @return void
 	 */
 	public static function update_db_version( $current_db_version ) {
-		update_option( self::DB_VERSION_OPTION_NAME, self::DB_VERSION );
 		if ( $current_db_version < 1 ) {
 			self::update_db_version_to_1();
 		}
+		update_option( self::DB_VERSION_OPTION_NAME, self::DB_VERSION );
 	}
 
 	/**
