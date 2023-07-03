@@ -49,19 +49,19 @@ final class Newspack_Popups_Criteria {
 			 */
 			'articles_read'            => [
 				'name'              => __( 'Articles read', 'newspack-popups' ),
-				'help'              => __( 'Number of articles read in the last 30 day period.', 'newspack-popups' ),
+				'description'       => __( 'Number of articles read in the last 30 day period.', 'newspack-popups' ),
 				'category'          => 'reader_engagement',
 				'matching_function' => 'range',
 			],
 			'articles_read_in_session' => [
 				'name'              => __( 'Articles read in session', 'newspack-popups' ),
-				'help'              => __( 'Number of articles read in the last 30 day period.', 'newspack-popups' ),
+				'description'       => __( 'Number of articles read in the last 30 day period.', 'newspack-popups' ),
 				'category'          => 'reader_engagement',
 				'matching_function' => 'range',
 			],
 			'favorite_categories'      => [
 				'name'              => __( 'Favorite Categories', 'newspack-popups' ),
-				'help'              => __( 'Most read categories of reader.', 'newspack-popups' ),
+				'description'       => __( 'Most read categories of reader.', 'newspack-popups' ),
 				'category'          => 'reader_engagement',
 				'matching_function' => 'list__in',
 			],
@@ -87,10 +87,10 @@ final class Newspack_Popups_Criteria {
 				],
 			],
 			'donation'                 => [
-				'name'     => __( 'Donation', 'newspack-popups' ),
-				'help'     => __( '(if checkout happens on-site)', 'newspack-popups' ),
-				'category' => 'reader_activity',
-				'options'  => [
+				'name'        => __( 'Donation', 'newspack-popups' ),
+				'description' => __( '(if checkout happens on-site)', 'newspack-popups' ),
+				'category'    => 'reader_activity',
+				'options'     => [
 					[
 						'name'  => __( 'Donors and non-donors', 'newspack-popups' ),
 						'value' => 0,
@@ -132,15 +132,17 @@ final class Newspack_Popups_Criteria {
 			 */
 			'sources_to_match'         => [
 				'name'              => __( 'Sources to match', 'newspack-popups' ),
-				'help'              => __( 'Segment based on traffic source', 'newspack-popups' ),
-				'description'       => __( 'A comma-separated list of domains.', 'newspack-popups' ),
+				'description'       => __( 'Segment based on traffic source', 'newspack-popups' ),
+				'help'              => __( 'A comma-separated list of domains.', 'newspack-popups' ),
+				'placeholder'       => 'google.com, facebook.com',
 				'category'          => 'referrer_sources',
 				'matching_function' => 'list__in',
 			],
 			'sources_to_exclude'       => [
 				'name'              => __( 'Sources to exclude', 'newspack-popups' ),
-				'help'              => __( 'Segment based on traffic source - hide campaigns for visitors coming from specific sources.', 'newspack-popups' ),
-				'description'       => __( 'A comma-separated list of domains.', 'newspack-popups' ),
+				'description'       => __( 'Segment based on traffic source - hide campaigns for visitors coming from specific sources.', 'newspack-popups' ),
+				'help'              => __( 'A comma-separated list of domains.', 'newspack-popups' ),
+				'placeholder'       => 'twitter.com, instagram.com',
 				'category'          => 'referrer_sources',
 				'matching_function' => 'list__not_in',
 			],
@@ -193,7 +195,16 @@ final class Newspack_Popups_Criteria {
 	 * @return array
 	 */
 	public static function get_registered_criteria() {
-		return self::$registered_criteria;
+		$criteria = [];
+		foreach ( self::$registered_criteria as $id => $config ) {
+			$criteria[] = array_merge( [ 'id' => $id ], $config );
+		}
+		/**
+		 * Filter the registered criteria.
+		 *
+		 * @param array $criteria The registered criteria.
+		 */
+		return apply_filters( 'newspack_popups_registered_criteria', $criteria );
 	}
 
 	/**
@@ -203,8 +214,8 @@ final class Newspack_Popups_Criteria {
 	 */
 	public static function get_criteria_config() {
 		$config = [];
-		foreach ( self::$registered_criteria as $id => $criteria ) {
-			$config[ $id ] = [
+		foreach ( self::get_registered_criteria() as $criteria ) {
+			$config[ $criteria['id'] ] = [
 				'matchingFunction'  => $criteria['matching_function'],
 				'matchingAttribute' => $criteria['matching_attribute'],
 			];
