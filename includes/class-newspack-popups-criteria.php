@@ -186,6 +186,20 @@ final class Newspack_Popups_Criteria {
 			filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/segmentsExample.js' ),
 			true
 		);
+		wp_localize_script(
+			'newspack-popups-segments-example',
+			'newspackPopupsSegmentsExample',
+			[
+				'segments' => array_reduce(
+					Newspack_Popups_Segmentation::get_segments( false ),
+					function( $segments, $item ) {
+						$segments[ $item['id'] ] = $item['criteria'] ?? [];
+						return $segments;
+					},
+					[]
+				),
+			]
+		);
 		wp_script_add_data( 'newspack-popups-segments-example', 'defer', true );
 	}
 

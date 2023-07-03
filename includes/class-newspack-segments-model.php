@@ -167,6 +167,40 @@ final class Newspack_Segments_Model {
 				'maxLength' => 10,
 				'pattern'   => '^\d{4}-\d\d-\d\d$',
 			],
+			'criteria'      => [
+				'type'       => 'array',
+				'required'   => true,
+				'properties' => [
+					'criteria_id' => [
+						'name'     => 'criteria_id',
+						'type'     => 'string',
+						'required' => true,
+					],
+					'value'       => [
+						'oneOf' => [
+							[
+								'type' => [ 'boolean', 'integer', 'string' ],
+							],
+							[
+								'type'                 => 'object',
+								'additionalProperties' => false,
+								'properties'           => [
+									'min' => [
+										'name'     => 'min',
+										'type'     => 'integer',
+										'required' => false,
+									],
+									'max' => [
+										'name'     => 'max',
+										'type'     => 'integer',
+										'required' => false,
+									],
+								],
+							],
+						],
+					],
+				],
+			],
 			'configuration' => [
 				'name'                 => 'configuration',
 				'type'                 => 'object',
@@ -476,6 +510,119 @@ final class Newspack_Segments_Model {
 			}
 			$segment[ $meta_key ] = $stored_value;
 		}
+		$segment = self::migrate_criteria_configuration( $segment );
+		return $segment;
+	}
+
+	/**
+	 * Migrate criteria configuration.
+	 *
+	 * TODO: Once this is thoroughly tested, this method should also remove the
+	 * previous configuration.
+	 *
+	 * @param array $segment Segment.
+	 *
+	 * @return array
+	 */
+	private static function migrate_criteria_configuration( $segment ) {
+		if ( empty( $segment['configuration'] ) || ! empty( $segment['criteria'] ) ) {
+			return $segment;
+		}
+		$configuration = $segment['configuration'];
+		$criteria      = [];
+		// Migrate posts read.
+		if ( ! empty( $configuration['min_posts'] || ! empty( $configuration['max_posts'] ) ) ) {
+			$criteria[] = [
+				'criteria_id' => 'articles_read',
+				'value'       => [
+					'min' => ! empty( $configuration['min_posts'] ) ? $configuration['min_posts'] : 0,
+					'max' => ! empty( $configuration['max_posts'] ) ? $configuration['max_posts'] : 0,
+				],
+			];
+		}
+		// Migrate posts read in session.
+		if ( ! empty( $configuration['min_session_posts'] || ! empty( $configuration['max_session_posts'] ) ) ) {
+			$criteria[] = [
+				'criteria_id' => 'articles_read',
+				'value'       => [
+					'min' => ! empty( $configuration['min_session_posts'] ) ? $configuration['min_session_posts'] : 0,
+					'max' => ! empty( $configuration['max_session_posts'] ) ? $configuration['max_session_posts'] : 0,
+				],
+			];
+		}
+		// Migrate favorite categories.
+		if ( ! empty( $configuration['favorite_categories'] ) ) {
+			$criteria[] = [
+				'criteria_id' => 'favorite_categories',
+				'value'       => $configuration['favorite_categories'],
+			];
+		}
+		// Migrate newsletter subscribed.
+		if ( ! empty( $configuration['is_subscribed'] ) ) {
+			$criteria[] = [
+				'criteria_id' => 'newsletter',
+				'value'       => 1,
+			];
+		}
+		// Migrate newsletter not subscribed.
+		if ( ! empty( $configuration['is_not_subscribed'] ) ) {
+			$criteria[] = [
+				'criteria_id' => 'newsletter',
+				'value'       => 2,
+			];
+		}
+		// Migrate donor.
+		if ( ! empty( $configuration['is_donor'] ) ) {
+			$criteria[] = [
+				'criteria_id' => 'donation',
+				'value'       => 1,
+			];
+		}
+		// Migrate not donor.
+		if ( ! empty( $configuration['is_not_donor'] ) ) {
+			$criteria[] = [
+				'criteria_id' => 'donation',
+				'value'       => 2,
+			];
+		}
+		// Migrate former donor.
+		if ( ! empty( $configuration['is_former_donor'] ) ) {
+			$criteria[] = [
+				'criteria_id' => 'donation',
+				'value'       => 3,
+			];
+		}
+		// Migrate has reader account.
+		if ( ! empty( $configuration['is_logged_in'] ) ) {
+			$criteria[] = [
+				'criteria_id' => 'user_account',
+				'value'       => 1,
+			];
+		}
+		// Migrate hasn't reader account.
+		if ( ! empty( $configuration['is_not_logged_in'] ) ) {
+			$criteria[] = [
+				'criteria_id' => 'user_account',
+				'value'       => 2,
+			];
+		}
+		// Migrate former donor.
+		if ( ! empty( $configuration['referrers'] ) ) {
+			$criteria[] = [
+				'criteria_id' => 'sources_to_match',
+				'value'       => $configuration['referrers'],
+			];
+		}
+		// Migrate former donor.
+		if ( ! empty( $configuration['referrers_not'] ) ) {
+			$criteria[] = [
+				'criteria_id' => 'sources_to_exclude',
+				'value'       => $configuration['referrers_not'],
+			];
+		}
+		if ( ! empty( $criteria ) ) {
+			$segment['criteria'] = $criteria;
+		}
 		return $segment;
 	}
 
@@ -526,6 +673,7 @@ final class Newspack_Segments_Model {
 		}
 
 		update_term_meta( $segment['id'], 'updated_at', gmdate( 'Y-m-d' ) );
+		update_term_meta( $segment['id'], 'criteria', $segment['criteria'] ?? [] );
 		update_term_meta( $segment['id'], 'configuration', $segment['configuration'] );
 
 		return self::get_segments();
