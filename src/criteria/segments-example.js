@@ -17,7 +17,7 @@ window.newspackRAS.push( () => {
 			if ( ! criteria ) {
 				continue;
 			}
-			if ( ! criteria.matches( item.value ) ) {
+			if ( ! criteria.matches( item ) ) {
 				return false;
 			}
 		}
@@ -30,6 +30,7 @@ window.newspackRAS.push( () => {
 		// eslint-disable-next-line no-console
 		console.log( {
 			segmentId,
+			config: segments[ segmentId ],
 			matched: match( segments[ segmentId ] ),
 		} );
 	}
