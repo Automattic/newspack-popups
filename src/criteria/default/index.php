@@ -115,5 +115,5 @@ $criteria = [
 ];
 
 foreach ( $criteria as $criteria_id => $config ) {
-	self::register_criteria( $criteria_id, $config );
+	\Newspack_Popups_Criteria::register_criteria( $criteria_id, $config );
 }
