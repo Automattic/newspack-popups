@@ -97,20 +97,22 @@ $criteria = [
 	 * Referrer Sources.
 	 */
 	'sources_to_match'         => [
-		'name'              => __( 'Sources to match', 'newspack-popups' ),
-		'description'       => __( 'Segment based on traffic source', 'newspack-popups' ),
-		'help'              => __( 'A comma-separated list of domains.', 'newspack-popups' ),
-		'placeholder'       => 'google.com, facebook.com',
-		'category'          => 'referrer_sources',
-		'matching_function' => 'list__in',
+		'name'               => __( 'Sources to match', 'newspack-popups' ),
+		'description'        => __( 'Segment based on traffic source', 'newspack-popups' ),
+		'help'               => __( 'A comma-separated list of domains.', 'newspack-popups' ),
+		'placeholder'        => 'google.com, facebook.com',
+		'category'           => 'referrer_sources',
+		'matching_function'  => 'list__in',
+		'matching_attribute' => 'referrer',
 	],
 	'sources_to_exclude'       => [
-		'name'              => __( 'Sources to exclude', 'newspack-popups' ),
-		'description'       => __( 'Segment based on traffic source - hide campaigns for visitors coming from specific sources.', 'newspack-popups' ),
-		'help'              => __( 'A comma-separated list of domains.', 'newspack-popups' ),
-		'placeholder'       => 'twitter.com, instagram.com',
-		'category'          => 'referrer_sources',
-		'matching_function' => 'list__not_in',
+		'name'               => __( 'Sources to exclude', 'newspack-popups' ),
+		'description'        => __( 'Segment based on traffic source - hide campaigns for visitors coming from specific sources.', 'newspack-popups' ),
+		'help'               => __( 'A comma-separated list of domains.', 'newspack-popups' ),
+		'placeholder'        => 'twitter.com, instagram.com',
+		'category'           => 'referrer_sources',
+		'matching_function'  => 'list__not_in',
+		'matching_attribute' => 'referrer',
 	],
 ];
 
