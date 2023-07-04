@@ -40,15 +40,15 @@ $criteria = [
 		'options'  => [
 			[
 				'name'  => __( 'Subscribers and non-subscribers', 'newspack-popups' ),
-				'value' => 0,
+				'value' => '',
 			],
 			[
 				'name'  => __( 'Subscribers', 'newspack-popups' ),
-				'value' => 1,
+				'value' => 'subscribers',
 			],
 			[
 				'name'  => __( 'Non-subscribers', 'newspack-popups' ),
-				'value' => 2,
+				'value' => 'non-subscribers',
 			],
 		],
 	],
@@ -59,19 +59,19 @@ $criteria = [
 		'options'     => [
 			[
 				'name'  => __( 'Donors and non-donors', 'newspack-popups' ),
-				'value' => 0,
+				'value' => '',
 			],
 			[
 				'name'  => __( 'Donors', 'newspack-popups' ),
-				'value' => 1,
+				'value' => 'donors',
 			],
 			[
 				'name'  => __( 'Non-donors', 'newspack-popups' ),
-				'value' => 2,
+				'value' => 'non-donors',
 			],
 			[
 				'name'  => __( 'Former donors (who cancelled a recurring donation)', 'newspack-popups' ),
-				'value' => 3,
+				'value' => 'former-donors',
 			],
 		],
 	],
@@ -81,15 +81,15 @@ $criteria = [
 		'options'  => [
 			[
 				'name'  => __( 'All users', 'newspack-popups' ),
-				'value' => 0,
+				'value' => '',
 			],
 			[
 				'name'  => __( 'Has user account', 'newspack-popups' ),
-				'value' => 1,
+				'value' => 'with-account',
 			],
 			[
 				'name'  => __( 'Does not have user account', 'newspack-popups' ),
-				'value' => 2,
+				'value' => 'without-account',
 			],
 		],
 	],
