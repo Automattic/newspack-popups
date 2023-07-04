@@ -561,49 +561,49 @@ final class Newspack_Segments_Model {
 		if ( ! empty( $configuration['is_subscribed'] ) ) {
 			$criteria[] = [
 				'criteria_id' => 'newsletter',
-				'value'       => 1,
+				'value'       => 'subscribers',
 			];
 		}
 		// Migrate newsletter not subscribed.
 		if ( ! empty( $configuration['is_not_subscribed'] ) ) {
 			$criteria[] = [
 				'criteria_id' => 'newsletter',
-				'value'       => 2,
+				'value'       => 'non-subscribers',
 			];
 		}
 		// Migrate donor.
 		if ( ! empty( $configuration['is_donor'] ) ) {
 			$criteria[] = [
 				'criteria_id' => 'donation',
-				'value'       => 1,
+				'value'       => 'donors',
 			];
 		}
 		// Migrate not donor.
 		if ( ! empty( $configuration['is_not_donor'] ) ) {
 			$criteria[] = [
 				'criteria_id' => 'donation',
-				'value'       => 2,
+				'value'       => 'non-donors',
 			];
 		}
 		// Migrate former donor.
 		if ( ! empty( $configuration['is_former_donor'] ) ) {
 			$criteria[] = [
 				'criteria_id' => 'donation',
-				'value'       => 3,
+				'value'       => 'former-donors',
 			];
 		}
 		// Migrate has reader account.
 		if ( ! empty( $configuration['is_logged_in'] ) ) {
 			$criteria[] = [
 				'criteria_id' => 'user_account',
-				'value'       => 1,
+				'value'       => 'with-account',
 			];
 		}
 		// Migrate hasn't reader account.
 		if ( ! empty( $configuration['is_not_logged_in'] ) ) {
 			$criteria[] = [
 				'criteria_id' => 'user_account',
-				'value'       => 2,
+				'value'       => 'without-account',
 			];
 		}
 		// Migrate former donor.
