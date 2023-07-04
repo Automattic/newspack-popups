@@ -2,9 +2,9 @@ import { setMatchingFunction } from '../utils';
 
 setMatchingFunction( 'user_account', ( config, { store } ) => {
 	switch ( config.value ) {
-		case 1:
+		case 'with-account':
 			return store.get( 'reader' )?.email;
-		case 2:
+		case 'without-account':
 			return ! store.get( 'reader' )?.email;
 	}
 } );
