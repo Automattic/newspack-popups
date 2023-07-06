@@ -271,6 +271,19 @@ class SchemasTest extends WP_UnitTestCase {
 					'name'          => 'Test Segment',
 					'id'            => 'aasdqwe1234',
 					'priority'      => 10,
+					'criteria'      => [
+						[
+							'criteria_id' => 'articles_read',
+							'value'       => [
+								'min' => 5,
+								'max' => 20,
+							],
+						],
+						[
+							'criteria_id' => 'newsletter',
+							'value'       => 'is_subscriber',
+						],
+					],
 					'configuration' => [
 						'max_posts'           => 1,
 						'min_posts'           => 1,
@@ -296,6 +309,12 @@ class SchemasTest extends WP_UnitTestCase {
 					'name'          => 'Test Segment',
 					'id'            => 'aasdqwe1234',
 					'priority'      => 10,
+					'criteria'      => [
+						[
+							'criteria_id' => 'newsletter',
+							'value'       => 'is_subscriber',
+						],
+					],
 					'configuration' => [
 						'max_posts' => 1,
 					],
@@ -306,17 +325,29 @@ class SchemasTest extends WP_UnitTestCase {
 				[
 					'name'          => 'Test Segment',
 					'priority'      => 10,
+					'criteria'      => [
+						[
+							'criteria_id' => 'newsletter',
+							'value'       => 'is_subscriber',
+						],
+					],
 					'configuration' => [
 						'max_posts' => 1,
 					],
 				],
 				false,
 			],
-			'additional propertu'    => [
+			'additional property'    => [
 				[
 					'name'          => 'Test Segment',
 					'id'            => 'aasdqwe1234',
 					'priority'      => 10,
+					'criteria'      => [
+						[
+							'criteria_id' => 'newsletter',
+							'value'       => 'is_subscriber',
+						],
+					],
 					'configuration' => [
 						'max_posts' => 1,
 						'unknown'   => 'invalid',
@@ -340,6 +371,12 @@ class SchemasTest extends WP_UnitTestCase {
 					'name'          => 'Test Segment',
 					'id'            => 'aasdqwe1234',
 					'priority'      => 10,
+					'criteria'      => [
+						[
+							'criteria_id' => 'favorite_categories',
+							'value'       => [ 1 ],
+						],
+					],
 					'configuration' => [
 						'favorite_categories' => [
 							[
@@ -356,6 +393,12 @@ class SchemasTest extends WP_UnitTestCase {
 					'name'          => 'Test Segment',
 					'id'            => 'aasdqwe1234',
 					'priority'      => 10,
+					'criteria'      => [
+						[
+							'criteria_id' => 'favorite_categories',
+							'value'       => [ 9999 ],
+						],
+					],
 					'configuration' => [
 						'favorite_categories' => [ 'string' ],
 					],
