@@ -65,7 +65,7 @@ class CriteriaTest extends WP_UnitTestCase {
 		$all_criteria = Newspack_Popups_Criteria::get_registered_criteria();
 
 		foreach ( $all_criteria as $c ) {
-			if ( 'test_criteria' === $c['id'] ) {
+			if ( 'criteria_with_config' === $c['id'] ) {
 				$criteria = $c;
 				break;
 			}
