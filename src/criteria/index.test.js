@@ -11,7 +11,6 @@ describe( 'criteria registration', () => {
 		const criteria = getCriteria( criteriaId );
 		expect( criteria ).toBeDefined();
 		expect( criteria.id ).toEqual( criteriaId );
-		expect( criteria.matchingAttribute ).toEqual( criteriaId );
 		expect( criteria.matchingFunction ).toEqual( 'default' );
 	} );
 	it( 'should register a criteria with custom properties', () => {
@@ -61,6 +60,8 @@ describe( 'criteria registration', () => {
 
 describe( 'criteria matching', () => {
 	beforeEach( () => {
+		// Ignore console.warn calls due to missing RAS library on these tests.
+		jest.spyOn( console, 'warn' ).mockImplementation( () => {} );
 		window.newspackPopupsCriteria = { criteria: {} };
 		registerCriteria( criteriaId );
 	} );

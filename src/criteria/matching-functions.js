@@ -45,7 +45,7 @@ export default {
 	 * the segment config.
 	 */
 	range: ( criteria, config ) => {
-		const { min, max } = config;
+		const { min, max } = config.value;
 		if ( ! criteria.value || ( min && criteria.value < min ) || ( max && criteria.value > max ) ) {
 			return false;
 		}
