@@ -1,6 +1,6 @@
 import { registerCriteria, getCriteria, setMatchingAttribute, setMatchingFunction } from './utils';
 
-const criteriaId = 'test-criteria';
+const criteriaId = 'test_criteria';
 
 describe( 'criteria registration', () => {
 	beforeEach( () => {
