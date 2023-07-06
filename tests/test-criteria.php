@@ -18,12 +18,19 @@ class CriteriaTest extends WP_UnitTestCase {
 		$all_criteria = Newspack_Popups_Criteria::get_registered_criteria();
 
 		$this->assertNotEmpty( $all_criteria );
-		$this->assertArrayHasKey( 'test_criteria', $all_criteria );
-		$this->assertEquals( 'test_criteria', $all_criteria['test_criteria']['id'] );
-		$this->assertEquals( 'Test Criteria', $all_criteria['test_criteria']['name'] );
-		$this->assertEquals( 'reader_activity', $all_criteria['test_criteria']['category'] );
-		$this->assertEquals( 'test_criteria', $all_criteria['test_criteria']['matching_attribute'] );
-		$this->assertEquals( 'default', $all_criteria['test_criteria']['matching_function'] );
+
+		foreach ( $all_criteria as $c ) {
+			if ( 'test_criteria' === $c['id'] ) {
+				$criteria = $c;
+				break;
+			}
+		}
+		$this->assertNotEmpty( $criteria );
+		$this->assertEquals( 'test_criteria', $criteria['id'] );
+		$this->assertEquals( 'Test Criteria', $criteria['name'] );
+		$this->assertEquals( 'reader_activity', $criteria['category'] );
+		$this->assertEquals( 'test_criteria', $criteria['matching_attribute'] );
+		$this->assertEquals( 'default', $criteria['matching_function'] );
 	}
 
 	/**
@@ -57,14 +64,20 @@ class CriteriaTest extends WP_UnitTestCase {
 
 		$all_criteria = Newspack_Popups_Criteria::get_registered_criteria();
 
-		$this->assertArrayHasKey( 'criteria_with_config', $all_criteria );
-		$this->assertEquals( 'criteria_with_config', $all_criteria['criteria_with_config']['id'] );
-		$this->assertEquals( $config['name'], $all_criteria['criteria_with_config']['name'] );
-		$this->assertEquals( $config['category'], $all_criteria['criteria_with_config']['category'] );
-		$this->assertEquals( $config['help'], $all_criteria['criteria_with_config']['help'] );
-		$this->assertEquals( $config['description'], $all_criteria['criteria_with_config']['description'] );
-		$this->assertEquals( $config['options'], $all_criteria['criteria_with_config']['options'] );
-		$this->assertEquals( $config['matching_attribute'], $all_criteria['criteria_with_config']['matching_attribute'] );
-		$this->assertEquals( $config['matching_function'], $all_criteria['criteria_with_config']['matching_function'] );
+		foreach ( $all_criteria as $c ) {
+			if ( 'test_criteria' === $c['id'] ) {
+				$criteria = $c;
+				break;
+			}
+		}
+		$this->assertNotEmpty( $criteria );
+		$this->assertEquals( 'criteria_with_config', $criteria['id'] );
+		$this->assertEquals( $config['name'], $criteria['name'] );
+		$this->assertEquals( $config['category'], $criteria['category'] );
+		$this->assertEquals( $config['help'], $criteria['help'] );
+		$this->assertEquals( $config['description'], $criteria['description'] );
+		$this->assertEquals( $config['options'], $criteria['options'] );
+		$this->assertEquals( $config['matching_attribute'], $criteria['matching_attribute'] );
+		$this->assertEquals( $config['matching_function'], $criteria['matching_function'] );
 	}
 }
