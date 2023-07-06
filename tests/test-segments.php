@@ -58,6 +58,12 @@ class SegmentsTest extends WP_UnitTestCase {
 	public $valid = [
 		'name'          => 'Valid',
 		'priority'      => 20,
+		'criteria'      => [
+			[
+				'criteria_id' => 'newsletter',
+				'value'       => 'is_subscriber',
+			],
+		],
 		'configuration' => [
 			'max_posts' => 1,
 		],
@@ -83,6 +89,12 @@ class SegmentsTest extends WP_UnitTestCase {
 	public $additional_properties = [
 		'name'          => 'Additional properties',
 		'priority'      => 40,
+		'criteria'      => [
+			[
+				'criteria_id' => 'newsletter',
+				'value'       => 'is_subscriber',
+			],
+		],
 		'configuration' => [
 			'max_posts' => 1,
 			'unknown'   => 'invalid',
@@ -97,6 +109,12 @@ class SegmentsTest extends WP_UnitTestCase {
 	public $invalid_int = [
 		'name'          => 'Invalid Int',
 		'priority'      => 10,
+		'criteria'      => [
+			[
+				'criteria_id' => 'newsletter',
+				'value'       => 'is_subscriber',
+			],
+		],
 		'configuration' => [
 			'max_posts' => 'string',
 		],
@@ -110,6 +128,12 @@ class SegmentsTest extends WP_UnitTestCase {
 	public $inactive = [
 		'name'          => 'Inactive Segment',
 		'priority'      => 50,
+		'criteria'      => [
+			[
+				'criteria_id' => 'newsletter',
+				'value'       => 'is_subscriber',
+			],
+		],
 		'configuration' => [
 			'max_posts'   => 'string',
 			'is_disabled' => true,
