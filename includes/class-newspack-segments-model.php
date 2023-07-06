@@ -531,7 +531,7 @@ final class Newspack_Segments_Model {
 		$configuration = $segment['configuration'];
 		$criteria      = [];
 		// Migrate posts read.
-		if ( ! empty( $configuration['min_posts'] || ! empty( $configuration['max_posts'] ) ) ) {
+		if ( ! empty( $configuration['min_posts'] ) || ! empty( $configuration['max_posts'] ) ) {
 			$criteria[] = [
 				'criteria_id' => 'articles_read',
 				'value'       => [
@@ -541,7 +541,7 @@ final class Newspack_Segments_Model {
 			];
 		}
 		// Migrate posts read in session.
-		if ( ! empty( $configuration['min_session_posts'] || ! empty( $configuration['max_session_posts'] ) ) ) {
+		if ( ! empty( $configuration['min_session_posts'] ) || ! empty( $configuration['max_session_posts'] ) ) {
 			$criteria[] = [
 				'criteria_id' => 'articles_read',
 				'value'       => [
