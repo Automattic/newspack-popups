@@ -43,6 +43,10 @@ final class Newspack_Popups_Criteria {
 	 * Enqueue scripts.
 	 */
 	public static function enqueue_scripts() {
+		if ( defined( 'IS_TEST_ENV' ) && IS_TEST_ENV ) {
+			return;
+		}
+
 		wp_enqueue_script(
 			self::SCRIPT_HANDLE,
 			plugins_url( '../dist/criteria.js', __FILE__ ),
