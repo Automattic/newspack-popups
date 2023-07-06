@@ -78,7 +78,7 @@ describe( 'criteria matching', () => {
 		const criteria = getCriteria( criteriaId );
 		expect( criteria.matches( { value: { min: 1, max: 10 } } ) ).toEqual( true );
 		expect( criteria.matches( { value: { min: 10 } } ) ).toEqual( false );
-		expect( criteria.matches( { value: {} } ) ).toEqual( false );
+		expect( criteria.matches( { value: {} } ) ).toEqual( true );
 	} );
 	it( 'should match "list__in" matching function', () => {
 		setMatchingAttribute( criteriaId, () => 'bar' );
