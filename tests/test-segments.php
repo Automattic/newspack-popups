@@ -18,6 +18,19 @@ class SegmentsTest extends WP_UnitTestCase {
 	public $complete_and_valid = [
 		'name'          => 'Complete and valid',
 		'priority'      => 10,
+		'criteria'      => [
+			[
+				'criteria_id' => 'articles_read',
+				'value'       => [
+					'min' => 5,
+					'max' => 20,
+				],
+			],
+			[
+				'criteria_id' => 'newsletter',
+				'value'       => 'is_subscriber',
+			],
+		],
 		'configuration' => [
 			'max_posts'           => 1,
 			'min_posts'           => 1,
