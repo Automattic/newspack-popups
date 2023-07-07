@@ -1,3 +1,10 @@
+# [2.22.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v2.21.0...v2.22.0-alpha.1) (2023-07-07)
+
+
+### Features
+
+* refactor segments into a taxonomy ([#1106](https://github.com/Automattic/newspack-popups/issues/1106)) ([a3373e4](https://github.com/Automattic/newspack-popups/commit/a3373e4c2d033009e9284cfe2383622f31aba332))
+
 # [2.21.0](https://github.com/Automattic/newspack-popups/compare/v2.20.0...v2.21.0) (2023-07-03)
 
 
