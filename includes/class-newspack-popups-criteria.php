@@ -118,9 +118,20 @@ final class Newspack_Popups_Criteria {
 	 * Register a new criteria.
 	 *
 	 * @param string $id     The criteria id.
-	 * @param array  $config The criteria config.
+	 * @param array  $config {
+	 *   The criteria config.
 	 *
-	 * @return void|WP_Error
+	 *   @type string $name               The criteria name. Defaults to the ID.
+	 *   @type string $category           Category. One of reader_activity,reader_engagement, referrer_sources.
+	 *                                    Defaults to 'reader_activity'.
+	 *   @type string $description        Optional description.
+	 *   @type string $help               Optional help text to be used in the input.
+	 *   @type array  $options            Optional array of key, name options segment configuration.
+	 *   @type string $matching_function  The criteria matching function. Defaults to 'default'.
+	 *   @type string $matching_attribute The criteria matching attribute. Defaults to the ID.
+	 * }
+	 *
+	 * @return array|WP_Error The registered criteria or WP_Error if already registered.
 	 */
 	public static function register_criteria( $id, $config = [] ) {
 		if ( isset( self::$registered_criteria[ $id ] ) ) {
@@ -134,6 +145,7 @@ final class Newspack_Popups_Criteria {
 			$criteria['matching_attribute'] = $id;
 		}
 		self::$registered_criteria[ $id ] = $criteria;
+		return $criteria;
 	}
 }
 Newspack_Popups_Criteria::init();
