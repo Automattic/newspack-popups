@@ -20,7 +20,7 @@ class WP_UnitTestCase_PageWithPopups extends WP_UnitTestCase {
 
 	public function set_up() { // phpcs:ignore Squiz.Commenting.FunctionComment.Missing
 		// Reset segments.
-		update_option( Newspack_Popups_Segmentation::SEGMENTS_OPTION_NAME, [] );
+		Newspack_Segments_Model::delete_all_segments();
 		self::$segments = Newspack_Popups_Segmentation::create_segment(
 			[
 				'name'          => 'segment1',
