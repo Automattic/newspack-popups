@@ -129,12 +129,10 @@ $width__tablet: 782px;
 			margin: 32px;
 		}
 
-		&.newspack-lightbox-featured-image {
-			@media only screen and ( min-width: $width__tablet ) {
-				.newspack-lightbox__close {
-					right: #{2 * $overlay__gap};
-					top: #{2 * $overlay__gap};
-				}
+		@media only screen and ( min-width: $width__tablet ) {
+			.newspack-lightbox__close {
+				right: #{2 * $overlay__gap};
+				top: #{2 * $overlay__gap};
 			}
 		}
 	}
