@@ -1164,7 +1164,7 @@ final class Newspack_Popups {
 	/**
 	 * Retrieve campaigns.
 	 *
-	 * @return array An array of WP_Term objects.
+	 * @return WP_Term[] An array of WP_Term objects.
 	 */
 	public static function get_groups() {
 		$terms = get_terms(
