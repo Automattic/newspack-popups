@@ -57,6 +57,13 @@ export function registerCriteria( id, config = {} ) {
 			return;
 		}
 
+		// Clear matched cache when the reader data library store changes.
+		if ( typeof ras?.on === 'function' ) {
+			ras.on( 'data', () => {
+				criteria._matched = {};
+			} );
+		}
+
 		// Set criteria value.
 		if ( typeof criteria.matchingAttribute === 'function' ) {
 			criteria.value = criteria.matchingAttribute( ras );
@@ -66,13 +73,19 @@ export function registerCriteria( id, config = {} ) {
 	};
 
 	// Check if the criteria matches the segment config.
+	criteria._matched = {}; // Cache results.
 	criteria.matches = segmentConfig => {
+		const configString = JSON.stringify( segmentConfig );
+		if ( criteria._matched[ configString ] !== undefined ) {
+			return criteria._matched[ configString ];
+		}
 		const ras = window.newspackReaderActivation;
 		if ( ! ras ) {
 			console.warn( 'Reader activation script not loaded.' ); // eslint-disable-line no-console
 		}
 		setup( ras );
-		return criteria.matchingFunction( segmentConfig, ras );
+		criteria._matched[ configString ] = criteria.matchingFunction( segmentConfig, ras );
+		return criteria._matched[ configString ];
 	};
 	if ( ! newspackPopupsCriteria.criteria ) {
 		newspackPopupsCriteria.criteria = {};
@@ -111,6 +124,7 @@ export function setMatchingAttribute( id, matchingAttribute ) {
 	if ( ! criteria ) {
 		throw new Error( `Criteria ${ id } not found.` );
 	}
+	criteria._matched = {}; // Clear matched cache.
 	criteria.matchingAttribute = matchingAttribute;
 }
 
@@ -127,5 +141,6 @@ export function setMatchingFunction( id, matchingFunction ) {
 	if ( ! criteria ) {
 		throw new Error( `Criteria ${ id } not found.` );
 	}
+	criteria._matched = {}; // Clear matched cache.
 	criteria.matchingFunction = matchingFunction;
 }
