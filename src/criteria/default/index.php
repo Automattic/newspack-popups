@@ -39,15 +39,15 @@ $criteria = [
 		'category' => 'reader_activity',
 		'options'  => [
 			[
-				'name'  => __( 'Subscribers and non-subscribers', 'newspack-popups' ),
+				'label' => __( 'Subscribers and non-subscribers', 'newspack-popups' ),
 				'value' => '',
 			],
 			[
-				'name'  => __( 'Subscribers', 'newspack-popups' ),
+				'label' => __( 'Subscribers', 'newspack-popups' ),
 				'value' => 'subscribers',
 			],
 			[
-				'name'  => __( 'Non-subscribers', 'newspack-popups' ),
+				'label' => __( 'Non-subscribers', 'newspack-popups' ),
 				'value' => 'non-subscribers',
 			],
 		],
@@ -58,19 +58,19 @@ $criteria = [
 		'category'    => 'reader_activity',
 		'options'     => [
 			[
-				'name'  => __( 'Donors and non-donors', 'newspack-popups' ),
+				'label' => __( 'Donors and non-donors', 'newspack-popups' ),
 				'value' => '',
 			],
 			[
-				'name'  => __( 'Donors', 'newspack-popups' ),
+				'label' => __( 'Donors', 'newspack-popups' ),
 				'value' => 'donors',
 			],
 			[
-				'name'  => __( 'Non-donors', 'newspack-popups' ),
+				'label' => __( 'Non-donors', 'newspack-popups' ),
 				'value' => 'non-donors',
 			],
 			[
-				'name'  => __( 'Former donors (who cancelled a recurring donation)', 'newspack-popups' ),
+				'label' => __( 'Former donors (who cancelled a recurring donation)', 'newspack-popups' ),
 				'value' => 'former-donors',
 			],
 		],
@@ -80,15 +80,15 @@ $criteria = [
 		'category' => 'reader_activity',
 		'options'  => [
 			[
-				'name'  => __( 'All users', 'newspack-popups' ),
+				'label' => __( 'All users', 'newspack-popups' ),
 				'value' => '',
 			],
 			[
-				'name'  => __( 'Has user account', 'newspack-popups' ),
+				'label' => __( 'Has user account', 'newspack-popups' ),
 				'value' => 'with-account',
 			],
 			[
-				'name'  => __( 'Does not have user account', 'newspack-popups' ),
+				'label' => __( 'Does not have user account', 'newspack-popups' ),
 				'value' => 'without-account',
 			],
 		],
