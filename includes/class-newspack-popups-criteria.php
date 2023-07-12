@@ -122,8 +122,7 @@ final class Newspack_Popups_Criteria {
 	 *   The criteria config.
 	 *
 	 *   @type string $name               The criteria name. Defaults to the ID.
-	 *   @type string $category           Category. One of reader_activity,reader_engagement, referrer_sources.
-	 *                                    Defaults to 'reader_activity'.
+	 *   @type string $category           One of reader_activity, reader_engagement, or referrer_sources. Defaults to 'reader_activity'.
 	 *   @type string $description        Optional description.
 	 *   @type string $help               Optional help text to be used in the input.
 	 *   @type array  $options            Optional array of key, name options segment configuration.
