@@ -12,7 +12,7 @@ setMatchingAttribute( 'articles_read_in_session', ras => {
 	}
 	// Sort by descending timestamp.
 	views.sort( ( a, b ) => b.timestamp - a.timestamp );
-	// Bail if the most recent view is older than 30 days.
+	// Bail if the most recent view is older than 30 minutes.
 	if ( views[ 0 ].timestamp < Date.now() - 30 * 60 * 1000 ) {
 		return 0;
 	}
