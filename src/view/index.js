@@ -30,30 +30,18 @@ function domReady( callback ) {
  */
 import './style.scss';
 import './patterns.scss';
-import { getClientIDValue, waitUntil } from './utils';
-import { manageAnalyticsLinkers, manageAnalyticsEvents } from './analytics';
 import { manageForms } from './form';
 import { manageAnimations } from './animation';
 import { managePositionObservers } from './position-observer';
 import { manageBinds } from './bind';
-import { manageAccess } from './access';
 import { manageAnalytics } from './analytics/ga4';
 
 if ( typeof window !== 'undefined' ) {
 	domReady( () => {
-		// Handle AMP Analytics linkers right away, before amp-access sets a cookie value.
-		// @TODO: Deprecate after GA3 is deprecated.
-		manageAnalyticsLinkers();
-
-		// But don't manage GA3 analytics events until the client ID is available.
-		// @TODO: Deprecate after GA3 is deprecated.
-		waitUntil( getClientIDValue, manageAnalyticsEvents );
-
 		manageForms();
 		manageAnimations();
 		managePositionObservers();
 		manageBinds();
-		manageAccess();
 
 		// GA4 analytics.
 		manageAnalytics();

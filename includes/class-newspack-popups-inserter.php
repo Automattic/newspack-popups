@@ -7,8 +7,6 @@
 
 defined( 'ABSPATH' ) || exit;
 
-require_once dirname( __FILE__ ) . '/../api/segmentation/class-segmentation.php';
-
 /**
  * API endpoints
  */
@@ -58,7 +56,7 @@ final class Newspack_Popups_Inserter {
 			return [];
 		}
 
-		$view_as_spec        = Segmentation::parse_view_as( Newspack_Popups_View_As::viewing_as_spec() );
+		$view_as_spec        = Newspack_Popups_View_As::parse_view_as();
 		$campaign_id         = isset( $view_as_spec['campaign'] ) ? $view_as_spec['campaign'] : false;
 		$include_unpublished = isset( $view_as_spec['show_unpublished'] ) && 'true' === $view_as_spec['show_unpublished'] ? true : false;
 
@@ -80,7 +78,6 @@ final class Newspack_Popups_Inserter {
 		add_filter( 'the_content', [ $this, 'insert_popups_in_content' ], 1 );
 		add_shortcode( 'newspack-popup', [ $this, 'popup_shortcode' ] );
 		add_action( 'after_header', [ $this, 'insert_popups_after_header' ] ); // This is a Newspack theme hook. When used with other themes, popups won't be inserted on archive pages.
-		add_action( 'wp_head', [ $this, 'insert_popups_amp_access' ] );
 		add_action( 'before_header', [ $this, 'insert_before_header' ] );
 		add_action( 'after_archive_post', [ $this, 'insert_inline_prompt_in_archive_pages' ] );
 		add_action( 'wp_before_admin_bar_render', [ $this, 'add_preview_toggle' ] );
@@ -642,14 +639,10 @@ final class Newspack_Popups_Inserter {
 			\wp_register_script(
 				$script_handle,
 				plugins_url( '../dist/view.js', __FILE__ ),
-				[ 'wp-url' ],
+				[ 'wp-url', Newspack_Popups_Criteria::SCRIPT_HANDLE ],
 				filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/view.js' ),
 				true
 			);
-			$script_data = [
-				'cid_cookie_name' => Newspack_Popups_Segmentation::NEWSPACK_SEGMENTATION_CID_NAME,
-			];
-			\wp_localize_script( $script_handle, 'newspack_popups_view', $script_data );
 			\wp_enqueue_script( $script_handle );
 		}
 
@@ -699,236 +692,6 @@ final class Newspack_Popups_Inserter {
 		// Wrapping the inline popup in an aside element prevents the markup from being mangled
 		// if the shortcode is the first block.
 		return '<aside' . $class_names . '>' . Newspack_Popups_Model::generate_popup( $found_popup ) . '</aside>';
-	}
-
-	/**
-	 * Create the popup definition for sending to the API.
-	 *
-	 * @param object $popup A popup.
-	 */
-	public static function create_single_popup_access_payload( $popup ) {
-		$popup_id_string   = Newspack_Popups_Model::canonize_popup_id( esc_attr( $popup['id'] ) );
-		$frequency         = $popup['options']['frequency'];
-		$frequency_max     = $popup['options']['frequency_max'];
-		$frequency_start   = $popup['options']['frequency_start'];
-		$frequency_between = $popup['options']['frequency_between'];
-		$frequency_reset   = $popup['options']['frequency_reset'];
-		$is_overlay        = Newspack_Popups_Model::is_overlay( $popup );
-		$is_above_header   = Newspack_Popups_Model::is_above_header( $popup );
-		$type              = 'i';
-
-		if ( $is_overlay ) {
-			$type = 'o';
-		}
-
-		if ( $is_above_header ) {
-			$type = 'a';
-		}
-
-		$popup_payload = [
-			'id'  => $popup_id_string,
-			'f'   => $frequency,
-			'fm'  => $frequency_max,
-			'fs'  => $frequency_start,
-			'fb'  => $frequency_between,
-			'ft'  => $frequency_reset,
-			'utm' => $popup['options']['utm_suppression'],
-			's'   => $popup['options']['selected_segment_id'],
-			't'   => $type,
-		];
-
-		if ( \Newspack_Popups_Custom_Placements::is_custom_placement_or_manual( $popup ) ) {
-			$popup_payload['c'] = $popup['options']['placement'];
-		}
-
-		return $popup_payload;
-	}
-
-	/**
-	 * Add amp-access header code.
-	 *
-	 * The amp-access endpoint is also responsible for reporting visits, in order to minimise
-	 * the number of requests. For this reason it is placed on every page, not only those
-	 * with popups.
-	 * All active popups will be retrieved. This is because amp-access has to be inserted in the head,
-	 * and at this time it's yet unknown which popups will be on the page. Popups can be retrieved for
-	 * the rendered page (popups_for_post method), but they can also be placed in widgets, which
-	 * make reliable retrieval problematic.
-	 */
-	public static function insert_popups_amp_access() {
-		$popups = array_filter(
-			Newspack_Popups_Model::retrieve_popups(
-				// Include drafts if it's a preview request.
-				Newspack_Popups::is_preview_request()
-			),
-			[ __CLASS__, 'should_display' ]
-		);
-
-		// Prevent duplicates - a popup might be duplicated in a shortcode.
-		$unique_ids = [];
-		$popups     = array_filter(
-			$popups,
-			function ( $item ) use ( &$unique_ids ) {
-				$id = $item['id'];
-				if ( in_array( $id, $unique_ids ) ) {
-					return false;
-				}
-				$unique_ids[] = $id;
-				return true;
-			}
-		);
-		// Sort the array, so the segmented popups come first. This is necessary for proper
-		// prioritisation of single-popup placements (e.g. above header).
-		uasort(
-			$popups,
-			function( $popup_a, $popup_b ) {
-				$a_has_segments = ! empty( $popup_a['options']['selected_segment_id'] );
-				$b_has_segments = ! empty( $popup_b['options']['selected_segment_id'] );
-				if ( $a_has_segments && $b_has_segments ) {
-					return 0;
-				}
-				return $a_has_segments && false === $b_has_segments ? -1 : 1;
-			}
-		);
-
-		// "Escape hatch" if there's a need to block adding amp-access for pages that have no prompts.
-		if ( apply_filters( 'newspack_popups_suppress_insert_amp_access', false, $popups ) ) {
-			return;
-		}
-
-		$popups_access_provider = [
-			'namespace'     => 'popups',
-			'authorization' => esc_url( Newspack_Popups_Model::get_reader_endpoint() ) . '?cid=' . Newspack_Popups_Segmentation::get_cid_param(),
-			'noPingback'    => true,
-		];
-
-		// If previewing a preset prompt, no need to include config for any prompts.
-		if ( Newspack_Popups::preset_popup_id() ) {
-			return;
-		}
-
-		// If previewing a specific prompt, no need to include config for all prompts.
-		$previewed_popup_id = Newspack_Popups::previewed_popup_id();
-		if ( $previewed_popup_id ) {
-			$popups = array_filter(
-				$popups,
-				function( $popup ) use ( $previewed_popup_id ) {
-					return (int) $popup['id'] === (int) $previewed_popup_id;
-				}
-			);
-		}
-
-		// If previewing as a segment or previewing a specific prompt, no need to include config for all prompts.
-		$view_as_spec = Newspack_Popups_View_As::viewing_as_spec();
-		if ( $view_as_spec ) {
-			$popups_access_provider['authorization'] .= '&view_as=' . wp_json_encode( $view_as_spec );
-
-			$popups = array_filter(
-				$popups,
-				function( $popup ) use ( $view_as_spec ) {
-					$view_as_spec    = Segmentation::parse_view_as( $view_as_spec );
-					$view_as_segment = isset( $view_as_spec['segment'] ) ? $view_as_spec['segment'] : false;
-					$view_as_all     = isset( $view_as_spec['all'] ) && ! empty( $view_as_spec['all'] );
-
-					if ( $view_as_segment ) {
-						$segments = ! empty( $popup['options']['selected_segment_id'] ) ? explode( ',', $popup['options']['selected_segment_id'] ) : [];
-						return ( 'everyone' === $view_as_segment && empty( $segments ) ) || in_array( $view_as_segment, $segments, true );
-					} else {
-						return $view_as_all;
-					}
-				}
-			);
-		}
-
-		$popups_configs = [];
-		foreach ( $popups as $popup ) {
-			$popups_configs[] = self::create_single_popup_access_payload( $popup );
-		}
-
-		$settings = $previewed_popup_id ? [] : array_reduce(
-			\Newspack_Popups_Settings::get_settings( false, true ),
-			function ( $acc, $item ) {
-				$key       = $item['key'];
-				$acc->$key = $item['value'];
-				return $acc;
-			},
-			(object) []
-		);
-
-		// Info on the current pageview/visit.
-		$visit = [];
-
-		if ( is_singular() ) {
-			$visit['post_type'] = get_post_type();
-			$visit['post_id']   = get_the_ID();
-
-			$categories   = get_the_category();
-			$category_ids = '';
-			if ( ! empty( $categories ) ) {
-				$category_ids = implode(
-					',',
-					array_map(
-						function( $cat ) {
-							return $cat->term_id;
-						},
-						$categories
-					)
-				);
-			}
-
-			if ( ! empty( $category_ids ) ) {
-				$visit['categories'] = esc_attr( $category_ids );
-			}
-		} else {
-			global $wp;
-			$non_singular_query_type = 'unknown';
-			$request                 = $wp->query_vars;
-
-			if ( is_archive() ) {
-				$non_singular_query_type = 'archive';
-			}
-			if ( is_search() ) {
-				$non_singular_query_type = 'search';
-			}
-			if ( is_feed() ) {
-				$non_singular_query_type = 'feed';
-			}
-			if ( is_home() ) {
-				$non_singular_query_type = 'posts_page';
-			}
-			if ( is_404() ) {
-				$non_singular_query_type = '404';
-			}
-
-			$visit['request']      = $request;
-			$visit['request_type'] = $non_singular_query_type;
-		}
-
-		$popups_access_provider['authorization'] .= '&ref=DOCUMENT_REFERRER';
-		$popups_access_provider['authorization'] .= '&popups=' . wp_json_encode( $popups_configs );
-		$popups_access_provider['authorization'] .= '&settings=' . wp_json_encode( $settings );
-		$popups_access_provider['authorization'] .= '&visit=' . wp_json_encode( $visit );
-
-		// Handle user accounts.
-		$user_id = Newspack_Popups::is_user_admin() ? 0 : get_current_user_id();
-		if ( ! empty( $user_id ) ) {
-			$popups_access_provider['authorization'] .= '&uid=' . absint( $user_id );
-		}
-
-		if ( isset( $_GET['newspack-campaigns-debug'] ) || ( defined( 'NEWSPACK_POPUPS_DEBUG' ) && NEWSPACK_POPUPS_DEBUG ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-			$popups_access_provider['authorization'] .= '&debug';
-			$popups_access_provider['authorization'] .= '&authorizationTimeout=10000';
-		}
-
-		if ( isset( $_GET['nocache'] ) || ( defined( 'NEWSPACK_POPUPS_NOCACHE' ) && NEWSPACK_POPUPS_NOCACHE ) ) {// phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-			$popups_access_provider['authorization'] .= '&nocache';
-		}
-
-		?>
-		<script id="amp-access" type="application/json">
-			<?php echo wp_json_encode( $popups_access_provider ); ?>
-		</script>
-		<?php
 	}
 
 	/**

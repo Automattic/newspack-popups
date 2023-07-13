@@ -796,138 +796,6 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
-	 * Insert amp-analytics tracking code.
-	 *
-	 * @param object $popup The popup object.
-	 * @param string $body Post body.
-	 * @param string $element_id The id of the popup element.
-	 * @return string Prints the generated amp-analytics element.
-	 */
-	protected static function insert_event_tracking( $popup, $body, $element_id ) {
-		if (
-			Newspack_Popups::is_preview_request() ||
-			Newspack_Popups_Settings::is_non_interactive()
-		) {
-			return '';
-		}
-		global $wp;
-
-		$endpoint = self::get_reader_endpoint();
-
-		// Newsletter subscription forms.
-		$subscribe_form_selector = '';
-		$email_form_field_name   = '';
-
-		/**
-		 * A CSS class name that can be added to a form element to indicate that it should be treated as a subscribe form.
-		 * This will allow forms built with platforms other than Jetpack's Mailchimp block or MC4WP to be tracked.
-		 * Jetpack Mailchimp blocks and MC4WP forms will be tracked whether or not they have the class.
-		 *
-		 * @param string $class_name The class name to look for.
-		 */
-		$newspack_form_class = apply_filters( 'newspack_campaigns_form_class', 'newspack-subscribe-form' );
-		$esp                 = null;
-
-		if ( preg_match( '/wp-block-jetpack-mailchimp/', $body ) !== 0 ) {
-			// Jetpack Mailchimp block.
-			$subscribe_form_selector = apply_filters( 'newspack_campaigns_form_selector', '.wp-block-jetpack-mailchimp form' );
-			$email_form_field_name   = apply_filters( 'newspack_campaigns_email_form_field_name', 'email', $subscribe_form_selector );
-			$esp                     = 'mailchimp';
-		} elseif ( preg_match( '/mc4wp-form/', $body ) !== 0 ) {
-			// MC4WP form.
-			$subscribe_form_selector = apply_filters( 'newspack_campaigns_form_selector', '.mc4wp-form' );
-			$email_form_field_name   = apply_filters( 'newspack_campaigns_email_form_field_name', 'EMAIL', $subscribe_form_selector );
-			$esp                     = 'mailchimp';
-		} elseif ( preg_match( '/\[gravityforms\s(.*)\]/', $body, $gravity_form_attributes ) !== 0 && class_exists( '\GFAPI' ) ) {
-			// Gravity Forms block produces a shortcode. Check for a form ID attribute on the shortcode.
-			$has_id = preg_match( '/id="(\d*)"/', $gravity_form_attributes[1], $id_matches );
-
-			// If it has an ID we can use to look up the form.
-			if ( $has_id ) {
-				$form_id = $id_matches[1];
-				$form    = \GFAPI::get_form( $form_id );
-
-				// If the form ID matches an existing GF form.
-				if ( $form ) {
-					$form_classes      = explode( ' ', $form['cssClass'] );
-					$is_subscribe_form = in_array( $newspack_form_class, $form_classes, true );
-					$email_field_id    = array_reduce(
-						$form['fields'],
-						function( $acc, $field ) {
-							if ( 'email' === $field['type'] ) {
-								$acc = $field['id'];
-							}
-							return $acc;
-						},
-						null
-					);
-
-					// If the form has the required CSS class and an email input field.
-					if ( $is_subscribe_form && $email_field_id ) {
-						$subscribe_form_selector = apply_filters( 'newspack_campaigns_form_selector', "form.$newspack_form_class" ); // Gravity Forms applies CSS classes directly to the form element.
-						$email_form_field_name   = apply_filters( 'newspack_campaigns_email_form_field_name', "input_$email_field_id", $subscribe_form_selector );
-					}
-				}
-			}
-		} else {
-			// Custom forms.
-			if ( preg_match( '/' . $newspack_form_class . '/', $body ) !== 0 ) {
-				$subscribe_form_selector = apply_filters( 'newspack_campaigns_form_selector', '.' . $newspack_form_class );
-				$email_form_field_name   = apply_filters( 'newspack_campaigns_email_form_field_name', 'email', $subscribe_form_selector );
-			}
-		}
-
-		$amp_analytics_config = [
-			'requests' => [
-				'event' => esc_url( $endpoint ),
-			],
-			'triggers' => [
-				'trackPageview' => [
-					'on'             => 'visible',
-					'request'        => 'event',
-					'visibilitySpec' => [
-						'selector'             => '#' . esc_attr( $element_id ),
-						'visiblePercentageMin' => 50,
-						'totalTimeMin'         => 250,
-						'continuousTimeMin'    => 100,
-					],
-					'extraUrlParams' => [
-						'popup_id' => esc_attr( self::canonize_popup_id( $popup['id'] ) ),
-						'cid'      => Newspack_Popups_Segmentation::get_cid_param(),
-					],
-				],
-			],
-		];
-		if ( $subscribe_form_selector && $email_form_field_name ) {
-			$extra_params = [
-				'popup_id'            => esc_attr( self::canonize_popup_id( $popup['id'] ) ),
-				'cid'                 => Newspack_Popups_Segmentation::get_cid_param(),
-				'mailing_list_status' => 'subscribed',
-				'email'               => '${formFields[' . esc_attr( $email_form_field_name ) . ']}',
-			];
-
-			if ( ! empty( $esp ) ) {
-				$extra_params['esp'] = $esp;
-			}
-
-			$amp_analytics_config['triggers']['formSubmitSuccess'] = [
-				'on'             => 'amp-form-submit-success',
-				'request'        => 'event',
-				'selector'       => '#' . esc_attr( $element_id ) . ' ' . esc_attr( $subscribe_form_selector ),
-				'extraUrlParams' => $extra_params,
-			];
-		}
-
-		?>
-		<amp-analytics>
-			<script type="application/json">
-				<?php echo wp_json_encode( $amp_analytics_config ); ?>
-			</script>
-		</amp-analytics>
-		<?php
-	}
-
-	/**
 	 * Get a unique id.
 	 *
 	 * @return string Unique id.
@@ -1164,7 +1032,6 @@ final class Newspack_Popups_Model {
 		do_action( 'newspack_campaigns_after_campaign_render', $popup );
 
 		$element_id           = self::canonize_popup_id( $popup['id'] );
-		$endpoint             = self::get_reader_endpoint();
 		$hide_border          = $popup['options']['hide_border'];
 		$large_border         = $popup['options']['large_border'];
 		$is_newsletter_prompt = self::has_newsletter_prompt( $popup );
@@ -1189,7 +1056,6 @@ final class Newspack_Popups_Model {
 
 		ob_start();
 		?>
-			<?php self::insert_event_tracking( $popup, $body, $element_id ); ?>
 			<amp-layout
 				<?php echo self::get_access_attrs( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				<?php echo self::get_data_status_preview_attrs( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
@@ -1240,7 +1106,6 @@ final class Newspack_Popups_Model {
 		do_action( 'newspack_campaigns_after_campaign_render', $popup );
 
 		$element_id            = self::canonize_popup_id( $popup['id'] );
-		$endpoint              = self::get_reader_endpoint();
 		$hide_border           = $popup['options']['hide_border'];
 		$large_border          = $popup['options']['large_border'];
 		$overlay_opacity       = absint( $popup['options']['overlay_opacity'] ) / 100;
@@ -1290,28 +1155,16 @@ final class Newspack_Popups_Model {
 					<div class="newspack-popup__content">
 						<?php echo do_shortcode( $body ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					</div>
-					<form class="popup-dismiss-form <?php echo esc_attr( self::get_form_class( 'dismiss', $element_id ) ); ?> popup-action-form <?php echo esc_attr( self::get_form_class( 'action', $element_id ) ); ?>"
-						method="POST"
-						action-xhr="<?php echo esc_url( $endpoint ); ?>"
-						target="_top">
-						<?php echo $hidden_fields; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-						<button on="tap:<?php echo esc_attr( $element_id ); ?>.hide" class="newspack-lightbox__close" aria-label="<?php esc_html_e( 'Close Pop-up', 'newspack-popups' ); // phpcs:ignore WordPressVIPMinimum.Security.ProperEscapingFunction.htmlAttrNotByEscHTML ?>">
-							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" role="img" aria-hidden="true" focusable="false"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
-						</button>
-					</form>
+					<button on="tap:<?php echo esc_attr( $element_id ); ?>.hide" class="newspack-lightbox__close" aria-label="<?php esc_html_e( 'Close Pop-up', 'newspack-popups' ); // phpcs:ignore WordPressVIPMinimum.Security.ProperEscapingFunction.htmlAttrNotByEscHTML ?>">
+						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" role="img" aria-hidden="true" focusable="false"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+					</button>
 				</div>
 			</div>
 			<?php if ( ! $no_overlay_background ) : ?>
 				<?php if ( Newspack_Popups_Settings::enable_dismiss_overlays_on_background_tap() ) : ?>
-					<form class="popup-dismiss-form <?php echo esc_attr( self::get_form_class( 'dismiss', $element_id ) ); ?> popup-action-form <?php echo esc_attr( self::get_form_class( 'action', $element_id ) ); ?>"
-					method="POST"
-					action-xhr="<?php echo esc_url( $endpoint ); ?>"
-					target="_top">
-						<?php echo $hidden_fields; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-						<button style="opacity: <?php echo floatval( $overlay_opacity ); ?>;background-color:<?php echo esc_attr( $overlay_color ); ?>;" class="newspack-lightbox-shim" on="tap:<?php echo esc_attr( $element_id ); ?>.hide"></button>
-					</form>
+					<button style="opacity: <?php echo floatval( $overlay_opacity ); ?>;background-color:<?php echo esc_attr( $overlay_color ); ?>;" class="newspack-lightbox-overlay" on="tap:<?php echo esc_attr( $element_id ); ?>.hide"></button>
 				<?php else : ?>
-				<div style="opacity: <?php echo floatval( $overlay_opacity ); ?>;background-color:<?php echo esc_attr( $overlay_color ); ?>;" class="newspack-lightbox-shim"></div>
+					<div style="opacity: <?php echo floatval( $overlay_opacity ); ?>;background-color:<?php echo esc_attr( $overlay_color ); ?>;" class="newspack-lightbox-overlay"></div>
 				<?php endif; ?>
 			<?php endif; ?>
 		</amp-layout>
@@ -1365,7 +1218,6 @@ final class Newspack_Popups_Model {
 			</script>
 		</amp-animation>
 		<?php
-		self::insert_event_tracking( $popup, $body, $element_id );
 		if ( self::is_overlay( $popup ) && has_block( 'newspack-blocks/homepage-articles', $popup['content'] ) ) {
 			add_filter( 'newspack_blocks_homepage_enable_duplication', '__return_false' );
 			add_filter( 'newspack_blocks_homepage_shown_rendered_posts', '__return_false' );
@@ -1430,15 +1282,6 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
-	 * Endpoint to handle Pop-up data.
-	 *
-	 * @return string Endpoint URL.
-	 */
-	public static function get_reader_endpoint() {
-		return plugins_url( '../api/campaigns/index.php', __FILE__ );
-	}
-
-	/**
 	 * Generate hidden fields to be used in all forms.
 	 *
 	 * @param  object $popup A Pop-up object.
@@ -1451,12 +1294,6 @@ final class Newspack_Popups_Model {
 			name="popup_id"
 			type="hidden"
 			value="<?php echo esc_attr( self::canonize_popup_id( $popup['id'] ) ); ?>"
-		/>
-		<input
-			name="cid"
-			type="hidden"
-			value="<?php echo esc_attr( Newspack_Popups_Segmentation::get_cid_param() ); ?>"
-			data-amp-replace="CLIENT_ID"
 		/>
 		<input
 			name="mailing_list_status"

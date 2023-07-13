@@ -7,9 +7,6 @@
 
 defined( 'ABSPATH' ) || exit;
 
-require_once dirname( __FILE__ ) . '/../api/campaigns/class-campaign-data-utils.php';
-require_once dirname( __FILE__ ) . '/../api/segmentation/class-segmentation.php';
-
 /**
  * Main Newspack Popups Donations Class.
  */
@@ -122,103 +119,6 @@ final class Newspack_Popups_Donations {
 		}
 
 		return $orders_data;
-	}
-
-	/**
-	 * When a new WooCommerce order is created with the client ID meta,
-	 * log a new donation event to that client ID.
-	 *
-	 * @param WC_Order    $order Order object.
-	 * @param string|null $client_id Client ID to associate with the donation. If not passed, will attempt to get from the current session.
-	 */
-	public static function create_donation_event_woocommerce( $order, $client_id = null ) {
-		if ( ! $client_id ) {
-			$client_id = \Newspack_Popups_Segmentation::get_client_id();
-		}
-
-		// Must have a client ID to proceed.
-		if ( ! $client_id ) {
-			return;
-		}
-
-		$order_id        = $order->get_id();
-		$orders_data     = self::get_wc_orders_data( [ $order ] );
-		$donation_events = [];
-
-		if ( 0 < count( $orders_data ) ) {
-			// Update order meta with cilent ID.
-			\update_post_meta( $order_id, \Newspack_Popups_Segmentation::NEWSPACK_SEGMENTATION_CID_NAME, $client_id );
-
-			// Convert order item data to donation events.
-			foreach ( $orders_data as $order_data ) {
-				$donation_events[] = [
-					'type'    => 'donation',
-					'context' => 'woocommerce',
-					'value'   => $order_data,
-				];
-			}
-		}
-
-		if ( 0 < count( $donation_events ) ) {
-			$nonce = \wp_create_nonce( 'newspack_campaigns_lightweight_api' );
-			$api   = \Campaign_Data_Utils::get_api( $nonce );
-
-			if ( ! $api ) {
-				return;
-			}
-
-			$api->save_reader_events( $client_id, $donation_events );
-		}
-	}
-
-	/**
-	 * Add a new reader events for the segmentation API.
-	 *
-	 * @param string $client_id Client ID.
-	 * @param array  $event Event payload.
-	 * @param string $context Event context.
-	 */
-	private static function add_reader_event( $client_id, $event, $context = 'stripe' ) {
-		$event['context'] = $context;
-		$api              = \Campaign_Data_Utils::get_api( \wp_create_nonce( 'newspack_campaigns_lightweight_api' ) );
-		if ( ! $api ) {
-			return;
-		}
-		$api->save_reader_events( $client_id, [ $event ] );
-	}
-
-	/**
-	 * Add Stripe donation data.
-	 *
-	 * @param string      $client_id Client ID.
-	 * @param array       $donation_data Info about the transaction.
-	 * @param string|null $newsletter_email If the user signed up for a newsletter as part of the transaction, the subscribed email address. Otherwise, null.
-	 */
-	public static function create_donation_event_stripe( $client_id, $donation_data, $newsletter_email ) {
-		self::add_reader_event(
-			$client_id,
-			[
-				'type'  => 'donation',
-				'value' => $donation_data,
-			]
-		);
-
-	}
-
-	/**
-	 * Cancellation of a recurring donation.
-	 *
-	 * @param string $client_id Client ID.
-	 * @param array  $donation_cancellation_data Info about the transaction.
-	 */
-	public static function create_donation_cancellation_event_stripe( $client_id, $donation_cancellation_data ) {
-		self::add_reader_event(
-			$client_id,
-			[
-				'type'  => 'donation_cancelled',
-				'value' => $donation_cancellation_data,
-			]
-		);
 	}
 }
 Newspack_Popups_Donations::instance();
