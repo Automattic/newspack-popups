@@ -177,14 +177,12 @@ final class Newspack_Popups_Segmentation {
 
 	/**
 	 * Checks if the custom table has been created and is up-to-date.
-	 * If not, run the create_database_tables method.
 	 * See: https://codex.wordpress.org/Creating_Tables_with_Plugins
 	 */
 	public static function check_update_version() {
 		$current_version = get_option( self::TABLE_VERSION_OPTION, false );
 
 		if ( self::TABLE_VERSION !== $current_version ) {
-			self::create_database_tables();
 			update_option( self::TABLE_VERSION_OPTION, self::TABLE_VERSION );
 		}
 	}
