@@ -639,7 +639,12 @@ final class Newspack_Popups_Inserter {
 			\wp_register_script(
 				$script_handle,
 				plugins_url( '../dist/view.js', __FILE__ ),
-				[ 'wp-url', Newspack_Popups_Criteria::SCRIPT_HANDLE ],
+				[
+					'wp-url',
+					Newspack_Popups_Criteria::SCRIPT_HANDLE,
+					'newspack-popups-default-criteria',
+					'newspack-popups-segments-example',
+				],
 				filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/view.js' ),
 				true
 			);
