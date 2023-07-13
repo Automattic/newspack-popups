@@ -21,7 +21,7 @@ $criteria = [
 	],
 	'articles_read_in_session' => [
 		'name'              => __( 'Articles read in session', 'newspack-popups' ),
-		'description'       => __( 'Number of articles read in the last 30 day period.', 'newspack-popups' ),
+		'description'       => __( 'Number of articles recently read before 30 minutes of inactivity.', 'newspack-popups' ),
 		'category'          => 'reader_engagement',
 		'matching_function' => 'range',
 	],
@@ -39,15 +39,15 @@ $criteria = [
 		'category' => 'reader_activity',
 		'options'  => [
 			[
-				'name'  => __( 'Subscribers and non-subscribers', 'newspack-popups' ),
+				'label' => __( 'Subscribers and non-subscribers', 'newspack-popups' ),
 				'value' => '',
 			],
 			[
-				'name'  => __( 'Subscribers', 'newspack-popups' ),
+				'label' => __( 'Subscribers', 'newspack-popups' ),
 				'value' => 'subscribers',
 			],
 			[
-				'name'  => __( 'Non-subscribers', 'newspack-popups' ),
+				'label' => __( 'Non-subscribers', 'newspack-popups' ),
 				'value' => 'non-subscribers',
 			],
 		],
@@ -58,19 +58,19 @@ $criteria = [
 		'category'    => 'reader_activity',
 		'options'     => [
 			[
-				'name'  => __( 'Donors and non-donors', 'newspack-popups' ),
+				'label' => __( 'Donors and non-donors', 'newspack-popups' ),
 				'value' => '',
 			],
 			[
-				'name'  => __( 'Donors', 'newspack-popups' ),
+				'label' => __( 'Donors', 'newspack-popups' ),
 				'value' => 'donors',
 			],
 			[
-				'name'  => __( 'Non-donors', 'newspack-popups' ),
+				'label' => __( 'Non-donors', 'newspack-popups' ),
 				'value' => 'non-donors',
 			],
 			[
-				'name'  => __( 'Former donors (who cancelled a recurring donation)', 'newspack-popups' ),
+				'label' => __( 'Former donors (who cancelled a recurring donation)', 'newspack-popups' ),
 				'value' => 'former-donors',
 			],
 		],
@@ -80,15 +80,15 @@ $criteria = [
 		'category' => 'reader_activity',
 		'options'  => [
 			[
-				'name'  => __( 'All users', 'newspack-popups' ),
+				'label' => __( 'All users', 'newspack-popups' ),
 				'value' => '',
 			],
 			[
-				'name'  => __( 'Has user account', 'newspack-popups' ),
+				'label' => __( 'Has user account', 'newspack-popups' ),
 				'value' => 'with-account',
 			],
 			[
-				'name'  => __( 'Does not have user account', 'newspack-popups' ),
+				'label' => __( 'Does not have user account', 'newspack-popups' ),
 				'value' => 'without-account',
 			],
 		],
@@ -115,6 +115,13 @@ $criteria = [
 		'matching_attribute' => 'referrer',
 	],
 ];
+
+/**
+ * Filters the default criteria to be registered.
+ *
+ * @param array $criteria The default criteria config keyed by criteria ID.
+ */
+$criteria = apply_filters( 'newspack_popups_default_criteria', $criteria );
 
 foreach ( $criteria as $criteria_id => $config ) {
 	\Newspack_Popups_Criteria::register_criteria( $criteria_id, $config );

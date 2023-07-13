@@ -112,4 +112,14 @@ describe( 'criteria matching', () => {
 		expect( criteria.matches( { value: 'foo' } ) ).toEqual( true );
 		expect( criteria.matches( { value: 'bar' } ) ).toEqual( false );
 	} );
+	it( 'should cache matching function results', () => {
+		const matchingFunction = jest.fn( () => true );
+		setMatchingFunction( criteriaId, matchingFunction );
+		const criteria = getCriteria( criteriaId );
+		expect( criteria.matches( { value: 'foo' } ) ).toEqual( true );
+		expect( criteria.matches( { value: 'foo' } ) ).toEqual( true );
+		expect( matchingFunction ).toHaveBeenCalledTimes( 1 );
+		expect( criteria.matches( { value: 'bar' } ) ).toEqual( true );
+		expect( matchingFunction ).toHaveBeenCalledTimes( 2 );
+	} );
 } );
