@@ -59,19 +59,11 @@ final class Newspack_Popups_Segmentation {
 	public function __construct() {
 		add_action( 'init', [ __CLASS__, 'check_update_version' ] );
 
+		// Remove legacy pruning CRON job.
+		add_action( 'init', [ __CLASS__, 'cron_deactivate' ] );
+
 		add_filter( 'newspack_custom_dimensions', [ __CLASS__, 'register_custom_dimensions' ] );
 		add_filter( 'newspack_custom_dimensions_values', [ __CLASS__, 'report_custom_dimensions' ] );
-
-		// Data pruning CRON job.
-		register_deactivation_hook( NEWSPACK_POPUPS_PLUGIN_FILE, [ __CLASS__, 'cron_deactivate' ] );
-		add_action( 'newspack_popups_segmentation_data_prune', [ __CLASS__, 'prune_data' ] );
-		$next = wp_next_scheduled( 'newspack_popups_segmentation_data_prune' );
-		if ( ! $next || 3600 < $next - time() ) {
-			self::cron_deactivate(); // To avoid duplicate execution when transitioning from daily to hourly schedule.
-			wp_schedule_event( time(), 'hourly', 'newspack_popups_segmentation_data_prune' );
-		}
-
-		add_action( 'newspack_registered_reader', [ __CLASS__, 'handle_registered_reader' ], 10, 4 );
 	}
 
 	/**
