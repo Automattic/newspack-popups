@@ -21,7 +21,7 @@ $criteria = [
 	],
 	'articles_read_in_session' => [
 		'name'              => __( 'Articles read in session', 'newspack-popups' ),
-		'description'       => __( 'Number of articles read in the last 30 day period.', 'newspack-popups' ),
+		'description'       => __( 'Number of articles recently read before 30 minutes of inactivity.', 'newspack-popups' ),
 		'category'          => 'reader_engagement',
 		'matching_function' => 'range',
 	],
