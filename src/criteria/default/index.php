@@ -116,6 +116,13 @@ $criteria = [
 	],
 ];
 
+/**
+ * Filters the default criteria to be registered.
+ *
+ * @param array $criteria The default criteria config keyed by criteria ID.
+ */
+$criteria = apply_filters( 'newspack_popups_default_criteria', $criteria );
+
 foreach ( $criteria as $criteria_id => $config ) {
 	\Newspack_Popups_Criteria::register_criteria( $criteria_id, $config );
 }
