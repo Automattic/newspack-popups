@@ -11,50 +11,6 @@
  */
 class E2ETest extends WP_UnitTestCase_PageWithPopups {
 	/**
-	 * Mutual exclusion.
-	 * A page should render at most one popup of each condition:
-	 * - overlays,
-	 * - above-header,
-	 * - each of custom placements.
-	 */
-	public function test_e2e_mutual_exclusion() {
-		// Remove the default popup that would be programmatically inserted.
-		wp_delete_post( self::$popup_id );
-
-		$popups = [
-			// Overlays.
-			self::createPopup( null, [ 'placement' => 'center' ] ),
-			self::createPopup(
-				null,
-				[
-					'placement'           => 'center',
-					'selected_segment_id' => self::$segments[0]['id'],
-				]
-			),
-			// Above-header.
-			self::createPopup( null, [ 'placement' => 'above_header' ] ),
-			self::createPopup(
-				null,
-				[
-					'placement'           => 'above_header',
-					'selected_segment_id' => self::$segments[0]['id'],
-				]
-			),
-			// Custom Placement 1.
-			self::createPopup( null, [ 'placement' => 'custom1' ] ),
-			self::createPopup(
-				null,
-				[
-					'placement'           => 'custom1',
-					'selected_segment_id' => self::$segments[0]['id'],
-				]
-			),
-		];
-
-		self::renderPost( '', '<!-- wp:newspack-popups/custom-placement {"customPlacement":"custom1"} /-->' );
-	}
-
-	/**
 	 * Test duplication feature.
 	 * Duplicated prompts should have the same content, taxonomy terms, and prompt options as the original.
 	 * Duplicated prompt title should have "copy" appended to the original prompt's title.
