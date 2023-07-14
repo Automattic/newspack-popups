@@ -191,3 +191,14 @@ $size__large: 1264px;
 		max-width: 100%;
 	}
 }
+
+.newspack-popups-segments-tax-control {
+	.editor-post-taxonomies__hierarchical-terms-add {
+		display: none;
+	}
+
+	.newspack-popups-segments-tax-control-helper {
+		margin-top: 15px;
+		font-weight: bold;
+	}
+}

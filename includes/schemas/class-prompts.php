@@ -284,12 +284,6 @@ class Prompts extends Schema {
 							'required' => false,
 							'default'  => '',
 						],
-						'selected_segment_id'            => [
-							'name'     => 'selected_segment_id',
-							'type'     => 'string',
-							'required' => false,
-							'default'  => '',
-						],
 						'post_types'                     => [
 							'name'     => 'post_types',
 							'type'     => 'array',

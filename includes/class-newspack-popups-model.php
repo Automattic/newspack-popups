@@ -402,7 +402,7 @@ final class Newspack_Popups_Model {
 			'archive_insertion_posts_count'  => get_post_meta( $id, 'archive_insertion_posts_count', true ),
 			'archive_insertion_is_repeating' => get_post_meta( $id, 'archive_insertion_is_repeating', true ),
 			'utm_suppression'                => get_post_meta( $id, 'utm_suppression', true ),
-			'selected_segment_id'            => get_post_meta( $id, 'selected_segment_id', true ),
+			'selected_segment_id'            => Newspack_Segments_Model::get_popup_segments_ids_string( $id ),
 			'post_types'                     => get_post_meta( $id, 'post_types', true ),
 			'archive_page_types'             => get_post_meta( $id, 'archive_page_types', true ),
 			'additional_classes'             => get_post_meta( $id, 'additional_classes', true ),
