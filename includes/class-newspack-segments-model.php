@@ -543,7 +543,7 @@ final class Newspack_Segments_Model {
 		// Migrate posts read in session.
 		if ( ! empty( $configuration['min_session_posts'] ) || ! empty( $configuration['max_session_posts'] ) ) {
 			$criteria[] = [
-				'criteria_id' => 'articles_read',
+				'criteria_id' => 'articles_read_in_session',
 				'value'       => [
 					'min' => ! empty( $configuration['min_session_posts'] ) ? $configuration['min_session_posts'] : 0,
 					'max' => ! empty( $configuration['max_session_posts'] ) ? $configuration['max_session_posts'] : 0,
@@ -599,21 +599,21 @@ final class Newspack_Segments_Model {
 				'value'       => 'with-account',
 			];
 		}
-		// Migrate hasn't reader account.
+		// Migrate without reader account.
 		if ( ! empty( $configuration['is_not_logged_in'] ) ) {
 			$criteria[] = [
 				'criteria_id' => 'user_account',
 				'value'       => 'without-account',
 			];
 		}
-		// Migrate former donor.
+		// Migrate referrer sources to match.
 		if ( ! empty( $configuration['referrers'] ) ) {
 			$criteria[] = [
 				'criteria_id' => 'sources_to_match',
 				'value'       => $configuration['referrers'],
 			];
 		}
-		// Migrate former donor.
+		// Migrate referrer sources to exclude.
 		if ( ! empty( $configuration['referrers_not'] ) ) {
 			$criteria[] = [
 				'criteria_id' => 'sources_to_exclude',
