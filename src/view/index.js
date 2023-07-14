@@ -30,19 +30,10 @@ function domReady( callback ) {
  */
 import './style.scss';
 import './patterns.scss';
-import { manageForms } from './form';
-import { manageAnimations } from './animation';
-import { managePositionObservers } from './position-observer';
-import { manageBinds } from './bind';
 import { manageAnalytics } from './analytics/ga4';
 
 if ( typeof window !== 'undefined' ) {
 	domReady( () => {
-		manageForms();
-		manageAnimations();
-		managePositionObservers();
-		manageBinds();
-
 		// GA4 analytics.
 		manageAnalytics();
 	} );
