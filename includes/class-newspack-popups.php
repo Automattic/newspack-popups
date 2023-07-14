@@ -79,7 +79,6 @@ final class Newspack_Popups {
 			add_action( 'init', [ __CLASS__, 'register_taxonomy' ] );
 			add_action( 'init', [ __CLASS__, 'disable_prompts_for_protected_pages' ] );
 			add_action( 'enqueue_block_editor_assets', [ __CLASS__, 'enqueue_block_editor_assets' ] );
-			add_action( 'customize_controls_enqueue_scripts', [ __CLASS__, 'enqueue_customizer_assets' ] );
 			add_filter( 'display_post_states', [ __CLASS__, 'display_post_states' ], 10, 2 );
 			add_action( 'save_post_' . self::NEWSPACK_POPUPS_CPT, [ __CLASS__, 'popup_default_fields' ], 10, 3 );
 			add_action( 'transition_post_status', [ __CLASS__, 'prevent_default_category_on_publish' ], 10, 3 );
@@ -94,9 +93,6 @@ final class Newspack_Popups {
 			include_once dirname( __FILE__ ) . '/class-newspack-popups-settings.php';
 			include_once dirname( __FILE__ ) . '/class-newspack-popups-segmentation.php';
 			include_once dirname( __FILE__ ) . '/class-newspack-popups-custom-placements.php';
-			include_once dirname( __FILE__ ) . '/class-newspack-popups-parse-logs.php';
-			include_once dirname( __FILE__ ) . '/class-newspack-popups-newsletters.php';
-			include_once dirname( __FILE__ ) . '/class-newspack-popups-donations.php';
 			include_once dirname( __FILE__ ) . '/class-newspack-popups-view-as.php';
 			include_once dirname( __FILE__ ) . '/class-newspack-popups-data-api.php';
 			include_once dirname( __FILE__ ) . '/class-newspack-popups-criteria.php';
@@ -690,27 +686,6 @@ final class Newspack_Popups {
 			plugins_url( '../dist/editor.css', __FILE__ ),
 			null,
 			filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/editor.css' )
-		);
-	}
-
-	/**
-	 * Load up common JS/CSS for the Customizer.
-	 */
-	public static function enqueue_customizer_assets() {
-		\wp_enqueue_script(
-			'newspack-popups-customizer',
-			plugins_url( '../dist/customizer.js', __FILE__ ),
-			[],
-			filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/customizer.js' ),
-			true
-		);
-
-		\wp_localize_script(
-			'newspack-popups-customizer',
-			'newspack_popups_customizer_data',
-			[
-				'cookie_name' => \Newspack_Popups_Segmentation::NEWSPACK_SEGMENTATION_CID_NAME,
-			]
 		);
 	}
 

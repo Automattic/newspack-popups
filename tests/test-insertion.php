@@ -78,17 +78,6 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 			$popup_text_content,
 			'Shortcode inserts the popup content.'
 		);
-		$amp_access_config = self::getAMPAccessConfig();
-		self::assertEquals(
-			count( $amp_access_config['popups'] ),
-			1,
-			'AMP access has one popup in the config.'
-		);
-		self::assertEquals(
-			$amp_access_config['popups'][0]->id,
-			'id_' . $popup_id,
-			'The popup id in the config matches the shortcoded popup id.'
-		);
 	}
 
 	/**
@@ -109,75 +98,6 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 			$shortcode_popup_content,
 			self::$post_content,
 			'Post contains the shortcode-inserted popup content.'
-		);
-
-		$amp_access_config = self::getAMPAccessConfig();
-		$amp_access_ids    = array_map(
-			function( $popup ) {
-				return $popup->id;
-			},
-			$amp_access_config['popups']
-		);
-		self::assertEquals(
-			count( $amp_access_config['popups'] ),
-			2,
-			'AMP access has both popups in the config.'
-		);
-		self::assertContains(
-			'id_' . $shortcoded_popup_id,
-			$amp_access_ids,
-			'AMP access has correct popup id.'
-		);
-		self::assertContains(
-			'id_' . self::$popup_id,
-			$amp_access_ids,
-			'AMP access has correct popup id.'
-		);
-	}
-
-	/**
-	 * Tracking.
-	 */
-	public function test_insertion_analytics() {
-		self::renderPost();
-		$amp_analytics_elements = self::$dom_xpath->query( '//amp-analytics' );
-
-		self::assertEquals(
-			$amp_analytics_elements->length,
-			1,
-			'Includes tracking by default.'
-		);
-
-		$user_id = self::factory()->user->create( [ 'role' => 'administrator' ] );
-		wp_set_current_user( $user_id );
-
-		self::renderPost( 'view_as=all' );
-		self::assertEquals(
-			self::$dom_xpath->query( '//amp-analytics' )->length,
-			0,
-			'Does not include tracking when a user is an admin.'
-		);
-	}
-
-	/**
-	 * With view-as feature.
-	 */
-	public function test_insertion_view_as() {
-		self::renderPost( 'view_as=all' );
-		self::assertEquals(
-			self::$dom_xpath->query( '//amp-analytics' )->length,
-			1,
-			'Includes tracking with "view as", since there is no logged in user.'
-		);
-
-		$user_id = self::factory()->user->create( [ 'role' => 'administrator' ] );
-		wp_set_current_user( $user_id );
-
-		self::renderPost( 'view_as=all' );
-		self::assertEquals(
-			self::$dom_xpath->query( '//amp-analytics' )->length,
-			0,
-			'Does not include tracking when a user is an admin.'
 		);
 	}
 
@@ -441,82 +361,6 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 			self::$popup_content,
 			self::$post_content,
 			'Includes the popup content when the tags match.'
-		);
-	}
-
-	/**
-	 * Ordering of amp-access array.
-	 */
-	public function test_amp_access_ordering() {
-		$segments           = Newspack_Popups_Segmentation::create_segment(
-			[
-				'name'          => 'Some Segment',
-				'configuration' => [],
-			]
-		);
-		$segmented_popup_id = self::createPopup();
-		Newspack_Popups_Model::set_popup_options(
-			$segmented_popup_id,
-			[
-				'selected_segment_id' => $segments[0]['id'],
-			]
-		);
-		sleep( 1 ); // Ensure the another popup has the most newest date.
-		$another_popup_id = self::createPopup();
-
-		self::renderPost();
-		$amp_access_config = self::getAMPAccessConfig();
-		$popup_ids_ordered = array_map(
-			function( $item ) {
-				return $item->id;
-			},
-			$amp_access_config['popups']
-		);
-		self::assertEquals(
-			$popup_ids_ordered,
-			[ 'id_' . $segmented_popup_id, 'id_' . self::$popup_id, 'id_' . $another_popup_id ],
-			'The popup with the segment comes first in the array.'
-		);
-	}
-
-	/**
-	 * Test amp-access when previewing.
-	 */
-	public function test_amp_access_when_previewing() {
-		self::remove_all_popups();
-
-		$published_popup_id = self::createPopup();
-		$draft_popup_id     = self::createPopup( 'rafraf', null, [ 'post_status' => 'draft' ] );
-
-		self::renderPost();
-		$amp_access_config    = self::getAMPAccessConfig();
-		$popups_in_amp_access = $amp_access_config['popups'];
-		self::assertEquals(
-			count( $popups_in_amp_access ),
-			1,
-			'Just one popup in amp-access'
-		);
-		self::assertEquals(
-			$popups_in_amp_access[0]->id,
-			'id_' . $published_popup_id,
-			'And it is the published one.'
-		);
-
-		$user_id = self::factory()->user->create( [ 'role' => 'administrator' ] );
-		wp_set_current_user( $user_id );
-
-		self::renderPost( 'view_as=all' );
-		$amp_access_config    = self::getAMPAccessConfig();
-		$popups_in_amp_access = $amp_access_config['popups'];
-		self::assertEquals(
-			count( $popups_in_amp_access ),
-			2,
-			'Two popups are in amp-access'
-		);
-		self::assertEquals(
-			$popups_in_amp_access[1]->id,
-			'id_' . $draft_popup_id,
-			'The second one is the draft popup.'
 		);
 	}
 
