@@ -1,4 +1,4 @@
-/* globals newspackPopupsCriteria, newspack_popups_view */
+/* globals newspackPopupsCriteria */
 
 import matchingFunctions from './matching-functions';
 
@@ -143,19 +143,4 @@ export function setMatchingFunction( id, matchingFunction ) {
 	}
 	criteria._matched = {}; // Clear matched cache.
 	criteria.matchingFunction = matchingFunction;
-}
-
-/**
- * Log debugging data if WP_DEBUG is set.
- *
- * @param {string} key  Key name for debug data.
- * @param {any}    data Data to log.
- */
-export function debug( key, data ) {
-	if ( ! newspack_popups_view.debug ) {
-		return;
-	}
-
-	window.newspack_popups_debug = window.newspack_popups_debug || {};
-	window.newspack_popups_debug[ key ] = data;
 }

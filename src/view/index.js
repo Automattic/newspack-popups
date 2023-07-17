@@ -30,10 +30,14 @@ function domReady( callback ) {
  */
 import './style.scss';
 import './patterns.scss';
+import { handleSegmentation } from './segmentation';
 import { manageAnalytics } from './analytics/ga4';
 
 if ( typeof window !== 'undefined' ) {
 	domReady( () => {
+		// Segmentation.
+		handleSegmentation();
+
 		// GA4 analytics.
 		manageAnalytics();
 	} );

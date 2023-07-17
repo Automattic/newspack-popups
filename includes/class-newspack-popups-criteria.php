@@ -70,14 +70,6 @@ final class Newspack_Popups_Criteria {
 			true
 		);
 		wp_script_add_data( 'newspack-popups-default-criteria', 'defer', true );
-		wp_enqueue_script(
-			'newspack-popups-segments-example',
-			plugins_url( '../dist/segmentsExample.js', __FILE__ ),
-			[ self::SCRIPT_HANDLE ],
-			filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/segmentsExample.js' ),
-			true
-		);
-		wp_script_add_data( 'newspack-popups-segments-example', 'defer', true );
 	}
 
 	/**

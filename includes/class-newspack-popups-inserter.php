@@ -76,37 +76,8 @@ final class Newspack_Popups_Inserter {
 			}
 		);
 
-		// Gather segments for all prompts to be displayed.
-		foreach ( $popups_to_display as $popup ) {
-			$assigned_segments = $popup['options']['selected_segment_id'];
-			if ( ! empty( $assigned_segments ) ) {
-				$assigned_segments = explode( ',', $assigned_segments );
-				foreach ( $assigned_segments as $segment_id ) {
-					if ( ! isset( self::$segments[ $segment_id ] ) ) {
-						$segment = Newspack_Segments_Model::get_segment( $segment_id );
-						if ( ! empty( $segment ) && ! empty( $segment['criteria'] ) ) {
-							self::$segments[ $segment_id ] = [
-								'criteria' => $segment['criteria'],
-								'priority' => $segment['priority'],
-							];
-						}
-					}
-				}
-			}
-		}
-
-		if ( ! empty( self::$segments ) ) {
-			add_action(
-				'wp_footer',
-				function() {
-					?>
-					<script>
-						var newspackPopupsSegments = <?php echo \wp_json_encode( self::$segments ); ?>;
-					</script>
-					<?php
-				}
-			);
-		}
+		// Cache results so we don't have to query again.
+		self::$popups = $popups_to_display;
 
 		return $popups_to_display;
 	}
@@ -681,14 +652,37 @@ final class Newspack_Popups_Inserter {
 					'wp-url',
 					Newspack_Popups_Criteria::SCRIPT_HANDLE,
 					'newspack-popups-default-criteria',
-					'newspack-popups-segments-example',
 				],
 				filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/view.js' ),
 				true
 			);
+
+			$popups_to_display = self::popups_for_post();
+
+			// Gather segments for all prompts to be displayed.
+			foreach ( $popups_to_display as $popup ) {
+				$assigned_segments = $popup['options']['selected_segment_id'];
+				if ( ! empty( $assigned_segments ) ) {
+					$assigned_segments = explode( ',', $assigned_segments );
+					foreach ( $assigned_segments as $segment_id ) {
+						if ( ! isset( self::$segments[ $segment_id ] ) ) {
+							$segment = Newspack_Segments_Model::get_segment( $segment_id );
+							if ( ! empty( $segment ) && ! empty( $segment['criteria'] ) ) {
+								self::$segments[ $segment_id ] = [
+									'criteria' => $segment['criteria'],
+									'priority' => $segment['priority'],
+								];
+							}
+						}
+					}
+				}
+			}
+
 			$script_data = [
-				'debug' => defined( 'WP_DEBUG' ) && WP_DEBUG,
+				'debug'    => defined( 'WP_DEBUG' ) && WP_DEBUG,
+				'segments' => self::$segments,
 			];
+
 			\wp_localize_script( $script_handle, 'newspack_popups_view', $script_data );
 			\wp_enqueue_script( $script_handle );
 		}
