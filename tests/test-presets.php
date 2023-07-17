@@ -19,7 +19,7 @@ class PresetsTest extends WP_UnitTestCase {
 		}
 
 		\delete_option( Newspack_Popups_Presets::NEWSPACK_POPUPS_RAS_PROMPTS_OPTION );
-		\delete_option( Newspack_Popups_Segmentation::SEGMENTS_OPTION_NAME );
+		Newspack_Segments_Model::delete_all_segments();
 	}
 
 	/**
