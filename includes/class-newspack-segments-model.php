@@ -168,34 +168,45 @@ final class Newspack_Segments_Model {
 				'pattern'   => '^\d{4}-\d\d-\d\d$',
 			],
 			'criteria'      => [
-				'type'       => 'array',
-				'required'   => true,
-				'properties' => [
-					'criteria_id' => [
-						'name'     => 'criteria_id',
-						'type'     => 'string',
-						'required' => true,
-					],
-					'value'       => [
-						'oneOf' => [
-							[
-								'type' => [ 'boolean', 'integer', 'string' ],
-							],
-							[
-								'type'                 => 'object',
-								'additionalProperties' => false,
-								'properties'           => [
-									'min' => [
-										'name'     => 'min',
-										'type'     => 'integer',
-										'required' => false,
-									],
-									'max' => [
-										'name'     => 'max',
-										'type'     => 'integer',
-										'required' => false,
+				'type'     => 'array',
+				'required' => false,
+				'default'  => [],
+				'items'    => [
+					'type'       => 'object',
+					'properties' => [
+						'criteria_id' => [
+							'name'     => 'criteria_id',
+							'type'     => 'string',
+							'required' => true,
+						],
+						'value'       => [
+							'anyOf' => [
+								[
+									'type' => [ 'boolean', 'integer', 'string' ],
+								],
+								[
+									'type'  => 'array',
+									'items' => [
+										'type' => [ 'integer', 'string' ],
 									],
 								],
+								[
+									'type'                 => 'object',
+									'additionalProperties' => false,
+									'properties'           => [
+										'min' => [
+											'name'     => 'min',
+											'type'     => 'integer',
+											'required' => false,
+										],
+										'max' => [
+											'name'     => 'max',
+											'type'     => 'integer',
+											'required' => false,
+										],
+									],
+								],
+
 							],
 						],
 					],
