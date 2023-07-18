@@ -68,7 +68,14 @@ export function registerCriteria( id, config = {} ) {
 		if ( typeof criteria.matchingAttribute === 'function' ) {
 			criteria.value = criteria.matchingAttribute( ras );
 		} else if ( typeof criteria.matchingAttribute === 'string' ) {
-			criteria.value = ras?.store?.get( criteria.matchingAttribute ) || null;
+			if ( typeof ras?.store?.get === 'function' ) {
+				criteria.value = ras.store.get( criteria.matchingAttribute );
+			} else {
+				// eslint-disable-next-line no-console
+				console.warn(
+					`Reader data library not loaded. Unable to fetch value for '${ criteria.id }'`
+				);
+			}
 		}
 	};
 
