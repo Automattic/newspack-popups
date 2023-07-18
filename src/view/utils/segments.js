@@ -1,7 +1,19 @@
+import { getRawId } from './prompts';
 import { getCriteria } from '../../criteria/utils';
+
+const day = 1000 * 60 * 60 * 24;
+export const periods = {
+	day,
+	week: day * 7,
+	month: day * 30,
+};
 
 /**
  * Whether the reader matches the segment criteria.
+ *
+ * @param {Object} segmentCriteria Segment criteria.
+ *
+ * @return {boolean} True if the reader matches all of the segment's criteria, false if not.
  */
 export const match = segmentCriteria => {
 	for ( const item of segmentCriteria ) {
@@ -46,24 +58,50 @@ export const getBestPrioritySegment = segments => {
 /**
  * Check the reader's activity against a given prompt's assigned segments.
  *
- * @param {Array}  assignedSegments Array of segment IDs assigned to the prompt.
- * @param {string} matchingSegment  ID of the reader's highest-priority matching segment.
+ * @param {HTMLElement} prompt          HTML element of the prompt being checked.
+ * @param {string}      matchingSegment ID of the reader's highest-priority matching segment.
+ * @param {Object}      ras             Reader Data Library object.
  * @return {boolean} True if the prompt should be displayed, false if not.
  */
-export const shouldPromptBeDisplayed = ( assignedSegments, matchingSegment ) => {
-	// If no assigned segments, it should be shown to everyone.
-	if ( ! assignedSegments ) {
-		return true;
+export const shouldPromptBeDisplayed = ( prompt, matchingSegment, ras ) => {
+	// By frequency.
+	// eslint-disable-next-line @wordpress/no-unused-vars-before-return
+	const [ start, between, max, reset ] = prompt.getAttribute( 'data-frequency' ).split( ',' );
+	const pageviews = ras.store.get( 'pageviews' );
+	if ( pageviews[ reset ] ) {
+		const views = pageviews[ reset ].count || 0;
+
+		// If reader hasn't viewed enough articles yet.
+		if ( views <= parseInt( start ) ) {
+			return false;
+		}
+
+		// If not displaying every pageview.
+		if ( 0 < between ) {
+			const viewsAfterStart = Math.max( 0, views - ( parseInt( start ) + 1 ) );
+			if ( 0 < viewsAfterStart % ( parseInt( between ) + 1 ) ) {
+				return false;
+			}
+		}
+
+		// If there's a max frequency.
+		const promptId = getRawId( prompt.getAttribute( 'id' ) );
+		const seenEvents = ( ras.getActivities( 'prompt_seen' ) || [] ).filter(
+			activity =>
+				activity.data?.prompt_id === promptId && periods[ reset ] < Date.now() - activity.timestamp
+		);
+		if ( 0 < parseInt( max ) && seenEvents.length >= parseInt( max ) ) {
+			return false;
+		}
 	}
 
-	// If the reader matches a segment assigned to the prompt, it should be shown to the reader.
-	if ( matchingSegment && assignedSegments.includes( matchingSegment ) ) {
-		return true;
+	// By assigned segments.
+	const assignedSegments = prompt.getAttribute( 'data-segments' )
+		? prompt.getAttribute( 'data-segments' ).split( ',' )
+		: null;
+	if ( assignedSegments && matchingSegment && 0 > assignedSegments.indexOf( matchingSegment ) ) {
+		return false;
 	}
 
-	// TODO: By prompt frequency.
-
-	// TODO: By scroll trigger.
-
-	return false;
+	return true;
 };

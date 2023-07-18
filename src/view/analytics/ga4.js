@@ -6,14 +6,9 @@ import { manageDismissals } from './dismissed';
 import { manageClickedEvents } from './clicked';
 import { manageFormSubmissions } from './submitted';
 
-import { getPrompts } from '../utils';
-
-export const manageAnalytics = () => {
+export const handleAnalytics = prompts => {
 	// Must have a gtag instance to proceed.
 	if ( 'function' === typeof gtag ) {
-		// Fetch all prompts on the page just once.
-		const prompts = getPrompts();
-
 		manageLoadedEvents( prompts );
 		manageSeenEvents( prompts );
 		manageDismissals( prompts );

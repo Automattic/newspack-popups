@@ -1026,6 +1026,7 @@ final class Newspack_Popups_Model {
 		$classes[]            = $is_newsletter_prompt ? 'newspack-newsletter-prompt-inline' : null;
 		$classes              = array_merge( $classes, explode( ' ', $popup['options']['additional_classes'] ) );
 		$assigned_segments    = $popup['options']['selected_segment_id'];
+		$frequency_config     = [ $popup['options']['frequency_start'], $popup['options']['frequency_between'], $popup['options']['frequency_max'], $popup['options']['frequency_reset'] ];
 
 		$analytics_events = self::get_analytics_events( $popup, $body, $element_id );
 		if ( ! empty( $analytics_events ) ) {
@@ -1047,6 +1048,7 @@ final class Newspack_Popups_Model {
 				style="<?php echo esc_attr( self::container_style( $popup ) ); ?>"
 				id="<?php echo esc_attr( $element_id ); ?>"
 				data-segments="<?php echo esc_attr( $assigned_segments ); ?>"
+				data-frequency="<?php echo esc_attr( implode( ',', $frequency_config ) ); ?>"
 			>
 				<?php echo do_shortcode( $body ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 			</div>
@@ -1109,6 +1111,7 @@ final class Newspack_Popups_Model {
 		$wrapper_classes[]     = 'publish' !== $popup['status'] ? 'newspack-inactive-popup-status' : null;
 		$is_scroll_triggered   = 'scroll' === $popup['options']['trigger_type'];
 		$assigned_segments     = $popup['options']['selected_segment_id'];
+		$frequency_config      = [ $popup['options']['frequency_start'], $popup['options']['frequency_between'], $popup['options']['frequency_max'], $popup['options']['frequency_reset'] ];
 
 		add_filter(
 			'newspack_analytics_events',
@@ -1128,8 +1131,11 @@ final class Newspack_Popups_Model {
 			tabindex="0"
 			id="<?php echo esc_attr( $element_id ); ?>"
 			data-segments="<?php echo esc_attr( $assigned_segments ); ?>"
+			data-frequency="<?php echo esc_attr( implode( ',', $frequency_config ) ); ?>"
 
-			<?php if ( ! $is_scroll_triggered ) : ?>
+			<?php if ( $is_scroll_triggered ) : ?>
+			data-scroll="<?php echo esc_attr( $popup['options']['trigger_scroll_progress'] ); ?>"
+			<?php else : ?>
 			data-delay="<?php echo esc_attr( self::get_delay( $popup ) ); ?>"
 			<?php endif; ?>
 		>
@@ -1157,54 +1163,8 @@ final class Newspack_Popups_Model {
 			<?php endif; ?>
 		</div>
 		<?php if ( $is_scroll_triggered ) : ?>
-			<div id="page-position-marker_<?php echo esc_attr( $animation_id ); ?>" style="position: absolute; top: <?php echo esc_attr( $popup['options']['trigger_scroll_progress'] ); ?>%"></div>
-			<amp-position-observer
-				target="page-position-marker_<?php echo esc_attr( $animation_id ); ?>"
-				on="enter:<?php echo esc_attr( $animation_id ); ?>.start;"
-				once
-				layout="nodisplay"
-			></amp-position-observer>
+			<div id="page-position-marker_<?php echo esc_attr( $element_id ); ?>" class="page-position-marker" style="position: absolute; top: <?php echo esc_attr( $popup['options']['trigger_scroll_progress'] ); ?>%"></div>
 		<?php endif; ?>
-		<amp-animation id="<?php echo esc_attr( $animation_id ); ?>" layout="nodisplay" <?php echo $is_scroll_triggered ? '' : 'trigger="visibility"'; ?>>
-			<script type="application/json">
-				{
-					"duration": "125ms",
-					"fill": "both",
-					"iterations": "1",
-					"direction": "alternate",
-					"animations": [
-						{
-							"selector": "#<?php echo esc_attr( $element_id ); ?>",
-							"delay": "<?php echo esc_html( self::get_delay( $popup ) ); ?>",
-							"keyframes": {
-								"opacity": ["0", "1"],
-								"visibility": ["hidden", "visible"]
-							}
-						},
-						{
-							"selector": "#<?php echo esc_attr( $element_id ); ?>",
-							"delay": "<?php echo esc_html( self::get_delay( $popup ) - 500 ); ?>",
-							"keyframes": {
-								"transform": ["translateY(90vh)", "translateY(0vh)"]
-							}
-						},
-						{
-								"selector": "#<?php echo esc_attr( $element_id ); ?> .newspack-popup-wrapper",
-								"delay": "<?php echo intval( $popup['options']['trigger_delay'] ) * 1000 + 625; ?>",
-								"keyframes": {
-									<?php if ( in_array( $popup['options']['placement'], [ 'top', 'top_left', 'top_right' ] ) ) : ?>
-										"transform": ["translateY(-100%)", "translateY(0)"]
-									<?php elseif ( in_array( $popup['options']['placement'], [ 'bottom', 'bottom_left', 'bottom_right' ] ) ) : ?>
-										"transform": ["translateY(100%)", "translateY(0)"]
-									<?php else : ?>
-										"opacity": ["0", "1"]
-									<?php endif; ?>
-								}
-						}
-					]
-				}
-			</script>
-		</amp-animation>
 		<?php
 		if ( self::is_overlay( $popup ) && has_block( 'newspack-blocks/homepage-articles', $popup['content'] ) ) {
 			add_filter( 'newspack_blocks_homepage_enable_duplication', '__return_false' );
