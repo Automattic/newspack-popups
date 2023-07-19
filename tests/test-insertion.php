@@ -14,8 +14,8 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 	 */
 	public function test_insertion_on_post() {
 		self::renderPost();
-		$amp_layout_elements = self::$dom_xpath->query( '//amp-layout' );
-		$popup_text_content  = $amp_layout_elements->item( 0 )->textContent;
+		$popup_elements     = self::$dom_xpath->query( '//*[contains(@class,"newspack-popup-container")]' );
+		$popup_text_content = $popup_elements->item( 0 )->textContent;
 
 		self::assertStringContainsString(
 			self::$popup_content,
@@ -34,11 +34,11 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 	 */
 	public function test_insertion_on_page() {
 		self::renderPost( '', null, [], [], 'page' );
-		$amp_layout_elements = self::$dom_xpath->query( '//amp-layout' );
+		$popup_elements = self::$dom_xpath->query( '//*[contains(@class,"newspack-popup-container")]' );
 
 		self::assertEquals(
 			1,
-			$amp_layout_elements->length,
+			$popup_elements->length,
 			'Inserts the inline prompt on a page.'
 		);
 		self::assertStringContainsString(
@@ -51,7 +51,7 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 		$overlay_id          = self::createPopup( $overlay_content, [ 'placement' => 'center' ] );
 		$page_with_shortcode = '[newspack-popups id="' . $overlay_id . '"]';
 		self::renderPost( '', $page_with_shortcode, [], [], 'page' );
-		$overlay_text_content = self::$dom_xpath->query( '//amp-layout' )->item( 0 )->textContent;
+		$overlay_text_content = self::$dom_xpath->query( '//*[contains(@class,"newspack-popup-container")]' )->item( 0 )->textContent;
 
 		self::assertStringContainsString(
 			$overlay_content,
@@ -71,7 +71,7 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 		$popup_id            = self::createPopup( $popup_content );
 		$post_with_shortcode = '[newspack-popups id="' . $popup_id . '"]';
 		self::renderPost( '', $post_with_shortcode );
-		$popup_text_content = self::$dom_xpath->query( '//amp-layout' )->item( 0 )->textContent;
+		$popup_text_content = self::$dom_xpath->query( '//*[contains(@class,"newspack-popup-container")]' )->item( 0 )->textContent;
 
 		self::assertStringContainsString(
 			$popup_content,
@@ -113,11 +113,11 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 		$preview_param = 'pid=' . $popup_id;
 
 		self::renderPost( $preview_param );
-		$amp_layout_elements = self::$dom_xpath->query( '//amp-layout' );
+		$popup_elements = self::$dom_xpath->query( '//*[contains(@class,"newspack-popup-container")]' );
 
 		self::assertEquals(
 			0,
-			$amp_layout_elements->length,
+			$popup_elements->length,
 			'There are no popups, the previewed popup should only be displayed if user is admin.'
 		);
 
@@ -126,8 +126,8 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 
 		self::renderPost( $preview_param );
 
-		$amp_layout_elements = self::$dom_xpath->query( '//amp-layout' );
-		$popup_text_content  = $amp_layout_elements->item( 0 )->textContent;
+		$popup_elements     = self::$dom_xpath->query( '//*[contains(@class,"newspack-popup-container")]' );
+		$popup_text_content = $popup_elements->item( 0 )->textContent;
 
 		self::assertStringContainsString(
 			$popup_content,
@@ -141,10 +141,10 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 	 */
 	public function test_insertion_admin() {
 		self::renderPost();
-		$amp_layout_elements = self::$dom_xpath->query( '//amp-layout' );
+		$popup_elements = self::$dom_xpath->query( '//*[contains(@class,"newspack-popup-container")]' );
 		self::assertStringContainsString(
 			self::$popup_content,
-			$amp_layout_elements->item( 0 )->textContent,
+			$popup_elements->item( 0 )->textContent,
 			'Includes the popup content for non-logged-in users.'
 		);
 
@@ -152,10 +152,10 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 		wp_set_current_user( $user_id );
 
 		self::renderPost();
-		$amp_layout_elements = self::$dom_xpath->query( '//amp-layout' );
+		$popup_elements = self::$dom_xpath->query( '//*[contains(@class,"newspack-popup-container")]' );
 		self::assertStringContainsString(
 			self::$popup_content,
-			$amp_layout_elements->item( 0 )->textContent,
+			$popup_elements->item( 0 )->textContent,
 			'Also includes the popup content for logged-in admin users.'
 		);
 	}
