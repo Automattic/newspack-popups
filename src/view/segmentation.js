@@ -22,6 +22,7 @@ export const handleSegmentation = prompts => {
 	window.newspackRAS.push( ras => {
 		// Log a pageview for frequency counts.
 		logPageview( ras );
+		let overlayDisplayed;
 
 		prompts.forEach( prompt => {
 			const promptId = prompt.getAttribute( 'id' );
@@ -46,17 +47,21 @@ export const handleSegmentation = prompts => {
 				};
 				const isOverlay = prompt.classList.contains( 'newspack-lightbox' );
 				if ( isOverlay ) {
-					const scroll = promptConfig.scroll;
-					if ( scroll ) {
-						// By scroll trigger.
-						const marker = document.getElementById( `page-position-marker_${ promptId }` );
-						if ( marker ) {
-							getObserver( unhide ).observe( marker );
+					// Only show one overlay at a time.
+					if ( ! overlayDisplayed ) {
+						overlayDisplayed = true;
+						const scroll = promptConfig.scroll;
+						if ( scroll ) {
+							// By scroll trigger.
+							const marker = document.getElementById( `page-position-marker_${ promptId }` );
+							if ( marker ) {
+								getObserver( unhide ).observe( marker );
+							}
+						} else {
+							// By delay.
+							const delay = promptConfig.delay || 0;
+							setTimeout( unhide, delay );
 						}
-					} else {
-						// By delay.
-						const delay = promptConfig.delay || 0;
-						setTimeout( unhide, delay );
 					}
 				} else {
 					unhide();
