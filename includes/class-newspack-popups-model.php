@@ -685,7 +685,7 @@ final class Newspack_Popups_Model {
 	 * @param object $popup The popup object.
 	 * @return number Delay in milliseconds.
 	 */
-	protected static function get_delay( $popup ) {
+	public static function get_delay( $popup ) {
 		return intval( $popup['options']['trigger_delay'] ) * 1000 + 500;
 	}
 
@@ -1017,7 +1017,7 @@ final class Newspack_Popups_Model {
 		$hide_border          = $popup['options']['hide_border'];
 		$large_border         = $popup['options']['large_border'];
 		$is_newsletter_prompt = self::has_newsletter_prompt( $popup );
-		$classes              = [ 'newspack-popup', 'hidden' ];
+		$classes              = [ 'newspack-popup-container', 'newspack-popup', 'hidden' ];
 		$classes[]            = 'above_header' === $popup['options']['placement'] ? 'newspack-above-header-popup' : null;
 		$classes[]            = ! self::is_above_header( $popup ) ? 'newspack-inline-popup' : null;
 		$classes[]            = 'publish' !== $popup['status'] ? 'newspack-inactive-popup-status' : null;
@@ -1025,8 +1025,6 @@ final class Newspack_Popups_Model {
 		$classes[]            = $large_border ? 'newspack-lightbox-large-border' : null;
 		$classes[]            = $is_newsletter_prompt ? 'newspack-newsletter-prompt-inline' : null;
 		$classes              = array_merge( $classes, explode( ' ', $popup['options']['additional_classes'] ) );
-		$assigned_segments    = $popup['options']['selected_segment_id'];
-		$frequency_config     = [ $popup['options']['frequency_start'], $popup['options']['frequency_between'], $popup['options']['frequency_max'], $popup['options']['frequency_reset'] ];
 
 		$analytics_events = self::get_analytics_events( $popup, $body, $element_id );
 		if ( ! empty( $analytics_events ) ) {
@@ -1047,8 +1045,6 @@ final class Newspack_Popups_Model {
 				tabindex="0"
 				style="<?php echo esc_attr( self::container_style( $popup ) ); ?>"
 				id="<?php echo esc_attr( $element_id ); ?>"
-				data-segments="<?php echo esc_attr( $assigned_segments ); ?>"
-				data-frequency="<?php echo esc_attr( implode( ',', $frequency_config ) ); ?>"
 			>
 				<?php echo do_shortcode( $body ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 			</div>
@@ -1100,7 +1096,7 @@ final class Newspack_Popups_Model {
 		$hidden_fields         = self::get_hidden_fields( $popup );
 		$is_newsletter_prompt  = self::has_newsletter_prompt( $popup );
 		$has_featured_image    = has_post_thumbnail( $popup['id'] ) || ! empty( $popup['options']['featured_image_id'] );
-		$classes               = array( 'newspack-lightbox', 'newspack-popup', 'hidden', 'newspack-lightbox-placement-' . $popup['options']['placement'], 'newspack-lightbox-size-' . $overlay_size );
+		$classes               = array( 'newspack-popup-container', 'newspack-lightbox', 'newspack-popup', 'hidden', 'newspack-lightbox-placement-' . $popup['options']['placement'], 'newspack-lightbox-size-' . $overlay_size );
 		$classes[]             = $hide_border ? 'newspack-lightbox-no-border' : null;
 		$classes[]             = $large_border ? 'newspack-lightbox-large-border' : null;
 		$classes[]             = $is_newsletter_prompt ? 'newspack-newsletter-prompt-overlay' : null;
@@ -1110,8 +1106,6 @@ final class Newspack_Popups_Model {
 		$wrapper_classes       = [ 'newspack-popup-wrapper' ];
 		$wrapper_classes[]     = 'publish' !== $popup['status'] ? 'newspack-inactive-popup-status' : null;
 		$is_scroll_triggered   = 'scroll' === $popup['options']['trigger_type'];
-		$assigned_segments     = $popup['options']['selected_segment_id'];
-		$frequency_config      = [ $popup['options']['frequency_start'], $popup['options']['frequency_between'], $popup['options']['frequency_max'], $popup['options']['frequency_reset'] ];
 
 		add_filter(
 			'newspack_analytics_events',
@@ -1130,14 +1124,6 @@ final class Newspack_Popups_Model {
 			role="button"
 			tabindex="0"
 			id="<?php echo esc_attr( $element_id ); ?>"
-			data-segments="<?php echo esc_attr( $assigned_segments ); ?>"
-			data-frequency="<?php echo esc_attr( implode( ',', $frequency_config ) ); ?>"
-
-			<?php if ( $is_scroll_triggered ) : ?>
-			data-scroll="<?php echo esc_attr( $popup['options']['trigger_scroll_progress'] ); ?>"
-			<?php else : ?>
-			data-delay="<?php echo esc_attr( self::get_delay( $popup ) ); ?>"
-			<?php endif; ?>
 		>
 			<div class="<?php echo esc_attr( implode( ' ', $wrapper_classes ) ); ?>" data-popup-status="<?php echo esc_attr( $popup['status'] ); ?>" style="<?php echo ! $hide_border ? esc_attr( self::container_style( $popup ) ) : ''; ?>">
 				<div class="newspack-popup__content-wrapper" style="<?php echo $hide_border ? esc_attr( self::container_style( $popup ) ) : ''; ?>">

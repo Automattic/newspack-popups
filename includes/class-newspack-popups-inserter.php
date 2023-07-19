@@ -658,10 +658,15 @@ final class Newspack_Popups_Inserter {
 			);
 
 			$popups_to_display = self::popups_for_post();
+			$popups_config     = [];
 
-			// Gather segments for all prompts to be displayed.
+			// Gather config for all prompts and segments to be displayed.
 			foreach ( $popups_to_display as $popup ) {
-				$assigned_segments = $popup['options']['selected_segment_id'];
+				$popup_id                   = Newspack_Popups_Model::canonize_popup_id( $popup['id'] );
+				$popups_config[ $popup_id ] = [];
+				$assigned_segments          = $popup['options']['selected_segment_id'];
+
+				// Segments config.
 				if ( ! empty( $assigned_segments ) ) {
 					$assigned_segments = explode( ',', $assigned_segments );
 					foreach ( $assigned_segments as $segment_id ) {
@@ -676,11 +681,24 @@ final class Newspack_Popups_Inserter {
 						}
 					}
 				}
+
+				// Prompt config.
+				$is_scroll_triggered                     = 'scroll' === $popup['options']['trigger_type'];
+				$frequency_config                        = [ $popup['options']['frequency_start'], $popup['options']['frequency_between'], $popup['options']['frequency_max'], $popup['options']['frequency_reset'] ];
+				$popups_config[ $popup_id ]['segments']  = $assigned_segments ?? false;
+				$popups_config[ $popup_id ]['frequency'] = $frequency_config;
+
+				if ( $is_scroll_triggered ) {
+					$popups_config[ $popup_id ]['scroll'] = $popup['options']['trigger_scroll_progress'];
+				} else {
+					$popups_config[ $popup_id ]['delay'] = Newspack_Popups_Model::get_delay( $popup );
+				}
 			}
 
 			$script_data = [
 				'debug'    => defined( 'WP_DEBUG' ) && WP_DEBUG,
 				'segments' => self::$segments,
+				'prompts'  => $popups_config,
 			];
 
 			\wp_localize_script( $script_handle, 'newspack_popups_view', $script_data );

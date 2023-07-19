@@ -33,10 +33,11 @@ export const handleSegmentation = prompts => {
 			}
 
 			// Check segmentation.
-			const shouldDisplay = shouldPromptBeDisplayed( prompt, matchingSegment, ras );
+			const shouldDisplay = shouldPromptBeDisplayed( promptId, matchingSegment, ras );
 
 			// Unhide the prompt.
 			if ( shouldDisplay ) {
+				const promptConfig = newspack_popups_view.prompts[ promptId ];
 				const unhide = () => {
 					prompt.classList.remove( 'hidden' );
 
@@ -45,16 +46,17 @@ export const handleSegmentation = prompts => {
 				};
 				const isOverlay = prompt.classList.contains( 'newspack-lightbox' );
 				if ( isOverlay ) {
-					const delay = prompt.getAttribute( 'data-delay' );
-					if ( null !== delay && '' !== delay ) {
-						// By delay.
-						setTimeout( () => unhide, delay );
-					} else {
+					const scroll = promptConfig.scroll;
+					if ( scroll ) {
 						// By scroll trigger.
 						const marker = document.getElementById( `page-position-marker_${ promptId }` );
 						if ( marker ) {
 							getObserver( unhide ).observe( marker );
 						}
+					} else {
+						// By delay.
+						const delay = promptConfig.delay || 0;
+						setTimeout( () => unhide, delay );
 					}
 				} else {
 					unhide();

@@ -6,7 +6,7 @@
  * @return {Array} Array of prompt elements.
  */
 export const getPrompts = () => {
-	return [ ...document.querySelectorAll( '.newspack-popup' ) ];
+	return [ ...document.querySelectorAll( '.newspack-popup-container' ) ];
 };
 
 /**
