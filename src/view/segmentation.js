@@ -34,11 +34,10 @@ export const handleSegmentation = prompts => {
 			}
 
 			// Check segmentation.
-			const shouldDisplay = shouldPromptBeDisplayed( promptId, matchingSegment, ras );
+			const shouldDisplay = shouldPromptBeDisplayed( prompt, matchingSegment, ras );
 
 			// Unhide the prompt.
 			if ( shouldDisplay ) {
-				const promptConfig = newspack_popups_view.prompts[ promptId ];
 				const unhide = () => {
 					prompt.classList.remove( 'hidden' );
 
@@ -50,7 +49,7 @@ export const handleSegmentation = prompts => {
 					// Only show one overlay at a time.
 					if ( ! overlayDisplayed ) {
 						overlayDisplayed = true;
-						const scroll = promptConfig.scroll;
+						const scroll = prompt.getAttribute( 'data-scroll' );
 						if ( scroll ) {
 							// By scroll trigger.
 							const marker = document.getElementById( `page-position-marker_${ promptId }` );
@@ -59,7 +58,7 @@ export const handleSegmentation = prompts => {
 							}
 						} else {
 							// By delay.
-							const delay = promptConfig.delay || 0;
+							const delay = prompt.getAttribute( 'data-delay' ) || 0;
 							setTimeout( unhide, delay );
 						}
 					}
