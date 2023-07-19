@@ -28,10 +28,12 @@ export const handleSegmentation = prompts => {
 			const promptId = prompt.getAttribute( 'id' );
 
 			// Attach event listners to overlay close buttons.
-			const closeButton = prompt.querySelector( '.newspack-lightbox__close' );
-			if ( closeButton ) {
+			const closeButtons = [
+				...prompt.querySelectorAll( '.newspack-lightbox__close, button.newspack-lightbox-overlay' ),
+			];
+			closeButtons.forEach( closeButton => {
 				closeButton.addEventListener( 'click', closeOverlay );
-			}
+			} );
 
 			// Check segmentation.
 			const shouldDisplay = shouldPromptBeDisplayed( prompt, matchingSegment, ras );
