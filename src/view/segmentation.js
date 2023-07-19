@@ -56,7 +56,7 @@ export const handleSegmentation = prompts => {
 					} else {
 						// By delay.
 						const delay = promptConfig.delay || 0;
-						setTimeout( () => unhide, delay );
+						setTimeout( unhide, delay );
 					}
 				} else {
 					unhide();

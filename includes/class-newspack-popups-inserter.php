@@ -77,7 +77,9 @@ final class Newspack_Popups_Inserter {
 		);
 
 		// Cache results so we don't have to query again.
-		self::$popups = $popups_to_display;
+		if ( ! defined( 'IS_TEST_ENV' ) || ! IS_TEST_ENV ) {
+			self::$popups = $popups_to_display;
+		}
 
 		return $popups_to_display;
 	}
