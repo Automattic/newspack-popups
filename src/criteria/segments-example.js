@@ -1,26 +1,10 @@
+/* globals newspackPopupsSegmentsExample */
 import { getCriteria } from './utils';
 
 /**
  * Sample segments.
  */
-const segments = {
-	1: [
-		{
-			criteria_id: 'articles_read',
-			value: { min: 5, max: 10 },
-		},
-		{
-			criteria_id: 'newsletter',
-			value: 'non-subscribers',
-		},
-	],
-	2: [
-		{
-			criteria_id: 'donation',
-			value: 'donors',
-		},
-	],
-};
+const segments = newspackPopupsSegmentsExample?.segments || [];
 
 window.newspackRAS = window.newspackRAS || [];
 window.newspackRAS.push( () => {
