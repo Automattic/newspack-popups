@@ -6,11 +6,13 @@ setMatchingAttribute( 'articles_read', ras => {
 } );
 
 setMatchingAttribute( 'articles_read_in_session', ras => {
-	const views = ras.getUniqueActivitiesBy( 'article_view', 'post_id' );
-	if ( ! views.length ) {
+	const allViews = ras.getUniqueActivitiesBy( 'article_view', 'post_id' );
+	if ( ! allViews.length ) {
 		return 0;
 	}
-	// Sort by descending timestamp.
+	// For performance, filter out views older than 6 hours.
+	const views = allViews.filter( view => view.timestamp > Date.now() - 6 * 60 * 60 * 1000 );
+	// Sort the views from the past 6 hours by descending timestamp.
 	views.sort( ( a, b ) => b.timestamp - a.timestamp );
 	// Bail if the most recent view is older than 30 minutes.
 	if ( views[ 0 ].timestamp < Date.now() - 30 * 60 * 1000 ) {
