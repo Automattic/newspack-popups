@@ -15,7 +15,7 @@ export const periods = {
  *
  * @return {boolean} True if the reader matches all of the segment's criteria, false if not.
  */
-export const match = segmentCriteria => {
+const match = segmentCriteria => {
 	for ( const item of segmentCriteria ) {
 		const criteria = getCriteria( item.criteria_id );
 		if ( ! criteria ) {
@@ -86,10 +86,11 @@ export const shouldPromptBeDisplayed = ( prompt, matchingSegment, ras ) => {
 
 		// If there's a max frequency.
 		const promptId = getRawId( prompt.getAttribute( 'id' ) );
-		const seenEvents = ( ras.getActivities( 'prompt_seen' ) || [] ).filter(
-			activity =>
-				activity.data?.prompt_id === promptId && periods[ reset ] < Date.now() - activity.timestamp
-		);
+		const seenEvents = ( ras.getActivities( 'prompt_seen' ) || [] ).filter( activity => {
+			return (
+				activity.data?.prompt_id === promptId && periods[ reset ] > Date.now() - activity.timestamp
+			);
+		} );
 		if ( 0 < parseInt( max ) && seenEvents.length >= parseInt( max ) ) {
 			return false;
 		}
@@ -99,7 +100,7 @@ export const shouldPromptBeDisplayed = ( prompt, matchingSegment, ras ) => {
 	const assignedSegments = prompt.getAttribute( 'data-segments' )
 		? prompt.getAttribute( 'data-segments' ).split( ',' )
 		: null;
-	if ( assignedSegments && matchingSegment && 0 > assignedSegments.indexOf( matchingSegment ) ) {
+	if ( assignedSegments && 0 > assignedSegments.indexOf( matchingSegment ) ) {
 		return false;
 	}
 
