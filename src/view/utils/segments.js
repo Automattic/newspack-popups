@@ -71,7 +71,7 @@ export const shouldPromptBeDisplayed = ( prompt, matchingSegment, ras ) => {
 	if ( pageviews[ reset ] ) {
 		const views = pageviews[ reset ].count || 0;
 
-		// If reader hasn't viewed enough articles yet.
+		// If reader hasn't amassed enough pageviews yet.
 		if ( views <= parseInt( start ) ) {
 			return false;
 		}
