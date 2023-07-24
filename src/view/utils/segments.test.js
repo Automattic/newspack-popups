@@ -104,11 +104,23 @@ window.newspackReaderActivation = {
 
 const ras = window.newspackReaderActivation;
 
-const createPrompt = ( assignedSegments = [], frequency = '0,0,0,month' ) => {
+const createPrompt = (
+	assignedSegments = [],
+	frequency = '0,0,0,month',
+	id = '1',
+	type = 'inline'
+) => {
 	const prompt = document.createElement( 'div' );
-	prompt.setAttribute( 'id', 'id_1' );
+	prompt.setAttribute( 'id', 'id_' + id );
 	prompt.setAttribute( 'data-segments', assignedSegments.join( ',' ) );
 	prompt.setAttribute( 'data-frequency', frequency );
+
+	if ( 'inline' === type ) {
+		prompt.classList.add( 'newspack-inline-popup' );
+	} else if ( 'overlay' === type ) {
+		prompt.classList.add( 'newspack-lightbox' );
+	}
+
 	return prompt;
 };
 
@@ -178,5 +190,16 @@ describe( 'segmentation API', () => {
 		expect(
 			shouldPromptBeDisplayed( prompt, getBestPrioritySegment( segments ), ras )
 		).toBeFalsy();
+	} );
+
+	it( 'should allow shouldBeDisplayed to be manually overriden', () => {
+		const prompt1 = createPrompt( [], '0,0,0,month', '1', 'overlay' );
+		const prompt2 = createPrompt( [], '0,0,0,month', '2', 'overlay' );
+
+		// First overlay prompt should be displayed.
+		expect( shouldPromptBeDisplayed( prompt1, null, ras ) ).toBeTruthy();
+
+		// Force the second overlay prompt to not be displayed even though all other criteria are met.
+		expect( shouldPromptBeDisplayed( prompt2, null, ras, false ) ).toBeFalsy();
 	} );
 } );

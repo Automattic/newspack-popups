@@ -58,12 +58,18 @@ export const getBestPrioritySegment = segments => {
 /**
  * Check the reader's activity against a given prompt's assigned segments.
  *
- * @param {HTMLElement} prompt          HTML element of the prompt being checked.
- * @param {string}      matchingSegment ID of the reader's highest-priority matching segment.
- * @param {Object}      ras             Reader Data Library object.
+ * @param {HTMLElement}  prompt          HTML element of the prompt being checked.
+ * @param {string}       matchingSegment ID of the reader's highest-priority matching segment.
+ * @param {Object}       ras             Reader Data Library object.
+ * @param {null|boolean} override        If true or false, force the value.
  * @return {boolean} True if the prompt should be displayed, false if not.
  */
-export const shouldPromptBeDisplayed = ( prompt, matchingSegment, ras ) => {
+export const shouldPromptBeDisplayed = ( prompt, matchingSegment, ras, override = null ) => {
+	// By override.
+	if ( true === override || false === override ) {
+		return override;
+	}
+
 	// By frequency.
 	// eslint-disable-next-line @wordpress/no-unused-vars-before-return
 	const [ start, between, max, reset ] = prompt.getAttribute( 'data-frequency' ).split( ',' );
