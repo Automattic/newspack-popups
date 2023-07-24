@@ -178,7 +178,7 @@ describe( 'segmentation API', () => {
 		expect( shouldPromptBeDisplayed( prompt, null, ras ) ).toBeTruthy();
 	} );
 
-	it( 'should return false if the reader hasn’t viewed enough articles', () => {
+	it( 'should return false if the reader hasn’t amassed enough pageviews', () => {
 		const prompt = createPrompt( [], '2,0,0,month' );
 		expect(
 			shouldPromptBeDisplayed( prompt, getBestPrioritySegment( segments ), ras )
