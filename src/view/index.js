@@ -3,6 +3,7 @@
  */
 import './style.scss';
 import './patterns.scss';
+import '../criteria/default';
 import { handleSegmentation } from './segmentation';
 import { handleAnalytics } from './analytics/ga4';
 import { domReady, getPrompts } from './utils';
