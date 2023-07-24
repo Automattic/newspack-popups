@@ -4,7 +4,7 @@ import {
 	debug,
 	closeOverlay,
 	getBestPrioritySegment,
-	getObserver,
+	getIntersectionObserver,
 	handleSeen,
 	logPageview,
 	shouldPromptBeDisplayed,
@@ -56,7 +56,7 @@ export const handleSegmentation = prompts => {
 							// By scroll trigger.
 							const marker = document.getElementById( `page-position-marker_${ promptId }` );
 							if ( marker ) {
-								getObserver( unhide ).observe( marker );
+								getIntersectionObserver( unhide ).observe( marker );
 							}
 						} else {
 							// By delay.

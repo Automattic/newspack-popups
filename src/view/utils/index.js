@@ -17,7 +17,7 @@ const MINIMUM_VISIBLE_PERCENTAGE = 0.5;
  * @param {Function} handleEvent Callback function to execute when the prompt becomes eligible for display.
  * @return {IntersectionObserver} Observer instance.
  */
-export const getObserver = handleEvent => {
+export const getIntersectionObserver = handleEvent => {
 	let timer;
 	const observer = new IntersectionObserver(
 		entries => {
@@ -74,7 +74,7 @@ export function domReady( callback ) {
 export const handleSeen = ( prompt, ras ) => {
 	const handleEvent = () =>
 		ras.dispatchActivity( 'prompt_seen', { prompt_id: getRawId( prompt.getAttribute( 'id' ) ) } );
-	getObserver( handleEvent ).observe( prompt, { attributes: true } );
+	getIntersectionObserver( handleEvent ).observe( prompt, { attributes: true } );
 };
 
 /**

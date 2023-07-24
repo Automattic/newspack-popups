@@ -10,7 +10,7 @@ export const handleAnalytics = prompts => {
 	// Must have a gtag instance to proceed.
 	if ( 'function' === typeof gtag ) {
 		manageLoadedEvents( prompts );
-		manageSeenEvents( prompts );
+		manageSeenEvents();
 		manageDismissals( prompts );
 		manageClickedEvents( prompts );
 		manageFormSubmissions( prompts );
