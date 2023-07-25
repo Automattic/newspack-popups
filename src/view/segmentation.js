@@ -14,12 +14,11 @@ import {
  * Match reader to segments.
  */
 export const handleSegmentation = prompts => {
-	const segments = newspack_popups_view?.segments || {};
-	const matchingSegment = getBestPrioritySegment( segments );
-	debug( 'matchingSegment', matchingSegment );
-
 	window.newspackRAS = window.newspackRAS || [];
 	window.newspackRAS.push( ras => {
+		const segments = newspack_popups_view?.segments || {};
+		const matchingSegment = getBestPrioritySegment( segments );
+		debug( 'matchingSegment', matchingSegment );
 		// Log a pageview for frequency counts.
 		logPageview( ras );
 		let overlayDisplayed;
