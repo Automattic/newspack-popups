@@ -653,7 +653,6 @@ final class Newspack_Popups_Inserter {
 				[
 					'wp-url',
 					Newspack_Popups_Criteria::SCRIPT_HANDLE,
-					'newspack-popups-default-criteria',
 				],
 				filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/view.js' ),
 				true
