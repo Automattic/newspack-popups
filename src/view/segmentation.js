@@ -41,7 +41,7 @@ export const handleSegmentation = prompts => {
 				prompt,
 				matchingSegment,
 				ras,
-				overlayDisplayed
+				isOverlay && overlayDisplayed ? false : null
 			);
 
 			// Only show one overlay at a time.
