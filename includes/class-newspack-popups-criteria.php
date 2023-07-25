@@ -63,14 +63,6 @@ final class Newspack_Popups_Criteria {
 			]
 		);
 		wp_enqueue_script(
-			'newspack-popups-default-criteria',
-			plugins_url( '../dist/defaultCriteria.js', __FILE__ ),
-			[ self::SCRIPT_HANDLE ],
-			filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/defaultCriteria.js' ),
-			true
-		);
-		wp_script_add_data( 'newspack-popups-default-criteria', 'defer', true );
-		wp_enqueue_script(
 			'newspack-popups-segments-example',
 			plugins_url( '../dist/segmentsExample.js', __FILE__ ),
 			[ self::SCRIPT_HANDLE ],
