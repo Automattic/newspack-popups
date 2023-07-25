@@ -1,5 +1,6 @@
 import matchingFunctions from './matching-functions';
 
+window.newspackPopupsCriteria = window.newspackPopupsCriteria || { criteria: {} };
 window.newspackPopupsCriteria.criteria = window.newspackPopupsCriteria.criteria || {};
 
 const pendingConfig = {};
