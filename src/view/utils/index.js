@@ -1,136 +1,121 @@
-/* globals gtag, newspackPopupsData */
+export * from './analytics';
+export * from './prompts';
+export * from './segments';
+
+import { getRawId } from './prompts';
+import { periods } from './segments';
+
+// The minimum continuous amount of time the prompt must be in the viewport before being considered visible.
+const MINIMUM_VISIBLE_TIME = 250;
+
+// The minimum percentage of the prompt that must be in the viewport before being considered visible.
+const MINIMUM_VISIBLE_PERCENTAGE = 0.5;
 
 /**
- * External dependencies
+ * Execute a callback function when an element becomes visible.
+ *
+ * @param {Function} handleEvent Callback function to execute when the prompt becomes eligible for display.
+ * @return {IntersectionObserver} Observer instance.
  */
+export const getIntersectionObserver = handleEvent => {
+	let timer;
+	const observer = new IntersectionObserver(
+		entries => {
+			entries.forEach( observerEntry => {
+				if ( observerEntry.isIntersecting ) {
+					if ( ! timer ) {
+						timer = setTimeout( () => {
+							handleEvent();
+							observer.unobserve( observerEntry.target );
+						}, MINIMUM_VISIBLE_TIME || 0 );
+					}
+				} else if ( timer ) {
+					clearTimeout( timer );
+					timer = false;
+				}
+			} );
+		},
+		{
+			threshold: MINIMUM_VISIBLE_PERCENTAGE,
+		}
+	);
 
-export const values = object => Object.keys( object ).map( key => object[ key ] );
-
-export const performXHRequest = ( { url, data } ) => {
-	const XHR = new XMLHttpRequest();
-	XHR.open( 'POST', url );
-	XHR.setRequestHeader( 'Content-Type', 'application/x-www-form-urlencoded' );
-
-	const encodedData = Object.keys( data )
-		.map( key => encodeURIComponent( key ) + '=' + encodeURIComponent( data[ key ] ) )
-		.join( '&' )
-		.replace( /%20/g, '+' );
-
-	XHR.send( encodedData );
+	return observer;
 };
 
 /**
- * Given a data object and a form HTML element,
- * update the data with values from the form.
+ * Specify a function to execute when the DOM is fully loaded.
  *
- * @param {Object}          data        An object.
- * @param {HTMLFormElement} formElement A form element.
- * @return {Object} Updated data.
- */
-export const processFormData = ( data, formElement ) => {
-	Object.keys( data ).forEach( key => {
-		let value = data[ key ];
-		if ( -1 < value.indexOf( '${formFields' ) ) {
-			const inputEl = formElement.querySelector( '[name="email"], [type="email"]' );
-			if ( inputEl ) {
-				value = inputEl.value;
-			}
-		}
-		data[ key ] = substituteDynamicValue( value );
-	} );
-	return data;
-};
-
-/**
- * Replace a dynamic value, like a document referrer, in a string.
+ * @see https://github.com/WordPress/gutenberg/blob/trunk/packages/dom-ready/
  *
- * @param {string} value A string to replace value in.
- * @return {string} String with the value replaced.
+ * @param {Function} callback A function to execute after the DOM is ready.
+ * @return {void}
  */
-export const substituteDynamicValue = value => {
-	if ( value ) {
-		const trimmedValue = String( value ).replace( /\s/g, '' );
-		switch ( trimmedValue ) {
-			case 'DOCUMENT_REFERRER':
-				value = document.referrer || '';
-				break;
-		}
+export function domReady( callback ) {
+	if ( typeof document === 'undefined' ) {
+		return;
 	}
-	return value;
+	if (
+		document.readyState === 'complete' || // DOMContentLoaded + Images/Styles/etc loaded, so we call directly.
+		document.readyState === 'interactive' // DOMContentLoaded fires at this point, so we call directly.
+	) {
+		return void callback();
+	}
+	// DOMContentLoaded has not fired yet, delay callback until then.
+	document.addEventListener( 'DOMContentLoaded', callback );
+}
+
+/**
+ * Log a "prompt_seen" activity when the prompt becomes visible.
+ *
+ * @param {HTMLElement} prompt HTML element for prompt.
+ * @param {Object}      ras    Reader Data Library object.
+ */
+export const handleSeen = ( prompt, ras ) => {
+	const handleEvent = () =>
+		ras.dispatchActivity( 'prompt_seen', { prompt_id: getRawId( prompt.getAttribute( 'id' ) ) } );
+	getIntersectionObserver( handleEvent ).observe( prompt, { attributes: true } );
 };
 
-export const waitUntil = ( condition, callback, maxTries = 10 ) => {
-	let tries = 0;
-	const interval = setInterval( () => {
-		tries++;
-		if ( tries <= maxTries ) {
-			if ( condition() ) {
-				callback();
-				clearInterval( interval );
-			}
-		} else {
-			clearInterval( interval );
+/**
+ * Increment pageview counters.
+ *
+ * @param {Object} ras Reader Data Library object.
+ *
+ * @return {Object} Total pageviews.
+ */
+export const logPageview = ras => {
+	const now = Date.now();
+	const pageviewTemplate = {
+		day: {
+			count: 0,
+			start: now,
+		},
+		week: {
+			count: 0,
+			start: now,
+		},
+		month: {
+			count: 0,
+			start: now,
+		},
+	};
+
+	const priorPageviews = ras.store.get( 'pageviews' ) || {};
+	const pageviews = { ...pageviewTemplate, ...priorPageviews };
+
+	for ( const period in pageviews ) {
+		// If the period has elapsed, reset the count.
+		if ( periods[ period ] < now - pageviews[ period ].start ) {
+			pageviews[ period ].count = 0;
+			pageviews[ period ].start = now;
 		}
-	}, 200 );
-};
 
-/**
- * If an AMP module was loaded, e.g. via another plugin or a custom header script, it should not be polyfilled.
- */
-export const shouldPolyfillAMPModule = name => undefined === customElements.get( `amp-${ name }` );
-
-export const parseOnHandlers = onAttributeValue =>
-	onAttributeValue
-		.split( ';' )
-		.filter( Boolean )
-		.map( onHandler => /(?<action>\w*):(?<id>(\w|-)*)\.(?<method>.*)/.exec( onHandler ).groups );
-
-/**
- * Get all prompts on the page.
- *
- * @return {Array} Array of prompt elements.
- */
-export const getPrompts = () => {
-	return [ ...document.querySelectorAll( '.newspack-popup' ) ];
-};
-
-/**
- * Get raw prompt ID number from element ID name.
- *
- * @param {string} id Element ID of the prompt.
- *
- * @return {number} Raw ID number from the element ID.
- */
-export const getRawId = id => {
-	const parts = id.split( '_' );
-	return parseInt( parts[ parts.length - 1 ] );
-};
-
-/**
- * Get a GA4 event payload for a given prompt.
- *
- * @param {string} action      Action name for the event.
- * @param {number} promptId    ID of the prompt
- * @param {Object} extraParams Additional key/value pairs to add as params to the event payload.
- *
- * @return {Object} Event payload.
- */
-export const getEventPayload = ( action, promptId, extraParams = {} ) => {
-	if ( ! newspackPopupsData || ! newspackPopupsData[ promptId ] ) {
-		return false;
+		// Increment the count.
+		pageviews[ period ].count++;
 	}
 
-	return { ...newspackPopupsData[ promptId ], ...extraParams, action };
-};
-
-/**
- * Send an event to GA4.
- *
- * @param {Object} payload   Event payload.
- * @param {string} eventName Name of the event. Defaults to `np_prompt_interaction` but can be overriden if necessary.
- */
-export const sendEvent = ( payload, eventName = 'np_prompt_interaction' ) => {
-	if ( 'function' === typeof gtag && payload ) {
-		gtag( 'event', eventName, payload );
-	}
+	// Persist to the Reader Data Library store.
+	ras.store.set( 'pageviews', pageviews );
+	return pageviews;
 };
