@@ -49,7 +49,6 @@ class ModelTest extends WP_UnitTestCase {
 				'archive_insertion_posts_count'  => 1,
 				'archive_insertion_is_repeating' => false,
 				'utm_suppression'                => null,
-				'selected_segment_id'            => '',
 				'post_types'                     => [ 'post', 'page' ],
 				'archive_page_types'             => [ 'category', 'tag', 'author', 'date', 'post-type', 'taxonomy' ],
 				'additional_classes'             => '',

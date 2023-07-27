@@ -68,6 +68,24 @@ class Prompts extends Schema {
 						],
 					],
 				],
+				'segments'          => [
+					'name'     => 'segments',
+					'type'     => 'array',
+					'required' => false,
+					'default'  => [],
+					'items'    => [
+						'type'                 => 'object',
+						'additionalProperties' => false,
+						'properties'           => [
+							'id'   => [
+								'type' => 'integer',
+							],
+							'name' => [
+								'type' => 'string',
+							],
+						],
+					],
+				],
 				'status'            => [
 					'name'     => 'status',
 					'type'     => 'string',
