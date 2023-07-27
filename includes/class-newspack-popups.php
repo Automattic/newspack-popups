@@ -85,6 +85,8 @@ final class Newspack_Popups {
 			add_action( 'pre_delete_term', [ __CLASS__, 'prevent_default_category_on_term_delete' ], 10, 2 );
 			add_filter( 'show_admin_bar', [ __CLASS__, 'show_admin_bar' ], 10, 2 ); // phpcs:ignore WordPressVIPMinimum.UserExperience.AdminBarRemoval.RemovalDetected
 
+			add_action( 'wp', [ __CLASS__, 'migrate_user_data' ] );
+
 			include_once dirname( __FILE__ ) . '/class-newspack-popups-model.php';
 			include_once dirname( __FILE__ ) . '/class-newspack-segments-model.php';
 			include_once dirname( __FILE__ ) . '/class-newspack-popups-presets.php';
@@ -1298,6 +1300,97 @@ final class Newspack_Popups {
 					update_post_meta( $page_id, 'newspack_popups_has_disabled_popups', true );
 				}
 			}
+		}
+	}
+
+	/**
+	 * Migrate user data from the 'wp_newspack_campaigns_reader_events' table to
+	 * the reader data library.
+	 */
+	public static function migrate_user_data() {
+		$option_name    = 'newspack_popups_reader_data_migrated';
+		$user_meta_name = 'newspack_popups_reader_data_migrated';
+
+		if (
+			get_option( $option_name ) ||
+			! is_user_logged_in() ||
+			get_user_meta( get_current_user_id(), $user_meta_name, true ) ||
+			! class_exists( 'Newspack\Reader_Data' )
+		) {
+			return;
+		}
+
+		$user_id = get_current_user_id();
+
+		global $wpdb;
+		$table_name = $wpdb->prefix . 'newspack_campaigns_reader_events';
+
+		// Fetch the user's client ids.
+		$client_ids = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
+			$wpdb->prepare(
+				"SELECT DISTINCT client_id FROM $table_name WHERE type = %s AND context = %s", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				'user_account',
+				$user_id
+			),
+			ARRAY_N
+		);
+		if ( empty( $client_ids ) ) {
+			update_user_meta( $user_id, $user_meta_name, true );
+			return;
+		}
+		$client_ids = array_map(
+			function( $client_id ) {
+				return $client_id[0];
+			},
+			$client_ids
+		);
+
+		// Fetch all events for the user based on the client ids attached to them.
+		$client_id_placeholders = implode( ', ', array_fill( 0, count( $client_ids ), '%s' ) );
+		$events_sql             = "SELECT * FROM $table_name WHERE client_id IN ( $client_id_placeholders ) ORDER BY date_created ASC";
+		$events_query           = call_user_func_array( [ $wpdb, 'prepare' ], array_merge( [ $events_sql ], $client_ids ) );
+		$events                 = $wpdb->get_results( $events_query, ARRAY_A ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.PreparedSQL.NotPrepared
+
+		// Migrate events.
+		$data = [
+			'is_newsletter_subscriber' => false,
+			'is_donor'                 => false,
+			'is_former_donor'          => false,
+		];
+		foreach ( $events as $event ) {
+			if ( 'subscription' === $event['type'] ) {
+				$data['is_newsletter_subscriber'] = true;
+			} elseif ( 'donation' === $event['type'] ) {
+				$data['is_donor']        = true;
+				$data['is_former_donor'] = false;
+			} elseif ( 'donation_cancelled' === $event['type'] ) {
+				$data['is_donor']        = false;
+				$data['is_former_donor'] = true;
+			}
+		}
+		foreach ( $data as $key => $value ) {
+			$existing_value = \Newspack\Reader_Data::get_data( $user_id, $key );
+			// Bail if the value already exists. The more recent value should be kept.
+			if ( $existing_value ) {
+				continue;
+			}
+			\Newspack\Reader_Data::update_item( $user_id, $key, wp_json_encode( $value ) );
+		}
+
+		// Clean up user's events.
+		$delete_sql = "DELETE FROM $table_name WHERE client_id IN ( $client_id_placeholders )"; // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$wpdb->query( call_user_func_array( [ $wpdb, 'prepare' ], array_merge( [ $delete_sql ], $client_ids ) ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
+
+		// Update user meta so we don't run this again for this user.
+		update_user_meta( $user_id, $user_meta_name, true );
+
+		// Drop table if most recent event in 6 months old.
+		$age_to_drop = 6 * MONTH_IN_SECONDS;
+		$last_item   = $wpdb->get_results( "SELECT 1 FROM $table_name WHERE date_created > NOW() - INTERVAL $age_to_drop SECOND LIMIT 1" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		if ( empty( $last_item ) ) {
+			$wpdb->query( "DROP TABLE $table_name" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.SchemaChange
+			// Table has been dropped, update site option so we don't run this again ever.
+			update_option( $option_name, true );
 		}
 	}
 }
