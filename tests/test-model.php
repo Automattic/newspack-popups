@@ -112,12 +112,6 @@ class ModelTest extends WP_UnitTestCase {
 			'The page position marker is not output for a default (time-triggered) popup.'
 		);
 
-		self::assertEquals(
-			'visibility',
-			$xpath->query( '//amp-animation' )->item( 0 )->getAttribute( 'trigger' ),
-			'The amp-animation trigger is set to "visibility" for default (time-triggered) popup.'
-		);
-
 		$popup_object_with_just_scroll = Newspack_Popups_Model::create_popup_object(
 			get_post( self::$popup_id ),
 			false,

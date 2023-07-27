@@ -1,6 +1,9 @@
-/* globals newspackPopupsCriteria */
-
 import matchingFunctions from './matching-functions';
+
+window.newspackPopupsCriteria = window.newspackPopupsCriteria || { criteria: {} };
+window.newspackPopupsCriteria.criteria = window.newspackPopupsCriteria.criteria || {};
+
+const pendingConfig = {};
 
 /**
  * Registers a criteria.
@@ -23,6 +26,7 @@ export function registerCriteria( id, config = {} ) {
 		id,
 		matchingFunction: 'default',
 		...config,
+		...pendingConfig[ id ],
 	};
 
 	/**
@@ -68,7 +72,14 @@ export function registerCriteria( id, config = {} ) {
 		if ( typeof criteria.matchingAttribute === 'function' ) {
 			criteria.value = criteria.matchingAttribute( ras );
 		} else if ( typeof criteria.matchingAttribute === 'string' ) {
-			criteria.value = ras?.store?.get( criteria.matchingAttribute ) || null;
+			if ( typeof ras?.store?.get === 'function' ) {
+				criteria.value = ras.store.get( criteria.matchingAttribute );
+			} else {
+				// eslint-disable-next-line no-console
+				console.warn(
+					`Reader data library not loaded. Unable to fetch value for '${ criteria.id }'`
+				);
+			}
 		}
 	};
 
@@ -87,10 +98,10 @@ export function registerCriteria( id, config = {} ) {
 		criteria._matched[ configString ] = criteria.matchingFunction( segmentConfig, ras );
 		return criteria._matched[ configString ];
 	};
-	if ( ! newspackPopupsCriteria.criteria ) {
-		newspackPopupsCriteria.criteria = {};
+	if ( ! window.newspackPopupsCriteria.criteria ) {
+		window.newspackPopupsCriteria.criteria = {};
 	}
-	newspackPopupsCriteria.criteria[ id ] = criteria;
+	window.newspackPopupsCriteria.criteria[ id ] = criteria;
 
 	return criteria;
 }
@@ -105,9 +116,9 @@ export function registerCriteria( id, config = {} ) {
  */
 export function getCriteria( id ) {
 	if ( id ) {
-		return newspackPopupsCriteria.criteria[ id ];
+		return window.newspackPopupsCriteria.criteria[ id ];
 	}
-	return newspackPopupsCriteria.criteria;
+	return window.newspackPopupsCriteria.criteria;
 }
 
 /**
@@ -120,9 +131,10 @@ export function getCriteria( id ) {
  * @throws {Error} If the criteria ID is not found.
  */
 export function setMatchingAttribute( id, matchingAttribute ) {
-	const criteria = getCriteria( id );
+	let criteria = getCriteria( id );
 	if ( ! criteria ) {
-		throw new Error( `Criteria ${ id } not found.` );
+		pendingConfig[ id ] = pendingConfig[ id ] || {};
+		criteria = pendingConfig[ id ];
 	}
 	criteria._matched = {}; // Clear matched cache.
 	criteria.matchingAttribute = matchingAttribute;
@@ -137,9 +149,10 @@ export function setMatchingAttribute( id, matchingAttribute ) {
  * @throws {Error} If the criteria ID is not found.
  */
 export function setMatchingFunction( id, matchingFunction ) {
-	const criteria = getCriteria( id );
+	let criteria = getCriteria( id );
 	if ( ! criteria ) {
-		throw new Error( `Criteria ${ id } not found.` );
+		pendingConfig[ id ] = pendingConfig[ id ] || {};
+		criteria = pendingConfig[ id ];
 	}
 	criteria._matched = {}; // Clear matched cache.
 	criteria.matchingFunction = matchingFunction;

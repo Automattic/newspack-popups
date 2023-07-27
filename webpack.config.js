@@ -19,10 +19,7 @@ const admin = path.join( __dirname, 'src', 'view', 'admin' );
 const documentSettings = path.join( __dirname, 'src', 'document-settings' );
 const settings = path.join( __dirname, 'src', 'settings' );
 const blocks = path.join( __dirname, 'src', 'blocks' );
-const customizer = path.join( __dirname, 'src', 'customizer' );
 const criteria = path.join( __dirname, 'src', 'criteria' );
-const defaultCriteria = path.join( __dirname, 'src', 'criteria', 'default' );
-const segmentsExample = path.join( __dirname, 'src', 'criteria', 'segments-example' );
 
 const webpackConfig = getBaseWebpackConfig(
 	{ WP: true },
@@ -34,10 +31,7 @@ const webpackConfig = getBaseWebpackConfig(
 			documentSettings,
 			settings,
 			blocks,
-			customizer,
 			criteria,
-			defaultCriteria,
-			segmentsExample,
 		},
 		'output-path': path.join( __dirname, 'dist' ),
 	}

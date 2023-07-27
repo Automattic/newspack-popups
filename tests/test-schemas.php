@@ -271,6 +271,19 @@ class SchemasTest extends WP_UnitTestCase {
 					'name'          => 'Test Segment',
 					'id'            => 'aasdqwe1234',
 					'priority'      => 10,
+					'criteria'      => [
+						[
+							'criteria_id' => 'articles_read',
+							'value'       => [
+								'min' => 5,
+								'max' => 20,
+							],
+						],
+						[
+							'criteria_id' => 'newsletter',
+							'value'       => 'is_subscriber',
+						],
+					],
 					'configuration' => [
 						'max_posts'           => 1,
 						'min_posts'           => 1,
@@ -296,6 +309,12 @@ class SchemasTest extends WP_UnitTestCase {
 					'name'          => 'Test Segment',
 					'id'            => 'aasdqwe1234',
 					'priority'      => 10,
+					'criteria'      => [
+						[
+							'criteria_id' => 'newsletter',
+							'value'       => 'is_subscriber',
+						],
+					],
 					'configuration' => [
 						'max_posts' => 1,
 					],
@@ -306,17 +325,29 @@ class SchemasTest extends WP_UnitTestCase {
 				[
 					'name'          => 'Test Segment',
 					'priority'      => 10,
+					'criteria'      => [
+						[
+							'criteria_id' => 'newsletter',
+							'value'       => 'is_subscriber',
+						],
+					],
 					'configuration' => [
 						'max_posts' => 1,
 					],
 				],
 				false,
 			],
-			'additional propertu'    => [
+			'additional property'    => [
 				[
 					'name'          => 'Test Segment',
 					'id'            => 'aasdqwe1234',
 					'priority'      => 10,
+					'criteria'      => [
+						[
+							'criteria_id' => 'newsletter',
+							'value'       => 'is_subscriber',
+						],
+					],
 					'configuration' => [
 						'max_posts' => 1,
 						'unknown'   => 'invalid',
@@ -340,6 +371,12 @@ class SchemasTest extends WP_UnitTestCase {
 					'name'          => 'Test Segment',
 					'id'            => 'aasdqwe1234',
 					'priority'      => 10,
+					'criteria'      => [
+						[
+							'criteria_id' => 'favorite_categories',
+							'value'       => [ 1 ],
+						],
+					],
 					'configuration' => [
 						'favorite_categories' => [
 							[
@@ -356,8 +393,84 @@ class SchemasTest extends WP_UnitTestCase {
 					'name'          => 'Test Segment',
 					'id'            => 'aasdqwe1234',
 					'priority'      => 10,
+					'criteria'      => [
+						[
+							'criteria_id' => 'favorite_categories',
+							'value'       => [ 9999 ],
+						],
+					],
 					'configuration' => [
 						'favorite_categories' => [ 'string' ],
+					],
+				],
+				false,
+			],
+			'valid criteria'         => [
+				[
+					'name'          => 'Test Segment',
+					'id'            => 'aasdqwe1234',
+					'priority'      => 10,
+					'configuration' => [],
+					'criteria'      => [
+						[
+							'criteria_id' => 'favorite_categories',
+							'value'       => [ 9999 ],
+						],
+						[
+							'criteria_id' => 'favorite_categories',
+							'value'       => [ 'string' ],
+						],
+						[
+							'criteria_id' => 'articles_read',
+							'value'       => [
+								'min' => 5,
+								'max' => 20,
+							],
+						],
+						[
+							'criteria_id' => 'newsletter',
+							'value'       => 'is_subscriber',
+						],
+						[
+							'criteria_id' => 'boolean',
+							'value'       => true,
+						],
+						[
+							'criteria_id' => 'integer',
+							'value'       => 123,
+						],
+					],
+				],
+				true,
+			],
+			'invalid criteria1'      => [
+				[
+					'name'     => 'Test Segment',
+					'id'       => 'aasdqwe1234',
+					'priority' => 10,
+					'criteria' => [
+						[
+							'criteria_id' => 'favorite_categories',
+							'value'       => [ [ 'array of arrays ' ] ],
+						],
+					],
+				],
+				false,
+			],
+			'invalid criteria2'      => [
+				[
+					'name'     => 'Test Segment',
+					'id'       => 'aasdqwe1234',
+					'priority' => 10,
+					'criteria' => [
+						[
+							'criteria_id' => 'articles_read',
+							'value'       => [
+								'min'        => 5,
+								'max'        => 20,
+								'additional' => 34,
+							],
+						],
 					],
 				],
 				false,
