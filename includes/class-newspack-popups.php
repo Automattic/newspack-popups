@@ -1384,7 +1384,7 @@ final class Newspack_Popups {
 		// Update user meta so we don't run this again for this user.
 		update_user_meta( $user_id, $user_meta_name, true );
 
-		// Drop table if most recent event in 6 months old.
+		// Drop table if most recent event is 6 months old.
 		$age_to_drop = 6 * MONTH_IN_SECONDS;
 		$last_item   = $wpdb->get_results( "SELECT 1 FROM $table_name WHERE date_created > NOW() - INTERVAL $age_to_drop SECOND LIMIT 1" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		if ( empty( $last_item ) ) {
