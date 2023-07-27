@@ -14,6 +14,17 @@ setMatchingFunction( 'favorite_categories', ( config, ras ) => {
 	}, {} );
 	const countsArray = Object.entries( counts );
 	countsArray.sort( ( a, b ) => b[ 1 ] - a[ 1 ] );
-	/* TODO: Decide how to rank categories. */
-	return false;
+
+	let match = false;
+
+	// Must have viewed at least 2 categories or 2 posts within the same category in order to rank.
+	if ( 1 < countsArray.length || 1 < countsArray[ 0 ][ 1 ] ) {
+		config.value.forEach( categoryId => {
+			// Return true if one of the categories in the criteria is the most-read category.
+			if ( parseInt( countsArray[ 0 ][ 0 ] ) === parseInt( categoryId ) ) {
+				match = true;
+			}
+		} );
+	}
+	return match;
 } );
