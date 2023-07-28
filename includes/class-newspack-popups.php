@@ -86,7 +86,7 @@ final class Newspack_Popups {
 			add_filter( 'show_admin_bar', [ __CLASS__, 'show_admin_bar' ], 10, 2 ); // phpcs:ignore WordPressVIPMinimum.UserExperience.AdminBarRemoval.RemovalDetected
 
 			add_action( 'wp', [ __CLASS__, 'migrate_user_data' ] );
-			add_action( 'user_register', [ __CLASS__, 'migrate_new_user_data' ], 10, 3 );
+			add_action( 'user_register', [ __CLASS__, 'migrate_new_user_data' ], 10, 2 );
 
 			include_once dirname( __FILE__ ) . '/class-newspack-popups-model.php';
 			include_once dirname( __FILE__ ) . '/class-newspack-segments-model.php';
