@@ -1312,7 +1312,6 @@ final class Newspack_Popups {
 	 */
 	public static function migrate_user_data() {
 		if (
-			get_option( 'newspack_popups_reader_data_migrated' ) ||
 			! is_user_logged_in() ||
 			get_user_meta( get_current_user_id(), 'newspack_popups_reader_data_migrated', true ) ||
 			! class_exists( 'Newspack\Reader_Data' )
