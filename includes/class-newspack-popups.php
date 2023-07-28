@@ -1347,7 +1347,11 @@ final class Newspack_Popups {
 
 		// Fetch all events for the user based on the client ids attached to them.
 		$client_id_placeholders = implode( ', ', array_fill( 0, count( $client_ids ), '%s' ) );
-		$events_sql             = "SELECT * FROM $table_name WHERE client_id IN ( $client_id_placeholders ) ORDER BY date_created ASC";
+		$events_sql             = "
+			SELECT * FROM $table_name
+			WHERE client_id IN ( $client_id_placeholders ) AND type IN ( 'subscription', 'donation', 'donation_cancelled' )
+			ORDER BY date_created ASC
+		";
 		$events_query           = call_user_func_array( [ $wpdb, 'prepare' ], array_merge( [ $events_sql ], $client_ids ) );
 		$events                 = $wpdb->get_results( $events_query, ARRAY_A ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.PreparedSQL.NotPrepared
 
