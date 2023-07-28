@@ -86,6 +86,7 @@ final class Newspack_Popups {
 			add_filter( 'show_admin_bar', [ __CLASS__, 'show_admin_bar' ], 10, 2 ); // phpcs:ignore WordPressVIPMinimum.UserExperience.AdminBarRemoval.RemovalDetected
 
 			add_action( 'wp', [ __CLASS__, 'migrate_user_data' ] );
+			add_action( 'newspack_data_event_reader_registered', [ __CLASS__, 'async_migrate_new_user_data' ], 10, 2 );
 
 			include_once dirname( __FILE__ ) . '/class-newspack-popups-model.php';
 			include_once dirname( __FILE__ ) . '/class-newspack-segments-model.php';
@@ -1306,15 +1307,14 @@ final class Newspack_Popups {
 	/**
 	 * Migrate user data from the 'wp_newspack_campaigns_reader_events' table to
 	 * the reader data library.
+	 *
+	 * Runs once on an authenticated reader pageload.
 	 */
 	public static function migrate_user_data() {
-		$option_name    = 'newspack_popups_reader_data_migrated';
-		$user_meta_name = 'newspack_popups_reader_data_migrated';
-
 		if (
-			get_option( $option_name ) ||
+			get_option( 'newspack_popups_reader_data_migrated' ) ||
 			! is_user_logged_in() ||
-			get_user_meta( get_current_user_id(), $user_meta_name, true ) ||
+			get_user_meta( get_current_user_id(), 'newspack_popups_reader_data_migrated', true ) ||
 			! class_exists( 'Newspack\Reader_Data' )
 		) {
 			return;
@@ -1323,12 +1323,11 @@ final class Newspack_Popups {
 		$user_id = get_current_user_id();
 
 		global $wpdb;
-		$table_name = $wpdb->prefix . 'newspack_campaigns_reader_events';
 
 		// Fetch the user's client ids.
 		$client_ids = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
 			$wpdb->prepare(
-				"SELECT DISTINCT client_id FROM $table_name WHERE type = %s AND context = %s", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				"SELECT DISTINCT client_id FROM {$wpdb->prefix}newspack_campaigns_reader_events WHERE type = %s AND context = %s",
 				'user_account',
 				$user_id
 			),
@@ -1345,10 +1344,68 @@ final class Newspack_Popups {
 			$client_ids
 		);
 
-		// Fetch all events for the user based on the client ids attached to them.
+		self::migrate_client_ids_to_user( $client_ids, $user_id );
+	}
+
+	/**
+	 * Look for client IDs attached to the registered user email to migrate data
+	 * generated before registration.
+	 *
+	 * This runs asynchronously with the `reader_registered` data event, so it's
+	 * not blocking the registration process.
+	 *
+	 * @param int   $timestamp Timestamp of the event.
+	 * @param array $data      Data of the event.
+	 */
+	public static function async_migrate_new_user_data( $timestamp, $data ) {
+		if ( get_option( 'newspack_popups_reader_data_migrated' ) ) {
+			return;
+		}
+
+		global $wpdb;
+
+		// Fetch all client IDs attached to the email.
+		$client_ids = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
+			$wpdb->prepare(
+				"
+					SELECT DISTINCT client_id
+					FROM {$wpdb->prefix}newspack_campaigns_reader_events
+					WHERE type = 'subscription' AND context = %s",
+				$data['email']
+			),
+			ARRAY_N
+		);
+
+		if ( empty( $client_ids ) ) {
+			return;
+		}
+
+		$client_ids = array_map(
+			function( $client_id ) {
+				return $client_id[0];
+			},
+			$client_ids
+		);
+
+		self::migrate_client_ids_to_user( $client_ids, $data['user_id'] );
+	}
+
+	/**
+	 * Migrate data from a list of client IDs to a user ID.
+	 *
+	 * @param string[] $client_ids Client IDs.
+	 * @param int      $user_id    User ID.
+	 */
+	public static function migrate_client_ids_to_user( $client_ids, $user_id ) {
+		if ( empty( $client_ids ) ) {
+			return;
+		}
+
+		global $wpdb;
+
 		$client_id_placeholders = implode( ', ', array_fill( 0, count( $client_ids ), '%s' ) );
 		$events_sql             = "
-			SELECT * FROM $table_name
+			SELECT * FROM {$wpdb->prefix}newspack_campaigns_reader_events
 			WHERE client_id IN ( $client_id_placeholders ) AND type IN ( 'subscription', 'donation', 'donation_cancelled' )
 			ORDER BY date_created ASC
 		";
@@ -1381,12 +1438,12 @@ final class Newspack_Popups {
 			\Newspack\Reader_Data::update_item( $user_id, $key, wp_json_encode( $value ) );
 		}
 
-		// Clean up user's events.
-		$delete_sql = "DELETE FROM $table_name WHERE client_id IN ( $client_id_placeholders )"; // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// Clean up migrated client IDs.
+		$delete_sql = "DELETE FROM {$wpdb->prefix}newspack_campaigns_reader_events WHERE client_id IN ( $client_id_placeholders )";
 		$wpdb->query( call_user_func_array( [ $wpdb, 'prepare' ], array_merge( [ $delete_sql ], $client_ids ) ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
 
 		// Update user meta so we don't run this again for this user.
-		update_user_meta( $user_id, $user_meta_name, true );
+		update_user_meta( $user_id, 'newspack_popups_reader_data_migrated', true );
 	}
 }
 Newspack_Popups::instance();
