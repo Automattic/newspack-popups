@@ -27,7 +27,7 @@ setMatchingFunction( 'favorite_categories', ( config, ras ) => {
 
 	// Must have viewed at least 2 categories or 2 posts within the same category in order to rank.
 	if ( ! countsArray[ 1 ] || countsArray[ 0 ][ 1 ] > countsArray[ 1 ][ 1 ] ) {
-		if ( config.value.indexOf( parseInt( countsArray[ 0 ][ 0 ] ) ) ) {
+		if ( -1 < config.value.indexOf( parseInt( countsArray[ 0 ][ 0 ] ) ) ) {
 			match = true;
 		}
 	}
