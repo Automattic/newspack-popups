@@ -86,7 +86,7 @@ final class Newspack_Popups {
 			add_filter( 'show_admin_bar', [ __CLASS__, 'show_admin_bar' ], 10, 2 ); // phpcs:ignore WordPressVIPMinimum.UserExperience.AdminBarRemoval.RemovalDetected
 
 			add_action( 'wp', [ __CLASS__, 'migrate_user_data' ] );
-			add_action( 'newspack_registered_reader', [ __CLASS__, 'migrate_new_user_data' ], 10, 3 );
+			add_action( 'user_register', [ __CLASS__, 'migrate_new_user_data' ], 10, 3 );
 
 			include_once dirname( __FILE__ ) . '/class-newspack-popups-model.php';
 			include_once dirname( __FILE__ ) . '/class-newspack-segments-model.php';
@@ -1354,13 +1354,11 @@ final class Newspack_Popups {
 	 * Look for client IDs attached to the registered user email to migrate data
 	 * generated before registration.
 	 *
-	 * @param string    $email         Email address.
-	 * @param bool      $authenticate  Whether to authenticate after registering.
-	 * @param false|int $user_id       The created user id.
+	 * @param int   $user_id  User ID.
+	 * @param array $userdata The raw array of data passed to wp_insert_user().
 	 */
-	public static function migrate_new_user_data( $email, $authenticate, $user_id ) {
-		// Bail if no user ID (user already exists).
-		if ( ! $user_id ) {
+	public static function migrate_new_user_data( $user_id, $userdata ) {
+		if ( empty( $userdata['user_email'] ) ) {
 			return;
 		}
 
@@ -1374,7 +1372,7 @@ final class Newspack_Popups {
 					FROM {$wpdb->prefix}newspack_campaigns_reader_events
 					WHERE type = 'subscription' AND context = %s
 				",
-				$email
+				$userdata['user_email']
 			),
 			ARRAY_N
 		);
