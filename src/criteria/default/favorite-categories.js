@@ -17,11 +17,12 @@ setMatchingFunction( 'favorite_categories', ( config, ras ) => {
 
 	let match = false;
 
+	if ( ! countsArray || ! countsArray.length ) {
+		return match;
+	}
+
 	// Must have viewed at least 2 categories or 2 posts within the same category in order to rank.
-	if (
-		( 1 < countsArray.length && countsArray[ 0 ][ 1 ] > countsArray[ 1 ][ 1 ] ) ||
-		1 < countsArray[ 0 ][ 1 ]
-	) {
+	if ( 1 < views.length && countsArray[ 0 ][ 1 ] > countsArray[ 1 ][ 1 ] ) {
 		config.value.forEach( categoryId => {
 			// Return true if one of the categories in the criteria is the most-read category.
 			if ( parseInt( countsArray[ 0 ][ 0 ] ) === parseInt( categoryId ) ) {
