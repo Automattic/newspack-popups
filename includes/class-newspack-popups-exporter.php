@@ -254,7 +254,7 @@ class Newspack_Popups_Exporter {
 	 * @return array
 	 */
 	private function sanitize_segments( $segments ) {
-		return $this->sanitize_terms( $segments, Newspack_Segments_Model::popup_segment );
+		return $this->sanitize_terms( $segments, Newspack_Segments_Model::TAX_SLUG );
 	}
 
 	/**
