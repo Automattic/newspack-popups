@@ -1387,16 +1387,6 @@ final class Newspack_Popups {
 
 		// Update user meta so we don't run this again for this user.
 		update_user_meta( $user_id, $user_meta_name, true );
-
-		// Drop table if most recent event is older than 6 months.
-		$age_to_drop  = 6 * MONTH_IN_SECONDS;
-		$recent_event = $wpdb->get_results( "SELECT 1 FROM $table_name WHERE date_created > NOW() - INTERVAL $age_to_drop SECOND LIMIT 1" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		if ( empty( $recent_event ) ) {
-			$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}newspack_campaigns_reader_events" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.SchemaChange
-			$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}newspack_campaigns_readers" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.SchemaChange
-			// Table has been dropped, update site option so we don't run this again ever.
-			update_option( $option_name, true );
-		}
 	}
 }
 Newspack_Popups::instance();
