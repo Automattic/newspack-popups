@@ -1359,10 +1359,6 @@ final class Newspack_Popups {
 	 * @param false|int $user_id       The created user id.
 	 */
 	public static function migrate_new_user_data( $email, $authenticate, $user_id ) {
-		if ( get_option( 'newspack_popups_reader_data_migrated' ) ) {
-			return;
-		}
-
 		// Bail if no user ID (user already exists).
 		if ( ! $user_id ) {
 			return;
