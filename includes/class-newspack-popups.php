@@ -86,7 +86,7 @@ final class Newspack_Popups {
 			add_filter( 'show_admin_bar', [ __CLASS__, 'show_admin_bar' ], 10, 2 ); // phpcs:ignore WordPressVIPMinimum.UserExperience.AdminBarRemoval.RemovalDetected
 
 			add_action( 'wp', [ __CLASS__, 'migrate_user_data' ] );
-			add_action( 'newspack_data_event_reader_registered', [ __CLASS__, 'async_migrate_new_user_data' ], 10, 2 );
+			add_action( 'newspack_registered_reader', [ __CLASS__, 'migrate_new_user_data' ], 10, 3 );
 
 			include_once dirname( __FILE__ ) . '/class-newspack-popups-model.php';
 			include_once dirname( __FILE__ ) . '/class-newspack-segments-model.php';
@@ -1327,7 +1327,11 @@ final class Newspack_Popups {
 		// Fetch the user's client ids.
 		$client_ids = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
 			$wpdb->prepare(
-				"SELECT DISTINCT client_id FROM {$wpdb->prefix}newspack_campaigns_reader_events WHERE type = %s AND context = %s",
+				"
+					SELECT DISTINCT client_id
+					FROM {$wpdb->prefix}newspack_campaigns_reader_events
+					WHERE type = %s AND context = %s
+				",
 				'user_account',
 				$user_id
 			),
@@ -1351,14 +1355,17 @@ final class Newspack_Popups {
 	 * Look for client IDs attached to the registered user email to migrate data
 	 * generated before registration.
 	 *
-	 * This runs asynchronously with the `reader_registered` data event, so it's
-	 * not blocking the registration process.
-	 *
-	 * @param int   $timestamp Timestamp of the event.
-	 * @param array $data      Data of the event.
+	 * @param string    $email         Email address.
+	 * @param bool      $authenticate  Whether to authenticate after registering.
+	 * @param false|int $user_id       The created user id.
 	 */
-	public static function async_migrate_new_user_data( $timestamp, $data ) {
+	public static function migrate_new_user_data( $email, $authenticate, $user_id ) {
 		if ( get_option( 'newspack_popups_reader_data_migrated' ) ) {
+			return;
+		}
+
+		// Bail if no user ID (user already exists).
+		if ( ! $user_id ) {
 			return;
 		}
 
@@ -1370,8 +1377,9 @@ final class Newspack_Popups {
 				"
 					SELECT DISTINCT client_id
 					FROM {$wpdb->prefix}newspack_campaigns_reader_events
-					WHERE type = 'subscription' AND context = %s",
-				$data['email']
+					WHERE type = 'subscription' AND context = %s
+				",
+				$email
 			),
 			ARRAY_N
 		);
@@ -1387,7 +1395,7 @@ final class Newspack_Popups {
 			$client_ids
 		);
 
-		self::migrate_client_ids_to_user( $client_ids, $data['user_id'] );
+		self::migrate_client_ids_to_user( $client_ids, $user_id );
 	}
 
 	/**
