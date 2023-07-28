@@ -841,7 +841,7 @@ final class Newspack_Popups_Model {
 		$popup_id            = $popup['id'];
 		$segments            = array_reduce(
 			$popup['segments'],
-			function( $acc, $segment_id ) {
+			function( $acc, $segment ) {
 				if ( $segment instanceof \WP_Term ) {
 					$acc[] = $segment->name;
 				}
