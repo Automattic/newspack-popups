@@ -9,6 +9,32 @@ export const periods = {
 };
 
 /**
+ * Checks if the current page request is a segment or campaign preview.
+ *
+ * @return {Object|null} View as object or null.
+ */
+const parseViewAs = () => {
+	const params = new URL( window.location ).searchParams;
+	if ( params.get( 'view_as' ) ) {
+		const viewAs = params
+			.get( 'view_as' )
+			.split( ';' )
+			.reduce( ( acc, item ) => {
+				const parts = item.split( ':' );
+				if ( 1 === parts.length ) {
+					acc[ parts[ 0 ] ] = true;
+				} else {
+					acc[ parts[ 0 ] ] = parts[ 1 ];
+				}
+				return acc;
+			}, {} );
+		return viewAs;
+	}
+
+	return null;
+};
+
+/**
  * Whether the reader matches the segment criteria.
  *
  * @param {Object} segmentCriteria Segment criteria.
@@ -29,13 +55,19 @@ const match = segmentCriteria => {
 };
 
 /**
- * Get the reader's highest-priority segment match.
+ * Get the reader's highest-priority segment match, or the segment to preview.
  *
  * @param {Object} segments Segments.
  *
  * @return {string|null} Segment ID, or null.
  */
 export const getBestPrioritySegment = segments => {
+	// If previewing as a specific segment.
+	const viewAs = parseViewAs();
+	if ( viewAs?.segment ) {
+		return viewAs.segment;
+	}
+
 	const matchingSegments = [];
 	for ( const segmentId in segments ) {
 		if ( match( segments[ segmentId ].criteria ) ) {
@@ -70,11 +102,12 @@ export const shouldPromptBeDisplayed = ( prompt, matchingSegment, ras, override 
 		return override;
 	}
 
-	// By frequency.
+	// By frequency. Do not parse if previewing prompts, otherwise prompts may not display when starting a new preview window.
+	const isPreview = !! parseViewAs();
 	// eslint-disable-next-line @wordpress/no-unused-vars-before-return
 	const [ start, between, max, reset ] = prompt.getAttribute( 'data-frequency' ).split( ',' );
 	const pageviews = ras.store.get( 'pageviews' );
-	if ( pageviews[ reset ] ) {
+	if ( ! isPreview && pageviews[ reset ] ) {
 		const views = pageviews[ reset ].count || 0;
 
 		// If reader hasn't amassed enough pageviews yet.

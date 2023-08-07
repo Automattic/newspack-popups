@@ -21,7 +21,7 @@ export const handleSegmentation = prompts => {
 		debug( 'matchingSegment', matchingSegment );
 		// Log a pageview for frequency counts.
 		logPageview( ras );
-		let overlayDisplayed;
+		let overlayDisplayed = false;
 
 		prompts.forEach( prompt => {
 			const promptId = prompt.getAttribute( 'id' );
