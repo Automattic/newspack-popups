@@ -658,22 +658,28 @@ final class Newspack_Popups_Inserter {
 				true
 			);
 
-			$segments = Newspack_Popups_Segmentation::get_segments( false );
-
-			// Gather segments for all prompts to be displayed.
-			foreach ( $segments as $segment ) {
-				if ( ! empty( $segment ) && ! empty( $segment['criteria'] ) && ! isset( self::$segments[ $segment['id'] ] ) ) {
-					self::$segments[ $segment['id'] ] = [
-						'criteria' => $segment['criteria'],
-						'priority' => $segment['priority'],
-					];
-				}
-			}
-
 			$script_data = [
-				'debug'    => defined( 'WP_DEBUG' ) && WP_DEBUG,
-				'segments' => self::$segments,
+				'debug' => defined( 'WP_DEBUG' ) && WP_DEBUG,
 			];
+
+			if ( class_exists( '\Newspack\Reader_Data' ) ) {
+				$segments = Newspack_Popups_Segmentation::get_segments( false );
+
+				// Gather segments for all prompts to be displayed.
+				foreach ( $segments as $segment ) {
+					if ( ! empty( $segment ) && ! empty( $segment['criteria'] ) && ! isset( self::$segments[ $segment['id'] ] ) ) {
+						self::$segments[ $segment['id'] ] = [
+							'criteria' => $segment['criteria'],
+							'priority' => $segment['priority'],
+						];
+					}
+				}
+
+				$script_data['segments'] = self::$segments;
+
+			} else {
+				$script_data['segmentation_disabled'] = true;
+			}
 
 			\wp_localize_script( $script_handle, 'newspack_popups_view', $script_data );
 			\wp_enqueue_script( $script_handle );

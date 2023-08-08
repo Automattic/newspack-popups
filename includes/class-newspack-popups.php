@@ -682,6 +682,7 @@ final class Newspack_Popups {
 					)
 				),
 				'preview_query_keys'           => self::PREVIEW_QUERY_KEYS,
+				'segmentation_enabled'         => class_exists( '\Newspack\Reader_Data' ),
 			]
 		);
 		\wp_enqueue_style(
