@@ -132,18 +132,19 @@ $width__tablet: 782px;
 			background-color: transparent;
 			box-shadow: none;
 		}
+
+		.newspack-popup__content {
+			padding-top: 32px;
+		}
+
 		.newspack-popup__content-wrapper {
 			box-shadow: 0 0 1em 0.5em rgba( black, 0.1 );
 			margin: 32px;
 		}
 
-		&.newspack-lightbox-featured-image {
-			@media only screen and ( min-width: $width__tablet ) {
-				.newspack-lightbox__close {
-					right: #{2 * $overlay__gap};
-					top: #{2 * $overlay__gap};
-				}
-			}
+		.newspack-lightbox__close {
+			right: #{2 * $overlay__gap};
+			top: #{2 * $overlay__gap};
 		}
 	}
 
