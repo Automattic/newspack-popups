@@ -83,7 +83,7 @@ export const handleSegmentation = prompts => {
 	};
 
 	// If no segments to handle.
-	if ( ! newspack_popups_view.segments || ! newspack_popups_view.segments.length ) {
+	if ( ! newspack_popups_view.segments ) {
 		maybeDisplayPrompts();
 	} else {
 		window.newspackRAS = window.newspackRAS || [];
