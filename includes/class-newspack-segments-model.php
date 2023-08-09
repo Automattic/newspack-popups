@@ -40,6 +40,7 @@ final class Newspack_Segments_Model {
 	 */
 	public static function init() {
 		add_action( 'init', array( __CLASS__, 'register_segments_taxonomy' ) );
+		add_filter( 'rest_' . self::TAX_SLUG . '_query', array( __CLASS__, 'filter_rest_query' ), 10 );
 		add_action( 'init', array( __CLASS__, 'maybe_update_db_version' ) );
 	}
 
@@ -803,6 +804,23 @@ final class Newspack_Segments_Model {
 			},
 			$segments
 		);
+	}
+
+	/**
+	 * Filters get_terms() arguments when querying terms via the REST API.
+	 *
+	 * @param array $prepared_args Array of arguments for get_terms().
+	 */
+	public static function filter_rest_query( $prepared_args ) {
+		if ( ! isset( $prepared_args['meta_query'] ) ) {
+			$prepared_args['meta_query'] = []; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+		}
+		$prepared_args['meta_query'][] = [
+			'key'     => 'configuration',
+			'compare' => 'NOT LIKE',
+			'value'   => '"is_disabled";b:1',
+		];
+		return $prepared_args;
 	}
 }
 
