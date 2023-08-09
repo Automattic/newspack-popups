@@ -202,6 +202,7 @@ final class Newspack_Segments_Model {
 							'required' => true,
 						],
 						'value'       => [
+							'type'  => [ 'boolean', 'integer', 'string', 'object' ], // redundant declaration to avoid warning on rest_default_additional_properties_to_false().
 							'anyOf' => [
 								[
 									'type' => [ 'boolean', 'integer', 'string' ],
