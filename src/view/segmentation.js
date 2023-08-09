@@ -82,7 +82,8 @@ export const handleSegmentation = prompts => {
 		} );
 	};
 
-	if ( newspack_popups_view.segmentation_disabled ) {
+	// If no segments to handle.
+	if ( ! newspack_popups_view.segments || ! newspack_popups_view.segments.length ) {
 		maybeDisplayPrompts();
 	} else {
 		window.newspackRAS = window.newspackRAS || [];

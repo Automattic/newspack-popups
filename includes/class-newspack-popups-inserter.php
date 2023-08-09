@@ -677,8 +677,6 @@ final class Newspack_Popups_Inserter {
 
 				$script_data['segments'] = self::$segments;
 
-			} else {
-				$script_data['segmentation_disabled'] = true;
 			}
 
 			\wp_localize_script( $script_handle, 'newspack_popups_view', $script_data );
