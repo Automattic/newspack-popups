@@ -675,6 +675,11 @@ final class Newspack_Popups_Inserter {
 				'segments' => self::$segments,
 			];
 
+			$donor_landing_page = Newspack_Popups_Settings::donor_landing_page();
+			if ( ! empty( $donor_landing_page ) ) {
+				$script_data['donor_landing_page'] = $donor_landing_page;
+			}
+
 			\wp_localize_script( $script_handle, 'newspack_popups_view', $script_data );
 			\wp_enqueue_script( $script_handle );
 		}
