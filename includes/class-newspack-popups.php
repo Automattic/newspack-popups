@@ -1337,7 +1337,7 @@ final class Newspack_Popups {
 			ARRAY_N
 		);
 		if ( empty( $client_ids ) ) {
-			update_user_meta( $user_id, $user_meta_name, true );
+			update_user_meta( $user_id, 'newspack_popups_reader_data_migrated', true );
 			return;
 		}
 		$client_ids = array_map(
