@@ -662,7 +662,7 @@ final class Newspack_Popups_Inserter {
 				'debug' => defined( 'WP_DEBUG' ) && WP_DEBUG,
 			];
 
-			if ( class_exists( '\Newspack\Reader_Data' ) ) {
+			if ( Newspack_Popups::$segmentation_enabled ) {
 				$segments = Newspack_Popups_Segmentation::get_segments( false );
 
 				// Gather segments for all prompts to be displayed.

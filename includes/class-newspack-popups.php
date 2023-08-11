@@ -53,6 +53,13 @@ final class Newspack_Popups {
 	protected static $instance = null;
 
 	/**
+	 * Whether the segmentation features are enabled
+	 *
+	 * @var bool
+	 */
+	public static $segmentation_enabled;
+
+	/**
 	 * Main Newspack Ads Instance.
 	 * Ensures only one instance of Newspack Ads is loaded or can be loaded.
 	 *
@@ -69,6 +76,10 @@ final class Newspack_Popups {
 	 * Constructor.
 	 */
 	public function __construct() {
+
+		// Segmentation requires the main Newspack plugin.
+		self::$segmentation_enabled = class_exists( '\Newspack\Reader_Data' );
+
 		add_action( 'admin_init', [ __CLASS__, 'create_lightweight_api_config' ] );
 		add_action( 'admin_notices', [ __CLASS__, 'api_config_missing_notice' ] );
 		add_action( 'cli_init', [ __CLASS__, 'register_cli_commands' ] );
@@ -671,7 +682,7 @@ final class Newspack_Popups {
 					)
 				),
 				'preview_query_keys'           => self::PREVIEW_QUERY_KEYS,
-				'segmentation_enabled'         => class_exists( '\Newspack\Reader_Data' ),
+				'segmentation_enabled'         => self::$segmentation_enabled,
 			]
 		);
 		\wp_enqueue_style(
@@ -1303,7 +1314,7 @@ final class Newspack_Popups {
 		if (
 			! is_user_logged_in() ||
 			get_user_meta( get_current_user_id(), 'newspack_popups_reader_data_migrated', true ) ||
-			! class_exists( 'Newspack\Reader_Data' )
+			! self::$segmentation_enabled
 		) {
 			return;
 		}
