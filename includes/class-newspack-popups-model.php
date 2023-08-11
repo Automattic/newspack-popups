@@ -99,7 +99,7 @@ final class Newspack_Popups_Model {
 				]
 			);
 		}
-		if ( ! in_array( $taxonomy, [ 'category', 'post_tag', Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY ] ) ) {
+		if ( ! in_array( $taxonomy, [ 'category', 'post_tag', Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY, Newspack_Segments_Model::TAX_SLUG ] ) ) {
 			return new \WP_Error(
 				'newspack_popups_invalid_taxonomy',
 				esc_html__( 'Invalid taxonomy.', 'newspack-popups' ),
@@ -374,6 +374,17 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
+	 * Gets the popup's segments.
+	 *
+	 * @param int $id ID of the prompt.
+	 * @return array Array of segments.
+	 */
+	public static function get_popup_segments( $id ) {
+		$segments = get_the_terms( $id, Newspack_Segments_Model::TAX_SLUG );
+		return $segments ? $segments : [];
+	}
+
+	/**
 	 * Get options for the given prompt, with defaults.
 	 *
 	 * @param int         $id ID of the prompt.
@@ -402,7 +413,6 @@ final class Newspack_Popups_Model {
 			'archive_insertion_posts_count'  => get_post_meta( $id, 'archive_insertion_posts_count', true ),
 			'archive_insertion_is_repeating' => get_post_meta( $id, 'archive_insertion_is_repeating', true ),
 			'utm_suppression'                => get_post_meta( $id, 'utm_suppression', true ),
-			'selected_segment_id'            => get_post_meta( $id, 'selected_segment_id', true ),
 			'post_types'                     => get_post_meta( $id, 'post_types', true ),
 			'archive_page_types'             => get_post_meta( $id, 'archive_page_types', true ),
 			'additional_classes'             => get_post_meta( $id, 'additional_classes', true ),
@@ -446,7 +456,6 @@ final class Newspack_Popups_Model {
 				'archive_insertion_posts_count'  => 1,
 				'archive_insertion_is_repeating' => false,
 				'utm_suppression'                => null,
-				'selected_segment_id'            => '',
 				'post_types'                     => self::get_default_popup_post_types(),
 				'archive_page_types'             => self::get_supported_archive_page_types(),
 				'additional_classes'             => '',
@@ -614,10 +623,8 @@ final class Newspack_Popups_Model {
 			'options' => $campaign_post_options,
 		];
 
-		$assigned_segments = explode( ',', $popup['options']['selected_segment_id'] );
-		if ( $popup['options']['selected_segment_id'] && 0 === count( array_intersect( $assigned_segments, Newspack_Popups_Segmentation::get_segment_ids() ) ) ) {
-			$popup['options']['selected_segment_id'] = null;
-		}
+		$popup['segments'] = self::get_popup_segments( $id );
+
 		if ( $include_taxonomies ) {
 			$popup['categories']      = get_the_category( $id );
 			$popup['tags']            = get_the_tags( $id );
@@ -832,15 +839,11 @@ final class Newspack_Popups_Model {
 		}
 
 		$popup_id            = $popup['id'];
-		$segment_ids         = isset( $popup['options'] ) && ! empty( $popup['options']['selected_segment_id'] ) ?
-			explode( ',', $popup['options']['selected_segment_id'] ) :
-			[];
 		$segments            = array_reduce(
-			$segment_ids,
-			function( $acc, $segment_id ) {
-				$segment = Newspack_Popups_Segmentation::get_segment( $segment_id );
-				if ( $segment && isset( $segment['name'] ) ) {
-					$acc[] = $segment['name'];
+			$popup['segments'],
+			function( $acc, $segment ) {
+				if ( $segment instanceof \WP_Term ) {
+					$acc[] = $segment->name;
 				}
 				return $acc;
 			},
@@ -1025,7 +1028,7 @@ final class Newspack_Popups_Model {
 		$classes[]            = $large_border ? 'newspack-lightbox-large-border' : null;
 		$classes[]            = $is_newsletter_prompt ? 'newspack-newsletter-prompt-inline' : null;
 		$classes              = array_merge( $classes, explode( ' ', $popup['options']['additional_classes'] ) );
-		$assigned_segments    = $popup['options']['selected_segment_id'];
+		$assigned_segments    = Newspack_Segments_Model::get_popup_segments_ids_string( $popup['id'] );
 		$frequency_config     = [ $popup['options']['frequency_start'], $popup['options']['frequency_between'], $popup['options']['frequency_max'], $popup['options']['frequency_reset'] ];
 
 		$analytics_events = self::get_analytics_events( $popup, $body, $element_id );
@@ -1110,7 +1113,7 @@ final class Newspack_Popups_Model {
 		$wrapper_classes       = [ 'newspack-popup-wrapper' ];
 		$wrapper_classes[]     = 'publish' !== $popup['status'] ? 'newspack-inactive-popup-status' : null;
 		$is_scroll_triggered   = 'scroll' === $popup['options']['trigger_type'];
-		$assigned_segments     = $popup['options']['selected_segment_id'];
+		$assigned_segments     = Newspack_Segments_Model::get_popup_segments_ids_string( $popup['id'] );
 		$frequency_config      = [ $popup['options']['frequency_start'], $popup['options']['frequency_between'], $popup['options']['frequency_max'], $popup['options']['frequency_reset'] ];
 
 		add_filter(

@@ -1,3 +1,5 @@
+/* global newspack_popups_data */
+
 /**
  * Popup Custom Post Type
  */
@@ -7,9 +9,11 @@
  */
 import { __ } from '@wordpress/i18n';
 import { compose } from '@wordpress/compose';
-import { withSelect, withDispatch } from '@wordpress/data';
+import { withSelect, withDispatch, useSelect } from '@wordpress/data';
 import { registerPlugin } from '@wordpress/plugins';
 import { PluginDocumentSettingPanel, PluginPostStatusInfo } from '@wordpress/edit-post';
+import { ExternalLink, Flex } from '@wordpress/components';
+import { store as coreStore } from '@wordpress/core-data';
 
 /**
  * Internal dependencies
@@ -18,7 +22,6 @@ import { optionsFieldsSelector } from './utils';
 import Sidebar from './Sidebar';
 import StylesSidebar from './StylesSidebar';
 import FrequencySidebar from './FrequencySidebar';
-import SegmentationSidebar from './SegmentationSidebar';
 import ColorsSidebar from './ColorsSidebar';
 import AdvancedSidebar from './AdvancedSidebar';
 import Preview from './Preview';
@@ -26,6 +29,12 @@ import Duplicate from './Duplicate';
 import EditorAdditions from './EditorAdditions';
 import PostTypesPanel from './PostTypesPanel';
 import './style.scss';
+
+const EMPTY_ARRAY = [];
+
+const ADMIN_URL = newspack_popups_data.segments_admin_url;
+
+const TAXONOMY_SLUG = newspack_popups_data.segments_taxonomy;
 
 // Action dispatchers for the sidebar components.
 const mapDispatchToProps = dispatch => {
@@ -50,7 +59,6 @@ const connectData = compose( [
 const SidebarWithData = connectData( Sidebar );
 const StylesSidebarWithData = connectData( StylesSidebar );
 const FrequencySidebarWithData = connectData( FrequencySidebar );
-const SegmentationSidebarWithData = connectData( SegmentationSidebar );
 const ColorsSidebarWithData = connectData( ColorsSidebar );
 const PostTypesPanelWithData = connectData( PostTypesPanel );
 const AdvancedSidebarWithData = connectData( AdvancedSidebar );
@@ -88,18 +96,6 @@ if ( window?.newspack_popups_data?.segmentation_enabled ) {
 				title={ __( 'Frequency', 'newspack-popups' ) }
 			>
 				<FrequencySidebarWithData />
-			</PluginDocumentSettingPanel>
-		),
-		icon: null,
-	} );
-
-	registerPlugin( 'newspack-popups-segmentation', {
-		render: () => (
-			<PluginDocumentSettingPanel
-				name="popup-segmentation-panel"
-				title={ __( 'Segmentation', 'newspack-popups' ) }
-			>
-				<SegmentationSidebarWithData />
 			</PluginDocumentSettingPanel>
 		),
 		icon: null,
@@ -155,3 +151,71 @@ const PluginPostStatusInfoTest = () => (
 	</PluginPostStatusInfo>
 );
 registerPlugin( 'newspack-popups-preview', { render: PluginPostStatusInfoTest } );
+
+/**
+ * Adds a help message to the Segment selector
+ */
+const NewspackPopupsSegmentsHelper = ( { slug } ) => {
+	const { terms } = useSelect(
+		select => {
+			const { getEditedPostAttribute } = select( 'core/editor' );
+			const { getTaxonomy } = select( coreStore );
+			const _taxonomy = getTaxonomy( slug );
+
+			return {
+				terms: _taxonomy ? getEditedPostAttribute( _taxonomy.rest_base ) : EMPTY_ARRAY,
+			};
+		},
+		[ slug ]
+	);
+
+	return (
+		<Flex direction="column" gap="4">
+			<div className="newspack-popups-segments-tax-control-helper">
+				{ terms.length === 0 && (
+					<p>{ __( 'The prompt will be shown to all readers.', 'newspack-popups' ) }</p>
+				) }
+				{ terms.length === 1 && (
+					<p>
+						{ __(
+							'The prompt will be shown only to readers who match the selected segment.',
+							'newspack-popups'
+						) }
+					</p>
+				) }
+				{ terms.length > 1 && (
+					<p>
+						{ __(
+							'The prompt will be shown only to readers who match the selected segments.',
+							'newspack-popups'
+						) }
+					</p>
+				) }
+			</div>
+
+			<ExternalLink href={ ADMIN_URL } key="segmentation-link">
+				{ __( 'Manage segments', 'newspack-popups' ) }
+			</ExternalLink>
+		</Flex>
+	);
+};
+
+function customizeSelector( OriginalComponent ) {
+	return function NewComponent( props ) {
+		if ( props.slug === TAXONOMY_SLUG ) {
+			return (
+				<div className="newspack-popups-segments-tax-control">
+					<OriginalComponent { ...props } />
+					<NewspackPopupsSegmentsHelper { ...props } />
+				</div>
+			);
+		}
+		return <OriginalComponent { ...props } />;
+	};
+}
+
+wp.hooks.addFilter(
+	'editor.PostTaxonomyType',
+	'newspack/multibranded-site/brand-selector-filter',
+	customizeSelector
+);

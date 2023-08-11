@@ -24,7 +24,7 @@ final class Newspack_Segments_Model {
 	 *
 	 * @var int
 	 */
-	const DB_VERSION = 1;
+	const DB_VERSION = 2;
 
 	/**
 	 * The DB version option name. Where the current option is stored.
@@ -40,6 +40,7 @@ final class Newspack_Segments_Model {
 	 */
 	public static function init() {
 		add_action( 'init', array( __CLASS__, 'register_segments_taxonomy' ) );
+		add_filter( 'rest_' . self::TAX_SLUG . '_query', array( __CLASS__, 'filter_rest_query' ), 10 );
 		add_action( 'init', array( __CLASS__, 'maybe_update_db_version' ) );
 	}
 
@@ -64,6 +65,9 @@ final class Newspack_Segments_Model {
 	public static function update_db_version( $current_db_version ) {
 		if ( $current_db_version < 1 ) {
 			self::update_db_version_to_1();
+		}
+		if ( $current_db_version < 2 ) {
+			self::update_db_version_to_2();
 		}
 		update_option( self::DB_VERSION_OPTION_NAME, self::DB_VERSION );
 	}
@@ -102,6 +106,24 @@ final class Newspack_Segments_Model {
 	}
 
 	/**
+	 * Updates the DB version to 2, when the segments relationship with prompts was changed from a post meta to term relationship
+	 *
+	 * @return void
+	 */
+	public static function update_db_version_to_2() {
+		$prompts = Newspack_Popups_Model::retrieve_popups( true, true );
+		foreach ( $prompts as $prompt ) {
+			$old_segments = get_post_meta( $prompt['id'], 'selected_segment_id', true );
+			if ( empty( $old_segments ) ) {
+				continue;
+			}
+			$segments_ids = explode( ',', $old_segments );
+			$segment_ids  = array_map( 'intval', $segments_ids );
+			wp_set_object_terms( $prompt['id'], $segment_ids, self::TAX_SLUG );
+		}
+	}
+
+	/**
 	 * Register the segments taxonomy
 	 *
 	 * @return void
@@ -124,9 +146,10 @@ final class Newspack_Segments_Model {
 		$args = array(
 			'labels'             => $labels,
 			'description'        => __( 'Segments for popups', 'newspack-popups' ),
-			'hierarchical'       => false,
+			'hierarchical'       => true, // just to get the checkbox UI.
 			'public'             => false,
-			'show_ui'            => false,
+			'show_ui'            => true,
+			'show_in_rest'       => true,
 			'show_in_menu'       => false,
 			'show_in_nav_menus'  => false,
 			'show_tagcloud'      => false,
@@ -180,6 +203,7 @@ final class Newspack_Segments_Model {
 							'required' => true,
 						],
 						'value'       => [
+							'type'  => [ 'boolean', 'integer', 'string', 'object' ], // redundant declaration to avoid warning on rest_default_additional_properties_to_false().
 							'anyOf' => [
 								[
 									'type' => [ 'boolean', 'integer', 'string' ],
@@ -638,6 +662,17 @@ final class Newspack_Segments_Model {
 	}
 
 	/**
+	 * Get the segments IDs for a given popup
+	 *
+	 * @param int $popup_id The popup ID.
+	 * @return string
+	 */
+	public static function get_popup_segments_ids_string( $popup_id ) {
+		$segments = wp_get_object_terms( $popup_id, self::TAX_SLUG, [ 'fields' => 'ids' ] );
+		return implode( ',', $segments );
+	}
+
+	/**
 	 * Delete a segment.
 	 *
 	 * @param string $id A segment id.
@@ -769,6 +804,23 @@ final class Newspack_Segments_Model {
 			},
 			$segments
 		);
+	}
+
+	/**
+	 * Filters get_terms() arguments when querying terms via the REST API.
+	 *
+	 * @param array $prepared_args Array of arguments for get_terms().
+	 */
+	public static function filter_rest_query( $prepared_args ) {
+		if ( ! isset( $prepared_args['meta_query'] ) ) {
+			$prepared_args['meta_query'] = []; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+		}
+		$prepared_args['meta_query'][] = [
+			'key'     => 'configuration',
+			'compare' => 'NOT LIKE',
+			'value'   => '"is_disabled";b:1',
+		];
+		return $prepared_args;
 	}
 }
 
