@@ -70,44 +70,47 @@ export const shouldPromptBeDisplayed = ( prompt, matchingSegment, ras, override 
 		return override;
 	}
 
-	// By frequency.
-	// eslint-disable-next-line @wordpress/no-unused-vars-before-return
-	const [ start, between, max, reset ] = prompt.getAttribute( 'data-frequency' ).split( ',' );
-	const pageviews = ras.store.get( 'pageviews' );
-	if ( pageviews[ reset ] ) {
-		const views = pageviews[ reset ].count || 0;
+	if ( ras ) {
+		// By frequency.
+		// eslint-disable-next-line @wordpress/no-unused-vars-before-return
+		const [ start, between, max, reset ] = prompt.getAttribute( 'data-frequency' ).split( ',' );
+		const pageviews = ras.store.get( 'pageviews' );
+		if ( pageviews[ reset ] ) {
+			const views = pageviews[ reset ].count || 0;
 
-		// If reader hasn't amassed enough pageviews yet.
-		if ( views <= parseInt( start ) ) {
-			return false;
-		}
+			// If reader hasn't amassed enough pageviews yet.
+			if ( views <= parseInt( start ) ) {
+				return false;
+			}
 
-		// If not displaying every pageview.
-		if ( 0 < between ) {
-			const viewsAfterStart = Math.max( 0, views - ( parseInt( start ) + 1 ) );
-			if ( 0 < viewsAfterStart % ( parseInt( between ) + 1 ) ) {
+			// If not displaying every pageview.
+			if ( 0 < between ) {
+				const viewsAfterStart = Math.max( 0, views - ( parseInt( start ) + 1 ) );
+				if ( 0 < viewsAfterStart % ( parseInt( between ) + 1 ) ) {
+					return false;
+				}
+			}
+
+			// If there's a max frequency.
+			const promptId = getRawId( prompt.getAttribute( 'id' ) );
+			const seenEvents = ( ras.getActivities( 'prompt_seen' ) || [] ).filter( activity => {
+				return (
+					activity.data?.prompt_id === promptId &&
+					periods[ reset ] > Date.now() - activity.timestamp
+				);
+			} );
+			if ( 0 < parseInt( max ) && seenEvents.length >= parseInt( max ) ) {
 				return false;
 			}
 		}
 
-		// If there's a max frequency.
-		const promptId = getRawId( prompt.getAttribute( 'id' ) );
-		const seenEvents = ( ras.getActivities( 'prompt_seen' ) || [] ).filter( activity => {
-			return (
-				activity.data?.prompt_id === promptId && periods[ reset ] > Date.now() - activity.timestamp
-			);
-		} );
-		if ( 0 < parseInt( max ) && seenEvents.length >= parseInt( max ) ) {
+		// By assigned segments.
+		const assignedSegments = prompt.getAttribute( 'data-segments' )
+			? prompt.getAttribute( 'data-segments' ).split( ',' )
+			: null;
+		if ( assignedSegments && 0 > assignedSegments.indexOf( matchingSegment ) ) {
 			return false;
 		}
-	}
-
-	// By assigned segments.
-	const assignedSegments = prompt.getAttribute( 'data-segments' )
-		? prompt.getAttribute( 'data-segments' ).split( ',' )
-		: null;
-	if ( assignedSegments && 0 > assignedSegments.indexOf( matchingSegment ) ) {
-		return false;
 	}
 
 	return true;

@@ -53,6 +53,13 @@ final class Newspack_Popups {
 	protected static $instance = null;
 
 	/**
+	 * Whether the segmentation features are enabled
+	 *
+	 * @var bool
+	 */
+	public static $segmentation_enabled;
+
+	/**
 	 * Main Newspack Ads Instance.
 	 * Ensures only one instance of Newspack Ads is loaded or can be loaded.
 	 *
@@ -69,35 +76,34 @@ final class Newspack_Popups {
 	 * Constructor.
 	 */
 	public function __construct() {
-		add_action( 'admin_init', [ __CLASS__, 'create_lightweight_api_config' ] );
-		add_action( 'admin_notices', [ __CLASS__, 'api_config_missing_notice' ] );
+
+		// Segmentation requires the main Newspack plugin.
+		self::$segmentation_enabled = class_exists( '\Newspack\Reader_Data' );
+
 		add_action( 'cli_init', [ __CLASS__, 'register_cli_commands' ] );
 
-		if ( self::is_api_configured() ) {
-			add_action( 'init', [ __CLASS__, 'register_cpt' ] );
-			add_action( 'init', [ __CLASS__, 'register_meta' ] );
-			add_action( 'init', [ __CLASS__, 'register_taxonomy' ] );
-			add_action( 'init', [ __CLASS__, 'disable_prompts_for_protected_pages' ] );
-			add_action( 'enqueue_block_editor_assets', [ __CLASS__, 'enqueue_block_editor_assets' ] );
-			add_filter( 'display_post_states', [ __CLASS__, 'display_post_states' ], 10, 2 );
-			add_action( 'save_post_' . self::NEWSPACK_POPUPS_CPT, [ __CLASS__, 'popup_default_fields' ], 10, 3 );
-			add_action( 'transition_post_status', [ __CLASS__, 'prevent_default_category_on_publish' ], 10, 3 );
-			add_action( 'pre_delete_term', [ __CLASS__, 'prevent_default_category_on_term_delete' ], 10, 2 );
-			add_filter( 'show_admin_bar', [ __CLASS__, 'show_admin_bar' ], 10, 2 ); // phpcs:ignore WordPressVIPMinimum.UserExperience.AdminBarRemoval.RemovalDetected
+		add_action( 'init', [ __CLASS__, 'register_cpt' ] );
+		add_action( 'init', [ __CLASS__, 'register_meta' ] );
+		add_action( 'init', [ __CLASS__, 'register_taxonomy' ] );
+		add_action( 'init', [ __CLASS__, 'disable_prompts_for_protected_pages' ] );
+		add_action( 'enqueue_block_editor_assets', [ __CLASS__, 'enqueue_block_editor_assets' ] );
+		add_filter( 'display_post_states', [ __CLASS__, 'display_post_states' ], 10, 2 );
+		add_action( 'save_post_' . self::NEWSPACK_POPUPS_CPT, [ __CLASS__, 'popup_default_fields' ], 10, 3 );
+		add_action( 'transition_post_status', [ __CLASS__, 'prevent_default_category_on_publish' ], 10, 3 );
+		add_action( 'pre_delete_term', [ __CLASS__, 'prevent_default_category_on_term_delete' ], 10, 2 );
+		add_filter( 'show_admin_bar', [ __CLASS__, 'show_admin_bar' ], 10, 2 ); // phpcs:ignore WordPressVIPMinimum.UserExperience.AdminBarRemoval.RemovalDetected
 
-			include_once dirname( __FILE__ ) . '/class-newspack-popups-model.php';
-			include_once dirname( __FILE__ ) . '/class-newspack-segments-migration.php';
-			include_once dirname( __FILE__ ) . '/class-newspack-segments-model.php';
-			include_once dirname( __FILE__ ) . '/class-newspack-popups-presets.php';
-			include_once dirname( __FILE__ ) . '/class-newspack-popups-inserter.php';
-			include_once dirname( __FILE__ ) . '/class-newspack-popups-api.php';
-			include_once dirname( __FILE__ ) . '/class-newspack-popups-settings.php';
-			include_once dirname( __FILE__ ) . '/class-newspack-popups-segmentation.php';
-			include_once dirname( __FILE__ ) . '/class-newspack-popups-custom-placements.php';
-			include_once dirname( __FILE__ ) . '/class-newspack-popups-view-as.php';
-			include_once dirname( __FILE__ ) . '/class-newspack-popups-data-api.php';
-			include_once dirname( __FILE__ ) . '/class-newspack-popups-criteria.php';
-		}
+		include_once dirname( __FILE__ ) . '/class-newspack-popups-model.php';
+		include_once dirname( __FILE__ ) . '/class-newspack-segments-model.php';
+		include_once dirname( __FILE__ ) . '/class-newspack-popups-presets.php';
+		include_once dirname( __FILE__ ) . '/class-newspack-popups-inserter.php';
+		include_once dirname( __FILE__ ) . '/class-newspack-popups-api.php';
+		include_once dirname( __FILE__ ) . '/class-newspack-popups-settings.php';
+		include_once dirname( __FILE__ ) . '/class-newspack-popups-segmentation.php';
+		include_once dirname( __FILE__ ) . '/class-newspack-popups-custom-placements.php';
+		include_once dirname( __FILE__ ) . '/class-newspack-popups-view-as.php';
+		include_once dirname( __FILE__ ) . '/class-newspack-popups-data-api.php';
+		include_once dirname( __FILE__ ) . '/class-newspack-popups-criteria.php';
 	}
 
 	/**
@@ -669,6 +675,7 @@ final class Newspack_Popups {
 					)
 				),
 				'preview_query_keys'           => self::PREVIEW_QUERY_KEYS,
+				'segmentation_enabled'         => self::$segmentation_enabled,
 			]
 		);
 		\wp_enqueue_style(
@@ -835,91 +842,6 @@ final class Newspack_Popups {
 		if ( $group ) {
 			wp_set_post_terms( $post_id, [ $group ], self::NEWSPACK_POPUPS_TAXONOMY );
 		}
-	}
-
-	/**
-	 * Create the config file for the API, unless it exists.
-	 */
-	public static function create_lightweight_api_config() {
-		// Don't create a config file if it's already there.
-		if (
-			( file_exists( self::LIGHTWEIGHT_API_CONFIG_FILE_PATH_LEGACY ) || file_exists( self::LIGHTWEIGHT_API_CONFIG_FILE_PATH ) )
-		) {
-			return;
-		}
-		// Don't create a config file if the directory is not writable.
-		if ( ! is_writable( dirname( self::LIGHTWEIGHT_API_CONFIG_FILE_PATH ) ) ) { // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_is_writable
-			return;
-		}
-		global $wpdb;
-		$config_vars = [
-			'DB_NAME',
-			'DB_USER',
-			'DB_PASSWORD',
-			'DB_HOST',
-			'DB_CHARSET',
-			'DB_COLLATE',
-			'DB_PREFIX',
-			'WP_CACHE_KEY_SALT',
-			'NEWSPACK_POPUPS_DEBUG',
-		];
-
-		$new_config_file = file_put_contents( // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_file_put_contents -- VIP will have to create a config manually
-			self::LIGHTWEIGHT_API_CONFIG_FILE_PATH,
-			"<?php\n" .
-			implode(
-				"\n",
-				array_map(
-					function( $config_var ) use ( $wpdb ) {
-						// Skip if it's set through an env var.
-						if ( getenv( $config_var ) ) {
-							return '';
-						}
-						if ( defined( $config_var ) ) {
-							$value = constant( $config_var );
-						}
-						if ( 'DB_PREFIX' === $config_var ) {
-							$value = $wpdb->prefix;
-						}
-						if ( ! isset( $value ) ) {
-							return '';
-						}
-						$value = addslashes( $value );
-						return "define( '" . $config_var . "', '" . $value . "' );";
-					},
-					$config_vars
-				)
-			)
-		);
-		if ( $new_config_file ) {
-			error_log( 'Created the config file: ' . self::LIGHTWEIGHT_API_CONFIG_FILE_PATH ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-		}
-	}
-
-	/**
-	 * Is the API configured?
-	 */
-	public static function is_api_configured() {
-		return file_exists( self::LIGHTWEIGHT_API_CONFIG_FILE_PATH_LEGACY ) || file_exists( self::LIGHTWEIGHT_API_CONFIG_FILE_PATH );
-	}
-
-	/**
-	 * Add an admin notice if config is missing.
-	 */
-	public static function api_config_missing_notice() {
-		if ( self::is_api_configured() ) {
-			return;
-		}
-		?>
-			<div class="notice notice-error">
-				<p>
-					<?php _e( 'Newspack Campaigns requires a custom configuration file, which is missing. Please create this file by following ', 'newspack-popups' ); ?>
-					<a href="https://github.com/Automattic/newspack-popups/blob/master/README.md#config-file">
-						<?php _e( 'these instructions.', 'newspack-popups' ); ?>
-					</a>
-				</p>
-			</div>
-		<?php
 	}
 
 	/**

@@ -241,29 +241,6 @@ class SegmentsTest extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Test get_segments fill in empty priorities.
-	 */
-	public function test_get_segments_rremove_non_existent_categories() {
-		$cat_1 = $this->factory()->category->create_and_get( [ 'name' => 'Category 1' ] );
-		$cat_2 = $this->factory()->category->create_and_get( [ 'name' => 'Category 2' ] );
-
-
-		$modified = $this->complete_and_valid;
-		$modified['configuration']['favorite_categories'] = [ $cat_1->term_id, $cat_2->term_id, 9999 ];
-		Newspack_Popups_Segmentation::create_segment( $modified );
-
-		$modified = $this->valid;
-		$modified['configuration']['favorite_categories'] = [ 8888 ];
-		Newspack_Popups_Segmentation::create_segment( $modified );
-
-		$segments = Newspack_Popups_Segmentation::get_segments();
-
-		$this->assertSame( 2, count( $segments ) );
-		$this->assertSame( [ $cat_1->term_id, $cat_2->term_id ], $segments[0]['configuration']['favorite_categories'] );
-		$this->assertSame( [], $segments[1]['configuration']['favorite_categories'] );
-	}
-
-	/**
 	 * Test get_segment_ids
 	 */
 	public function test_get_segment_ids() {
