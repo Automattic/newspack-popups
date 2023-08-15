@@ -1,3 +1,5 @@
+/* globals newspack_popups_view */
+
 export * from './analytics';
 export * from './prompts';
 export * from './segments';
@@ -103,6 +105,17 @@ export const logPageview = ras => {
 
 	const priorPageviews = ras.store.get( 'pageviews' ) || {};
 	const pageviews = { ...pageviewTemplate, ...priorPageviews };
+
+	// If the current page is the donor landing page, mark the reader as a donor.
+	let pageId;
+	document.body.classList.forEach( className => {
+		if ( 0 === className.indexOf( 'page-id-' ) ) {
+			pageId = parseInt( className.replace( 'page-id-', '' ) );
+		}
+	} );
+	if ( pageId && parseInt( newspack_popups_view?.donor_landing_page ) === pageId ) {
+		ras.store.set( 'is_donor', true );
+	}
 
 	for ( const period in pageviews ) {
 		// If the period has elapsed, reset the count.
