@@ -658,24 +658,27 @@ final class Newspack_Popups_Inserter {
 				true
 			);
 
-			$segments = Newspack_Popups_Segmentation::get_segments( false );
-
-			// Gather segments for all prompts to be displayed.
-			foreach ( $segments as $segment ) {
-				if ( ! empty( $segment ) && ! empty( $segment['criteria'] ) && ! isset( self::$segments[ $segment['id'] ] ) ) {
-					self::$segments[ $segment['id'] ] = [
-						'criteria' => $segment['criteria'],
-						'priority' => $segment['priority'],
-					];
-				}
-			}
-
 			$script_data = [
-				'debug'    => defined( 'WP_DEBUG' ) && WP_DEBUG,
-				'segments' => self::$segments,
+				'debug' => defined( 'WP_DEBUG' ) && WP_DEBUG,
 			];
 
-			$donor_landing_page = Newspack_Popups_Settings::donor_landing_page();
+			if ( Newspack_Popups::$segmentation_enabled ) {
+				$segments = Newspack_Popups_Segmentation::get_segments( false );
+
+				// Gather segments for all prompts to be displayed.
+				foreach ( $segments as $segment ) {
+					if ( ! empty( $segment ) && ! empty( $segment['criteria'] ) && ! isset( self::$segments[ $segment['id'] ] ) ) {
+						self::$segments[ $segment['id'] ] = [
+							'criteria' => $segment['criteria'],
+							'priority' => $segment['priority'],
+						];
+					}
+				}
+
+				$script_data['segments'] = self::$segments;
+			}
+      
+      $donor_landing_page = Newspack_Popups_Settings::donor_landing_page();
 			if ( ! empty( $donor_landing_page ) ) {
 				$script_data['donor_landing_page'] = $donor_landing_page;
 			}

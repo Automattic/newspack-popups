@@ -148,8 +148,8 @@ final class Newspack_Segments_Model {
 			'description'        => __( 'Segments for popups', 'newspack-popups' ),
 			'hierarchical'       => true, // just to get the checkbox UI.
 			'public'             => false,
-			'show_ui'            => true,
-			'show_in_rest'       => true,
+			'show_ui'            => Newspack_Popups::$segmentation_enabled,
+			'show_in_rest'       => Newspack_Popups::$segmentation_enabled,
 			'show_in_menu'       => false,
 			'show_in_nav_menus'  => false,
 			'show_tagcloud'      => false,
@@ -475,27 +475,6 @@ final class Newspack_Segments_Model {
 			);
 		}
 
-		// Filter out non-existing categories.
-		$existing_categories_ids = get_categories(
-			[
-				'hide_empty' => false,
-				'fields'     => 'ids',
-			]
-		);
-		foreach ( $segments as &$segment ) {
-			if ( ! isset( $segment['configuration']['favorite_categories'] ) ) {
-				continue;
-			}
-			$fav_categories = $segment['configuration']['favorite_categories'];
-			if ( ! empty( $fav_categories ) ) {
-				$segment['configuration']['favorite_categories'] = array_values(
-					array_intersect(
-						$existing_categories_ids,
-						$fav_categories
-					)
-				);
-			}
-		}
 		return $segments;
 	}
 
