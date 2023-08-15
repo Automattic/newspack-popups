@@ -9,11 +9,13 @@
  */
 import { __ } from '@wordpress/i18n';
 import { compose } from '@wordpress/compose';
-import { withSelect, withDispatch, useSelect } from '@wordpress/data';
+import { withSelect, withDispatch, useSelect, useDispatch } from '@wordpress/data';
 import { registerPlugin } from '@wordpress/plugins';
 import { PluginDocumentSettingPanel, PluginPostStatusInfo } from '@wordpress/edit-post';
 import { ExternalLink, Flex } from '@wordpress/components';
 import { store as coreStore } from '@wordpress/core-data';
+import { store as editorStore } from '@wordpress/editor';
+import { useEffect } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -154,7 +156,8 @@ registerPlugin( 'newspack-popups-preview', { render: PluginPostStatusInfoTest } 
  * Adds a help message to the Segment selector
  */
 const NewspackPopupsSegmentsHelper = ( { slug } ) => {
-	const { terms } = useSelect(
+	const { editPost } = useDispatch( editorStore );
+	const { terms, taxonomy } = useSelect(
 		select => {
 			const { getEditedPostAttribute } = select( 'core/editor' );
 			const { getTaxonomy } = select( coreStore );
@@ -162,10 +165,26 @@ const NewspackPopupsSegmentsHelper = ( { slug } ) => {
 
 			return {
 				terms: _taxonomy ? getEditedPostAttribute( _taxonomy.rest_base ) : EMPTY_ARRAY,
+				taxonomy: _taxonomy,
 			};
 		},
 		[ slug ]
 	);
+
+	// Auto-fill the Segment selector if the segment is passed in the URL.
+	useEffect( () => {
+		const currentURL = new URL( window.location );
+		const searchParams = currentURL.searchParams;
+		const initialSegment = searchParams.get( 'segment' );
+		if ( initialSegment ) {
+			editPost( { [ taxonomy.rest_base ]: [ parseInt( initialSegment ) ] } );
+
+			// This avoids thes callback from being called again when you toggle the Segments form visibility.
+			searchParams.delete( 'segment' );
+			currentURL.search = searchParams.toString();
+			window.history.pushState( { path: currentURL.toString() }, '', currentURL.toString() );
+		}
+	}, [] );
 
 	return (
 		<Flex direction="column" gap="4">
