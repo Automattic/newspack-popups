@@ -80,8 +80,6 @@ final class Newspack_Popups {
 		// Segmentation requires the main Newspack plugin.
 		self::$segmentation_enabled = class_exists( '\Newspack\Reader_Data' );
 
-		add_action( 'admin_init', [ __CLASS__, 'create_lightweight_api_config' ] );
-		add_action( 'admin_notices', [ __CLASS__, 'api_config_missing_notice' ] );
 		add_action( 'cli_init', [ __CLASS__, 'register_cli_commands' ] );
 
 		add_action( 'init', [ __CLASS__, 'register_cpt' ] );
