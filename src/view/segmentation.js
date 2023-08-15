@@ -14,13 +14,14 @@ import {
  * Match reader to segments.
  */
 export const handleSegmentation = prompts => {
-	window.newspackRAS = window.newspackRAS || [];
-	window.newspackRAS.push( ras => {
+	const maybeDisplayPrompts = ( ras = null ) => {
 		const segments = newspack_popups_view?.segments || {};
 		const matchingSegment = getBestPrioritySegment( segments );
 		debug( 'matchingSegment', matchingSegment );
 		// Log a pageview for frequency counts.
-		logPageview( ras );
+		if ( ras ) {
+			logPageview( ras );
+		}
 		let overlayDisplayed;
 
 		prompts.forEach( prompt => {
@@ -54,7 +55,9 @@ export const handleSegmentation = prompts => {
 					prompt.classList.remove( 'hidden' );
 
 					// Log a "prompt_seen" activity when the prompt becomes visible.
-					handleSeen( prompt, ras );
+					if ( ras ) {
+						handleSeen( prompt, ras );
+					}
 				};
 				if ( isOverlay ) {
 					const scroll = prompt.getAttribute( 'data-scroll' );
@@ -77,5 +80,13 @@ export const handleSegmentation = prompts => {
 			// Debug logging for prompt display.
 			debug( promptId, shouldDisplay );
 		} );
-	} );
+	};
+
+	// If no segments to handle.
+	if ( ! newspack_popups_view.segments ) {
+		maybeDisplayPrompts();
+	} else {
+		window.newspackRAS = window.newspackRAS || [];
+		window.newspackRAS.push( maybeDisplayPrompts );
+	}
 };

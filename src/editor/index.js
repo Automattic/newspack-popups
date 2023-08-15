@@ -88,17 +88,19 @@ registerPlugin( 'newspack-popups', {
 	icon: null,
 } );
 
-registerPlugin( 'newspack-popups-frequency', {
-	render: () => (
-		<PluginDocumentSettingPanel
-			name="-frequency-panel"
-			title={ __( 'Frequency', 'newspack-popups' ) }
-		>
-			<FrequencySidebarWithData />
-		</PluginDocumentSettingPanel>
-	),
-	icon: null,
-} );
+if ( window?.newspack_popups_data?.segmentation_enabled ) {
+	registerPlugin( 'newspack-popups-frequency', {
+		render: () => (
+			<PluginDocumentSettingPanel
+				name="-frequency-panel"
+				title={ __( 'Frequency', 'newspack-popups' ) }
+			>
+				<FrequencySidebarWithData />
+			</PluginDocumentSettingPanel>
+		),
+		icon: null,
+	} );
+}
 
 registerPlugin( 'newspack-popups-colors', {
 	render: () => (

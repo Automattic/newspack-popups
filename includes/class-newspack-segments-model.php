@@ -148,8 +148,8 @@ final class Newspack_Segments_Model {
 			'description'        => __( 'Segments for popups', 'newspack-popups' ),
 			'hierarchical'       => true, // just to get the checkbox UI.
 			'public'             => false,
-			'show_ui'            => true,
-			'show_in_rest'       => true,
+			'show_ui'            => Newspack_Popups::$segmentation_enabled,
+			'show_in_rest'       => Newspack_Popups::$segmentation_enabled,
 			'show_in_menu'       => false,
 			'show_in_nav_menus'  => false,
 			'show_tagcloud'      => false,
