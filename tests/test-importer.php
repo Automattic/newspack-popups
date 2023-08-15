@@ -199,13 +199,22 @@ class ImporterTest extends WP_UnitTestCase_PageWithPopups {
 						'name' => 'Tag 10',
 					],
 				],
+				'segments'        => [
+					[
+						'id'   => 1001,
+						'name' => 'Test Segment',
+					],
+					[
+						'id'   => 1002,
+						'name' => 'Test Segment 2',
+					],
+				],
 				'options'         => [
-					'background_color'    => '#FFFFFF',
-					'hide_border'         => false,
-					'large_border'        => false,
-					'frequency'           => 'once',
-					'placement'           => 'inline',
-					'selected_segment_id' => 'abc123,abc456',
+					'background_color' => '#FFFFFF',
+					'hide_border'      => false,
+					'large_border'     => false,
+					'frequency'        => 'once',
+					'placement'        => 'inline',
 				],
 			],
 			[
@@ -218,20 +227,25 @@ class ImporterTest extends WP_UnitTestCase_PageWithPopups {
 						'name' => 'Campaign 2',
 					],
 				],
+				'segments'        => [
+					[
+						'id'   => 1001,
+						'name' => 'Test Segment',
+					],
+				],
 				'options'         => [
-					'background_color'    => '#FFFF00',
-					'hide_border'         => false,
-					'large_border'        => false,
-					'frequency'           => 'once',
-					'placement'           => 'inline',
-					'selected_segment_id' => 'abc123',
+					'background_color' => '#FFFF00',
+					'hide_border'      => false,
+					'large_border'     => false,
+					'frequency'        => 'once',
+					'placement'        => 'inline',
 				],
 			],
 		];
 		$segments  = [
 			[
 				'name'          => 'Test Segment',
-				'id'            => 'abc123',
+				'id'            => 1001,
 				'priority'      => 10,
 				'configuration' => [
 					'max_posts' => 1,
@@ -239,7 +253,7 @@ class ImporterTest extends WP_UnitTestCase_PageWithPopups {
 			],
 			[
 				'name'          => 'Test Segment 2',
-				'id'            => 'abc456',
+				'id'            => 1002,
 				'priority'      => 10,
 				'configuration' => [
 					'max_posts'           => 1,
@@ -288,9 +302,11 @@ class ImporterTest extends WP_UnitTestCase_PageWithPopups {
 		$this->assertSame( 2, count( $created_prompts ) );
 
 		// Check if the prompts were properly mapped to the segments.
-		$this->assertStringContainsString( $segment_1_id, $created_prompts[0]['options']['selected_segment_id'] );
-		$this->assertStringContainsString( $segment_1_id, $created_prompts[1]['options']['selected_segment_id'] );
-		$this->assertStringContainsString( $segment_2_id, $created_prompts[1]['options']['selected_segment_id'] );
+		$this->assertSame( 1, count( $created_prompts[0]['segments'] ) );
+		$this->assertSame( (int) $segment_1_id, $created_prompts[0]['segments'][0]->term_id );
+		$this->assertSame( 2, count( $created_prompts[1]['segments'] ) );
+		$this->assertSame( (int) $segment_1_id, $created_prompts[1]['segments'][0]->term_id );
+		$this->assertSame( (int) $segment_2_id, $created_prompts[1]['segments'][1]->term_id );
 
 		// Check if the campaign groups terms were properly applied to the prompts.
 		$this->assertSame( 1, count( $created_prompts[0]['campaign_groups'] ) );
@@ -324,12 +340,21 @@ class ImporterTest extends WP_UnitTestCase_PageWithPopups {
 		// missing required filed in prompts.
 		$prompts = [
 			[
-				'title'   => 'Test Prompt 1',
-				'content' => 'Test content',
-				'status'  => 'publish',
-				'options' => [
-					'selected_segment_id' => 'abc123,abc456',
-					'frequency'           => 'once',
+				'title'    => 'Test Prompt 1',
+				'content'  => 'Test content',
+				'status'   => 'publish',
+				'segments' => [
+					[
+						'id'   => 1001,
+						'name' => 'Test Segment',
+					],
+					[
+						'id'   => 1002,
+						'name' => 'Test Segment 2',
+					],
+				],
+				'options'  => [
+					'frequency' => 'once',
 				],
 			],
 		];
@@ -337,7 +362,7 @@ class ImporterTest extends WP_UnitTestCase_PageWithPopups {
 		$segments = [
 			[
 				'name'     => 'Test Segment',
-				'id'       => 'abc123',
+				'id'       => 1001,
 				'priority' => 10,
 			],
 		];
@@ -444,13 +469,22 @@ class ImporterTest extends WP_UnitTestCase_PageWithPopups {
 						'name' => 'Campaign 1',
 					],
 				],
+				'segments'        => [
+					[
+						'id'   => 1001,
+						'name' => 'Test Segment',
+					],
+					[
+						'id'   => 1002,
+						'name' => 'Test Segment 2',
+					],
+				],
 				'options'         => [
 					'background_color'    => '#FFFFFF',
 					'hide_border'         => false,
 					'large_border'        => false,
 					'frequency'           => 'once',
 					'placement'           => 'inline',
-					'selected_segment_id' => 'abc123,abc456',
 					'excluded_categories' => [
 						[
 							'id'   => 2,
@@ -473,7 +507,7 @@ class ImporterTest extends WP_UnitTestCase_PageWithPopups {
 		$segments = [
 			[
 				'name'          => 'Test Segment',
-				'id'            => 'abc123',
+				'id'            => 1001,
 				'priority'      => 10,
 				'configuration' => [
 					'max_posts'           => 1,

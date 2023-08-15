@@ -402,18 +402,6 @@ final class Newspack_Popups {
 
 		\register_meta(
 			'post',
-			'selected_segment_id',
-			[
-				'object_subtype' => self::NEWSPACK_POPUPS_CPT,
-				'show_in_rest'   => true,
-				'type'           => 'string',
-				'single'         => true,
-				'auth_callback'  => '__return_true',
-			]
-		);
-
-		\register_meta(
-			'post',
 			'duplicate_of',
 			[
 				'object_subtype' => self::NEWSPACK_POPUPS_CPT,
@@ -664,13 +652,14 @@ final class Newspack_Popups {
 				'frontend_url'                 => get_site_url(),
 				'preview_post'                 => self::preview_post_permalink(),
 				'preview_archive'              => self::preview_archive_permalink(),
-				'segments'                     => Newspack_Popups_Segmentation::get_segments(),
 				'custom_placements'            => Newspack_Popups_Custom_Placements::get_custom_placements(),
 				'overlay_placements'           => Newspack_Popups_Model::get_overlay_placements(),
 				'popup_size_options'           => Newspack_Popups_Model::get_popup_size_options(),
 				'available_archive_page_types' => Newspack_Popups_Model::get_available_archive_page_types(),
 				'taxonomy'                     => self::NEWSPACK_POPUPS_TAXONOMY,
 				'is_prompt'                    => self::NEWSPACK_POPUPS_CPT == get_post_type(),
+				'segments_taxonomy'            => Newspack_Segments_Model::TAX_SLUG,
+				'segments_admin_page'          => admin_url( 'admin.php?page=newspack-popups-wizard#/segments' ),
 				'available_post_types'         => array_values(
 					get_post_types(
 						[
@@ -844,7 +833,6 @@ final class Newspack_Popups {
 		update_post_meta( $post_id, 'archive_insertion_posts_count', 0 );
 		update_post_meta( $post_id, 'archive_insertion_is_repeating', false );
 		update_post_meta( $post_id, 'utm_suppression', '' );
-		update_post_meta( $post_id, 'selected_segment_id', $segment );
 
 		if ( $group ) {
 			wp_set_post_terms( $post_id, [ $group ], self::NEWSPACK_POPUPS_TAXONOMY );
