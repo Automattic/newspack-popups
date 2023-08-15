@@ -161,42 +161,6 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 	}
 
 	/**
-	 * Test non-interactive setting for overlay popup.
-	 */
-	public function test_non_interactive_overlay() {
-		Newspack_Popups_Model::set_popup_options(
-			self::$popup_id,
-			[
-				'placement' => 'center',
-				'frequency' => 'once',
-			]
-		);
-
-		update_option( 'newspack_popups_non_interative_mode', true );
-		self::renderPost();
-		self::assertStringNotContainsString(
-			self::$popup_content,
-			self::$post_content,
-			'Does not include the popup content, since it is an overlay popup.'
-		);
-		update_option( 'newspack_popups_non_interative_mode', false );
-	}
-
-	/**
-	 * Test non-interactive setting for inline popups.
-	 */
-	public function test_non_interactive_inline() {
-		update_option( 'newspack_popups_non_interative_mode', true );
-		self::renderPost();
-		self::assertStringContainsString(
-			self::$popup_content,
-			self::$post_content,
-			'Does include the popup content.'
-		);
-		update_option( 'newspack_popups_non_interative_mode', false );
-	}
-
-	/**
 	 * Test custom placement popups.
 	 */
 	public function test_custom_placement_prompt() {

@@ -878,7 +878,7 @@ final class Newspack_Popups {
 	 * We shouldn't be tracking analytics in the dashboard or on the front-end by admin/editor users.
 	 */
 	public static function is_tracking() {
-		if ( is_admin() || self::is_user_admin() || Newspack_Popups_Settings::is_non_interactive() ) {
+		if ( is_admin() || self::is_user_admin() ) {
 			return false;
 		}
 		return true;
