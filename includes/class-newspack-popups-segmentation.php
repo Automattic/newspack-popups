@@ -7,6 +7,8 @@
 
 defined( 'ABSPATH' ) || exit;
 
+use \DrewM\MailChimp\MailChimp;
+
 /**
  * Main Newspack Segmentation Plugin Class.
  */
@@ -64,6 +66,16 @@ final class Newspack_Popups_Segmentation {
 
 		add_filter( 'newspack_custom_dimensions', [ __CLASS__, 'register_custom_dimensions' ] );
 		add_filter( 'newspack_custom_dimensions_values', [ __CLASS__, 'report_custom_dimensions' ] );
+
+		// Handle Mailchimp merge tag functionality.
+		if (
+			method_exists( '\Newspack_Newsletters', 'service_provider' ) &&
+			'mailchimp' === \Newspack_Newsletters::service_provider() &&
+			method_exists( '\Newspack\Data_Events', 'register_handler' ) &&
+			method_exists( '\Newspack\Reader_Data', 'set_is_newsletter_subscriber' )
+		) {
+			\Newspack\Data_Events::register_handler( [ __CLASS__, 'reader_logged_in' ], 'reader_logged_in' );
+		}
 	}
 
 	/**
@@ -276,6 +288,57 @@ final class Newspack_Popups_Segmentation {
 	 */
 	public static function reindex_segments( $segments ) {
 		return Newspack_Segments_Model::reindex_segments( $segments );
+	}
+
+	/**
+	 * When a reader logs in and the connected ESP is Mailchimp, check their donation status.
+	 * If they have a non-empty value in a merge field which matches the newspack_popups_mc_donor_merge_field
+	 * setting, then they should be segmented as a donor.
+	 *
+	 * @param int   $timestamp Timestamp of the event.
+	 * @param array $data      Data associated with the event.
+	 */
+	public static function reader_logged_in( $timestamp, $data ) {
+		$user_id = $data['user_id'];
+		$email   = $data['email'];
+
+		// See newspack-newsletters/includes/class-newspack-newsletters.php:827.
+		$api_key = \get_option( 'newspack_mailchimp_api_key', false );
+
+		if ( ! $api_key ) {
+			return;
+		}
+
+		$mailchimp = new Mailchimp( $api_key );
+		$contacts  = $mailchimp->get(
+			'search-members',
+			[
+				'fields' => [ 'members.email_address', 'members.merge_fields' ],
+				'query'  => $email,
+			]
+		);
+
+		if ( isset( $contacts['exact_matches']['members'][0] ) ) {
+			$contact           = $contacts['exact_matches']['members'][0];
+			$merge_fields      = $contact['merge_fields'];
+			$donor_merge_field = Newspack_Popups_Settings::get_setting( 'newspack_popups_mc_donor_merge_field' );
+
+			foreach ( $merge_fields as $field_name => $field_value ) {
+				if ( false !== strpos( $field_name, $donor_merge_field ) && ! empty( $field_value ) ) {
+					if ( method_exists( '\Newspack\Logger', 'log' ) ) {
+						\Newspack\Logger::log(
+							sprintf(
+								'Setting reader %d with email %s as a donor due to Mailchimp merge tag match.',
+								$user_id,
+								$email
+							),
+							'NEWSPACK-POPUPS'
+						);
+					}
+					\Newspack\Reader_Data::set_is_donor( time(), [ 'user_id' => $user_id ] );
+				}
+			}
+		}
 	}
 }
 Newspack_Popups_Segmentation::instance();

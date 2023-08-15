@@ -658,22 +658,30 @@ final class Newspack_Popups_Inserter {
 				true
 			);
 
-			$segments = Newspack_Popups_Segmentation::get_segments( false );
+			$script_data = [
+				'debug' => defined( 'WP_DEBUG' ) && WP_DEBUG,
+			];
 
-			// Gather segments for all prompts to be displayed.
-			foreach ( $segments as $segment ) {
-				if ( ! empty( $segment ) && ! empty( $segment['criteria'] ) && ! isset( self::$segments[ $segment['id'] ] ) ) {
-					self::$segments[ $segment['id'] ] = [
-						'criteria' => $segment['criteria'],
-						'priority' => $segment['priority'],
-					];
+			if ( Newspack_Popups::$segmentation_enabled ) {
+				$segments = Newspack_Popups_Segmentation::get_segments( false );
+
+				// Gather segments for all prompts to be displayed.
+				foreach ( $segments as $segment ) {
+					if ( ! empty( $segment ) && ! empty( $segment['criteria'] ) && ! isset( self::$segments[ $segment['id'] ] ) ) {
+						self::$segments[ $segment['id'] ] = [
+							'criteria' => $segment['criteria'],
+							'priority' => $segment['priority'],
+						];
+					}
 				}
+
+				$script_data['segments'] = self::$segments;
 			}
 
-			$script_data = [
-				'debug'    => defined( 'WP_DEBUG' ) && WP_DEBUG,
-				'segments' => self::$segments,
-			];
+			$donor_landing_page = Newspack_Popups_Settings::donor_landing_page();
+			if ( ! empty( $donor_landing_page ) ) {
+				$script_data['donor_landing_page'] = $donor_landing_page;
+			}
 
 			\wp_localize_script( $script_handle, 'newspack_popups_view', $script_data );
 			\wp_enqueue_script( $script_handle );
@@ -836,14 +844,6 @@ final class Newspack_Popups_Inserter {
 	 */
 	public static function should_display( $popup, $check_if_is_post = false ) {
 		$post_type = get_post_type();
-
-		// Unless it's a preview request, perform some additional checks.
-		if ( ! Newspack_Popups::is_preview_request() ) {
-			// Hide overlay prompts in non-interactive mode.
-			if ( Newspack_Popups_Settings::is_non_interactive() && ! Newspack_Popups_Model::is_inline( $popup ) ) {
-				return false;
-			}
-		}
 
 		// Prompts should be hidden on account related pages (e.g. password reset page).
 		if ( Newspack_Popups::is_account_related_post( get_post() ) ) {

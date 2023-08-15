@@ -33,6 +33,12 @@ class SchemasTest extends WP_UnitTestCase {
 							'name' => 'Category 2',
 						],
 					],
+					'segments'          => [
+						[
+							'id'   => 30,
+							'name' => 'asdasd',
+						],
+					],
 					'options'           => [
 						'background_color'               => '#FFFFFF',
 						'hide_border'                    => false,
@@ -54,7 +60,6 @@ class SchemasTest extends WP_UnitTestCase {
 						'archive_insertion_posts_count'  => 1,
 						'archive_insertion_is_repeating' => false,
 						'utm_suppression'                => '',
-						'selected_segment_id'            => 'asdasd',
 						'post_types'                     => [ 'post' ],
 						'archive_page_types'             => [],
 						'additional_classes'             => '',
@@ -269,7 +274,7 @@ class SchemasTest extends WP_UnitTestCase {
 			'complete and valid'     => [
 				[
 					'name'          => 'Test Segment',
-					'id'            => 'aasdqwe1234',
+					'id'            => 1001,
 					'priority'      => 10,
 					'criteria'      => [
 						[
@@ -307,7 +312,7 @@ class SchemasTest extends WP_UnitTestCase {
 			'valid'                  => [
 				[
 					'name'          => 'Test Segment',
-					'id'            => 'aasdqwe1234',
+					'id'            => 1001,
 					'priority'      => 10,
 					'criteria'      => [
 						[
@@ -340,7 +345,7 @@ class SchemasTest extends WP_UnitTestCase {
 			'additional property'    => [
 				[
 					'name'          => 'Test Segment',
-					'id'            => 'aasdqwe1234',
+					'id'            => 1001,
 					'priority'      => 10,
 					'criteria'      => [
 						[
@@ -358,7 +363,7 @@ class SchemasTest extends WP_UnitTestCase {
 			'invalid int'            => [
 				[
 					'name'          => 'Test Segment',
-					'id'            => 'aasdqwe1234',
+					'id'            => 1001,
 					'priority'      => 10,
 					'configuration' => [
 						'max_posts' => 'string',
@@ -369,7 +374,7 @@ class SchemasTest extends WP_UnitTestCase {
 			'fav categories valid'   => [
 				[
 					'name'          => 'Test Segment',
-					'id'            => 'aasdqwe1234',
+					'id'            => 1001,
 					'priority'      => 10,
 					'criteria'      => [
 						[
@@ -391,7 +396,7 @@ class SchemasTest extends WP_UnitTestCase {
 			'fav categories invalid' => [
 				[
 					'name'          => 'Test Segment',
-					'id'            => 'aasdqwe1234',
+					'id'            => 1001,
 					'priority'      => 10,
 					'criteria'      => [
 						[
@@ -408,7 +413,7 @@ class SchemasTest extends WP_UnitTestCase {
 			'valid criteria'         => [
 				[
 					'name'          => 'Test Segment',
-					'id'            => 'aasdqwe1234',
+					'id'            => 1001,
 					'priority'      => 10,
 					'configuration' => [],
 					'criteria'      => [
@@ -446,7 +451,7 @@ class SchemasTest extends WP_UnitTestCase {
 			'invalid criteria1'      => [
 				[
 					'name'     => 'Test Segment',
-					'id'       => 'aasdqwe1234',
+					'id'       => 1001,
 					'priority' => 10,
 					'criteria' => [
 						[
@@ -460,7 +465,7 @@ class SchemasTest extends WP_UnitTestCase {
 			'invalid criteria2'      => [
 				[
 					'name'     => 'Test Segment',
-					'id'       => 'aasdqwe1234',
+					'id'       => 1001,
 					'priority' => 10,
 					'criteria' => [
 						[
