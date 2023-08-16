@@ -103,12 +103,10 @@ export const shouldPromptBeDisplayed = ( prompt, matchingSegment, ras, override 
 	}
 
 	if ( ras ) {
-		// By frequency. Do not parse if previewing prompts, otherwise prompts may not display when starting a new preview window.
-		const isPreview = !! parseViewAs();
 		// eslint-disable-next-line @wordpress/no-unused-vars-before-return
 		const [ start, between, max, reset ] = prompt.getAttribute( 'data-frequency' ).split( ',' );
 		const pageviews = ras.store.get( 'pageviews' );
-		if ( ! isPreview && pageviews[ reset ] ) {
+		if ( pageviews[ reset ] ) {
 			const views = pageviews[ reset ].count || 0;
 
 			// If reader hasn't amassed enough pageviews yet.

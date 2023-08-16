@@ -86,6 +86,7 @@ final class Newspack_Popups {
 		add_action( 'init', [ __CLASS__, 'register_meta' ] );
 		add_action( 'init', [ __CLASS__, 'register_taxonomy' ] );
 		add_action( 'init', [ __CLASS__, 'disable_prompts_for_protected_pages' ] );
+		add_action( 'init', [ __CLASS__, 'maybe_create_temp_reader_session' ] );
 		add_action( 'enqueue_block_editor_assets', [ __CLASS__, 'enqueue_block_editor_assets' ] );
 		add_filter( 'display_post_states', [ __CLASS__, 'display_post_states' ], 10, 2 );
 		add_action( 'save_post_' . self::NEWSPACK_POPUPS_CPT, [ __CLASS__, 'popup_default_fields' ], 10, 3 );
@@ -1210,6 +1211,34 @@ final class Newspack_Popups {
 				}
 			}
 		}
+	}
+
+	/**
+	 * If the current session is a preview, ensure that reader data does not persist past the session.
+	 */
+	public static function maybe_create_temp_reader_session() {
+		$is_preview = self::is_preview_request();
+		if ( ! $is_preview ) {
+			return;
+		}
+
+		// For one-off previews, just generate a random number.
+		$session_id = \wp_rand( 0, 9999 );
+
+		// If a view_as session, parse the spec for an ID that can be passed between pageviews in the session.
+		$view_as_spec = Newspack_Popups_View_As::parse_view_as();
+		if ( ! empty( $view_as_spec['session_id'] ) ) {
+			$session_id = $view_as_spec['session_id'];
+		}
+
+		// Tell the reader store to use sessionStorage instead of localStorage, and tie the reader prefix to the session.
+		\add_filter( 'newspack_reader_data_store_is_temp_session', '__return_true' );
+		\add_filter(
+			'newspack_reader_data_store_prefix',
+			function() use ( $session_id ) {
+				return sprintf( 'np_temp_session_%d_', $session_id );
+			}
+		);
 	}
 }
 Newspack_Popups::instance();
