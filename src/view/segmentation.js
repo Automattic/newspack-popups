@@ -5,6 +5,8 @@ import {
 	closeOverlay,
 	getBestPrioritySegment,
 	getIntersectionObserver,
+	getPreviewedPromptId,
+	getRawId,
 	handleSeen,
 	logPageview,
 	shouldPromptBeDisplayed,
@@ -27,22 +29,23 @@ export const handleSegmentation = prompts => {
 		prompts.forEach( prompt => {
 			const promptId = prompt.getAttribute( 'id' );
 			const isOverlay = prompt.classList.contains( 'newspack-lightbox' );
+			const override =
+				// eslint-disable-next-line no-nested-ternary
+				getRawId( promptId ) === getPreviewedPromptId() // If previewing a single prompt, it should always be displayed.
+					? true
+					: isOverlay && overlayDisplayed // If an overlay and another overlay has already been displayed, it should not be displaeyd.
+					? false
+					: null; // Default behavior lets frequency/segmentation determine whether it should be dipslayed.
 
-			// Attach event listners to overlay close buttons.
+			// Attach event listeners to overlay close buttons.
 			const closeButtons = [
 				...prompt.querySelectorAll( '.newspack-lightbox__close, button.newspack-lightbox-overlay' ),
 			];
 			closeButtons.forEach( closeButton => {
 				closeButton.addEventListener( 'click', closeOverlay );
 			} );
-
 			// Check segmentation.
-			const shouldDisplay = shouldPromptBeDisplayed(
-				prompt,
-				matchingSegment,
-				ras,
-				isOverlay && overlayDisplayed ? false : null
-			);
+			const shouldDisplay = shouldPromptBeDisplayed( prompt, matchingSegment, ras, override );
 
 			// Only show one overlay at a time.
 			if ( ! overlayDisplayed && isOverlay && shouldDisplay ) {

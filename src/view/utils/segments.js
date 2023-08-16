@@ -35,6 +35,19 @@ const parseViewAs = () => {
 };
 
 /**
+ * Checks if the current page request is a single prompt preview.
+ *
+ * @return {number|null} Prompt ID, or null.
+ */
+export const getPreviewedPromptId = () => {
+	const params = new URL( window.location ).searchParams;
+	if ( params.get( 'pid' ) ) {
+		return parseInt( params.get( 'pid' ) );
+	}
+	return null;
+};
+
+/**
  * Whether the reader matches the segment criteria.
  *
  * @param {Object} segmentCriteria Segment criteria.
