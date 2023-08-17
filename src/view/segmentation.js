@@ -5,6 +5,8 @@ import {
 	closeOverlay,
 	getBestPrioritySegment,
 	getIntersectionObserver,
+	getRawId,
+	getOverride,
 	handleSeen,
 	logPageview,
 	shouldPromptBeDisplayed,
@@ -27,22 +29,17 @@ export const handleSegmentation = prompts => {
 		prompts.forEach( prompt => {
 			const promptId = prompt.getAttribute( 'id' );
 			const isOverlay = prompt.classList.contains( 'newspack-lightbox' );
+			const override = getOverride( getRawId( promptId ), isOverlay, overlayDisplayed );
 
-			// Attach event listners to overlay close buttons.
+			// Attach event listeners to overlay close buttons.
 			const closeButtons = [
 				...prompt.querySelectorAll( '.newspack-lightbox__close, button.newspack-lightbox-overlay' ),
 			];
 			closeButtons.forEach( closeButton => {
 				closeButton.addEventListener( 'click', closeOverlay );
 			} );
-
 			// Check segmentation.
-			const shouldDisplay = shouldPromptBeDisplayed(
-				prompt,
-				matchingSegment,
-				ras,
-				isOverlay && overlayDisplayed ? false : null
-			);
+			const shouldDisplay = shouldPromptBeDisplayed( prompt, matchingSegment, ras, override );
 
 			// Only show one overlay at a time.
 			if ( ! overlayDisplayed && isOverlay && shouldDisplay ) {

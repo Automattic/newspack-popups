@@ -9,6 +9,55 @@ export const periods = {
 };
 
 /**
+ * Checks if the current page request is a segment or campaign preview.
+ *
+ * @param {string|null} queryString Query string to parse for view_as param. If not given, get from the current URL.
+ *
+ * @return {Object|null} View_as object or null.
+ */
+const parseViewAs = ( queryString = null ) => {
+	if ( ! queryString ) {
+		queryString = window.location.search;
+	}
+	const params = new URLSearchParams( queryString );
+	if ( params.get( 'view_as' ) ) {
+		const viewAs = params
+			.get( 'view_as' )
+			.split( ';' )
+			.reduce( ( acc, item ) => {
+				const parts = item.split( ':' );
+				if ( 1 === parts.length ) {
+					acc[ parts[ 0 ] ] = true;
+				} else {
+					acc[ parts[ 0 ] ] = parts[ 1 ];
+				}
+				return acc;
+			}, {} );
+		return viewAs;
+	}
+
+	return null;
+};
+
+/**
+ * Checks if the current page request is a single prompt preview.
+ *
+ * @param {string|null} queryString Query string to parse for pid param. If not given, get from the current URL.
+ *
+ * @return {number|null} Prompt ID, or null.
+ */
+export const getPreviewedPromptId = ( queryString = null ) => {
+	if ( ! queryString ) {
+		queryString = window.location.search;
+	}
+	const params = new URLSearchParams( queryString );
+	if ( params.get( 'pid' ) ) {
+		return parseInt( params.get( 'pid' ) );
+	}
+	return null;
+};
+
+/**
  * Whether the reader matches the segment criteria.
  *
  * @param {Object} segmentCriteria Segment criteria.
@@ -29,13 +78,20 @@ const match = segmentCriteria => {
 };
 
 /**
- * Get the reader's highest-priority segment match.
+ * Get the reader's highest-priority segment match, or the segment to preview.
  *
- * @param {Object} segments Segments.
+ * @param {Object}      segments     Segments.
+ * @param {string|null} viewAsString Optional, for testing. A query string with viewAs params for previewing a segment.
  *
  * @return {string|null} Segment ID, or null.
  */
-export const getBestPrioritySegment = segments => {
+export const getBestPrioritySegment = ( segments, viewAsString = null ) => {
+	// If previewing as a specific segment.
+	const viewAs = parseViewAs( viewAsString );
+	if ( viewAs?.segment ) {
+		return viewAs.segment;
+	}
+
 	const matchingSegments = [];
 	for ( const segmentId in segments ) {
 		if ( match( segments[ segmentId ].criteria ) ) {
@@ -71,7 +127,6 @@ export const shouldPromptBeDisplayed = ( prompt, matchingSegment, ras, override 
 	}
 
 	if ( ras ) {
-		// By frequency.
 		// eslint-disable-next-line @wordpress/no-unused-vars-before-return
 		const [ start, between, max, reset ] = prompt.getAttribute( 'data-frequency' ).split( ',' );
 		const pageviews = ras.store.get( 'pageviews' );
@@ -114,4 +169,37 @@ export const shouldPromptBeDisplayed = ( prompt, matchingSegment, ras, override 
 	}
 
 	return true;
+};
+
+/**
+ * Get an override value to supersede segmentation and frequency controls. Possible values:
+ * - true - The prompt will always be displayed.
+ * - false - The prompt will never be displaeyd.
+ * - null (default) - Let segmentation and frequency controls determine if the prompt should be displayed.
+ *
+ * @param {number}      promptId         ID of the prompt to check.
+ * @param {boolean}     isOverlay        Whether the prompt is an overlay prompt.
+ * @param {boolean}     overlayDisplayed Whether another overlay prompt has already been displayed.
+ * @param {string|null} pidString        Optional, for testing. A query string containing a PID param.
+ *
+ * @return {boolean|null} The override value to pass to the shouldPromptBeDisplayed function.
+ */
+export const getOverride = (
+	promptId,
+	isOverlay = false,
+	overlayDisplayed = false,
+	pidString = null
+) => {
+	// If previewing a single prompt, it should always be displayed.
+	if ( promptId === getPreviewedPromptId( pidString ) ) {
+		return true;
+	}
+
+	// If an overlay and another overlay has already been displayed, it should not be displaeyd.
+	if ( isOverlay && overlayDisplayed ) {
+		return false;
+	}
+
+	// Default behavior lets frequency/segmentation determine whether it should be dipslayed.
+	return null;
 };

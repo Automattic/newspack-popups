@@ -1,5 +1,5 @@
 import { registerCriteria } from '../../criteria/utils';
-import { getBestPrioritySegment, shouldPromptBeDisplayed, periods } from './index.js';
+import { getBestPrioritySegment, getOverride, shouldPromptBeDisplayed, periods } from './index.js';
 
 // Mock some test criteria.
 const criteria = {
@@ -158,6 +158,14 @@ describe( 'segmentation API', () => {
 		expect( getBestPrioritySegment( segments ) ).toEqual( 'segment2' );
 	} );
 
+	it( 'should return the segment ID of the segment in the view_as query string', () => {
+		const queryString = '?view_as=segment:segment1;all;session_id:1';
+		expect( getBestPrioritySegment( segments, queryString ) ).toEqual( 'segment1' );
+
+		const queryString2 = '?view_as=segment:segment2;all;session_id:2';
+		expect( getBestPrioritySegment( segments, queryString2 ) ).toEqual( 'segment2' );
+	} );
+
 	it( 'should return false if the reader doesn’t match the prompt’s segments', () => {
 		const prompt = createPrompt( [ 'segment4' ] );
 		expect(
@@ -192,14 +200,24 @@ describe( 'segmentation API', () => {
 		).toBeFalsy();
 	} );
 
-	it( 'should allow shouldBeDisplayed to be manually overriden', () => {
+	it( 'should only show one overlay prompt per request', () => {
 		const prompt1 = createPrompt( [], '0,0,0,month', '1', 'overlay' );
 		const prompt2 = createPrompt( [], '0,0,0,month', '2', 'overlay' );
 
+		const shouldPrompt1BeDisplayed = shouldPromptBeDisplayed( prompt1, null, ras );
+
 		// First overlay prompt should be displayed.
-		expect( shouldPromptBeDisplayed( prompt1, null, ras ) ).toBeTruthy();
+		expect( shouldPrompt1BeDisplayed ).toBeTruthy();
 
 		// Force the second overlay prompt to not be displayed even though all other criteria are met.
-		expect( shouldPromptBeDisplayed( prompt2, null, ras, false ) ).toBeFalsy();
+		const overlayOverride = getOverride( 2, true, shouldPrompt1BeDisplayed );
+		expect( shouldPromptBeDisplayed( prompt2, null, ras, overlayOverride ) ).toBeFalsy();
+	} );
+
+	it( 'should allow a specific prompt to be always displayed', () => {
+		// Force specific prompt to always be displayed.
+		const prompt = createPrompt( [], '0,0,0,month', '123' );
+		const pidOverride = getOverride( 123, false, false, '?pid=123' );
+		expect( shouldPromptBeDisplayed( prompt, null, ras, pidOverride ) ).toBeTruthy();
 	} );
 } );

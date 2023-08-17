@@ -1066,9 +1066,12 @@ final class Newspack_Popups_Model {
 	 * @return string The generated markup.
 	 */
 	public static function generate_popup( $popup ) {
-		// If previewing a single prompt, override saved settings with preview settings.
-		if ( Newspack_Popups::previewed_popup_id() ) {
-			$popup = self::retrieve_preview_popup( Newspack_Popups::previewed_popup_id() );
+		$previewed_popup_id            = Newspack_Popups::previewed_popup_id();
+		$is_manual_or_custom_placement = self::is_manual_only( $popup ) || Newspack_Popups_Custom_Placements::is_custom_placement_or_manual( $popup );
+
+		// If previewing a single prompt, override saved settings with preview settings. Allow manual and custom placement prompts to be displayed as usual.
+		if ( $previewed_popup_id && ( ! $is_manual_or_custom_placement || $popup['id'] === $previewed_popup_id ) ) {
+			$popup = self::retrieve_preview_popup( $previewed_popup_id );
 		}
 		if ( Newspack_Popups::preset_popup_id() ) {
 			$popup = Newspack_Popups_Presets::retrieve_preset_popup( Newspack_Popups::preset_popup_id() );
