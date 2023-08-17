@@ -47,3 +47,8 @@ node_modules
 /tests
 /bin
 /release
+/src/assets
+/src/document-settings
+/src/editor
+/src/settings
+/src/view
