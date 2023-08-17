@@ -159,3 +159,30 @@ export const shouldPromptBeDisplayed = ( prompt, matchingSegment, ras, override 
 
 	return true;
 };
+
+/**
+ * Get an override value to supersede segmentation and frequency controls. Possible values:
+ * - true - The prompt will always be displayed.
+ * - false - The prompt will never be displaeyd.
+ * - null (default) - Let segmentation and frequency controls determine if the prompt should be displayed.
+ *
+ * @param {number}  promptId         ID of the prompt to check.
+ * @param {boolean} isOverlay        Whether the prompt is an overlay prompt.
+ * @param {boolean} overlayDisplayed Whether another overlay prompt has already been displayed.
+ *
+ * @return {boolean|null} The override value to pass to the shouldPromptBeDisplayed function.
+ */
+export const getOverride = ( promptId, isOverlay = false, overlayDisplayed = false ) => {
+	// If previewing a single prompt, it should always be displayed.
+	if ( promptId === getPreviewedPromptId() ) {
+		return true;
+	}
+
+	// If an overlay and another overlay has already been displayed, it should not be displaeyd.
+	if ( isOverlay && overlayDisplayed ) {
+		return false;
+	}
+
+	// Default behavior lets frequency/segmentation determine whether it should be dipslayed.
+	return null;
+};
