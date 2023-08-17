@@ -1,3 +1,15 @@
+# [2.23.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v2.22.0...v2.23.0-alpha.1) (2023-08-17)
+
+
+### Bug Fixes
+
+* move the close button when Hide Padding is enabled ([#1165](https://github.com/Automattic/newspack-popups/issues/1165)) ([20d17d9](https://github.com/Automattic/newspack-popups/commit/20d17d94758d3e53508a02f4cbbde9e36f4bc628))
+
+
+### Features
+
+* campaigns segmentation API rearchitecture ([#1192](https://github.com/Automattic/newspack-popups/issues/1192)) ([d554151](https://github.com/Automattic/newspack-popups/commit/d554151bfd05d7278d86825385d337847956b037)), closes [#1155](https://github.com/Automattic/newspack-popups/issues/1155) [#1166](https://github.com/Automattic/newspack-popups/issues/1166) [#1167](https://github.com/Automattic/newspack-popups/issues/1167) [#1159](https://github.com/Automattic/newspack-popups/issues/1159) [#1175](https://github.com/Automattic/newspack-popups/issues/1175) [#1169](https://github.com/Automattic/newspack-popups/issues/1169)
+
 # [2.22.0](https://github.com/Automattic/newspack-popups/compare/v2.21.1...v2.22.0) (2023-07-17)
 
 
