@@ -1,236 +1,134 @@
-/* globals gtag, newspackPopupsData, newspack_popups_view */
+/* globals newspack_popups_view */
+
+export * from './analytics';
+export * from './prompts';
+export * from './segments';
+
+import { getRawId } from './prompts';
+import { periods } from './segments';
+
+// The minimum continuous amount of time the prompt must be in the viewport before being considered visible.
+const MINIMUM_VISIBLE_TIME = 250;
+
+// The minimum percentage of the prompt that must be in the viewport before being considered visible.
+const MINIMUM_VISIBLE_PERCENTAGE = 0.5;
 
 /**
- * WordPress dependencies
- */
-import { getQueryArg, removeQueryArgs, getQueryString } from '@wordpress/url';
-
-/**
- * External dependencies
- */
-import { parse, stringify } from 'qs';
-
-export const values = object => Object.keys( object ).map( key => object[ key ] );
-
-export const performXHRequest = ( { url, data } ) => {
-	const XHR = new XMLHttpRequest();
-	XHR.open( 'POST', url );
-	XHR.setRequestHeader( 'Content-Type', 'application/x-www-form-urlencoded' );
-
-	const encodedData = Object.keys( data )
-		.map( key => encodeURIComponent( key ) + '=' + encodeURIComponent( data[ key ] ) )
-		.join( '&' )
-		.replace( /%20/g, '+' );
-
-	XHR.send( encodedData );
-};
-
-export const getCookies = () =>
-	document.cookie.split( '; ' ).reduce( ( acc, cookieStr ) => {
-		const cookie = cookieStr.split( '=' );
-		acc[ cookie[ 0 ] ] = cookie[ 1 ];
-		return acc;
-	}, {} );
-
-export const getClientIDValue = () => getCookies()[ newspack_popups_view.cid_cookie_name ];
-
-export const setCookie = ( name, value, expirationDays = 365 ) => {
-	const date = new Date();
-	date.setTime( date.getTime() + expirationDays * 24 * 60 * 60 * 1000 );
-	document.cookie = `${ name }=${ value }; expires=${ date.toUTCString() }; path=/`;
-};
-
-/**
- * Replace a dynamic value, like a client ID, in a string.
+ * Execute a callback function when an element becomes visible.
  *
- * @param {string} value A string to replace value in.
- * @return {string} String with the value replaced.
+ * @param {Function} handleEvent Callback function to execute when the prompt becomes eligible for display.
+ * @return {IntersectionObserver} Observer instance.
  */
-export const substituteDynamicValue = value => {
-	if ( value ) {
-		const trimmedValue = String( value ).replace( /\s/g, '' );
-		switch ( trimmedValue ) {
-			case 'CLIENT_ID(newspack-cid)':
-				value = getClientIDValue() || '';
-				break;
-			case 'DOCUMENT_REFERRER':
-				value = document.referrer || '';
-				break;
-		}
-	}
-	return value;
-};
-
-/**
- * Replace dynamic values in a URL.
- *
- * @param {string} url A URL with dynamic values.
- * @return {string} URL with the values replaced.
- */
-export const parseDynamicURL = url => {
-	const parsed = parse( getQueryString( url ) );
-	Object.keys( parsed ).forEach( key => {
-		parsed[ key ] = substituteDynamicValue( parsed[ key ] );
-	} );
-	const withoutQuery = url.substring( 0, url.indexOf( '?' ) );
-	return `${ withoutQuery }?${ stringify( parsed ) }`;
-};
-
-/**
- * Given a data object and a form HTML element,
- * update the data with values from the form.
- *
- * @param {Object}          data        An object.
- * @param {HTMLFormElement} formElement A form element.
- * @return {Object} Updated data.
- */
-export const processFormData = ( data, formElement ) => {
-	Object.keys( data ).forEach( key => {
-		let value = data[ key ];
-		if ( -1 < value.indexOf( '${formFields' ) ) {
-			const inputEl = formElement.querySelector( '[name="email"], [type="email"]' );
-			if ( inputEl ) {
-				value = inputEl.value;
-			}
-		}
-		data[ key ] = substituteDynamicValue( value );
-	} );
-	return data;
-};
-
-// Get the hash from a URL without any query strings.
-const getHash = url => {
-	const hash = new URL( url ).hash.split( /\?|\&/ );
-
-	return hash[ 0 ];
-};
-
-/**
- * Given an amp-analytics configuration, a current url, and cookies,
- * retrieve client ID related linker param to be inserted into site cookies.
- *
- * @param {Object} config                           amp-analytics configuration.
- * @param {Object} config.linkers                   Linkers configuration.
- * @param {Object} config.cookies                   Cookies configuration.
- * @param {string} [url=window.location.href]       A URL, presumably with the linker param.
- * @param {string} [documentCookie=document.cookie] The cookie.
- * @return {Object} Cookie value and a clean URL – without the linker param.
- */
-export const getCookieValueFromLinker = (
-	{ linkers, cookies },
-	url = window.location.href,
-	documentCookie = document.cookie
-) => {
-	let cookieValue;
-	let cleanURL = url;
-	if ( linkers && linkers.enabled && cookies && cookies.enabled ) {
-		const linkerName = Object.keys( linkers ).filter( k => k !== 'enabled' )[ 0 ];
-		const cookieName = Object.keys( cookies ).filter( k => k !== 'enabled' )[ 0 ];
-		const linkerParam = getQueryArg( url, linkerName );
-		const hasCIDCookie = documentCookie.indexOf( cookieName ) >= 0;
-
-		// URLs with a hash fragment preceding a query string won't be able to extract the query string by itself.
-		// Let's remove the hash fragment before processing the query string, then add it back afterward.
-		const hash = getHash( url );
-		if ( hash ) {
-			cleanURL = url.replace( hash, '' );
-		}
-		cleanURL = removeQueryArgs( cleanURL, linkerName ) + hash;
-
-		// Strip trailing `?` character from clean URL.
-		if ( '?' === cleanURL.charAt( cleanURL.length - 1 ) ) {
-			cleanURL = cleanURL.slice( 0, cleanURL.length - 1 );
-		}
-
-		if ( linkerParam && ! hasCIDCookie ) {
-			// eslint-disable-next-line @typescript-eslint/no-unused-vars
-			const [ version, checksum, cidName, cidValue ] = linkerParam.split( '*' );
-			try {
-				// Strip dots, not sure why they were in a URL – maybe chrome devtools?
-				const decodedCID = atob( cidValue.replace( /\./g, '' ) );
-				if ( decodedCID ) {
-					cookieValue = `${ cookieName }=${ decodedCID }`;
+export const getIntersectionObserver = handleEvent => {
+	let timer;
+	const observer = new IntersectionObserver(
+		entries => {
+			entries.forEach( observerEntry => {
+				if ( observerEntry.isIntersecting ) {
+					if ( ! timer ) {
+						timer = setTimeout( () => {
+							handleEvent();
+							observer.unobserve( observerEntry.target );
+						}, MINIMUM_VISIBLE_TIME || 0 );
+					}
+				} else if ( timer ) {
+					clearTimeout( timer );
+					timer = false;
 				}
-			} catch ( e ) {
-				// Nothingness.
-			}
+			} );
+		},
+		{
+			threshold: MINIMUM_VISIBLE_PERCENTAGE,
 		}
-	}
-	return { cookieValue, cleanURL };
+	);
+
+	return observer;
 };
 
-export const waitUntil = ( condition, callback, maxTries = 10 ) => {
-	let tries = 0;
-	const interval = setInterval( () => {
-		tries++;
-		if ( tries <= maxTries ) {
-			if ( condition() ) {
-				callback();
-				clearInterval( interval );
-			}
-		} else {
-			clearInterval( interval );
+/**
+ * Specify a function to execute when the DOM is fully loaded.
+ *
+ * @see https://github.com/WordPress/gutenberg/blob/trunk/packages/dom-ready/
+ *
+ * @param {Function} callback A function to execute after the DOM is ready.
+ * @return {void}
+ */
+export function domReady( callback ) {
+	if ( typeof document === 'undefined' ) {
+		return;
+	}
+	if (
+		document.readyState === 'complete' || // DOMContentLoaded + Images/Styles/etc loaded, so we call directly.
+		document.readyState === 'interactive' // DOMContentLoaded fires at this point, so we call directly.
+	) {
+		return void callback();
+	}
+	// DOMContentLoaded has not fired yet, delay callback until then.
+	document.addEventListener( 'DOMContentLoaded', callback );
+}
+
+/**
+ * Log a "prompt_seen" activity when the prompt becomes visible.
+ *
+ * @param {HTMLElement} prompt HTML element for prompt.
+ * @param {Object}      ras    Reader Data Library object.
+ */
+export const handleSeen = ( prompt, ras ) => {
+	const handleEvent = () =>
+		ras.dispatchActivity( 'prompt_seen', { prompt_id: getRawId( prompt.getAttribute( 'id' ) ) } );
+	getIntersectionObserver( handleEvent ).observe( prompt, { attributes: true } );
+};
+
+/**
+ * Increment pageview counters.
+ *
+ * @param {Object} ras Reader Data Library object.
+ *
+ * @return {Object} Total pageviews.
+ */
+export const logPageview = ras => {
+	const now = Date.now();
+	const pageviewTemplate = {
+		day: {
+			count: 0,
+			start: now,
+		},
+		week: {
+			count: 0,
+			start: now,
+		},
+		month: {
+			count: 0,
+			start: now,
+		},
+	};
+
+	const priorPageviews = ras.store.get( 'pageviews' ) || {};
+	const pageviews = { ...pageviewTemplate, ...priorPageviews };
+
+	// If the current page is the donor landing page, mark the reader as a donor.
+	let pageId;
+	document.body.classList.forEach( className => {
+		if ( 0 === className.indexOf( 'page-id-' ) ) {
+			pageId = parseInt( className.replace( 'page-id-', '' ) );
 		}
-	}, 200 );
-};
-
-/**
- * If an AMP module was loaded, e.g. via another plugin or a custom header script, it should not be polyfilled.
- */
-export const shouldPolyfillAMPModule = name => undefined === customElements.get( `amp-${ name }` );
-
-export const parseOnHandlers = onAttributeValue =>
-	onAttributeValue
-		.split( ';' )
-		.filter( Boolean )
-		.map( onHandler => /(?<action>\w*):(?<id>(\w|-)*)\.(?<method>.*)/.exec( onHandler ).groups );
-
-/**
- * Get all prompts on the page.
- *
- * @return {Array} Array of prompt elements.
- */
-export const getPrompts = () => {
-	return [ ...document.querySelectorAll( '.newspack-popup' ) ];
-};
-
-/**
- * Get raw prompt ID number from element ID name.
- *
- * @param {string} id Element ID of the prompt.
- *
- * @return {number} Raw ID number from the element ID.
- */
-export const getRawId = id => {
-	const parts = id.split( '_' );
-	return parseInt( parts[ parts.length - 1 ] );
-};
-
-/**
- * Get a GA4 event payload for a given prompt.
- *
- * @param {string} action      Action name for the event.
- * @param {number} promptId    ID of the prompt
- * @param {Object} extraParams Additional key/value pairs to add as params to the event payload.
- *
- * @return {Object} Event payload.
- */
-export const getEventPayload = ( action, promptId, extraParams = {} ) => {
-	if ( ! newspackPopupsData || ! newspackPopupsData[ promptId ] ) {
-		return false;
+	} );
+	if ( pageId && parseInt( newspack_popups_view?.donor_landing_page ) === pageId ) {
+		ras.store.set( 'is_donor', true );
 	}
 
-	return { ...newspackPopupsData[ promptId ], ...extraParams, action };
-};
+	for ( const period in pageviews ) {
+		// If the period has elapsed, reset the count.
+		if ( periods[ period ] < now - pageviews[ period ].start ) {
+			pageviews[ period ].count = 0;
+			pageviews[ period ].start = now;
+		}
 
-/**
- * Send an event to GA4.
- *
- * @param {Object} payload   Event payload.
- * @param {string} eventName Name of the event. Defaults to `np_prompt_interaction` but can be overriden if necessary.
- */
-export const sendEvent = ( payload, eventName = 'np_prompt_interaction' ) => {
-	if ( 'function' === typeof gtag && payload ) {
-		gtag( 'event', eventName, payload );
+		// Increment the count.
+		pageviews[ period ].count++;
 	}
+
+	// Persist to the Reader Data Library store.
+	ras.store.set( 'pageviews', pageviews );
+	return pageviews;
 };

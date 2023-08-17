@@ -49,7 +49,6 @@ class ModelTest extends WP_UnitTestCase {
 				'archive_insertion_posts_count'  => 1,
 				'archive_insertion_is_repeating' => false,
 				'utm_suppression'                => null,
-				'selected_segment_id'            => '',
 				'post_types'                     => [ 'post', 'page' ],
 				'archive_page_types'             => [ 'category', 'tag', 'author', 'date', 'post-type', 'taxonomy' ],
 				'additional_classes'             => '',
@@ -110,12 +109,6 @@ class ModelTest extends WP_UnitTestCase {
 			0,
 			$xpath->query( '//*[starts-with(@id,"page-position-marker")]' )->length,
 			'The page position marker is not output for a default (time-triggered) popup.'
-		);
-
-		self::assertEquals(
-			'visibility',
-			$xpath->query( '//amp-animation' )->item( 0 )->getAttribute( 'trigger' ),
-			'The amp-animation trigger is set to "visibility" for default (time-triggered) popup.'
 		);
 
 		$popup_object_with_just_scroll = Newspack_Popups_Model::create_popup_object(
