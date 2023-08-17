@@ -159,7 +159,7 @@ describe( 'segmentation API', () => {
 	} );
 
 	it( 'should return the segment ID of the segment in the view_as query string', () => {
-		const queryString = 'view_as=segment:segment1;all;session_id:1';
+		const queryString = '?view_as=segment:segment1;all;session_id:1';
 		expect( getBestPrioritySegment( segments, queryString ) ).toEqual( 'segment1' );
 
 		const queryString2 = '?view_as=segment:segment2;all;session_id:2';
