@@ -431,7 +431,8 @@ final class Newspack_Segments_Model {
 			$segment[ $meta_key ] = $stored_value;
 		}
 
-		return $segment;
+		// Ensure we got the segment in its latest version.
+		return Newspack_Segments_Migration::migrate_criteria_configuration( $segment );
 	}
 
 	/**
