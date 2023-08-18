@@ -54,6 +54,7 @@ const segments = {
 
 // Mock the RAS data library object.
 const now = Date.now();
+window.newspack_popups_view = {};
 window.newspackReaderActivation = {
 	store: {
 		set( matchingAttribute, value ) {
