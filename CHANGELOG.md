@@ -1,3 +1,10 @@
+# [2.23.0-alpha.2](https://github.com/Automattic/newspack-popups/compare/v2.23.0-alpha.1...v2.23.0-alpha.2) (2023-08-18)
+
+
+### Bug Fixes
+
+* include missing file ([#1194](https://github.com/Automattic/newspack-popups/issues/1194)) ([d5fe344](https://github.com/Automattic/newspack-popups/commit/d5fe34425340b04c459d6f5a6f2ad5c7740ac12b))
+
 # [2.23.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v2.22.0...v2.23.0-alpha.1) (2023-08-17)
 
 
