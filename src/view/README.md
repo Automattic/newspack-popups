@@ -28,10 +28,10 @@ Reader data that is synced to a reader account will persist as long as the reade
 
 ### Segments and segmentation criteria
 
-Segments are collections of criteria. A criterion is an abstract object that describes a reader's state based on historical or current activity. The info required for a criterion to be used for reader segmentation includes:
+Segments are collections of criteria. A criteria (always plural so it's easy to find in code) is an abstract object that describes a reader's state based on historical or current activity. The info required for the criteria to be used for reader segmentation includes:
 
 - `name`: The name of the criteria, which can be used to identify it across the Newspack Campaigns plugin.
-- `matching_function`: A function to be used for determining whether a reader matches the criteria. This can be any arbitrary function, but the plugin includes several [default matching functions](https://github.com/Automattic/newspack-popups/blob/master/src/criteria/matching-functions.js) suitable for most purposes. The `matching_function` must return a boolean value representing whether the reader matches the criterion.
+- `matching_function`: A function to be used for determining whether a reader matches the criteria. This can be any arbitrary function, but the plugin includes several [default matching functions](https://github.com/Automattic/newspack-popups/blob/master/src/criteria/matching-functions.js) suitable for most purposes. The `matching_function` must return a boolean value representing whether the reader matches the criteria.
 - `matching_attribute:` Either the attribute name to match from the reader data library store or a function that returns the value. This is the value that is piped to the `matching_function` to determine a match.
 
 The Newspack Campaigns plugin includes [several default criteria](https://github.com/Automattic/newspack-popups/tree/master/src/criteria/default).
@@ -68,7 +68,7 @@ The segmentation API is executed in JavaScript and affects only the reader's loc
 
 ### Debugging the segmentation API.
 
-In your `wp-config.php`, define the `WP_DEBUG` or `NEWSPACK_POPUPS_DEBUG` as `true`,  or `NEWSPACK_LOG_LEVEL` as `2` or greater.
+In your `wp-config.php`, define `WP_DEBUG` or `NEWSPACK_POPUPS_DEBUG` as `true`,  or `NEWSPACK_LOG_LEVEL` as `2` or greater.
 
 When viewing the site's front-end, you can now inspect the global `newspack_popups_debug` object for information about the all of the prompts on the current page. The debug object is keyed by each prompt's ID, and contains the following info for each prompt:
 
