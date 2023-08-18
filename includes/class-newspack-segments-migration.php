@@ -150,7 +150,7 @@ final class Newspack_Segments_Migration {
 	 *
 	 * @return array
 	 */
-	private static function migrate_criteria_configuration( $segment ) {
+	public static function migrate_criteria_configuration( $segment ) {
 		if ( empty( $segment['configuration'] ) || ! empty( $segment['criteria'] ) ) {
 			return $segment;
 		}
