@@ -1,3 +1,17 @@
+# [2.23.0-alpha.3](https://github.com/Automattic/newspack-popups/compare/v2.23.0-alpha.2...v2.23.0-alpha.3) (2023-08-21)
+
+
+### Bug Fixes
+
+* account for frequency presets in printed config ([#1203](https://github.com/Automattic/newspack-popups/issues/1203)) ([a97bc8f](https://github.com/Automattic/newspack-popups/commit/a97bc8fdb187799bc4b9bc0fdb842de8396d5e3b))
+* ensure url param segment is set ([#1197](https://github.com/Automattic/newspack-popups/issues/1197)) ([dc6c130](https://github.com/Automattic/newspack-popups/commit/dc6c13027356dd6a0dbacddd654745cbe697bccf))
+* remove string from overlay prompt ([#1204](https://github.com/Automattic/newspack-popups/issues/1204)) ([232f05a](https://github.com/Automattic/newspack-popups/commit/232f05a6badb06a155ddac4ad94d354f0bde3bdc))
+
+
+### Features
+
+* add segmentation README and more useful info to debug object ([#1195](https://github.com/Automattic/newspack-popups/issues/1195)) ([b501d9a](https://github.com/Automattic/newspack-popups/commit/b501d9adb8d5d095b77a3c7dca59926cc78cdcb6))
+
 # [2.23.0-alpha.2](https://github.com/Automattic/newspack-popups/compare/v2.23.0-alpha.1...v2.23.0-alpha.2) (2023-08-18)
 
 
