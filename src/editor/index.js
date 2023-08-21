@@ -161,7 +161,6 @@ let updatedWithGetParam = false;
  */
 const NewspackPopupsSegmentsHelper = ( { slug } ) => {
 	const { editPost } = useDispatch( editorStore );
-	const { openGeneralSidebar } = useDispatch( 'core/edit-post' );
 	const { terms, taxonomy } = useSelect(
 		select => {
 			const { getEditedPostAttribute } = select( 'core/editor' );
@@ -182,7 +181,6 @@ const NewspackPopupsSegmentsHelper = ( { slug } ) => {
 		const searchParams = currentURL.searchParams;
 		const initialSegment = searchParams.get( 'segment' );
 		if ( ! updatedWithGetParam && initialSegment ) {
-			openGeneralSidebar( 'edit-post/document' );
 			editPost( { [ taxonomy.rest_base ]: [ parseInt( initialSegment ) ] } );
 			updatedWithGetParam = true;
 		}
