@@ -1,4 +1,4 @@
-import { getRawId } from './prompts';
+import { debug, getRawId } from './prompts';
 import { getCriteria } from '../../criteria/utils';
 
 const day = 1000 * 60 * 60 * 24;
@@ -121,12 +121,21 @@ export const getBestPrioritySegment = ( segments, viewAsString = null ) => {
  * @return {boolean} True if the prompt should be displayed, false if not.
  */
 export const shouldPromptBeDisplayed = ( prompt, matchingSegment, ras, override = null ) => {
+	const id = prompt.getAttribute( 'id' );
+	let display = true;
+	const suppression = [];
+	const debugInfo = {
+		element: prompt,
+	};
+
 	// By override.
 	if ( true === override || false === override ) {
-		return override;
-	}
-
-	if ( ras ) {
+		debugInfo.override = true;
+		if ( ! override ) {
+			display = false;
+			suppression.push( 'Prompt suppressed by override.' );
+		}
+	} else if ( ras ) {
 		// eslint-disable-next-line @wordpress/no-unused-vars-before-return
 		const [ start, between, max, reset ] = prompt.getAttribute( 'data-frequency' ).split( ',' );
 		const pageviews = ras.store.get( 'pageviews' );
@@ -135,19 +144,25 @@ export const shouldPromptBeDisplayed = ( prompt, matchingSegment, ras, override 
 
 			// If reader hasn't amassed enough pageviews yet.
 			if ( views <= parseInt( start ) ) {
-				return false;
+				suppression.push(
+					`Prompt displayed starting at pageview ${
+						parseInt( start ) + 1
+					}. Reader has only ${ views } pageviews.`
+				);
+				display = false;
 			}
 
 			// If not displaying every pageview.
 			if ( 0 < between ) {
 				const viewsAfterStart = Math.max( 0, views - ( parseInt( start ) + 1 ) );
 				if ( 0 < viewsAfterStart % ( parseInt( between ) + 1 ) ) {
-					return false;
+					suppression.push( `Prompt displayed once every ${ parseInt( between ) + 1 } pageviews.` );
+					display = false;
 				}
 			}
 
 			// If there's a max frequency.
-			const promptId = getRawId( prompt.getAttribute( 'id' ) );
+			const promptId = getRawId( id );
 			const seenEvents = ( ras.getActivities( 'prompt_seen' ) || [] ).filter( activity => {
 				return (
 					activity.data?.prompt_id === promptId &&
@@ -155,7 +170,8 @@ export const shouldPromptBeDisplayed = ( prompt, matchingSegment, ras, override 
 				);
 			} );
 			if ( 0 < parseInt( max ) && seenEvents.length >= parseInt( max ) ) {
-				return false;
+				suppression.push( `Prompt already displayed the max of ${ max } times.` );
+				display = false;
 			}
 		}
 
@@ -164,11 +180,18 @@ export const shouldPromptBeDisplayed = ( prompt, matchingSegment, ras, override 
 			? prompt.getAttribute( 'data-segments' ).split( ',' )
 			: null;
 		if ( assignedSegments && 0 > assignedSegments.indexOf( matchingSegment ) ) {
-			return false;
+			suppression.push( 'Reader does not match prompt’s assigned segments.' );
+			display = false;
 		}
 	}
 
-	return true;
+	debugInfo.displayed = display;
+	if ( 0 < suppression.length ) {
+		debugInfo.suppression = suppression;
+	}
+	debug( id, debugInfo );
+
+	return display;
 };
 
 /**
