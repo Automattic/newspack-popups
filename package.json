@@ -32,7 +32,7 @@
     "intersection-observer": "^0.12.2",
     "js-cookie": "^3.0.5",
     "lodash": "^4.17.21",
-    "newspack-components": "^2.1.0",
+    "newspack-components": "^2.2.1",
     "qs": "^6.11.2"
   },
   "devDependencies": {
@@ -40,7 +40,7 @@
     "eslint": "^7.32.0",
     "lint-staged": "^13.2.3",
     "newspack-scripts": "^5.1.0",
-    "postcss-scss": "^4.0.6",
+    "postcss-scss": "^4.0.7",
     "prettier": "npm:wp-prettier@^2.2.1-beta-1",
     "stylelint": "^15.2.0"
   }

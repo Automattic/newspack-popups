@@ -73,9 +73,6 @@ export const handleSegmentation = prompts => {
 					unhide();
 				}
 			}
-
-			// Debug logging for prompt display.
-			debug( promptId, shouldDisplay );
 		} );
 	};
 

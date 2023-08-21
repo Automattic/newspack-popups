@@ -139,7 +139,7 @@ final class Newspack_Popups_Model {
 		foreach ( $options as $key => $value ) {
 			switch ( $key ) {
 				case 'frequency':
-					if ( ! in_array( $value, [ 'once', 'daily', 'always', 'custom' ] ) ) {
+					if ( ! in_array( $value, [ 'once', 'weekly', 'daily', 'always', 'custom' ] ) ) {
 						return new \WP_Error(
 							'newspack_popups_invalid_option_value',
 							esc_html__( 'Invalid frequency value.', 'newspack-popups' ),
@@ -998,6 +998,44 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
+	 * Get a string representing the prompt's frequency config.
+	 *
+	 * @param string $popup The popup object.
+	 * @return string The frequency config in the following format: n1,n2,n3,s1 where n and s = the following from popup_options:
+	 *   - n1: frequency_start
+	 *   - n2: frequency_between
+	 *   - n3: frequency_max
+	 *   - s: frequency_reset ("month", "week", "day")
+	 */
+	private static function get_frequency_config( $popup ) {
+		$frequency   = $popup['options']['frequency'];
+		$freq_config = [];
+
+		switch ( $frequency ) {
+			case 'custom':
+				$freq_config = [ $popup['options']['frequency_start'], $popup['options']['frequency_between'], $popup['options']['frequency_max'], $popup['options']['frequency_reset'] ];
+				break;
+			case 'once':
+				$freq_config = [ 0, 0, 1, 'month' ];
+				break;
+			case 'weekly':
+				$freq_config = [ 0, 0, 1, 'week' ];
+				break;
+			case 'daily':
+				$freq_config = [ 0, 0, 1, 'day' ];
+				break;
+			case 'always':
+				$freq_config = [ 0, 0, 0, 'month' ];
+				break;
+			default:
+				$freq_config = [ 0, 0, 0, 'month' ];
+				break;
+		}
+
+		return implode( ',', $freq_config );
+	}
+
+	/**
 	 * Generate markup for an inline popup.
 	 *
 	 * @param string $popup The popup object.
@@ -1029,7 +1067,7 @@ final class Newspack_Popups_Model {
 		$classes[]            = $is_newsletter_prompt ? 'newspack-newsletter-prompt-inline' : null;
 		$classes              = array_merge( $classes, explode( ' ', $popup['options']['additional_classes'] ) );
 		$assigned_segments    = Newspack_Segments_Model::get_popup_segments_ids_string( $popup['id'] );
-		$frequency_config     = [ $popup['options']['frequency_start'], $popup['options']['frequency_between'], $popup['options']['frequency_max'], $popup['options']['frequency_reset'] ];
+		$frequency_config     = self::get_frequency_config( $popup );
 
 		$analytics_events = self::get_analytics_events( $popup, $body, $element_id );
 		if ( ! empty( $analytics_events ) ) {
@@ -1051,7 +1089,7 @@ final class Newspack_Popups_Model {
 				style="<?php echo esc_attr( self::container_style( $popup ) ); ?>"
 				id="<?php echo esc_attr( $element_id ); ?>"
 				data-segments="<?php echo esc_attr( $assigned_segments ); ?>"
-				data-frequency="<?php echo esc_attr( implode( ',', $frequency_config ) ); ?>"
+				data-frequency="<?php echo esc_attr( $frequency_config ); ?>"
 			>
 				<?php echo do_shortcode( $body ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 			</div>
@@ -1117,7 +1155,7 @@ final class Newspack_Popups_Model {
 		$wrapper_classes[]     = 'publish' !== $popup['status'] ? 'newspack-inactive-popup-status' : null;
 		$is_scroll_triggered   = 'scroll' === $popup['options']['trigger_type'];
 		$assigned_segments     = Newspack_Segments_Model::get_popup_segments_ids_string( $popup['id'] );
-		$frequency_config      = [ $popup['options']['frequency_start'], $popup['options']['frequency_between'], $popup['options']['frequency_max'], $popup['options']['frequency_reset'] ];
+		$frequency_config      = self::get_frequency_config( $popup );
 
 		add_filter(
 			'newspack_analytics_events',
@@ -1137,7 +1175,7 @@ final class Newspack_Popups_Model {
 			tabindex="0"
 			id="<?php echo esc_attr( $element_id ); ?>"
 			data-segments="<?php echo esc_attr( $assigned_segments ); ?>"
-			data-frequency="<?php echo esc_attr( implode( ',', $frequency_config ) ); ?>"
+			data-frequency="<?php echo esc_attr( $frequency_config ); ?>"
 
 			<?php if ( $is_scroll_triggered ) : ?>
 			data-scroll="<?php echo esc_attr( $popup['options']['trigger_scroll_progress'] ); ?>"
@@ -1162,7 +1200,7 @@ final class Newspack_Popups_Model {
 			</div>
 			<?php if ( ! $no_overlay_background ) : ?>
 				<?php if ( Newspack_Popups_Settings::enable_dismiss_overlays_on_background_tap() ) : ?>
-					<button style="opacity: <?php echo floatval( $overlay_opacity ); ?>;background-color:<?php echo esc_attr( $overlay_color ); ?>;" class="newspack-lightbox-overlay" ?>.hide"></button>
+					<button style="opacity: <?php echo floatval( $overlay_opacity ); ?>;background-color:<?php echo esc_attr( $overlay_color ); ?>;" class="newspack-lightbox-overlay"></button>
 				<?php else : ?>
 					<div style="opacity: <?php echo floatval( $overlay_opacity ); ?>;background-color:<?php echo esc_attr( $overlay_color ); ?>;" class="newspack-lightbox-overlay"></div>
 				<?php endif; ?>
