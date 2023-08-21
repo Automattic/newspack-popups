@@ -20,85 +20,13 @@ final class Newspack_Segments_Model {
 	const TAX_SLUG = 'popup_segment';
 
 	/**
-	 * The current DB version, used to perform updates in the data in case of change in the structure
-	 *
-	 * @var int
-	 */
-	const DB_VERSION = 1;
-
-	/**
-	 * The DB version option name. Where the current option is stored.
-	 *
-	 * @var string
-	 */
-	const DB_VERSION_OPTION_NAME = 'newspack_segments_db_version';
-
-	/**
 	 * Initializes the class and registers the taxonomy
 	 *
 	 * @return void
 	 */
 	public static function init() {
 		add_action( 'init', array( __CLASS__, 'register_segments_taxonomy' ) );
-		add_action( 'init', array( __CLASS__, 'maybe_update_db_version' ) );
-	}
-
-	/**
-	 * Checks if the DB version has changed and updates the data if needed
-	 *
-	 * @return void
-	 */
-	public static function maybe_update_db_version() {
-		$current_db_version = (int) get_option( self::DB_VERSION_OPTION_NAME, 0 );
-		if ( $current_db_version < self::DB_VERSION ) {
-			self::update_db_version( $current_db_version );
-		}
-	}
-
-	/**
-	 * Updates the DB version option and performs the needed updates
-	 *
-	 * @param int $current_db_version The current DB version.
-	 * @return void
-	 */
-	public static function update_db_version( $current_db_version ) {
-		if ( $current_db_version < 1 ) {
-			self::update_db_version_to_1();
-		}
-		update_option( self::DB_VERSION_OPTION_NAME, self::DB_VERSION );
-	}
-
-	/**
-	 * Updates the DB version to 1, when the segments were migrated from a single option entry into terms of a taxonomy
-	 *
-	 * @return void
-	 */
-	public static function update_db_version_to_1() {
-		$old_segments = get_option( Newspack_Popups_Segmentation::SEGMENTS_OPTION_NAME );
-		$id_mapping   = [];
-
-		if ( ! is_array( $old_segments ) || empty( $old_segments ) ) {
-			return;
-		}
-
-		foreach ( $old_segments as $old_segment ) {
-			$insert                           = self::create_segment( $old_segment );
-			$new_segment                      = end( $insert );
-			$id_mapping[ $old_segment['id'] ] = $new_segment['id'];
-		}
-
-		$popups = Newspack_Popups_Model::retrieve_popups( true, true );
-		foreach ( $popups as $popup ) {
-			$meta_value = get_post_meta( $popup['id'], 'selected_segment_id', true );
-			if ( $meta_value ) {
-				// Create a backup of the old value.
-				update_post_meta( $popup['id'], 'selected_segment_id_bkp', $meta_value );
-				foreach ( $id_mapping as $old_id => $new_id ) {
-					$meta_value = str_replace( $old_id, $new_id, $meta_value );
-				}
-				update_post_meta( $popup['id'], 'selected_segment_id', $meta_value );
-			}
-		}
+		add_filter( 'rest_' . self::TAX_SLUG . '_query', array( __CLASS__, 'filter_rest_query' ), 10 );
 	}
 
 	/**
@@ -124,9 +52,10 @@ final class Newspack_Segments_Model {
 		$args = array(
 			'labels'             => $labels,
 			'description'        => __( 'Segments for popups', 'newspack-popups' ),
-			'hierarchical'       => false,
+			'hierarchical'       => true, // just to get the checkbox UI.
 			'public'             => false,
-			'show_ui'            => false,
+			'show_ui'            => Newspack_Popups::$segmentation_enabled,
+			'show_in_rest'       => Newspack_Popups::$segmentation_enabled,
 			'show_in_menu'       => false,
 			'show_in_nav_menus'  => false,
 			'show_tagcloud'      => false,
@@ -180,6 +109,7 @@ final class Newspack_Segments_Model {
 							'required' => true,
 						],
 						'value'       => [
+							'type'  => [ 'boolean', 'integer', 'string', 'object' ], // redundant declaration to avoid warning on rest_default_additional_properties_to_false().
 							'anyOf' => [
 								[
 									'type' => [ 'boolean', 'integer', 'string' ],
@@ -451,27 +381,6 @@ final class Newspack_Segments_Model {
 			);
 		}
 
-		// Filter out non-existing categories.
-		$existing_categories_ids = get_categories(
-			[
-				'hide_empty' => false,
-				'fields'     => 'ids',
-			]
-		);
-		foreach ( $segments as &$segment ) {
-			if ( ! isset( $segment['configuration']['favorite_categories'] ) ) {
-				continue;
-			}
-			$fav_categories = $segment['configuration']['favorite_categories'];
-			if ( ! empty( $fav_categories ) ) {
-				$segment['configuration']['favorite_categories'] = array_values(
-					array_intersect(
-						$existing_categories_ids,
-						$fav_categories
-					)
-				);
-			}
-		}
 		return $segments;
 	}
 
@@ -521,120 +430,20 @@ final class Newspack_Segments_Model {
 			}
 			$segment[ $meta_key ] = $stored_value;
 		}
-		$segment = self::migrate_criteria_configuration( $segment );
-		return $segment;
+
+		// Ensure we got the segment in its latest version.
+		return Newspack_Segments_Migration::migrate_criteria_configuration( $segment );
 	}
 
 	/**
-	 * Migrate criteria configuration.
+	 * Get the segments IDs for a given popup
 	 *
-	 * TODO: Once this is thoroughly tested, this method should also remove the
-	 * previous configuration.
-	 *
-	 * @param array $segment Segment.
-	 *
-	 * @return array
+	 * @param int $popup_id The popup ID.
+	 * @return string
 	 */
-	private static function migrate_criteria_configuration( $segment ) {
-		if ( empty( $segment['configuration'] ) || ! empty( $segment['criteria'] ) ) {
-			return $segment;
-		}
-		$configuration = $segment['configuration'];
-		$criteria      = [];
-		// Migrate posts read.
-		if ( ! empty( $configuration['min_posts'] ) || ! empty( $configuration['max_posts'] ) ) {
-			$criteria[] = [
-				'criteria_id' => 'articles_read',
-				'value'       => [
-					'min' => ! empty( $configuration['min_posts'] ) ? $configuration['min_posts'] : 0,
-					'max' => ! empty( $configuration['max_posts'] ) ? $configuration['max_posts'] : 0,
-				],
-			];
-		}
-		// Migrate posts read in session.
-		if ( ! empty( $configuration['min_session_posts'] ) || ! empty( $configuration['max_session_posts'] ) ) {
-			$criteria[] = [
-				'criteria_id' => 'articles_read_in_session',
-				'value'       => [
-					'min' => ! empty( $configuration['min_session_posts'] ) ? $configuration['min_session_posts'] : 0,
-					'max' => ! empty( $configuration['max_session_posts'] ) ? $configuration['max_session_posts'] : 0,
-				],
-			];
-		}
-		// Migrate favorite categories.
-		if ( ! empty( $configuration['favorite_categories'] ) ) {
-			$criteria[] = [
-				'criteria_id' => 'favorite_categories',
-				'value'       => $configuration['favorite_categories'],
-			];
-		}
-		// Migrate newsletter subscribed.
-		if ( ! empty( $configuration['is_subscribed'] ) ) {
-			$criteria[] = [
-				'criteria_id' => 'newsletter',
-				'value'       => 'subscribers',
-			];
-		}
-		// Migrate newsletter not subscribed.
-		if ( ! empty( $configuration['is_not_subscribed'] ) ) {
-			$criteria[] = [
-				'criteria_id' => 'newsletter',
-				'value'       => 'non-subscribers',
-			];
-		}
-		// Migrate donor.
-		if ( ! empty( $configuration['is_donor'] ) ) {
-			$criteria[] = [
-				'criteria_id' => 'donation',
-				'value'       => 'donors',
-			];
-		}
-		// Migrate not donor.
-		if ( ! empty( $configuration['is_not_donor'] ) ) {
-			$criteria[] = [
-				'criteria_id' => 'donation',
-				'value'       => 'non-donors',
-			];
-		}
-		// Migrate former donor.
-		if ( ! empty( $configuration['is_former_donor'] ) ) {
-			$criteria[] = [
-				'criteria_id' => 'donation',
-				'value'       => 'former-donors',
-			];
-		}
-		// Migrate has reader account.
-		if ( ! empty( $configuration['is_logged_in'] ) ) {
-			$criteria[] = [
-				'criteria_id' => 'user_account',
-				'value'       => 'with-account',
-			];
-		}
-		// Migrate without reader account.
-		if ( ! empty( $configuration['is_not_logged_in'] ) ) {
-			$criteria[] = [
-				'criteria_id' => 'user_account',
-				'value'       => 'without-account',
-			];
-		}
-		// Migrate referrer sources to match.
-		if ( ! empty( $configuration['referrers'] ) ) {
-			$criteria[] = [
-				'criteria_id' => 'sources_to_match',
-				'value'       => $configuration['referrers'],
-			];
-		}
-		// Migrate referrer sources to exclude.
-		if ( ! empty( $configuration['referrers_not'] ) ) {
-			$criteria[] = [
-				'criteria_id' => 'sources_to_exclude',
-				'value'       => $configuration['referrers_not'],
-			];
-		}
-		if ( ! empty( $criteria ) ) {
-			$segment['criteria'] = $criteria;
-		}
-		return $segment;
+	public static function get_popup_segments_ids_string( $popup_id ) {
+		$segments = wp_get_object_terms( $popup_id, self::TAX_SLUG, [ 'fields' => 'ids' ] );
+		return implode( ',', $segments );
 	}
 
 	/**
@@ -769,6 +578,23 @@ final class Newspack_Segments_Model {
 			},
 			$segments
 		);
+	}
+
+	/**
+	 * Filters get_terms() arguments when querying terms via the REST API.
+	 *
+	 * @param array $prepared_args Array of arguments for get_terms().
+	 */
+	public static function filter_rest_query( $prepared_args ) {
+		if ( ! isset( $prepared_args['meta_query'] ) ) {
+			$prepared_args['meta_query'] = []; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+		}
+		$prepared_args['meta_query'][] = [
+			'key'     => 'configuration',
+			'compare' => 'NOT LIKE',
+			'value'   => '"is_disabled";b:1',
+		];
+		return $prepared_args;
 	}
 }
 

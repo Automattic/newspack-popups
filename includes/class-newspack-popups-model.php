@@ -99,7 +99,7 @@ final class Newspack_Popups_Model {
 				]
 			);
 		}
-		if ( ! in_array( $taxonomy, [ 'category', 'post_tag', Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY ] ) ) {
+		if ( ! in_array( $taxonomy, [ 'category', 'post_tag', Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY, Newspack_Segments_Model::TAX_SLUG ] ) ) {
 			return new \WP_Error(
 				'newspack_popups_invalid_taxonomy',
 				esc_html__( 'Invalid taxonomy.', 'newspack-popups' ),
@@ -139,7 +139,7 @@ final class Newspack_Popups_Model {
 		foreach ( $options as $key => $value ) {
 			switch ( $key ) {
 				case 'frequency':
-					if ( ! in_array( $value, [ 'once', 'daily', 'always', 'custom' ] ) ) {
+					if ( ! in_array( $value, [ 'once', 'weekly', 'daily', 'always', 'custom' ] ) ) {
 						return new \WP_Error(
 							'newspack_popups_invalid_option_value',
 							esc_html__( 'Invalid frequency value.', 'newspack-popups' ),
@@ -374,6 +374,17 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
+	 * Gets the popup's segments.
+	 *
+	 * @param int $id ID of the prompt.
+	 * @return array Array of segments.
+	 */
+	public static function get_popup_segments( $id ) {
+		$segments = get_the_terms( $id, Newspack_Segments_Model::TAX_SLUG );
+		return $segments ? $segments : [];
+	}
+
+	/**
 	 * Get options for the given prompt, with defaults.
 	 *
 	 * @param int         $id ID of the prompt.
@@ -402,7 +413,6 @@ final class Newspack_Popups_Model {
 			'archive_insertion_posts_count'  => get_post_meta( $id, 'archive_insertion_posts_count', true ),
 			'archive_insertion_is_repeating' => get_post_meta( $id, 'archive_insertion_is_repeating', true ),
 			'utm_suppression'                => get_post_meta( $id, 'utm_suppression', true ),
-			'selected_segment_id'            => get_post_meta( $id, 'selected_segment_id', true ),
 			'post_types'                     => get_post_meta( $id, 'post_types', true ),
 			'archive_page_types'             => get_post_meta( $id, 'archive_page_types', true ),
 			'additional_classes'             => get_post_meta( $id, 'additional_classes', true ),
@@ -446,7 +456,6 @@ final class Newspack_Popups_Model {
 				'archive_insertion_posts_count'  => 1,
 				'archive_insertion_is_repeating' => false,
 				'utm_suppression'                => null,
-				'selected_segment_id'            => '',
 				'post_types'                     => self::get_default_popup_post_types(),
 				'archive_page_types'             => self::get_supported_archive_page_types(),
 				'additional_classes'             => '',
@@ -614,10 +623,8 @@ final class Newspack_Popups_Model {
 			'options' => $campaign_post_options,
 		];
 
-		$assigned_segments = explode( ',', $popup['options']['selected_segment_id'] );
-		if ( $popup['options']['selected_segment_id'] && 0 === count( array_intersect( $assigned_segments, Newspack_Popups_Segmentation::get_segment_ids() ) ) ) {
-			$popup['options']['selected_segment_id'] = null;
-		}
+		$popup['segments'] = self::get_popup_segments( $id );
+
 		if ( $include_taxonomies ) {
 			$popup['categories']      = get_the_category( $id );
 			$popup['tags']            = get_the_tags( $id );
@@ -832,15 +839,11 @@ final class Newspack_Popups_Model {
 		}
 
 		$popup_id            = $popup['id'];
-		$segment_ids         = isset( $popup['options'] ) && ! empty( $popup['options']['selected_segment_id'] ) ?
-			explode( ',', $popup['options']['selected_segment_id'] ) :
-			[];
 		$segments            = array_reduce(
-			$segment_ids,
-			function( $acc, $segment_id ) {
-				$segment = Newspack_Popups_Segmentation::get_segment( $segment_id );
-				if ( $segment && isset( $segment['name'] ) ) {
-					$acc[] = $segment['name'];
+			$popup['segments'],
+			function( $acc, $segment ) {
+				if ( $segment instanceof \WP_Term ) {
+					$acc[] = $segment->name;
 				}
 				return $acc;
 			},
@@ -940,24 +943,6 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
-	 * Get amp-access attributes for a popup-enclosing amp-layout tag.
-	 *
-	 * @param object $popup Popup.
-	 */
-	public static function get_access_attrs( $popup ) {
-		if ( Newspack_Popups_Settings::is_non_interactive() ) {
-			return '';
-		}
-		if ( Newspack_Popups::previewed_popup_id() || Newspack_Popups::preset_popup_id() ) {
-			return '';
-		}
-		// The amp-access endpoint is queried only once (on page load), but after changing block settings,
-		// the block will be re-rendered. It has to be initially visible to be seen in the Customizer preview.
-		$is_hidden_initially = ! is_customize_preview();
-		return 'amp-access="popups.' . esc_attr( self::canonize_popup_id( $popup['id'] ) ) . '"' . ( $is_hidden_initially ? ' amp-access-hide ' : ' ' );
-	}
-
-	/**
 	 * Get data-popup-status attribute for use in previews, if viewing as an admin.
 	 *
 	 * @param object $popup Popup.
@@ -1013,6 +998,44 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
+	 * Get a string representing the prompt's frequency config.
+	 *
+	 * @param string $popup The popup object.
+	 * @return string The frequency config in the following format: n1,n2,n3,s1 where n and s = the following from popup_options:
+	 *   - n1: frequency_start
+	 *   - n2: frequency_between
+	 *   - n3: frequency_max
+	 *   - s: frequency_reset ("month", "week", "day")
+	 */
+	private static function get_frequency_config( $popup ) {
+		$frequency   = $popup['options']['frequency'];
+		$freq_config = [];
+
+		switch ( $frequency ) {
+			case 'custom':
+				$freq_config = [ $popup['options']['frequency_start'], $popup['options']['frequency_between'], $popup['options']['frequency_max'], $popup['options']['frequency_reset'] ];
+				break;
+			case 'once':
+				$freq_config = [ 0, 0, 1, 'month' ];
+				break;
+			case 'weekly':
+				$freq_config = [ 0, 0, 1, 'week' ];
+				break;
+			case 'daily':
+				$freq_config = [ 0, 0, 1, 'day' ];
+				break;
+			case 'always':
+				$freq_config = [ 0, 0, 0, 'month' ];
+				break;
+			default:
+				$freq_config = [ 0, 0, 0, 'month' ];
+				break;
+		}
+
+		return implode( ',', $freq_config );
+	}
+
+	/**
 	 * Generate markup for an inline popup.
 	 *
 	 * @param string $popup The popup object.
@@ -1035,7 +1058,7 @@ final class Newspack_Popups_Model {
 		$hide_border          = $popup['options']['hide_border'];
 		$large_border         = $popup['options']['large_border'];
 		$is_newsletter_prompt = self::has_newsletter_prompt( $popup );
-		$classes              = [ 'newspack-popup' ];
+		$classes              = [ 'newspack-popup-container', 'newspack-popup', 'hidden' ];
 		$classes[]            = 'above_header' === $popup['options']['placement'] ? 'newspack-above-header-popup' : null;
 		$classes[]            = ! self::is_above_header( $popup ) ? 'newspack-inline-popup' : null;
 		$classes[]            = 'publish' !== $popup['status'] ? 'newspack-inactive-popup-status' : null;
@@ -1043,6 +1066,8 @@ final class Newspack_Popups_Model {
 		$classes[]            = $large_border ? 'newspack-lightbox-large-border' : null;
 		$classes[]            = $is_newsletter_prompt ? 'newspack-newsletter-prompt-inline' : null;
 		$classes              = array_merge( $classes, explode( ' ', $popup['options']['additional_classes'] ) );
+		$assigned_segments    = Newspack_Segments_Model::get_popup_segments_ids_string( $popup['id'] );
+		$frequency_config     = self::get_frequency_config( $popup );
 
 		$analytics_events = self::get_analytics_events( $popup, $body, $element_id );
 		if ( ! empty( $analytics_events ) ) {
@@ -1056,17 +1081,18 @@ final class Newspack_Popups_Model {
 
 		ob_start();
 		?>
-			<amp-layout
-				<?php echo self::get_access_attrs( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+			<div
 				<?php echo self::get_data_status_preview_attrs( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>"
 				role="button"
 				tabindex="0"
 				style="<?php echo esc_attr( self::container_style( $popup ) ); ?>"
 				id="<?php echo esc_attr( $element_id ); ?>"
+				data-segments="<?php echo esc_attr( $assigned_segments ); ?>"
+				data-frequency="<?php echo esc_attr( $frequency_config ); ?>"
 			>
 				<?php echo do_shortcode( $body ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-			</amp-layout>
+			</div>
 		<?php
 		return ob_get_clean();
 	}
@@ -1078,9 +1104,12 @@ final class Newspack_Popups_Model {
 	 * @return string The generated markup.
 	 */
 	public static function generate_popup( $popup ) {
-		// If previewing a single prompt, override saved settings with preview settings.
-		if ( Newspack_Popups::previewed_popup_id() ) {
-			$popup = self::retrieve_preview_popup( Newspack_Popups::previewed_popup_id() );
+		$previewed_popup_id            = Newspack_Popups::previewed_popup_id();
+		$is_manual_or_custom_placement = self::is_manual_only( $popup ) || Newspack_Popups_Custom_Placements::is_custom_placement_or_manual( $popup );
+
+		// If previewing a single prompt, override saved settings with preview settings. Allow manual and custom placement prompts to be displayed as usual.
+		if ( $previewed_popup_id && ( ! $is_manual_or_custom_placement || $popup['id'] === $previewed_popup_id ) ) {
+			$popup = self::retrieve_preview_popup( $previewed_popup_id );
 		}
 		if ( Newspack_Popups::preset_popup_id() ) {
 			$popup = Newspack_Popups_Presets::retrieve_preset_popup( Newspack_Popups::preset_popup_id() );
@@ -1115,7 +1144,7 @@ final class Newspack_Popups_Model {
 		$hidden_fields         = self::get_hidden_fields( $popup );
 		$is_newsletter_prompt  = self::has_newsletter_prompt( $popup );
 		$has_featured_image    = has_post_thumbnail( $popup['id'] ) || ! empty( $popup['options']['featured_image_id'] );
-		$classes               = array( 'newspack-lightbox', 'newspack-popup', 'newspack-lightbox-placement-' . $popup['options']['placement'], 'newspack-lightbox-size-' . $overlay_size );
+		$classes               = [ 'newspack-popup-container', 'newspack-lightbox', 'newspack-popup', 'hidden', 'newspack-lightbox-placement-' . $popup['options']['placement'], 'newspack-lightbox-size-' . $overlay_size ];
 		$classes[]             = $hide_border ? 'newspack-lightbox-no-border' : null;
 		$classes[]             = $large_border ? 'newspack-lightbox-large-border' : null;
 		$classes[]             = $is_newsletter_prompt ? 'newspack-newsletter-prompt-overlay' : null;
@@ -1125,6 +1154,8 @@ final class Newspack_Popups_Model {
 		$wrapper_classes       = [ 'newspack-popup-wrapper' ];
 		$wrapper_classes[]     = 'publish' !== $popup['status'] ? 'newspack-inactive-popup-status' : null;
 		$is_scroll_triggered   = 'scroll' === $popup['options']['trigger_type'];
+		$assigned_segments     = Newspack_Segments_Model::get_popup_segments_ids_string( $popup['id'] );
+		$frequency_config      = self::get_frequency_config( $popup );
 
 		add_filter(
 			'newspack_analytics_events',
@@ -1137,13 +1168,20 @@ final class Newspack_Popups_Model {
 
 		ob_start();
 		?>
-		<amp-layout
-			<?php echo self::get_access_attrs( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+		<div
 			<?php echo self::get_data_status_preview_attrs( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 			class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>"
 			role="button"
 			tabindex="0"
 			id="<?php echo esc_attr( $element_id ); ?>"
+			data-segments="<?php echo esc_attr( $assigned_segments ); ?>"
+			data-frequency="<?php echo esc_attr( $frequency_config ); ?>"
+
+			<?php if ( $is_scroll_triggered ) : ?>
+			data-scroll="<?php echo esc_attr( $popup['options']['trigger_scroll_progress'] ); ?>"
+			<?php else : ?>
+			data-delay="<?php echo esc_attr( self::get_delay( $popup ) ); ?>"
+			<?php endif; ?>
 		>
 			<div class="<?php echo esc_attr( implode( ' ', $wrapper_classes ) ); ?>" data-popup-status="<?php echo esc_attr( $popup['status'] ); ?>" style="<?php echo ! $hide_border ? esc_attr( self::container_style( $popup ) ) : ''; ?>">
 				<div class="newspack-popup__content-wrapper" style="<?php echo $hide_border ? esc_attr( self::container_style( $popup ) ) : ''; ?>">
@@ -1155,68 +1193,22 @@ final class Newspack_Popups_Model {
 					<div class="newspack-popup__content">
 						<?php echo do_shortcode( $body ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					</div>
-					<button on="tap:<?php echo esc_attr( $element_id ); ?>.hide" class="newspack-lightbox__close" aria-label="<?php esc_html_e( 'Close Pop-up', 'newspack-popups' ); // phpcs:ignore WordPressVIPMinimum.Security.ProperEscapingFunction.htmlAttrNotByEscHTML ?>">
+					<button class="newspack-lightbox__close" aria-label="<?php esc_html_e( 'Close Pop-up', 'newspack-popups' ); // phpcs:ignore WordPressVIPMinimum.Security.ProperEscapingFunction.htmlAttrNotByEscHTML ?>">
 						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" role="img" aria-hidden="true" focusable="false"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
 					</button>
 				</div>
 			</div>
 			<?php if ( ! $no_overlay_background ) : ?>
 				<?php if ( Newspack_Popups_Settings::enable_dismiss_overlays_on_background_tap() ) : ?>
-					<button style="opacity: <?php echo floatval( $overlay_opacity ); ?>;background-color:<?php echo esc_attr( $overlay_color ); ?>;" class="newspack-lightbox-overlay" on="tap:<?php echo esc_attr( $element_id ); ?>.hide"></button>
+					<button style="opacity: <?php echo floatval( $overlay_opacity ); ?>;background-color:<?php echo esc_attr( $overlay_color ); ?>;" class="newspack-lightbox-overlay"></button>
 				<?php else : ?>
 					<div style="opacity: <?php echo floatval( $overlay_opacity ); ?>;background-color:<?php echo esc_attr( $overlay_color ); ?>;" class="newspack-lightbox-overlay"></div>
 				<?php endif; ?>
 			<?php endif; ?>
-		</amp-layout>
+		</div>
 		<?php if ( $is_scroll_triggered ) : ?>
-			<div id="page-position-marker_<?php echo esc_attr( $animation_id ); ?>" style="position: absolute; top: <?php echo esc_attr( $popup['options']['trigger_scroll_progress'] ); ?>%"></div>
-			<amp-position-observer
-				target="page-position-marker_<?php echo esc_attr( $animation_id ); ?>"
-				on="enter:<?php echo esc_attr( $animation_id ); ?>.start;"
-				once
-				layout="nodisplay"
-			></amp-position-observer>
+			<div id="page-position-marker_<?php echo esc_attr( $element_id ); ?>" class="page-position-marker" style="position: absolute; top: <?php echo esc_attr( $popup['options']['trigger_scroll_progress'] ); ?>%"></div>
 		<?php endif; ?>
-		<amp-animation id="<?php echo esc_attr( $animation_id ); ?>" layout="nodisplay" <?php echo $is_scroll_triggered ? '' : 'trigger="visibility"'; ?>>
-			<script type="application/json">
-				{
-					"duration": "125ms",
-					"fill": "both",
-					"iterations": "1",
-					"direction": "alternate",
-					"animations": [
-						{
-							"selector": "#<?php echo esc_attr( $element_id ); ?>",
-							"delay": "<?php echo esc_html( self::get_delay( $popup ) ); ?>",
-							"keyframes": {
-								"opacity": ["0", "1"],
-								"visibility": ["hidden", "visible"]
-							}
-						},
-						{
-							"selector": "#<?php echo esc_attr( $element_id ); ?>",
-							"delay": "<?php echo esc_html( self::get_delay( $popup ) - 500 ); ?>",
-							"keyframes": {
-								"transform": ["translateY(90vh)", "translateY(0vh)"]
-							}
-						},
-						{
-								"selector": "#<?php echo esc_attr( $element_id ); ?> .newspack-popup-wrapper",
-								"delay": "<?php echo intval( $popup['options']['trigger_delay'] ) * 1000 + 625; ?>",
-								"keyframes": {
-									<?php if ( in_array( $popup['options']['placement'], [ 'top', 'top_left', 'top_right' ] ) ) : ?>
-										"transform": ["translateY(-100%)", "translateY(0)"]
-									<?php elseif ( in_array( $popup['options']['placement'], [ 'bottom', 'bottom_left', 'bottom_right' ] ) ) : ?>
-										"transform": ["translateY(100%)", "translateY(0)"]
-									<?php else : ?>
-										"opacity": ["0", "1"]
-									<?php endif; ?>
-								}
-						}
-					]
-				}
-			</script>
-		</amp-animation>
 		<?php
 		if ( self::is_overlay( $popup ) && has_block( 'newspack-blocks/homepage-articles', $popup['content'] ) ) {
 			add_filter( 'newspack_blocks_homepage_enable_duplication', '__return_false' );
