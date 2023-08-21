@@ -154,11 +154,14 @@ const PluginPostStatusInfoTest = () => (
 );
 registerPlugin( 'newspack-popups-preview', { render: PluginPostStatusInfoTest } );
 
+let updatedWithGetParam = false;
+
 /**
  * Adds a help message to the Segment selector
  */
 const NewspackPopupsSegmentsHelper = ( { slug } ) => {
 	const { editPost } = useDispatch( editorStore );
+	const { openGeneralSidebar } = useDispatch( 'core/edit-post' );
 	const { terms, taxonomy } = useSelect(
 		select => {
 			const { getEditedPostAttribute } = select( 'core/editor' );
@@ -178,13 +181,10 @@ const NewspackPopupsSegmentsHelper = ( { slug } ) => {
 		const currentURL = new URL( window.location );
 		const searchParams = currentURL.searchParams;
 		const initialSegment = searchParams.get( 'segment' );
-		if ( initialSegment ) {
+		if ( ! updatedWithGetParam && initialSegment ) {
+			openGeneralSidebar( 'edit-post/document' );
 			editPost( { [ taxonomy.rest_base ]: [ parseInt( initialSegment ) ] } );
-
-			// This avoids thes callback from being called again when you toggle the Segments form visibility.
-			searchParams.delete( 'segment' );
-			currentURL.search = searchParams.toString();
-			window.history.pushState( { path: currentURL.toString() }, '', currentURL.toString() );
+			updatedWithGetParam = true;
 		}
 	}, [] );
 

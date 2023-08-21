@@ -844,6 +844,10 @@ final class Newspack_Popups {
 		if ( $group ) {
 			wp_set_post_terms( $post_id, [ $group ], self::NEWSPACK_POPUPS_TAXONOMY );
 		}
+
+		if ( $segment && ! wp_get_post_terms( $post_id, Newspack_Segments_Model::TAX_SLUG ) ) {
+			wp_set_post_terms( $post_id, [ $segment ], Newspack_Segments_Model::TAX_SLUG );
+		}
 	}
 
 	/**
