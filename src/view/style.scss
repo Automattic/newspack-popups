@@ -480,10 +480,13 @@ $width__tablet: 782px;
 .newspack-above-header-popup {
 	display: block;
 	clear: both;
-	padding: 0.75em 0;
 
 	&:focus {
 		outline: none;
+	}
+
+	&.hidden {
+		display: none;
 	}
 }
 
