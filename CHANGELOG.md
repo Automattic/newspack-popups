@@ -1,3 +1,11 @@
+# [2.23.0-alpha.4](https://github.com/Automattic/newspack-popups/compare/v2.23.0-alpha.3...v2.23.0-alpha.4) (2023-08-23)
+
+
+### Bug Fixes
+
+* add .hidden styles for above header prompts ([#1207](https://github.com/Automattic/newspack-popups/issues/1207)) ([a19d64d](https://github.com/Automattic/newspack-popups/commit/a19d64dcd1a3b8cdd7cd9cc55839a60269b9e30b))
+* eslint new rule declaration-block-no-redundant-longhand-properties ([d1bf215](https://github.com/Automattic/newspack-popups/commit/d1bf2158999e18c8329a008b2e78fb2c7cdbb80a))
+
 # [2.23.0-alpha.3](https://github.com/Automattic/newspack-popups/compare/v2.23.0-alpha.2...v2.23.0-alpha.3) (2023-08-21)
 
 
