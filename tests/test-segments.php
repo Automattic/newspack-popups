@@ -18,6 +18,19 @@ class SegmentsTest extends WP_UnitTestCase {
 	public $complete_and_valid = [
 		'name'          => 'Complete and valid',
 		'priority'      => 10,
+		'criteria'      => [
+			[
+				'criteria_id' => 'articles_read',
+				'value'       => [
+					'min' => 5,
+					'max' => 20,
+				],
+			],
+			[
+				'criteria_id' => 'newsletter',
+				'value'       => 'is_subscriber',
+			],
+		],
 		'configuration' => [
 			'max_posts'           => 1,
 			'min_posts'           => 1,
@@ -45,6 +58,12 @@ class SegmentsTest extends WP_UnitTestCase {
 	public $valid = [
 		'name'          => 'Valid',
 		'priority'      => 20,
+		'criteria'      => [
+			[
+				'criteria_id' => 'newsletter',
+				'value'       => 'is_subscriber',
+			],
+		],
 		'configuration' => [
 			'max_posts' => 1,
 		],
@@ -70,6 +89,12 @@ class SegmentsTest extends WP_UnitTestCase {
 	public $additional_properties = [
 		'name'          => 'Additional properties',
 		'priority'      => 40,
+		'criteria'      => [
+			[
+				'criteria_id' => 'newsletter',
+				'value'       => 'is_subscriber',
+			],
+		],
 		'configuration' => [
 			'max_posts' => 1,
 			'unknown'   => 'invalid',
@@ -84,6 +109,12 @@ class SegmentsTest extends WP_UnitTestCase {
 	public $invalid_int = [
 		'name'          => 'Invalid Int',
 		'priority'      => 10,
+		'criteria'      => [
+			[
+				'criteria_id' => 'newsletter',
+				'value'       => 'is_subscriber',
+			],
+		],
 		'configuration' => [
 			'max_posts' => 'string',
 		],
@@ -97,6 +128,12 @@ class SegmentsTest extends WP_UnitTestCase {
 	public $inactive = [
 		'name'          => 'Inactive Segment',
 		'priority'      => 50,
+		'criteria'      => [
+			[
+				'criteria_id' => 'newsletter',
+				'value'       => 'is_subscriber',
+			],
+		],
 		'configuration' => [
 			'max_posts'   => 'string',
 			'is_disabled' => true,
@@ -201,29 +238,6 @@ class SegmentsTest extends WP_UnitTestCase {
 		$this->assertSame( $this->complete_and_valid['name'], $segments[1]['name'] );
 		$this->assertSame( 0, $segments[0]['priority'] );
 		$this->assertSame( 1, $segments[1]['priority'] );
-	}
-
-	/**
-	 * Test get_segments fill in empty priorities.
-	 */
-	public function test_get_segments_rremove_non_existent_categories() {
-		$cat_1 = $this->factory()->category->create_and_get( [ 'name' => 'Category 1' ] );
-		$cat_2 = $this->factory()->category->create_and_get( [ 'name' => 'Category 2' ] );
-
-
-		$modified = $this->complete_and_valid;
-		$modified['configuration']['favorite_categories'] = [ $cat_1->term_id, $cat_2->term_id, 9999 ];
-		Newspack_Popups_Segmentation::create_segment( $modified );
-
-		$modified = $this->valid;
-		$modified['configuration']['favorite_categories'] = [ 8888 ];
-		Newspack_Popups_Segmentation::create_segment( $modified );
-
-		$segments = Newspack_Popups_Segmentation::get_segments();
-
-		$this->assertSame( 2, count( $segments ) );
-		$this->assertSame( [ $cat_1->term_id, $cat_2->term_id ], $segments[0]['configuration']['favorite_categories'] );
-		$this->assertSame( [], $segments[1]['configuration']['favorite_categories'] );
 	}
 
 	/**

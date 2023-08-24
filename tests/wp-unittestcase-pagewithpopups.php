@@ -80,7 +80,7 @@ class WP_UnitTestCase_PageWithPopups extends WP_UnitTestCase {
 	 * Get number of popups rendered on the page.
 	 */
 	protected function getRenderedPopupsAmount() {
-		return self::$dom_xpath->query( '//amp-layout' )->length;
+		return self::$dom_xpath->query( '//*[contains(@class,"newspack-popup-container")]' )->length;
 	}
 
 	/**
@@ -130,34 +130,5 @@ class WP_UnitTestCase_PageWithPopups extends WP_UnitTestCase {
 		$post_head_dom   = new DomDocument();
 		@$post_head_dom->loadHTML( self::$post_head ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
 		self::$post_head_dom_xpath = new DOMXpath( $post_head_dom );
-	}
-
-	/**
-	 * Get the amp-access config.
-	 *
-	 * @param bool $decode If true, response will be JSON-decoded.
-	 * @return object amp-access config.
-	 */
-	protected function getAMPAccessConfig( $decode = true ) {
-		$amp_access_content = json_decode( self::$post_head_dom_xpath->query( '//*[@id="amp-access"]' )->item( 0 )->textContent );
-		parse_str( wp_parse_url( $amp_access_content->authorization )['query'], $amp_access_config );
-		if ( $decode ) {
-			$amp_access_config['popups']   = json_decode( $amp_access_config['popups'] );
-			$amp_access_config['settings'] = json_decode( $amp_access_config['settings'] );
-			$amp_access_config['visit']    = json_decode( $amp_access_config['visit'] );
-		}
-		return $amp_access_config;
-	}
-
-	/**
-	 * Get the API response.
-	 *
-	 * @return object API response.
-	 */
-	protected function getAPIResponse() {
-		$amp_access_config   = self::getAMPAccessConfig( false );
-		$_REQUEST            = $amp_access_config;
-		$maybe_show_campaign = new Maybe_Show_Campaign();
-		return $maybe_show_campaign->response;
 	}
 }

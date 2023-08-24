@@ -46,13 +46,10 @@
 
 		&::before {
 			background: colors.$primary-500;
-			bottom: 0;
 			content: '';
 			display: block;
-			left: -20px;
+			inset: 0 0 0 -20px;
 			position: absolute;
-			right: 0;
-			top: 0;
 			z-index: -1;
 		}
 
