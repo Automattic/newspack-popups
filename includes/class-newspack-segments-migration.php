@@ -32,14 +32,22 @@ final class Newspack_Segments_Migration {
 	const DB_VERSION_OPTION_NAME = 'newspack_segments_db_version';
 
 	/**
+	 * Whether the legacy reader events table exists.
+	 * 
+	 * @var boolean
+	 */
+	private static $legacy_table_exists = true;
+
+	/**
 	 * Initializes the class
 	 *
 	 * @return void
 	 */
 	public static function init() {
-		add_action( 'init', array( __CLASS__, 'maybe_update_db_version' ), 99 ); // After segments taxonomy is registered.
+		add_action( 'init', [ __CLASS__, 'maybe_update_db_version' ], 99 ); // After segments taxonomy is registered.
 
 		// User data on-demand migration.
+		add_action( 'init', [ __CLASS__, 'check_for_legacy_table' ] );
 		add_action( 'wp', [ __CLASS__, 'migrate_user_data' ] );
 		add_action( 'user_register', [ __CLASS__, 'migrate_new_user_data' ], 10, 2 );
 	}
@@ -253,6 +261,18 @@ final class Newspack_Segments_Migration {
 	}
 
 	/**
+	 * Check for the existence of legacy tables and cache the result.
+	 * No need to migrate reader data if the old tables don't exist.
+	 */
+	public static function check_for_legacy_table() {
+		global $wpdb;
+
+		if ( empty( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->prefix . 'posts' ) ) ) ) { // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
+			self::$legacy_table_exists = false;
+		}
+	}
+
+	/**
 	 * Migrate user data from the 'wp_newspack_campaigns_reader_events' table to
 	 * the reader data library.
 	 *
@@ -262,7 +282,8 @@ final class Newspack_Segments_Migration {
 		if (
 			! is_user_logged_in() ||
 			get_user_meta( get_current_user_id(), 'newspack_popups_reader_data_migrated', true ) ||
-			! class_exists( 'Newspack\Reader_Data' )
+			! class_exists( 'Newspack\Reader_Data' ) ||
+			! self::$legacy_table_exists
 		) {
 			return;
 		}
@@ -270,11 +291,6 @@ final class Newspack_Segments_Migration {
 		$user_id = get_current_user_id();
 
 		global $wpdb;
-
-		// No need to migrate if the old tables don't exist.
-		if ( empty( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->prefix . 'newspack_campaigns_reader_events' ) ) ) ) { // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
-			return;
-		}
 
 		// Fetch the user's client ids.
 		$client_ids = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
@@ -311,7 +327,7 @@ final class Newspack_Segments_Migration {
 	 * @param array $userdata The raw array of data passed to wp_insert_user().
 	 */
 	public static function migrate_new_user_data( $user_id, $userdata ) {
-		if ( empty( $userdata['user_email'] ) ) {
+		if ( empty( $userdata['user_email'] ) || ! self::$legacy_table_exists ) {
 			return;
 		}
 
