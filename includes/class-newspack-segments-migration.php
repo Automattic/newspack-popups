@@ -271,6 +271,11 @@ final class Newspack_Segments_Migration {
 
 		global $wpdb;
 
+		// No need to migrate if the old tables don't exist.
+		if ( empty( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->prefix . 'newspack_campaigns_reader_events' ) ) ) ) { // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
+			return;
+		}
+
 		// Fetch the user's client ids.
 		$client_ids = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
 			$wpdb->prepare(
