@@ -32,11 +32,12 @@ final class Newspack_Segments_Migration {
 	const DB_VERSION_OPTION_NAME = 'newspack_segments_db_version';
 
 	/**
-	 * Whether the legacy reader events table exists.
+	 * Option name for whether we should bother trying to migrate reader data.
+	 * If there are no legacy reader tables, then there's no need to migrate.
 	 * 
-	 * @var boolean
+	 * @var string
 	 */
-	private static $legacy_table_exists = true;
+	const SHOULD_MIGRATE_READER_DATA_OPTION_NAME = 'newspack_should_migrate_reader_data';
 
 	/**
 	 * Initializes the class
@@ -47,7 +48,7 @@ final class Newspack_Segments_Migration {
 		add_action( 'init', [ __CLASS__, 'maybe_update_db_version' ], 99 ); // After segments taxonomy is registered.
 
 		// User data on-demand migration.
-		add_action( 'init', [ __CLASS__, 'check_for_legacy_table' ] );
+		add_action( 'init', [ __CLASS__, 'should_migrate_reader_data' ] );
 		add_action( 'wp', [ __CLASS__, 'migrate_user_data' ] );
 		add_action( 'user_register', [ __CLASS__, 'migrate_new_user_data' ], 10, 2 );
 	}
@@ -261,15 +262,23 @@ final class Newspack_Segments_Migration {
 	}
 
 	/**
-	 * Check for the existence of legacy tables and cache the result.
+	 * Checks for the existence of legacy tables and cache the result.
 	 * No need to migrate reader data if the old tables don't exist.
 	 */
-	public static function check_for_legacy_table() {
-		global $wpdb;
+	public static function should_migrate_reader_data() {
+		$should_migrate = \get_option( self::SHOULD_MIGRATE_READER_DATA_OPTION_NAME, null );
 
-		if ( empty( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->prefix . 'posts' ) ) ) ) { // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
-			self::$legacy_table_exists = false;
+		if ( null === $should_migrate ) {
+			global $wpdb;
+			$should_migrate = ! empty( $wpdb->get_results( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->prefix . 'newspack_campaigns_reader_events' ) ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
+			\add_option( self::SHOULD_MIGRATE_READER_DATA_OPTION_NAME, $should_migrate );
+
+			// Avoid notoptions cache error.
+			\wp_cache_delete( 'notoptions', 'options' );
+			\wp_cache_delete( 'alloptions', 'options' );
 		}
+
+		return $should_migrate;
 	}
 
 	/**
