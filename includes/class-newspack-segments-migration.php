@@ -48,7 +48,6 @@ final class Newspack_Segments_Migration {
 		add_action( 'init', [ __CLASS__, 'maybe_update_db_version' ], 99 ); // After segments taxonomy is registered.
 
 		// User data on-demand migration.
-		add_action( 'init', [ __CLASS__, 'should_migrate_reader_data' ] );
 		add_action( 'wp', [ __CLASS__, 'migrate_user_data' ] );
 		add_action( 'user_register', [ __CLASS__, 'migrate_new_user_data' ], 10, 2 );
 	}
@@ -292,7 +291,7 @@ final class Newspack_Segments_Migration {
 			! is_user_logged_in() ||
 			get_user_meta( get_current_user_id(), 'newspack_popups_reader_data_migrated', true ) ||
 			! class_exists( 'Newspack\Reader_Data' ) ||
-			! self::$legacy_table_exists
+			! self::should_migrate_reader_data()
 		) {
 			return;
 		}
@@ -336,7 +335,7 @@ final class Newspack_Segments_Migration {
 	 * @param array $userdata The raw array of data passed to wp_insert_user().
 	 */
 	public static function migrate_new_user_data( $user_id, $userdata ) {
-		if ( empty( $userdata['user_email'] ) || ! self::$legacy_table_exists ) {
+		if ( empty( $userdata['user_email'] ) || ! self::should_migrate_reader_data() ) {
 			return;
 		}
 
