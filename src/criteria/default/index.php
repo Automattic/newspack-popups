@@ -13,19 +13,19 @@ $criteria = [
 	/**
 	 * Reader Engagement.
 	 */
-	'articles_read'            => [
+	'articles_read'               => [
 		'name'              => __( 'Articles read', 'newspack-popups' ),
 		'description'       => __( 'Number of articles read in the last 30 day period.', 'newspack-popups' ),
 		'category'          => 'reader_engagement',
 		'matching_function' => 'range',
 	],
-	'articles_read_in_session' => [
+	'articles_read_in_session'    => [
 		'name'              => __( 'Articles read in session', 'newspack-popups' ),
 		'description'       => __( 'Number of articles recently read before 30 minutes of inactivity.', 'newspack-popups' ),
 		'category'          => 'reader_engagement',
 		'matching_function' => 'range',
 	],
-	'favorite_categories'      => [
+	'favorite_categories'         => [
 		'name'              => __( 'Favorite Categories', 'newspack-popups' ),
 		'description'       => __( 'Most read categories of reader.', 'newspack-popups' ),
 		'category'          => 'reader_engagement',
@@ -34,7 +34,7 @@ $criteria = [
 	/**
 	 * Reader Activity.
 	 */
-	'newsletter'               => [
+	'newsletter'                  => [
 		'name'     => __( 'Newsletter', 'newspack-popups' ),
 		'category' => 'reader_activity',
 		'options'  => [
@@ -52,14 +52,14 @@ $criteria = [
 			],
 		],
 	],
-	'newsletter_list'          => [
+	'newsletter_subscribed_lists' => [
 		'name'               => __( 'Newsletter List', 'newspack-popups' ),
 		'description'        => __( 'Whether the reader subscribed to any of the selected newsletter lists', 'newspack-popups' ),
 		'category'           => 'reader_activity',
 		'matching_function'  => 'list__in',
 		'matching_attribute' => 'newsletter_subscribed_lists',
 	],
-	'donation'                 => [
+	'donation'                    => [
 		'name'        => __( 'Donation', 'newspack-popups' ),
 		'description' => __( '(if checkout happens on-site)', 'newspack-popups' ),
 		'category'    => 'reader_activity',
@@ -82,7 +82,7 @@ $criteria = [
 			],
 		],
 	],
-	'user_account'             => [
+	'user_account'                => [
 		'name'     => __( 'User Account', 'newspack-popups' ),
 		'category' => 'reader_activity',
 		'options'  => [
@@ -103,7 +103,7 @@ $criteria = [
 	/**
 	 * Referrer Sources.
 	 */
-	'sources_to_match'         => [
+	'sources_to_match'            => [
 		'name'               => __( 'Sources to match', 'newspack-popups' ),
 		'description'        => __( 'Segment based on traffic source', 'newspack-popups' ),
 		'help'               => __( 'A comma-separated list of domains.', 'newspack-popups' ),
@@ -112,7 +112,7 @@ $criteria = [
 		'matching_function'  => 'list__in',
 		'matching_attribute' => 'referrer',
 	],
-	'sources_to_exclude'       => [
+	'sources_to_exclude'          => [
 		'name'               => __( 'Sources to exclude', 'newspack-popups' ),
 		'description'        => __( 'Segment based on traffic source - hide campaigns for visitors coming from specific sources.', 'newspack-popups' ),
 		'help'               => __( 'A comma-separated list of domains.', 'newspack-popups' ),
