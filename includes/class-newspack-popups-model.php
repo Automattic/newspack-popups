@@ -1044,7 +1044,6 @@ final class Newspack_Popups_Model {
 	public static function generate_inline_popup( $popup ) {
 		global $wp;
 
-		do_action( 'newspack_campaigns_before_campaign_render', $popup );
 		$blocks = parse_blocks( $popup['content'] );
 		$body   = '';
 		self::add_form_hooks( $popup );
@@ -1124,7 +1123,6 @@ final class Newspack_Popups_Model {
 			return self::generate_inline_popup( $popup );
 		}
 
-		do_action( 'newspack_campaigns_before_campaign_render', $popup );
 		$blocks = parse_blocks( $popup['content'] );
 		$body   = '';
 		self::add_form_hooks( $popup );
