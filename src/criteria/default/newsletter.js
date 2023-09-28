@@ -3,8 +3,8 @@ import { setMatchingFunction } from '../utils';
 setMatchingFunction( 'newsletter', ( config, { store } ) => {
 	switch ( config.value ) {
 		case 'subscribers':
-			return store.get( 'is_newsletter_subscriber' );
+			return store.get( 'newsletter_subscribed_lists' )?.length;
 		case 'non-subscribers':
-			return ! store.get( 'is_newsletter_subscriber' );
+			return ! store.get( 'newsletter_subscribed_lists' )?.length;
 	}
 } );
