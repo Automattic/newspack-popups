@@ -72,7 +72,7 @@ final class Newspack_Popups_Segmentation {
 			method_exists( '\Newspack_Newsletters', 'service_provider' ) &&
 			'mailchimp' === \Newspack_Newsletters::service_provider() &&
 			method_exists( '\Newspack\Data_Events', 'register_handler' ) &&
-			method_exists( '\Newspack\Reader_Data', 'set_is_newsletter_subscriber' )
+			method_exists( '\Newspack\Reader_Data', 'update_newsletter_subscribed_lists' )
 		) {
 			\Newspack\Data_Events::register_handler( [ __CLASS__, 'reader_logged_in' ], 'reader_logged_in' );
 		}
