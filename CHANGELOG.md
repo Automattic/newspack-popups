@@ -1,3 +1,10 @@
+# [2.24.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v2.23.1...v2.24.0-alpha.1) (2023-09-28)
+
+
+### Features
+
+* remove GA related code ([#1220](https://github.com/Automattic/newspack-popups/issues/1220)) ([cb2ce82](https://github.com/Automattic/newspack-popups/commit/cb2ce82919cca4ca9f6812cf445d71982b8e3cab))
+
 ## [2.23.1](https://github.com/Automattic/newspack-popups/compare/v2.23.0...v2.23.1) (2023-09-13)
 
 
