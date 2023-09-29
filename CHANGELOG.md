@@ -1,3 +1,10 @@
+# [2.24.0-alpha.2](https://github.com/Automattic/newspack-popups/compare/v2.24.0-alpha.1...v2.24.0-alpha.2) (2023-09-29)
+
+
+### Features
+
+* newsletter subscription list criteria ([#1218](https://github.com/Automattic/newspack-popups/issues/1218)) ([22961a3](https://github.com/Automattic/newspack-popups/commit/22961a39db38d5d64a2839091497aee8fa6f40e5))
+
 # [2.24.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v2.23.1...v2.24.0-alpha.1) (2023-09-28)
 
 
