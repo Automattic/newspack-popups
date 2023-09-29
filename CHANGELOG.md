@@ -1,3 +1,10 @@
+# [2.24.0-alpha.3](https://github.com/Automattic/newspack-popups/compare/v2.24.0-alpha.2...v2.24.0-alpha.3) (2023-09-29)
+
+
+### Bug Fixes
+
+* **data-api:** handle errored default donation settings ([#1224](https://github.com/Automattic/newspack-popups/issues/1224)) ([76b70b6](https://github.com/Automattic/newspack-popups/commit/76b70b636b3f45f7fa7826073afc5eabaadaa461))
+
 # [2.24.0-alpha.2](https://github.com/Automattic/newspack-popups/compare/v2.24.0-alpha.1...v2.24.0-alpha.2) (2023-09-29)
 
 
