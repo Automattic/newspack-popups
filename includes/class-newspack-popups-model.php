@@ -983,7 +983,7 @@ final class Newspack_Popups_Model {
 				<?php echo do_shortcode( $body ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 			</div>
 		<?php
-		self::$current_popup = false;
+		self::$current_popup = null;
 		return ob_get_clean();
 	}
 
