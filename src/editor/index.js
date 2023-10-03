@@ -145,6 +145,23 @@ registerPlugin( 'newspack-popups-editor', {
 	icon: null,
 } );
 
+// Hide Newspack's Homepage Posts block deduplication toggle when the popup is an overlay.
+registerPlugin( 'newspack-popups-disable-newspack-blocks-deduplication', {
+	render: function HideDeduplicationToggle() {
+		const { isOverlay } = useSelect( select => {
+			const { getEditedPostAttribute } = select( 'core/editor' );
+			return {
+				isOverlay: getEditedPostAttribute( 'meta' )?.placement === 'center',
+			};
+		} );
+		if ( ! isOverlay ) {
+			return null;
+		}
+		return <style>{ '.newspack-blocks-deduplication-toggle {display: none;}' }</style>;
+	},
+	icon: null,
+} );
+
 // Add a button in post status section
 const PluginPostStatusInfoTest = () => (
 	<PluginPostStatusInfo className="newspack-popups__status-options">
