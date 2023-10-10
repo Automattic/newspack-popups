@@ -593,7 +593,7 @@ class SegmentsTest extends WP_UnitTestCase {
 				'priority'          => 4,
 			],
 			'segmentWithReferrers'                => [
-				'referrers' => 'foobar.com, newspack.pub',
+				'referrers' => 'foobar.com, newspack.com',
 				'priority'  => 5,
 			],
 			'anotherSegmentWithReferrers'         => [

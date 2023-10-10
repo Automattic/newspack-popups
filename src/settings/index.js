@@ -113,7 +113,7 @@ const App = () => {
 			<div className="newspack-logo__wrapper">
 				<Button
 					className="newspack-logo-button"
-					href="https://newspack.pub/"
+					href="https://newspack.com/"
 					target="_blank"
 					label={ __( 'By Newspack' ) }
 				>
