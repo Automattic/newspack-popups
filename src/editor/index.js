@@ -20,7 +20,7 @@ import { useEffect } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import { optionsFieldsSelector } from './utils';
+import { optionsFieldsSelector, isOverlayPlacement } from './utils';
 import Sidebar from './Sidebar';
 import StylesSidebar from './StylesSidebar';
 import FrequencySidebar from './FrequencySidebar';
@@ -142,6 +142,23 @@ registerPlugin( 'newspack-popups-advanced', {
 
 registerPlugin( 'newspack-popups-editor', {
 	render: EditorAdditions,
+	icon: null,
+} );
+
+// Hide Newspack's Homepage Posts block deduplication toggle when the popup is an overlay.
+registerPlugin( 'newspack-popups-disable-newspack-blocks-deduplication', {
+	render: function HideDeduplicationToggle() {
+		const { placement } = useSelect( select => {
+			const { getEditedPostAttribute } = select( 'core/editor' );
+			return {
+				placement: getEditedPostAttribute( 'meta' )?.placement,
+			};
+		} );
+		if ( ! isOverlayPlacement( placement ) ) {
+			return null;
+		}
+		return <style>{ '.newspack-blocks-deduplication-toggle {display: none;}' }</style>;
+	},
 	icon: null,
 } );
 
