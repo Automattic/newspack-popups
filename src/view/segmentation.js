@@ -55,6 +55,11 @@ export const handleSegmentation = prompts => {
 					if ( ras ) {
 						handleSeen( prompt, ras );
 					}
+
+					// Register the overlay in RAS.
+					if ( isOverlay && ras?.overlays ) {
+						prompt.overlayId = ras.overlays.add();
+					}
 				};
 				if ( isOverlay ) {
 					const scroll = prompt.getAttribute( 'data-scroll' );
