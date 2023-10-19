@@ -33,6 +33,11 @@ export const closeOverlay = event => {
 		parent.style.display = 'none';
 	}
 
+	// Remove the overlay from RAS.
+	if ( parent.overlayId && window.newspackReaderActivation?.overlays ) {
+		window.newspackReaderActivation.overlays.remove( parent.overlayId );
+	}
+
 	event.preventDefault();
 };
 
