@@ -1,3 +1,10 @@
+# [2.25.0-alpha.2](https://github.com/Automattic/newspack-popups/compare/v2.25.0-alpha.1...v2.25.0-alpha.2) (2023-10-20)
+
+
+### Features
+
+* implement ras overlays ([#1233](https://github.com/Automattic/newspack-popups/issues/1233)) ([6c86cd3](https://github.com/Automattic/newspack-popups/commit/6c86cd3c5689622160b7d118764b1c62a77b95e2))
+
 # [2.25.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v2.24.0...v2.25.0-alpha.1) (2023-10-16)
 
 
