@@ -1,6 +1,6 @@
 {
   "name": "newspack-popups",
-  "version": "2.25.0",
+  "version": "2.26.0-alpha.1",
   "main": "Gruntfile.js",
   "author": "Automattic",
   "scripts": {
@@ -42,6 +42,6 @@
     "newspack-scripts": "^5.1.0",
     "postcss-scss": "^4.0.9",
     "prettier": "npm:wp-prettier@^2.2.1-beta-1",
-    "stylelint": "^15.10.3"
+    "stylelint": "^15.11.0"
   }
 }
