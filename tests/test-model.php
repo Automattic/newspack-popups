@@ -180,4 +180,14 @@ class ModelTest extends WP_UnitTestCase {
 		self::assertNotNull( $popup, 'Unable to retrieve popup by id.' );
 		self::assertSame( $draf_prompt, $popup['id'], 'Unable to retrieve popup by id.' );
 	}
+
+	/**
+	 * Tests fetching default settings.
+	 */
+	public function test_settings() {
+		\delete_option( 'newspack_popups_mc_donor_merge_field' );
+		$setting = Newspack_Popups_Settings::get_setting( 'newspack_popups_mc_donor_merge_field' );
+
+		self::assertSame( $setting, 'DONAT' );
+	}
 }
