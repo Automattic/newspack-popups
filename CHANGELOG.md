@@ -1,3 +1,10 @@
+## [2.26.1](https://github.com/Automattic/newspack-popups/compare/v2.26.0...v2.26.1) (2023-11-17)
+
+
+### Bug Fixes
+
+* **settings:** get_setting method ([#1242](https://github.com/Automattic/newspack-popups/issues/1242)) ([e058644](https://github.com/Automattic/newspack-popups/commit/e0586441515a6380dafefc366171dff189c085b9))
+
 # [2.26.0](https://github.com/Automattic/newspack-popups/compare/v2.25.0...v2.26.0) (2023-11-13)
 
 
