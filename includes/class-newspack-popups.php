@@ -19,9 +19,6 @@ final class Newspack_Popups {
 	const NEWSPACK_POPUP_PRESET_QUERY_PARAM     = 'preset';
 	const NEWSPACK_POPUPS_TAXONOMY_STATUS       = 'newspack_popups_taxonomy_status';
 
-	const LIGHTWEIGHT_API_CONFIG_FILE_PATH_LEGACY = WP_CONTENT_DIR . '/../newspack-popups-config.php';
-	const LIGHTWEIGHT_API_CONFIG_FILE_PATH        = WP_CONTENT_DIR . '/newspack-popups-config.php';
-
 	const PREVIEW_QUERY_KEYS = [
 		'background_color'               => 'n_bc',
 		'hide_border'                    => 'n_hb',
