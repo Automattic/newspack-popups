@@ -415,6 +415,47 @@ final class Newspack_Segments_Model {
 	}
 
 	/**
+	 * Get the ids of prompts assigned to a segment.
+	 *
+	 * @param int $segment_id The segment ID.
+	 */
+	private static function get_segments_prompts_ids( $segment_id ) {
+		return get_posts(
+			[
+				'post_type'      => Newspack_Popups::NEWSPACK_POPUPS_CPT,
+				'fields'         => 'ids',
+				'posts_per_page' => -1,
+				'tax_query'      => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+					[
+						'taxonomy' => self::TAX_SLUG,
+						'field'    => 'term_id',
+						'terms'    => (int) $segment_id,
+					],
+				],
+			]
+		);
+	}
+
+	/**
+	 * Remove duplicated segments, if there are no active prompts using them.
+	 * This is to be used from the CLI, but the issue is uncommon enough that it
+	 * does not warrant a TUI: just do `$ wp eval "\Newspack_Segments_Model::remove_duplicates();"`.
+	 */
+	public static function remove_duplicates() {
+		foreach ( self::get_segments() as $segment ) {
+			if ( $segment['is_criteria_duplicated'] ) {
+				$assigned_prompts_count = count( self::get_segments_prompts_ids( $segment['id'] ) );
+				if ( 0 === $assigned_prompts_count ) {
+					Newspack_Popups_Logger::log( sprintf( 'Segment "%s" is duplicated, it will be removed.', $segment['name'] ) );
+					self::delete_segment( $segment['id'] );
+				} else {
+					Newspack_Popups_Logger::log( sprintf( 'Segment "%s" is duplicated, but has %d active prompts assigned, it will *not* be removed.', $segment['name'], $assigned_prompts_count ) );
+				}
+			}
+		}
+	}
+
+	/**
 	 * Get a single segment by ID.
 	 *
 	 * @param string $id A segment id.
