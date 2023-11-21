@@ -419,7 +419,7 @@ final class Newspack_Segments_Model {
 	 *
 	 * @param int $segment_id The segment ID.
 	 */
-	private static function get_segments_prompts_ids( $segment_id ) {
+	private static function get_segment_prompts_ids( $segment_id ) {
 		return get_posts(
 			[
 				'post_type'      => Newspack_Popups::NEWSPACK_POPUPS_CPT,
@@ -444,7 +444,7 @@ final class Newspack_Segments_Model {
 	public static function remove_duplicates() {
 		foreach ( self::get_segments() as $segment ) {
 			if ( $segment['is_criteria_duplicated'] ) {
-				$assigned_prompts_count = count( self::get_segments_prompts_ids( $segment['id'] ) );
+				$assigned_prompts_count = count( self::get_segment_prompts_ids( $segment['id'] ) );
 				if ( 0 === $assigned_prompts_count ) {
 					Newspack_Popups_Logger::log( sprintf( 'Segment "%s" is duplicated, it will be removed.', $segment['name'] ) );
 					self::delete_segment( $segment['id'] );
