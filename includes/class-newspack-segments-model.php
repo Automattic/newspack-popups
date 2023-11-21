@@ -381,6 +381,36 @@ final class Newspack_Segments_Model {
 			);
 		}
 
+		// Compute a criteria hash, so duplicate criteria sets can be found.
+		$segments = array_map(
+			function( $segment ) {
+				$segment['criteria_hash'] = md5( wp_json_encode( $segment['criteria'] ) );
+				return $segment;
+			},
+			$segments
+		);
+		// Mark segments as duplicate if any of the preceding (in priority) segments have the same criteria hash.
+		$segments = array_map(
+			function( $segment ) use ( $segments ) {
+				$preceding_segments                = array_filter(
+					$segments,
+					function( $s ) use ( $segment ) {
+						return $s['priority'] < $segment['priority'];
+					}
+				);
+				$segment['is_criteria_duplicated'] = count(
+					array_filter(
+						$preceding_segments,
+						function( $s ) use ( $segment ) {
+							return $s['criteria_hash'] === $segment['criteria_hash'];
+						}
+					)
+				) >= 1;
+				return $segment;
+			},
+			$segments
+		);
+
 		return $segments;
 	}
 
