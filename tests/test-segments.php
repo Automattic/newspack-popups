@@ -277,9 +277,10 @@ class SegmentsTest extends WP_UnitTestCase {
 		foreach ( $segments as $segment ) {
 			$segment_id      = $segment['id'];
 			$segment_from_db = Newspack_Popups_Segmentation::get_segment( $segment_id );
+			unset( $segment['criteria_hash'] );
+			unset( $segment['is_criteria_duplicated'] );
 			$this->assertSame( $segment, $segment_from_db );
 		}
-
 	}
 
 	/**
@@ -310,7 +311,6 @@ class SegmentsTest extends WP_UnitTestCase {
 
 		$delete_result2 = Newspack_Popups_Segmentation::delete_segment( 'non-existent' );
 		$this->assertSame( $delete_result, $delete_result2 );
-
 	}
 
 	/**
@@ -343,7 +343,6 @@ class SegmentsTest extends WP_UnitTestCase {
 		$this->assertNotContains( 'other_properties', $result[0], 'additional properties should not be included' );
 
 		$this->assertSame( $this->valid['name'], $result[1]['name'] );
-
 	}
 
 	/**
@@ -430,7 +429,6 @@ class SegmentsTest extends WP_UnitTestCase {
 			),
 			'Should return wp error if an invalid id is part of the array'
 		);
-
 	}
 
 	/**
@@ -618,5 +616,4 @@ class SegmentsTest extends WP_UnitTestCase {
 			$this->assertSame( $key, $last_segment['name'] );
 		}
 	}
-
 }

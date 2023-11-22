@@ -92,18 +92,19 @@ final class Newspack_Popups {
 		add_filter( 'show_admin_bar', [ __CLASS__, 'show_admin_bar' ], 10, 2 ); // phpcs:ignore WordPressVIPMinimum.UserExperience.AdminBarRemoval.RemovalDetected
 		add_filter( 'newspack_blocks_should_deduplicate', [ __CLASS__, 'newspack_blocks_should_deduplicate' ], 10, 2 );
 
-		include_once dirname( __FILE__ ) . '/class-newspack-popups-model.php';
-		include_once dirname( __FILE__ ) . '/class-newspack-segments-migration.php';
-		include_once dirname( __FILE__ ) . '/class-newspack-segments-model.php';
-		include_once dirname( __FILE__ ) . '/class-newspack-popups-presets.php';
-		include_once dirname( __FILE__ ) . '/class-newspack-popups-inserter.php';
-		include_once dirname( __FILE__ ) . '/class-newspack-popups-api.php';
-		include_once dirname( __FILE__ ) . '/class-newspack-popups-settings.php';
-		include_once dirname( __FILE__ ) . '/class-newspack-popups-segmentation.php';
-		include_once dirname( __FILE__ ) . '/class-newspack-popups-custom-placements.php';
-		include_once dirname( __FILE__ ) . '/class-newspack-popups-view-as.php';
-		include_once dirname( __FILE__ ) . '/class-newspack-popups-data-api.php';
-		include_once dirname( __FILE__ ) . '/class-newspack-popups-criteria.php';
+		include_once __DIR__ . '/class-newspack-popups-logger.php';
+		include_once __DIR__ . '/class-newspack-popups-model.php';
+		include_once __DIR__ . '/class-newspack-segments-migration.php';
+		include_once __DIR__ . '/class-newspack-segments-model.php';
+		include_once __DIR__ . '/class-newspack-popups-presets.php';
+		include_once __DIR__ . '/class-newspack-popups-inserter.php';
+		include_once __DIR__ . '/class-newspack-popups-api.php';
+		include_once __DIR__ . '/class-newspack-popups-settings.php';
+		include_once __DIR__ . '/class-newspack-popups-segmentation.php';
+		include_once __DIR__ . '/class-newspack-popups-custom-placements.php';
+		include_once __DIR__ . '/class-newspack-popups-view-as.php';
+		include_once __DIR__ . '/class-newspack-popups-data-api.php';
+		include_once __DIR__ . '/class-newspack-popups-criteria.php';
 	}
 
 	/**
