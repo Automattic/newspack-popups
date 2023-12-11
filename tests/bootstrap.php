@@ -16,11 +16,6 @@ if ( ! file_exists( $_tests_dir . '/includes/functions.php' ) ) {
 	exit( 1 );
 }
 
-// Create the config file.
-$popups_config_file_path = $_tests_dir . '/../wordpress/newspack-popups-config.php';
-$wp_config_file_path     = $_tests_dir . '/wp-tests-config.php';
-copy( $wp_config_file_path, $popups_config_file_path );
-
 // Give access to tests_add_filter() function.
 require_once $_tests_dir . '/includes/functions.php';
 
