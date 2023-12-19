@@ -73,13 +73,13 @@ final class Newspack_Popups {
 	 * Constructor.
 	 */
 	public function __construct() {
-
 		// Segmentation requires the main Newspack plugin.
 		self::$segmentation_enabled = class_exists( '\Newspack\Reader_Data' );
 
 		add_action( 'cli_init', [ __CLASS__, 'register_cli_commands' ] );
 
 		add_action( 'init', [ __CLASS__, 'register_cpt' ] );
+		add_action( 'admin_init', [ __CLASS__, 'add_caps' ] );
 		add_action( 'init', [ __CLASS__, 'register_meta' ] );
 		add_action( 'init', [ __CLASS__, 'register_taxonomy' ] );
 		add_action( 'init', [ __CLASS__, 'disable_prompts_for_protected_pages' ] );
@@ -156,15 +156,53 @@ final class Newspack_Popups {
 		];
 
 		$cpt_args = [
-			'labels'       => $labels,
-			'public'       => false,
-			'show_ui'      => true,
-			'show_in_rest' => true,
-			'supports'     => [ 'editor', 'title', 'custom-fields', 'thumbnail', 'revisions' ],
-			'taxonomies'   => [ 'category', 'post_tag' ],
-			'menu_icon'    => 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDI0IDI0IiByb2xlPSJpbWciIGFyaWEtaGlkZGVuPSJ0cnVlIiBmb2N1c2FibGU9ImZhbHNlIj48cGF0aCBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik02Ljg2MyAxMy42NDRMNSAxMy4yNWgtLjVhLjUuNSAwIDAxLS41LS41di0zYS41LjUgMCAwMS41LS41SDVMMTggNi41aDJWMTZoLTJsLTMuODU0LS44MTUuMDI2LjAwOGEzLjc1IDMuNzUgMCAwMS03LjMxLTEuNTQ5em0xLjQ3Ny4zMTNhMi4yNTEgMi4yNTEgMCAwMDQuMzU2LjkyMWwtNC4zNTYtLjkyMXptLTIuODQtMy4yOEwxOC4xNTcgOGguMzQzdjYuNWgtLjM0M0w1LjUgMTEuODIzdi0xLjE0NnoiIGNsaXAtcnVsZT0iZXZlbm9kZCIgZmlsbD0id2hpdGUiPjwvcGF0aD48L3N2Zz4K',
+			'labels'          => $labels,
+			'public'          => false,
+			'show_ui'         => true,
+			'show_in_rest'    => true,
+			'supports'        => [ 'editor', 'title', 'custom-fields', 'thumbnail', 'revisions' ],
+			'taxonomies'      => [ 'category', 'post_tag' ],
+			'menu_icon'       => 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDI0IDI0IiByb2xlPSJpbWciIGFyaWEtaGlkZGVuPSJ0cnVlIiBmb2N1c2FibGU9ImZhbHNlIj48cGF0aCBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik02Ljg2MyAxMy42NDRMNSAxMy4yNWgtLjVhLjUuNSAwIDAxLS41LS41di0zYS41LjUgMCAwMS41LS41SDVMMTggNi41aDJWMTZoLTJsLTMuODU0LS44MTUuMDI2LjAwOGEzLjc1IDMuNzUgMCAwMS03LjMxLTEuNTQ5em0xLjQ3Ny4zMTNhMi4yNTEgMi4yNTEgMCAwMDQuMzU2LjkyMWwtNC4zNTYtLjkyMXptLTIuODQtMy4yOEwxOC4xNTcgOGguMzQzdjYuNWgtLjM0M0w1LjUgMTEuODIzdi0xLjE0NnoiIGNsaXAtcnVsZT0iZXZlbm9kZCIgZmlsbD0id2hpdGUiPjwvcGF0aD48L3N2Zz4K',
+			'capability_type' => self::NEWSPACK_POPUPS_CPT,
 		];
 		\register_post_type( self::NEWSPACK_POPUPS_CPT, $cpt_args );
+	}
+
+	/**
+	 * Add capabilities for roles eligible to access this CPT.
+	 */
+	public static function add_caps() {
+		$eligible_roles = apply_filters( 'newspack_popups_cpt_eligible_roles', [ 'administrator' ] );
+		foreach ( $eligible_roles as $role ) {
+			$role = get_role( $role );
+			foreach ( self::get_capabilities_list() as $cap ) {
+				$role->add_cap( $cap );
+			}
+		}
+	}
+
+	/**
+	 * Get capabilities necessary to manage this CPT.
+	 *
+	 * See https://developer.wordpress.org/reference/functions/register_post_type/#capabilities.
+	 */
+	public static function get_capabilities_list() {
+		return [
+			'create_' . self::NEWSPACK_POPUPS_CPT . 's',
+			'read_' . self::NEWSPACK_POPUPS_CPT,
+			'read_private_' . self::NEWSPACK_POPUPS_CPT . 's',
+			'edit_' . self::NEWSPACK_POPUPS_CPT,
+			'edit_' . self::NEWSPACK_POPUPS_CPT . 's',
+			'edit_published_' . self::NEWSPACK_POPUPS_CPT . 's',
+			'edit_private_' . self::NEWSPACK_POPUPS_CPT . 's',
+			'edit_others_' . self::NEWSPACK_POPUPS_CPT . 's',
+			'publish_' . self::NEWSPACK_POPUPS_CPT . 's',
+			'delete_' . self::NEWSPACK_POPUPS_CPT,
+			'delete_' . self::NEWSPACK_POPUPS_CPT . 's',
+			'delete_others_' . self::NEWSPACK_POPUPS_CPT . 's',
+			'delete_private_' . self::NEWSPACK_POPUPS_CPT . 's',
+			'delete_published_' . self::NEWSPACK_POPUPS_CPT . 's',
+		];
 	}
 
 	/**
