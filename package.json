@@ -28,7 +28,7 @@
     "*.php": "npm run lint:php:staged"
   },
   "dependencies": {
-    "classnames": "^2.3.2",
+    "classnames": "^2.3.3",
     "intersection-observer": "^0.12.2",
     "js-cookie": "^3.0.5",
     "lodash": "^4.17.21",
