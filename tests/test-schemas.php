@@ -39,6 +39,7 @@ class SchemasTest extends WP_UnitTestCase {
 							'name' => 'asdasd',
 						],
 					],
+					'duplicate_of'      => 0,
 					'options'           => [
 						'background_color'               => '#FFFFFF',
 						'hide_border'                    => false,
@@ -65,7 +66,6 @@ class SchemasTest extends WP_UnitTestCase {
 						'additional_classes'             => '',
 						'excluded_categories'            => [],
 						'excluded_tags'                  => [],
-						'duplicate_of'                   => 0,
 						'newspack_popups_has_disabled_popups' => false,
 					],
 					'user_input_fields' => [
