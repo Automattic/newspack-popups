@@ -28,7 +28,7 @@
     "*.php": "npm run lint:php:staged"
   },
   "dependencies": {
-    "classnames": "^2.3.2",
+    "classnames": "^2.5.1",
     "intersection-observer": "^0.12.2",
     "js-cookie": "^3.0.5",
     "lodash": "^4.17.21",
@@ -36,10 +36,10 @@
     "qs": "^6.11.2"
   },
   "devDependencies": {
-    "@rushstack/eslint-patch": "^1.6.0",
+    "@rushstack/eslint-patch": "^1.6.1",
     "eslint": "^7.32.0",
     "lint-staged": "^13.2.3",
-    "newspack-scripts": "^5.1.0",
+    "newspack-scripts": "^5.1.1",
     "postcss-scss": "^4.0.9",
     "prettier": "npm:wp-prettier@^2.2.1-beta-1",
     "stylelint": "^15.11.0"

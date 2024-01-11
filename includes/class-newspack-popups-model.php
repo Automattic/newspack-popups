@@ -319,9 +319,7 @@ final class Newspack_Popups_Model {
 	protected static function retrieve_popups_with_query( WP_Query $query, $include_taxonomies = false ) {
 		$popups = [];
 		if ( $query->have_posts() ) {
-			while ( $query->have_posts() ) {
-				$query->the_post();
-				$popup_post = get_post( get_the_ID() );
+			foreach ( $query->posts as $popup_post ) {
 				if ( Newspack_Popups::NEWSPACK_POPUPS_CPT === $popup_post->post_type ) {
 					$popup = self::create_popup_object(
 						$popup_post,
@@ -334,7 +332,6 @@ final class Newspack_Popups_Model {
 					}
 				}
 			}
-			wp_reset_postdata();
 		}
 		return $popups;
 	}
