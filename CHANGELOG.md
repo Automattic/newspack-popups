@@ -1,3 +1,10 @@
+## [2.28.1-alpha.1](https://github.com/Automattic/newspack-popups/compare/v2.28.0...v2.28.1-alpha.1) (2024-01-11)
+
+
+### Bug Fixes
+
+* dont change global post before header ([#1258](https://github.com/Automattic/newspack-popups/issues/1258)) ([1c3d931](https://github.com/Automattic/newspack-popups/commit/1c3d931d237f4ee537c000d6d19225cb5f1087a1))
+
 # [2.28.0](https://github.com/Automattic/newspack-popups/compare/v2.27.0...v2.28.0) (2024-01-08)
 
 
