@@ -277,8 +277,17 @@ class SegmentsTest extends WP_UnitTestCase {
 		foreach ( $segments as $segment ) {
 			$segment_id      = $segment['id'];
 			$segment_from_db = Newspack_Popups_Segmentation::get_segment( $segment_id );
+
+			// Criteria hash and is_criteria_duplicated are calculated on the fly, so wont match.
 			unset( $segment['criteria_hash'] );
 			unset( $segment['is_criteria_duplicated'] );
+
+			// but they should exist.
+			$this->assertArrayHasKey( 'criteria_hash', $segment_from_db );
+			$this->assertArrayHasKey( 'is_criteria_duplicated', $segment_from_db );
+			unset( $segment_from_db['criteria_hash'] );
+			unset( $segment_from_db['is_criteria_duplicated'] );
+
 			$this->assertSame( $segment, $segment_from_db );
 		}
 	}
