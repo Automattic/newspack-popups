@@ -172,6 +172,10 @@ final class Newspack_Popups {
 	 * Add capabilities for roles eligible to access this CPT.
 	 */
 	public static function add_caps() {
+		$option_name = 'newspack_popups_has_set_up_caps_v1';
+		if ( get_option( $option_name, false ) ) {
+			return;
+		}
 		$eligible_roles = apply_filters( 'newspack_popups_cpt_eligible_roles', [ 'administrator' ] );
 		foreach ( $eligible_roles as $role ) {
 			$role = get_role( $role );
@@ -179,6 +183,7 @@ final class Newspack_Popups {
 				$role->add_cap( $cap );
 			}
 		}
+		add_option( $option_name, true );
 	}
 
 	/**
@@ -187,22 +192,14 @@ final class Newspack_Popups {
 	 * See https://developer.wordpress.org/reference/functions/register_post_type/#capabilities.
 	 */
 	public static function get_capabilities_list() {
-		return [
-			'create_' . self::NEWSPACK_POPUPS_CPT . 's',
-			'read_' . self::NEWSPACK_POPUPS_CPT,
-			'read_private_' . self::NEWSPACK_POPUPS_CPT . 's',
-			'edit_' . self::NEWSPACK_POPUPS_CPT,
-			'edit_' . self::NEWSPACK_POPUPS_CPT . 's',
-			'edit_published_' . self::NEWSPACK_POPUPS_CPT . 's',
-			'edit_private_' . self::NEWSPACK_POPUPS_CPT . 's',
-			'edit_others_' . self::NEWSPACK_POPUPS_CPT . 's',
-			'publish_' . self::NEWSPACK_POPUPS_CPT . 's',
-			'delete_' . self::NEWSPACK_POPUPS_CPT,
-			'delete_' . self::NEWSPACK_POPUPS_CPT . 's',
-			'delete_others_' . self::NEWSPACK_POPUPS_CPT . 's',
-			'delete_private_' . self::NEWSPACK_POPUPS_CPT . 's',
-			'delete_published_' . self::NEWSPACK_POPUPS_CPT . 's',
-		];
+		$capabilities = get_post_type_capabilities(
+			(object) [
+				'map_meta_cap'    => true,
+				'capability_type' => self::NEWSPACK_POPUPS_CPT,
+				'capabilities'    => [],
+			] 
+		);
+		return array_values( (array) $capabilities );
 	}
 
 	/**
