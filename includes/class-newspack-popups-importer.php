@@ -336,6 +336,4 @@ class Newspack_Popups_Importer {
 		}
 		return array_values( $terms );
 	}
-
-
 }

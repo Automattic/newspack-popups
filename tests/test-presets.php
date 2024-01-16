@@ -62,7 +62,7 @@ class PresetsTest extends WP_UnitTestCase {
 		$index   = 0;
 		foreach ( $user_inputs as $field_name => $value ) {
 			$this->assertEquals( $value, $presets['prompts'][0]['user_input_fields'][ $index ]['value'], 'Preset data is returned with user inputs attached to each field.' );
-			$index ++;
+			$index++;
 		}
 	}
 
