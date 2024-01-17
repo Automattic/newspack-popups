@@ -1,3 +1,10 @@
+# [2.29.0](https://github.com/Automattic/newspack-popups/compare/v2.28.0...v2.29.0) (2024-01-17)
+
+
+### Features
+
+* fetch up to 1000 prompts ([#1262](https://github.com/Automattic/newspack-popups/issues/1262)) ([b6af288](https://github.com/Automattic/newspack-popups/commit/b6af2883ed1ef771eda771a9999d5018e1633064))
+
 # [2.28.0](https://github.com/Automattic/newspack-popups/compare/v2.27.0...v2.28.0) (2024-01-08)
 
 
