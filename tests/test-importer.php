@@ -217,6 +217,7 @@ class ImporterTest extends WP_UnitTestCase_PageWithPopups {
 			],
 			[
 				'title'           => 'Test Prompt 2',
+				'slug'            => 'Test Prompt Slug',
 				'content'         => 'Test content',
 				'status'          => 'draft',
 				'campaign_groups' => [
@@ -282,7 +283,7 @@ class ImporterTest extends WP_UnitTestCase_PageWithPopups {
 		$created_groups = Newspack_Popups::get_groups();
 		$this->assertSame( 2, count( $created_groups ) );
 
-		// Test if segmentes were properly created.
+		// Test if segments were properly created.
 		$created_segments = Newspack_Popups_Segmentation::get_segments();
 		$this->assertSame( 2, count( $created_segments ) );
 		$this->assertSame( 'Test Segment', $created_segments[0]['name'] );
@@ -298,6 +299,9 @@ class ImporterTest extends WP_UnitTestCase_PageWithPopups {
 		// Check if 2 prompts were created.
 		$created_prompts = Newspack_Popups_Model::retrieve_popups( true );
 		$this->assertSame( 2, count( $created_prompts ) );
+
+		// Check if the slug is set correctly if passed.
+		$this->assertSame( sanitize_title( $package['prompts'][1]['slug'] ), get_post( $created_prompts[0]['id'] )->post_name );
 
 		// Check if the prompts were properly mapped to the segments.
 		$this->assertSame( 1, count( $created_prompts[0]['segments'] ) );

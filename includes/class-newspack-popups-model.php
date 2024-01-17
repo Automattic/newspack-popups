@@ -61,7 +61,7 @@ final class Newspack_Popups_Model {
 		$args = [
 			'post_type'      => Newspack_Popups::NEWSPACK_POPUPS_CPT,
 			'post_status'    => $include_unpublished ? [ 'draft', 'pending', 'future', 'publish' ] : [ 'publish' ],
-			'posts_per_page' => 100,
+			'posts_per_page' => 1000, // phpcs:ignore WordPress.WP.PostsPerPage.posts_per_page_posts_per_page
 		];
 		if ( $include_trash ) {
 			$args['post_status'][] = 'trash';
