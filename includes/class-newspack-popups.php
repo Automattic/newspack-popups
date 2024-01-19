@@ -91,6 +91,7 @@ final class Newspack_Popups {
 		add_action( 'pre_delete_term', [ __CLASS__, 'prevent_default_category_on_term_delete' ], 10, 2 );
 		add_filter( 'show_admin_bar', [ __CLASS__, 'show_admin_bar' ], 10, 2 ); // phpcs:ignore WordPressVIPMinimum.UserExperience.AdminBarRemoval.RemovalDetected
 		add_filter( 'newspack_blocks_should_deduplicate', [ __CLASS__, 'newspack_blocks_should_deduplicate' ], 10, 2 );
+		add_filter( 'cme_plugin_capabilities', [ __CLASS__, 'cme_plugin_capabilities' ] );
 
 		include_once __DIR__ . '/class-newspack-popups-logger.php';
 		include_once __DIR__ . '/class-newspack-popups-model.php';
@@ -1283,6 +1284,16 @@ final class Newspack_Popups {
 				return sprintf( 'np_temp_session_%d_', $session_id );
 			}
 		);
+	}
+
+	/**
+	 * Filter the capabilities list in the capability-manager-enhanced plugin.
+	 *
+	 * @param array $capabilities_list The list of capabilities tabs.
+	 */
+	public static function cme_plugin_capabilities( $capabilities_list ) {
+		$capabilities_list['Newspack Campaigns'] = self::get_capabilities_list();
+		return $capabilities_list;
 	}
 }
 Newspack_Popups::instance();
