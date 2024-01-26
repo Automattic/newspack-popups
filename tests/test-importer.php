@@ -147,8 +147,6 @@ class ImporterTest extends WP_UnitTestCase_PageWithPopups {
 		} else {
 			$this->assertEquals( $expected, $result );
 		}
-
-
 	}
 
 	/**
@@ -382,7 +380,6 @@ class ImporterTest extends WP_UnitTestCase_PageWithPopups {
 
 		$this->assertNotEmpty( $result['errors'] );
 		$this->assertNotEmpty( $result['errors']['validation'] );
-
 	}
 
 	/**
@@ -579,5 +576,4 @@ class ImporterTest extends WP_UnitTestCase_PageWithPopups {
 			}
 		}
 	}
-
 }
