@@ -1,3 +1,10 @@
+## [2.29.2-alpha.1](https://github.com/Automattic/newspack-popups/compare/v2.29.1...v2.29.2-alpha.1) (2024-01-26)
+
+
+### Bug Fixes
+
+* prompts and segments schema ([#1260](https://github.com/Automattic/newspack-popups/issues/1260)) ([25e02ec](https://github.com/Automattic/newspack-popups/commit/25e02ec6d90b9953aa8bbeb639844b81bc2401c8))
+
 ## [2.29.1](https://github.com/Automattic/newspack-popups/compare/v2.29.0...v2.29.1) (2024-01-25)
 
 
