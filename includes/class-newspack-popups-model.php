@@ -1101,7 +1101,7 @@ final class Newspack_Popups_Model {
 
 	/**
 	 * Pick either white or black, whatever has sufficient contrast with the color being passed to it.
-	 * Copied from https://github.com/Automattic/newspack-theme/blob/master/newspack-theme/inc/template-functions.php#L401-L431
+	 * Copied from https://github.com/Automattic/newspack-theme/blob/trunk/newspack-theme/inc/template-functions.php#L401-L431
 	 *
 	 * @param  string $background_color Hexidecimal value of the background color.
 	 * @return string Either black or white hexidecimal values.
