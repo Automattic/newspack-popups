@@ -73,13 +73,13 @@ final class Newspack_Popups {
 	 * Constructor.
 	 */
 	public function __construct() {
-
 		// Segmentation requires the main Newspack plugin.
 		self::$segmentation_enabled = class_exists( '\Newspack\Reader_Data' );
 
 		add_action( 'cli_init', [ __CLASS__, 'register_cli_commands' ] );
 
 		add_action( 'init', [ __CLASS__, 'register_cpt' ] );
+		add_action( 'admin_init', [ __CLASS__, 'add_caps' ] );
 		add_action( 'init', [ __CLASS__, 'register_meta' ] );
 		add_action( 'init', [ __CLASS__, 'register_taxonomy' ] );
 		add_action( 'init', [ __CLASS__, 'disable_prompts_for_protected_pages' ] );
@@ -91,6 +91,7 @@ final class Newspack_Popups {
 		add_action( 'pre_delete_term', [ __CLASS__, 'prevent_default_category_on_term_delete' ], 10, 2 );
 		add_filter( 'show_admin_bar', [ __CLASS__, 'show_admin_bar' ], 10, 2 ); // phpcs:ignore WordPressVIPMinimum.UserExperience.AdminBarRemoval.RemovalDetected
 		add_filter( 'newspack_blocks_should_deduplicate', [ __CLASS__, 'newspack_blocks_should_deduplicate' ], 10, 2 );
+		add_filter( 'cme_plugin_capabilities', [ __CLASS__, 'cme_plugin_capabilities' ] );
 
 		include_once __DIR__ . '/class-newspack-popups-logger.php';
 		include_once __DIR__ . '/class-newspack-popups-model.php';
@@ -156,15 +157,50 @@ final class Newspack_Popups {
 		];
 
 		$cpt_args = [
-			'labels'       => $labels,
-			'public'       => false,
-			'show_ui'      => true,
-			'show_in_rest' => true,
-			'supports'     => [ 'editor', 'title', 'custom-fields', 'thumbnail', 'revisions' ],
-			'taxonomies'   => [ 'category', 'post_tag' ],
-			'menu_icon'    => 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDI0IDI0IiByb2xlPSJpbWciIGFyaWEtaGlkZGVuPSJ0cnVlIiBmb2N1c2FibGU9ImZhbHNlIj48cGF0aCBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik02Ljg2MyAxMy42NDRMNSAxMy4yNWgtLjVhLjUuNSAwIDAxLS41LS41di0zYS41LjUgMCAwMS41LS41SDVMMTggNi41aDJWMTZoLTJsLTMuODU0LS44MTUuMDI2LjAwOGEzLjc1IDMuNzUgMCAwMS03LjMxLTEuNTQ5em0xLjQ3Ny4zMTNhMi4yNTEgMi4yNTEgMCAwMDQuMzU2LjkyMWwtNC4zNTYtLjkyMXptLTIuODQtMy4yOEwxOC4xNTcgOGguMzQzdjYuNWgtLjM0M0w1LjUgMTEuODIzdi0xLjE0NnoiIGNsaXAtcnVsZT0iZXZlbm9kZCIgZmlsbD0id2hpdGUiPjwvcGF0aD48L3N2Zz4K',
+			'labels'          => $labels,
+			'public'          => false,
+			'show_ui'         => true,
+			'show_in_rest'    => true,
+			'supports'        => [ 'editor', 'title', 'custom-fields', 'thumbnail', 'revisions' ],
+			'taxonomies'      => [ 'category', 'post_tag' ],
+			'menu_icon'       => 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDI0IDI0IiByb2xlPSJpbWciIGFyaWEtaGlkZGVuPSJ0cnVlIiBmb2N1c2FibGU9ImZhbHNlIj48cGF0aCBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik02Ljg2MyAxMy42NDRMNSAxMy4yNWgtLjVhLjUuNSAwIDAxLS41LS41di0zYS41LjUgMCAwMS41LS41SDVMMTggNi41aDJWMTZoLTJsLTMuODU0LS44MTUuMDI2LjAwOGEzLjc1IDMuNzUgMCAwMS03LjMxLTEuNTQ5em0xLjQ3Ny4zMTNhMi4yNTEgMi4yNTEgMCAwMDQuMzU2LjkyMWwtNC4zNTYtLjkyMXptLTIuODQtMy4yOEwxOC4xNTcgOGguMzQzdjYuNWgtLjM0M0w1LjUgMTEuODIzdi0xLjE0NnoiIGNsaXAtcnVsZT0iZXZlbm9kZCIgZmlsbD0id2hpdGUiPjwvcGF0aD48L3N2Zz4K',
+			'capability_type' => self::NEWSPACK_POPUPS_CPT,
 		];
 		\register_post_type( self::NEWSPACK_POPUPS_CPT, $cpt_args );
+	}
+
+	/**
+	 * Add capabilities for roles eligible to access this CPT.
+	 */
+	public static function add_caps() {
+		$option_name = 'newspack_popups_has_set_up_caps_v1';
+		if ( get_option( $option_name, false ) ) {
+			return;
+		}
+		$eligible_roles = apply_filters( 'newspack_popups_cpt_eligible_roles', [ 'administrator' ] );
+		foreach ( $eligible_roles as $role ) {
+			$role = get_role( $role );
+			foreach ( self::get_capabilities_list() as $cap ) {
+				$role->add_cap( $cap );
+			}
+		}
+		add_option( $option_name, true );
+	}
+
+	/**
+	 * Get capabilities necessary to manage this CPT.
+	 *
+	 * See https://developer.wordpress.org/reference/functions/register_post_type/#capabilities.
+	 */
+	public static function get_capabilities_list() {
+		$capabilities = get_post_type_capabilities(
+			(object) [
+				'map_meta_cap'    => true,
+				'capability_type' => self::NEWSPACK_POPUPS_CPT,
+				'capabilities'    => [],
+			] 
+		);
+		return array_values( (array) $capabilities );
 	}
 
 	/**
@@ -1251,6 +1287,16 @@ final class Newspack_Popups {
 				return sprintf( 'np_temp_session_%d_', $session_id );
 			}
 		);
+	}
+
+	/**
+	 * Filter the capabilities list in the capability-manager-enhanced plugin.
+	 *
+	 * @param array $capabilities_list The list of capabilities tabs.
+	 */
+	public static function cme_plugin_capabilities( $capabilities_list ) {
+		$capabilities_list['Newspack Campaigns'] = self::get_capabilities_list();
+		return $capabilities_list;
 	}
 }
 Newspack_Popups::instance();
