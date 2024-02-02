@@ -83,7 +83,7 @@ const hexToRGB = hex =>
 
 /**
  * Set the background color meta field.
- * Based on https://github.com/Automattic/newspack-theme/blob/master/newspack-theme/inc/template-functions.php#L401-L431
+ * Based on https://github.com/Automattic/newspack-theme/blob/trunk/newspack-theme/inc/template-functions.php#L401-L431
  *
  * @param {string} backgroundColor color string
  */
