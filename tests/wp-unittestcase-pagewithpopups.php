@@ -19,10 +19,6 @@ class WP_UnitTestCase_PageWithPopups extends WP_UnitTestCase {
 	protected static $segments            = []; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
 
 	public function set_up() { // phpcs:ignore Squiz.Commenting.FunctionComment.Missing
-		// Ensure the capabilities are applied. This method is called on admin_init, but in tests,
-		// only init is called.
-		Newspack_Popups::add_caps();
-
 		// Reset segments.
 		Newspack_Segments_Model::delete_all_segments();
 		self::$segments = Newspack_Popups_Segmentation::create_segment(
