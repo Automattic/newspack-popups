@@ -26,10 +26,10 @@ function _manually_load_plugin() {
 	$_SERVER['HTTP_REFERER'] = 'https://' . $_SERVER['HTTP_HOST']; // phpcs:ignore
 	$_SERVER['HTTP_USER_AGENT'] = 'Mozilla\/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/89.0.4389.90 Safari\/537.36'; // phpcs:ignore
 
-	require dirname( dirname( __FILE__ ) ) . '/newspack-popups.php';
-	require dirname( dirname( __FILE__ ) ) . '/src/blocks/custom-placement/view.php';
-	require dirname( dirname( __FILE__ ) ) . '/includes/class-newspack-popups-exporter.php';
-	require dirname( dirname( __FILE__ ) ) . '/includes/class-newspack-popups-importer.php';
+	require dirname( __DIR__ ) . '/newspack-popups.php';
+	require dirname( __DIR__ ) . '/src/blocks/custom-placement/view.php';
+	require dirname( __DIR__ ) . '/includes/class-newspack-popups-exporter.php';
+	require dirname( __DIR__ ) . '/includes/class-newspack-popups-importer.php';
 }
 tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
 
@@ -40,4 +40,4 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 // Start up the WP testing environment.
 require $_tests_dir . '/includes/bootstrap.php';
-require dirname( dirname( __FILE__ ) ) . '/tests/wp-unittestcase-pagewithpopups.php';
+require dirname( __DIR__ ) . '/tests/wp-unittestcase-pagewithpopups.php';
