@@ -1,3 +1,10 @@
+## [2.30.1](https://github.com/Automattic/newspack-popups/compare/v2.30.0...v2.30.1) (2024-02-06)
+
+
+### Reverts
+
+* Revert "feat: use custom capability_type for the CPT (#1259)" ([9366118](https://github.com/Automattic/newspack-popups/commit/9366118c2c41c228f617d0f3bad7d10820d688db)), closes [#1259](https://github.com/Automattic/newspack-popups/issues/1259)
+
 # [2.30.0](https://github.com/Automattic/newspack-popups/compare/v2.29.1...v2.30.0) (2024-02-06)
 
 
