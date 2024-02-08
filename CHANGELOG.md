@@ -1,3 +1,10 @@
+# [2.31.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v2.30.1...v2.31.0-alpha.1) (2024-02-08)
+
+
+### Features
+
+* **ci:** add epic/* release workflow and rename `master` to `trunk` ([#1271](https://github.com/Automattic/newspack-popups/issues/1271)) ([ed459fe](https://github.com/Automattic/newspack-popups/commit/ed459fe97a2183e22aab10d4a9047494c5e001ed))
+
 ## [2.30.1](https://github.com/Automattic/newspack-popups/compare/v2.30.0...v2.30.1) (2024-02-06)
 
 
