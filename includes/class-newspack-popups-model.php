@@ -257,6 +257,7 @@ final class Newspack_Popups_Model {
 			'archive_insertion_posts_count'  => FILTER_SANITIZE_FULL_SPECIAL_CHARS,
 			'archive_insertion_is_repeating' => FILTER_VALIDATE_BOOLEAN,
 			'utm_suppression'                => FILTER_SANITIZE_FULL_SPECIAL_CHARS,
+			'additional_classes'             => FILTER_SANITIZE_FULL_SPECIAL_CHARS,
 		];
 
 		$options = [];
