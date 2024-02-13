@@ -8,9 +8,7 @@ import { getEventPayload, getRawId, sendEvent } from '../utils';
 
 export const manageClickedEvents = prompts => {
 	prompts.forEach( prompt => {
-		const anchorLinks = [
-			...prompt.querySelectorAll( '.newspack-inline-popup a, .newspack-popup__content a' ),
-		];
+		const anchorLinks = [ ...prompt.querySelectorAll( '.newspack-popup-container a' ) ];
 		const handleEvent = e => {
 			const extraParams = {};
 
