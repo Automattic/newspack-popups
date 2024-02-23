@@ -1,3 +1,10 @@
+# [2.31.0-alpha.2](https://github.com/Automattic/newspack-popups/compare/v2.31.0-alpha.1...v2.31.0-alpha.2) (2024-02-23)
+
+
+### Bug Fixes
+
+* **preview:** handle additional_classes ([c201f43](https://github.com/Automattic/newspack-popups/commit/c201f43809e0cec227f63fdfa9a3c69dbcabb827))
+
 # [2.31.0-alpha.1](https://github.com/Automattic/newspack-popups/compare/v2.30.1...v2.31.0-alpha.1) (2024-02-08)
 
 
