@@ -1034,6 +1034,8 @@ final class Newspack_Popups_Model {
 		$overlay_color         = $popup['options']['overlay_color'];
 		$overlay_size          = 'full' === $popup['options']['overlay_size'] ? 'full-width' : $popup['options']['overlay_size'];
 		$no_overlay_background = $popup['options']['no_overlay_background'];
+		$close_button_color    = $no_overlay_background ? '#000' : self::foreground_color_for_background( $popup['options']['overlay_color'] );
+		$close_button_shadow   = $no_overlay_background ? 'transparent' : $overlay_color . 'aa';
 		$hidden_fields         = self::get_hidden_fields( $popup );
 		$is_newsletter_prompt  = self::has_newsletter_prompt( $popup );
 		$has_featured_image    = has_post_thumbnail( $popup['id'] ) || ! empty( $popup['options']['featured_image_id'] );
@@ -1079,8 +1081,10 @@ final class Newspack_Popups_Model {
 					<div class="newspack-popup__content">
 						<?php echo do_shortcode( $body ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					</div>
-					<button class="newspack-lightbox__close" aria-label="<?php esc_html_e( 'Close Pop-up', 'newspack-popups' ); // phpcs:ignore WordPressVIPMinimum.Security.ProperEscapingFunction.htmlAttrNotByEscHTML ?>">
-						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" role="img" aria-hidden="true" focusable="false"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+					<button class="newspack-lightbox__close" style="color: <?php echo esc_attr( $close_button_color ); ?>"aria-label="<?php esc_html_e( 'Close Pop-up', 'newspack-popups' ); // phpcs:ignore WordPressVIPMinimum.Security.ProperEscapingFunction.htmlAttrNotByEscHTML ?>">
+						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" role="img" aria-hidden="true" focusable="false">
+							<path style="filter: drop-shadow(0 0 3px <?php echo esc_attr( $close_button_shadow ); ?>); " d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/>
+						</svg>
 					</button>
 				</div>
 			</div>
