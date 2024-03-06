@@ -1034,8 +1034,8 @@ final class Newspack_Popups_Model {
 		$overlay_color         = $popup['options']['overlay_color'];
 		$overlay_size          = 'full' === $popup['options']['overlay_size'] ? 'full-width' : $popup['options']['overlay_size'];
 		$no_overlay_background = $popup['options']['no_overlay_background'];
-		$close_button_color    = $no_overlay_background ? '#000' : self::foreground_color_for_background( $popup['options']['overlay_color'] );
-		$close_button_shadow   = $no_overlay_background ? 'transparent' : $overlay_color . 'aa';
+		$close_button_color    = ( ! $no_overlay_background && $hide_border ) ? self::foreground_color_for_background( $popup['options']['overlay_color'] ) : '#000';
+		$close_button_shadow   = ( ! $no_overlay_background && $hide_border ) ? $overlay_color . 'aa' : 'transparent';
 		$hidden_fields         = self::get_hidden_fields( $popup );
 		$is_newsletter_prompt  = self::has_newsletter_prompt( $popup );
 		$has_featured_image    = has_post_thumbnail( $popup['id'] ) || ! empty( $popup['options']['featured_image_id'] );
