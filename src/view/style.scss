@@ -147,6 +147,12 @@ $width__tablet: 782px;
 				}
 			}
 		}
+
+		.newspack-inactive-popup-status {
+			&::before {
+				left: 32px;
+			}
+		}
 	}
 
 	&.newspack-lightbox-large-border {
@@ -463,17 +469,18 @@ $width__tablet: 782px;
 .newspack-inactive-popup-status {
 	&::before {
 		background: black;
+		border-radius: 2px;
 		color: white;
 		content: attr( data-popup-status );
 		font-family: $font__system;
-		font-size: 0.8em;
-		font-weight: bold;
+		font-size: 12px;
+		font-weight: 600;
 		text-transform: uppercase;
-		left: 6px;
-		line-height: 1.5;
-		padding: 0 0.25em;
+		left: 4px;
+		line-height: 2;
+		padding: 0 0.5em;
 		position: absolute;
-		top: 6px;
+		top: 4px;
 		z-index: 1;
 	}
 }
