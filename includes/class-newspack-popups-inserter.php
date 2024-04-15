@@ -553,7 +553,7 @@ final class Newspack_Popups_Inserter {
 		foreach ( $archives_popups as $popup ) {
 			// insert popup only on selected archive page types.
 			if ( is_category() && ! in_array( 'category', $popup['options']['archive_page_types'] )
-				|| ( is_tag() && ! in_array( 'tag', $popup['options']['archive_page_types'] ) )
+				|| ( is_tag() && ! in_array( 'tag', $popup['options']['archive_page_types'] ) ) // phpcs:ignore Generic.CodeAnalysis.RequireExplicitBooleanOperatorPrecedence.MissingParentheses
 				|| ( is_author() && ! in_array( 'author', $popup['options']['archive_page_types'] ) )
 				|| ( is_date() && ! in_array( 'date', $popup['options']['archive_page_types'] ) )
 				|| ( is_post_type_archive() && ! in_array( 'post-type', $popup['options']['archive_page_types'] ) )
