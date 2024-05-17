@@ -20,7 +20,7 @@ import { useEffect } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import { optionsFieldsSelector, isOverlayPlacement } from './utils';
+import { promptEditorPropsSelector, isOverlayPlacement } from './utils';
 import Sidebar from './Sidebar';
 import StylesSidebar from './StylesSidebar';
 import FrequencySidebar from './FrequencySidebar';
@@ -30,6 +30,7 @@ import Preview from './Preview';
 import Duplicate from './Duplicate';
 import EditorAdditions from './EditorAdditions';
 import PostTypesPanel from './PostTypesPanel';
+import ExpirationPanel from './ExpirationPanel';
 import './style.scss';
 
 const EMPTY_ARRAY = [];
@@ -53,7 +54,7 @@ const mapDispatchToProps = dispatch => {
 };
 
 const connectData = compose( [
-	withSelect( optionsFieldsSelector ),
+	withSelect( promptEditorPropsSelector ),
 	withDispatch( mapDispatchToProps ),
 ] );
 
@@ -63,6 +64,7 @@ const StylesSidebarWithData = connectData( StylesSidebar );
 const FrequencySidebarWithData = connectData( FrequencySidebar );
 const ColorsSidebarWithData = connectData( ColorsSidebar );
 const PostTypesPanelWithData = connectData( PostTypesPanel );
+const ExpirationPanelWithData = connectData( ExpirationPanel );
 const AdvancedSidebarWithData = connectData( AdvancedSidebar );
 
 // Register components.
@@ -123,6 +125,18 @@ registerPlugin( 'newspack-popups-post-types', {
 			title={ __( 'Post Types', 'newspack-popups' ) }
 		>
 			<PostTypesPanelWithData />
+		</PluginDocumentSettingPanel>
+	),
+	icon: null,
+} );
+
+registerPlugin( 'newspack-popups-expiration', {
+	render: () => (
+		<PluginDocumentSettingPanel
+			name="expiration-panel"
+			title={ __( 'Expiration', 'newspack-popups' ) }
+		>
+			<ExpirationPanelWithData />
 		</PluginDocumentSettingPanel>
 	),
 	icon: null,
