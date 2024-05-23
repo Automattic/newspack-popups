@@ -4,7 +4,7 @@
 import { __, sprintf } from '@wordpress/i18n';
 import { ToggleControl, DatePicker } from '@wordpress/components';
 import { isInTheFuture } from '@wordpress/date';
-import { useEffect, useState } from '@wordpress/element';
+import { useEffect, useState, useMemo } from '@wordpress/element';
 
 const ExpirationPanel = ( {
 	expiration_date = null,
@@ -54,18 +54,24 @@ const ExpirationPanel = ( {
 		}
 	}, [ postStatus ] );
 
+	const defaultExpirationDate = useMemo( () => {
+		const date = new Date();
+		date.setHours( date.getHours() + 24 );
+		return date;
+	}, [] );
+
 	return (
 		<>
 			<ToggleControl
 				label={ __( 'Expiration Date', 'newspack-newsletters' ) }
 				checked={ !! expiration_date }
 				onChange={ () => {
-					if ( expiration_date ) {
-						onMetaFieldChange( { expiration_date: null } );
-					} else {
-						onMetaFieldChange( { expiration_date: new Date() } );
-					}
+					onMetaFieldChange( { expiration_date: expiration_date ? null : defaultExpirationDate } );
 				} }
+				help={ __(
+					'If set, the prompt will be automatically unpublished after this date.',
+					'newspack-popups'
+				) }
 			/>
 			{ expiration_date ? (
 				<DatePicker
