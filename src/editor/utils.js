@@ -5,7 +5,7 @@ import { __, sprintf, _n } from '@wordpress/i18n';
  *
  * @param {Function} select Select function
  */
-export const optionsFieldsSelector = select => {
+export const promptEditorPropsSelector = select => {
 	const { getEditedPostAttribute } = select( 'core/editor' );
 	const meta = getEditedPostAttribute( 'meta' );
 	const {
@@ -34,9 +34,11 @@ export const optionsFieldsSelector = select => {
 		additional_classes,
 		excluded_categories,
 		excluded_tags,
+		expiration_date,
 	} = meta || {};
 
 	const isOverlay = isOverlayPlacement( placement );
+	const postStatus = select( 'core/editor' ).getEditedPostAttribute( 'status' );
 
 	return {
 		background_color,
@@ -65,6 +67,8 @@ export const optionsFieldsSelector = select => {
 		additional_classes,
 		excluded_categories,
 		excluded_tags,
+		expiration_date,
+		postStatus,
 	};
 };
 
