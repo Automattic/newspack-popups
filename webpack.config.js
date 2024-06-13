@@ -22,7 +22,6 @@ const blocks = path.join( __dirname, 'src', 'blocks' );
 const criteria = path.join( __dirname, 'src', 'criteria' );
 
 const webpackConfig = getBaseWebpackConfig(
-	{ WP: true },
 	{
 		entry: {
 			editor,
@@ -33,7 +32,6 @@ const webpackConfig = getBaseWebpackConfig(
 			blocks,
 			criteria,
 		},
-		'output-path': path.join( __dirname, 'dist' ),
 	}
 );
 
