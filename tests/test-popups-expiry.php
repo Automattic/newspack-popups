@@ -76,4 +76,26 @@ class Test_Newspack_Popups_Expiry extends WP_UnitTestCase {
 		// Check that the expiration_date meta is now deleted.
 		$this->assertEmpty( get_post_meta( $post_id, 'expiration_date', true ) );
 	}
+
+	/**
+	 * Test invalid expiration_date value.
+	 */
+	public function test_prompt_expiry_invalid_meta() {
+		// Create a post with an invalid expiration date.
+		$post_id = $this->factory->post->create(
+			[
+				'post_type' => Newspack_Popups::NEWSPACK_POPUPS_CPT,
+			]
+		);
+		// Set post expiration date meta - for some reason setting this as 'meta_input' while post status is publish does not work.
+		update_post_meta( $post_id, 'expiration_date', '' );
+
+		$this->assertEquals( 'publish', get_post_status( $post_id ) );
+
+		// This will run in a cron job.
+		Newspack_Popups_Expiry::revert_expired_to_draft();
+
+		// Should not have been reverted to draft.
+		$this->assertEquals( 'publish', get_post_status( $post_id ) );
+	}
 }
