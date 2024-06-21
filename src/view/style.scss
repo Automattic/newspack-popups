@@ -1,12 +1,12 @@
-@use 'sass:color';
+@use "sass:color";
 
 // Secondary Color
 $color__secondary: #757575;
-$color__secondary-variation: color.adjust( $color__secondary, $lightness: -10% );
+$color__secondary-variation: color.adjust($color__secondary, $lightness: -10%);
 
 // System Font
-$font__system: -apple-system, blinkmacsystemfont, 'Segoe UI', roboto, oxygen, ubuntu, cantarell,
-	'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+$font__system: -apple-system, blinkmacsystemfont, "Segoe UI", roboto, oxygen, ubuntu, cantarell,
+	"Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
 
 // Sizes
 $overlay__gap: 16px;
@@ -37,7 +37,7 @@ $width__tablet: 782px;
 		z-index: -1;
 
 		.newspack-popup-wrapper {
-			transform: translateY( 5rem );
+			transform: translateY(5rem);
 		}
 	}
 
@@ -70,7 +70,7 @@ $width__tablet: 782px;
 	.newspack-popup-wrapper {
 		background: white;
 		border: none;
-		box-shadow: 0 0 1em 0.5em rgba( black, 0.1 );
+		box-shadow: 0 0 1em 0.5em rgba(black, 0.1);
 		overflow-x: hidden;
 		position: relative;
 		transform: none;
@@ -135,7 +135,7 @@ $width__tablet: 782px;
 		}
 
 		.newspack-popup__content-wrapper {
-			box-shadow: 0 0 1em 0.5em rgba( black, 0.1 );
+			box-shadow: 0 0 1em 0.5em rgba(black, 0.1);
 			margin: 32px;
 		}
 
@@ -232,7 +232,7 @@ $width__tablet: 782px;
 	&-featured-image {
 		@media only screen and ( min-width: $width__tablet ) {
 			.newspack-lightbox__close {
-				background-color: rgba( black, 0.5 );
+				background-color: rgba(black, 0.5);
 				border-radius: 3px;
 				color: white;
 				height: 48px;
@@ -242,7 +242,7 @@ $width__tablet: 782px;
 				&:active,
 				&:focus,
 				&:hover {
-					background-color: rgba( black, 0.95 );
+					background-color: rgba(black, 0.95);
 					opacity: 1;
 				}
 
@@ -262,7 +262,7 @@ $width__tablet: 782px;
 	&.newspack-lightbox-placement-top_left,
 	&.newspack-lightbox-placement-top_right {
 		.newspack-popup-wrapper {
-			max-height: calc( 100% - #{$overlay__gap} );
+			max-height: calc(100% - #{$overlay__gap});
 			overflow-y: auto;
 		}
 	}
@@ -282,8 +282,8 @@ $width__tablet: 782px;
 	&.newspack-lightbox-size-large,
 	&.newspack-lightbox-size-full-width {
 		.newspack-popup-wrapper {
-			min-width: calc( 100% - #{$overlay__gap} );
-			width: calc( 100% - #{$overlay__gap} );
+			min-width: calc(100% - #{$overlay__gap});
+			width: calc(100% - #{$overlay__gap});
 		}
 
 		.newspack-popup__content-wrapper {
@@ -291,7 +291,7 @@ $width__tablet: 782px;
 			max-width: 100%;
 
 			@media only screen and ( min-width: $width__tablet ) {
-				max-height: calc( 100vh - #{2 * $overlay__gap} );
+				max-height: calc(100vh - #{2 * $overlay__gap});
 			}
 		}
 	}
@@ -406,8 +406,8 @@ $width__tablet: 782px;
 					&.wp-block-columns {
 						margin-left: -16px;
 						margin-right: -16px;
-						max-width: calc( 100% + 32px );
-						width: calc( 100% + 32px );
+						max-width: calc(100% + 32px);
+						width: calc(100% + 32px);
 					}
 				}
 
@@ -422,8 +422,8 @@ $width__tablet: 782px;
 				.alignfull.wp-block-columns {
 					margin-left: -16px;
 					margin-right: -16px;
-					max-width: calc( 100% + 32px );
-					width: calc( 100% + 32px );
+					max-width: calc(100% + 32px);
+					width: calc(100% + 32px);
 				}
 			}
 		}
@@ -432,7 +432,7 @@ $width__tablet: 782px;
 
 .newspack-inline-popup {
 	display: block;
-	border: 1px solid rgba( black, 0.2 );
+	border: 1px solid rgba(black, 0.2);
 	clear: both;
 	padding: 0.75em;
 
@@ -460,7 +460,7 @@ $width__tablet: 782px;
 	&::before {
 		background: black;
 		color: white;
-		content: attr( data-popup-status );
+		content: attr(data-popup-status);
 		font-family: $font__system;
 		font-size: 0.8em;
 		font-weight: bold;
