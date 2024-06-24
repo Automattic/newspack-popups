@@ -21,20 +21,16 @@ const settings = path.join( __dirname, 'src', 'settings' );
 const blocks = path.join( __dirname, 'src', 'blocks' );
 const criteria = path.join( __dirname, 'src', 'criteria' );
 
-const webpackConfig = getBaseWebpackConfig(
-	{ WP: true },
-	{
-		entry: {
-			editor,
-			view,
-			admin,
-			documentSettings,
-			settings,
-			blocks,
-			criteria,
-		},
-		'output-path': path.join( __dirname, 'dist' ),
-	}
-);
+const webpackConfig = getBaseWebpackConfig({
+	entry: {
+		editor,
+		view,
+		admin,
+		documentSettings,
+		settings,
+		blocks,
+		criteria,
+	},
+});
 
 module.exports = webpackConfig;
