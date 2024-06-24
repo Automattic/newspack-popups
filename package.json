@@ -42,6 +42,7 @@
     "newspack-scripts": "^5.5.0",
     "postcss-scss": "^4.0.9",
     "prettier": "npm:wp-prettier@^2.2.1-beta-1",
+    "regenerator-runtime": "^0.14.1",
     "stylelint": "^15.11.0"
   }
 }
