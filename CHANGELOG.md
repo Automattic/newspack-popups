@@ -1,3 +1,22 @@
+# [2.34.0](https://github.com/Automattic/newspack-popups/compare/v2.33.1...v2.34.0) (2024-07-01)
+
+
+### Bug Fixes
+
+* update newspack-scripts to v5.5.1 ([#1320](https://github.com/Automattic/newspack-popups/issues/1320)) ([554ba18](https://github.com/Automattic/newspack-popups/commit/554ba186520ebf5566b204d162a6e22458c09080))
+
+
+### Features
+
+* ensure regenerator-runtime is available (for WP 6.6) ([8ee878e](https://github.com/Automattic/newspack-popups/commit/8ee878ede71517b270d8e164c6cef20c5af987be))
+
+## [2.33.1](https://github.com/Automattic/newspack-popups/compare/v2.33.0...v2.33.1) (2024-06-18)
+
+
+### Bug Fixes
+
+* prevent prompt expiration with invalid expiration date ([#1318](https://github.com/Automattic/newspack-popups/issues/1318)) ([a83cf2a](https://github.com/Automattic/newspack-popups/commit/a83cf2af88feb1448b75313bb371b68e62898fc8))
+
 # [2.33.0](https://github.com/Automattic/newspack-popups/compare/v2.32.0...v2.33.0) (2024-06-12)
 
 
