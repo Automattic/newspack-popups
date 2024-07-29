@@ -1,3 +1,10 @@
+## [2.34.1](https://github.com/Automattic/newspack-popups/compare/v2.34.0...v2.34.1) (2024-07-12)
+
+
+### Bug Fixes
+
+* use loose type comparison for list__in and list__not_in ([#1326](https://github.com/Automattic/newspack-popups/issues/1326)) ([1872c96](https://github.com/Automattic/newspack-popups/commit/1872c961189ae58becbb12c637e3866e421f3779))
+
 # [2.34.0](https://github.com/Automattic/newspack-popups/compare/v2.33.1...v2.34.0) (2024-07-01)
 
 
