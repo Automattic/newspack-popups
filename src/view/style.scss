@@ -124,7 +124,7 @@ $width__tablet: 782px;
 		}
 	}
 
-	&.newspack-lightbox-no-border {
+	&.newspack-lightbox-no-padding {
 		.newspack-popup-wrapper {
 			background-color: transparent;
 			box-shadow: none;
@@ -133,10 +133,6 @@ $width__tablet: 782px;
 		.newspack-popup__content-wrapper {
 			box-shadow: 0 0 1em 0.5em rgba( black, 0.1 );
 			margin: 32px;
-		}
-
-		.newspack-popup__content {
-			padding: 0;
 		}
 
 		&.newspack-lightbox-featured-image {
@@ -154,8 +150,13 @@ $width__tablet: 782px;
 			}
 		}
 	}
+	
+	&.newspack-lightbox-no-padding .newspack-popup__content {
+		padding: 0;
+	}
 
-	&.newspack-lightbox-large-border {
+	&.newspack-lightbox-large-border,
+	&.newspack-lightbox-no-border {
 		.newspack-popup {
 			&__content {
 				padding-top: #{3.5 * $overlay__gap};

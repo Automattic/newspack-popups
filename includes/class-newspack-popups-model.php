@@ -240,6 +240,7 @@ final class Newspack_Popups_Model {
 			'background_color'               => FILTER_SANITIZE_FULL_SPECIAL_CHARS,
 			'hide_border'                    => FILTER_VALIDATE_BOOLEAN,
 			'large_border'                   => FILTER_VALIDATE_BOOLEAN,
+			'no_padding'                     => FILTER_VALIDATE_BOOLEAN,
 			'frequency'                      => FILTER_SANITIZE_FULL_SPECIAL_CHARS,
 			'frequency_max'                  => FILTER_SANITIZE_FULL_SPECIAL_CHARS,
 			'frequency_start'                => FILTER_SANITIZE_FULL_SPECIAL_CHARS,
@@ -401,6 +402,7 @@ final class Newspack_Popups_Model {
 			'background_color'               => get_post_meta( $id, 'background_color', true ),
 			'hide_border'                    => get_post_meta( $id, 'hide_border', true ),
 			'large_border'                   => get_post_meta( $id, 'large_border', true ),
+			'no_padding'                     => get_post_meta( $id, 'no_padding', true ),
 			'frequency'                      => get_post_meta( $id, 'frequency', true ),
 			'frequency_max'                  => get_post_meta( $id, 'frequency_max', true ),
 			'frequency_start'                => get_post_meta( $id, 'frequency_start', true ),
@@ -444,6 +446,7 @@ final class Newspack_Popups_Model {
 				'background_color'               => '#FFFFFF',
 				'hide_border'                    => false,
 				'large_border'                   => false,
+				'no_padding'                     => false,
 				'frequency'                      => 'always',
 				'frequency_max'                  => 0,
 				'frequency_start'                => 0,
@@ -954,6 +957,7 @@ final class Newspack_Popups_Model {
 		$element_id           = self::canonize_popup_id( $popup['id'] );
 		$hide_border          = $popup['options']['hide_border'];
 		$large_border         = $popup['options']['large_border'];
+		$no_padding           = $popup['options']['no_padding'];
 		$is_newsletter_prompt = self::has_newsletter_prompt( $popup );
 		$classes              = [ 'newspack-popup-container', 'newspack-popup', 'hidden' ];
 		$classes[]            = 'above_header' === $popup['options']['placement'] ? 'newspack-above-header-popup' : null;
@@ -961,6 +965,7 @@ final class Newspack_Popups_Model {
 		$classes[]            = 'publish' !== $popup['status'] ? 'newspack-inactive-popup-status' : null;
 		$classes[]            = $hide_border ? 'newspack-lightbox-no-border' : null;
 		$classes[]            = $large_border ? 'newspack-lightbox-large-border' : null;
+		$classes[]            = $no_padding ? 'newspack-lightbox-no-padding' : null;
 		$classes[]            = $is_newsletter_prompt ? 'newspack-newsletter-prompt-inline' : null;
 		$classes              = array_merge( $classes, explode( ' ', $popup['options']['additional_classes'] ) );
 		$assigned_segments    = Newspack_Segments_Model::get_popup_segments_ids_string( $popup['id'] );
@@ -1030,18 +1035,20 @@ final class Newspack_Popups_Model {
 		$element_id            = self::canonize_popup_id( $popup['id'] );
 		$hide_border           = $popup['options']['hide_border'];
 		$large_border          = $popup['options']['large_border'];
+		$no_padding            = $popup['options']['no_padding'];
 		$overlay_opacity       = absint( $popup['options']['overlay_opacity'] ) / 100;
 		$overlay_color         = $popup['options']['overlay_color'];
 		$overlay_size          = 'full' === $popup['options']['overlay_size'] ? 'full-width' : $popup['options']['overlay_size'];
 		$no_overlay_background = $popup['options']['no_overlay_background'];
-		$close_button_color    = ( ! $no_overlay_background && $hide_border ) ? self::foreground_color_for_background( $popup['options']['overlay_color'] ) : '#000';
-		$close_button_shadow   = ( ! $no_overlay_background && $hide_border ) ? $overlay_color . 'aa' : 'transparent';
+		$close_button_color    = ( ! $no_overlay_background && $no_padding ) ? self::foreground_color_for_background( $popup['options']['overlay_color'] ) : '#000';
+		$close_button_shadow   = ( ! $no_overlay_background && $no_padding ) ? $overlay_color . 'aa' : 'transparent';
 		$hidden_fields         = self::get_hidden_fields( $popup );
 		$is_newsletter_prompt  = self::has_newsletter_prompt( $popup );
 		$has_featured_image    = has_post_thumbnail( $popup['id'] ) || ! empty( $popup['options']['featured_image_id'] );
 		$classes               = [ 'newspack-popup-container', 'newspack-lightbox', 'newspack-popup', 'hidden', 'newspack-lightbox-placement-' . $popup['options']['placement'], 'newspack-lightbox-size-' . $overlay_size ];
 		$classes[]             = $hide_border ? 'newspack-lightbox-no-border' : null;
 		$classes[]             = $large_border ? 'newspack-lightbox-large-border' : null;
+		$classes[]             = $no_padding ? 'newspack-lightbox-no-padding' : null;
 		$classes[]             = $is_newsletter_prompt ? 'newspack-newsletter-prompt-overlay' : null;
 		$classes[]             = $no_overlay_background ? 'newspack-lightbox-no-overlay' : null;
 		$classes[]             = $has_featured_image ? 'newspack-lightbox-featured-image' : null;
@@ -1071,8 +1078,8 @@ final class Newspack_Popups_Model {
 			data-delay="<?php echo esc_attr( self::get_delay( $popup ) ); ?>"
 			<?php endif; ?>
 		>
-			<div class="<?php echo esc_attr( implode( ' ', $wrapper_classes ) ); ?>" data-popup-status="<?php echo esc_attr( $popup['status'] ); ?>" style="<?php echo ! $hide_border ? esc_attr( self::container_style( $popup ) ) : ''; ?>">
-				<div class="newspack-popup__content-wrapper" style="<?php echo $hide_border ? esc_attr( self::container_style( $popup ) ) : ''; ?>">
+			<div class="<?php echo esc_attr( implode( ' ', $wrapper_classes ) ); ?>" data-popup-status="<?php echo esc_attr( $popup['status'] ); ?>" style="<?php echo ! $hide_border && ! $no_padding ? esc_attr( self::container_style( $popup ) ) : ''; ?>">
+				<div class="newspack-popup__content-wrapper" style="<?php echo $hide_border || $no_padding ? esc_attr( self::container_style( $popup ) ) : ''; ?>">
 					<?php if ( $has_featured_image ) : ?>
 						<div class="newspack-popup__featured-image">
 							<?php echo ! empty( $popup['options']['featured_image_id'] ) ? wp_get_attachment_image( $popup['options']['featured_image_id'], 'large' ) : get_the_post_thumbnail( $popup['id'], 'large' ); ?>

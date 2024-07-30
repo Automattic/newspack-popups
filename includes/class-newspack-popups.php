@@ -23,6 +23,7 @@ final class Newspack_Popups {
 		'background_color'               => 'n_bc',
 		'hide_border'                    => 'n_hb',
 		'large_border'                   => 'n_lb',
+		'no_padding'                     => 'n_np',
 		'frequency'                      => 'n_fr',
 		'frequency_max'                  => 'n_fm',
 		'frequency_start'                => 'n_fs',
@@ -413,6 +414,18 @@ final class Newspack_Popups {
 		\register_meta(
 			'post',
 			'large_border',
+			[
+				'object_subtype' => self::NEWSPACK_POPUPS_CPT,
+				'show_in_rest'   => true,
+				'type'           => 'boolean',
+				'single'         => true,
+				'auth_callback'  => '__return_true',
+			]
+		);
+		
+		\register_meta(
+			'post',
+			'no_padding',
 			[
 				'object_subtype' => self::NEWSPACK_POPUPS_CPT,
 				'show_in_rest'   => true,
@@ -843,6 +856,7 @@ final class Newspack_Popups {
 		update_post_meta( $post_id, 'background_color', '#FFFFFF' );
 		update_post_meta( $post_id, 'hide_border', false );
 		update_post_meta( $post_id, 'large_border', false );
+		update_post_meta( $post_id, 'no_padding', false );
 		update_post_meta( $post_id, 'frequency', $frequency );
 		update_post_meta( $post_id, 'overlay_color', '#000000' );
 		update_post_meta( $post_id, 'overlay_opacity', 30 );
