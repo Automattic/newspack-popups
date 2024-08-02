@@ -23,15 +23,9 @@ const entry = {
 	criteria: path.join( __dirname, 'src', 'criteria' ),
 };
 
-Object.keys( entry ).forEach( key => {
-	entry[ key ] = [ 'regenerator-runtime/runtime', entry[ key ] ];
-} );
-
 const webpackConfig = getBaseWebpackConfig(
-	{ WP: true },
 	{
 		entry,
-		'output-path': path.join( __dirname, 'dist' ),
 	}
 );
 

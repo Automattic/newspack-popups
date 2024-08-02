@@ -1,12 +1,12 @@
 body.admin-bar.logged-in {
 	.newspack-campaigns-preview-toggle a::before {
-		content: '\f177';
+		content: "\f177";
 		top: 1px;
 	}
 
 	&.newspack-popups-hide-prompts {
 		.newspack-campaigns-preview-toggle a::before {
-			content: '\f530';
+			content: "\f530";
 		}
 
 		.newspack-popup {
