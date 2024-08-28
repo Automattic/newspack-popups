@@ -89,7 +89,7 @@ final class Newspack_Popups {
 		add_filter( 'display_post_states', [ __CLASS__, 'display_post_states' ], 10, 2 );
 		add_action( 'save_post_' . self::NEWSPACK_POPUPS_CPT, [ __CLASS__, 'popup_default_fields' ], 10, 3 );
 		add_action( 'transition_post_status', [ __CLASS__, 'prevent_default_category_on_publish' ], 10, 3 );
-		add_action( 'transition_post_status', [ __CLASS__, 'store_activation_date' ], 10, 3 );
+		add_action( 'transition_post_status', [ __CLASS__, 'store_activation_dates' ], 10, 3 );
 		add_action( 'pre_delete_term', [ __CLASS__, 'prevent_default_category_on_term_delete' ], 10, 2 );
 		add_filter( 'show_admin_bar', [ __CLASS__, 'show_admin_bar' ], 10, 2 ); // phpcs:ignore WordPressVIPMinimum.UserExperience.AdminBarRemoval.RemovalDetected
 		add_filter( 'newspack_blocks_should_deduplicate', [ __CLASS__, 'newspack_blocks_should_deduplicate' ], 10, 2 );
@@ -1040,9 +1040,15 @@ final class Newspack_Popups {
 	 * @param string $old_status Old status.
 	 * @param bool   $post Post.
 	 */
-	public static function store_activation_date( $new_status, $old_status, $post ) {
-		if ( self::NEWSPACK_POPUPS_CPT === $post->post_type && 'publish' !== $old_status && 'publish' === $new_status ) {
+	public static function store_activation_dates( $new_status, $old_status, $post ) {
+		if ( self::NEWSPACK_POPUPS_CPT !== $post->post_type ) {
+			return;
+		}
+		if ( 'publish' !== $old_status && 'publish' === $new_status ) {
 			update_post_meta( $post->ID, 'activation_date', gmdate( 'Y-m-d H:i:s' ) );
+		}
+		if ( 'publish' === $old_status && 'publish' !== $new_status ) {
+			update_post_meta( $post->ID, 'deactivation_date', gmdate( 'Y-m-d H:i:s' ) );
 		}
 	}
 
