@@ -1,6 +1,6 @@
 {
 	"name": "newspack-popups",
-	"version": "3.0.0",
+	"version": "3.0.1",
 	"author": "Automattic",
 	"scripts": {
 		"cm": "newspack-scripts commit",
