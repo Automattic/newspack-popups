@@ -54,6 +54,12 @@ export const handleSegmentation = prompts => {
 					setTimeout( unhide, delay );
 				}
 				const unhide = () => {
+					// Conditions may have changed since the prompt was delayed.
+					// Verify whether the prompt can still be displayed.
+					const updatedMatchingSegment = getBestPrioritySegment( segments );
+					if ( ! shouldPromptBeDisplayed( prompt, updatedMatchingSegment, ras, override ) ) {
+						return;
+					}
 					// Prioritize RAS overlays. If there are any reinitiate the delay and return early.
 					if ( ras?.overlays && ras.overlays.get().length ) {
 						delayPrompt();
