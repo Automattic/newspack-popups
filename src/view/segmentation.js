@@ -48,7 +48,23 @@ export const handleSegmentation = prompts => {
 
 			// Unhide the prompt.
 			if ( shouldDisplay ) {
+				const delayPrompt = () => {
+					// By delay.
+					const delay = prompt.getAttribute( 'data-delay' ) || 0;
+					setTimeout( unhide, delay );
+				}
 				const unhide = () => {
+					// Conditions may have changed since the prompt was delayed.
+					// Verify whether the prompt can still be displayed.
+					const updatedMatchingSegment = getBestPrioritySegment( segments );
+					if ( ! shouldPromptBeDisplayed( prompt, updatedMatchingSegment, ras, override ) ) {
+						return;
+					}
+					// Prioritize RAS overlays. If there are any reinitiate the delay and return early.
+					if ( ras?.overlays && ras.overlays.get().length ) {
+						delayPrompt();
+						return;
+					}
 					prompt.classList.remove( 'hidden' );
 
 					// Log a "prompt_seen" activity when the prompt becomes visible.
@@ -70,9 +86,7 @@ export const handleSegmentation = prompts => {
 							getIntersectionObserver( unhide ).observe( marker );
 						}
 					} else {
-						// By delay.
-						const delay = prompt.getAttribute( 'data-delay' ) || 0;
-						setTimeout( unhide, delay );
+						delayPrompt();
 					}
 				} else {
 					unhide();
