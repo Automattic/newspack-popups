@@ -265,6 +265,18 @@ final class Newspack_Popups_Inserter {
 	}
 
 	/**
+	 * Get the length of a given block.
+	 *
+	 * @param array $block A block.
+	 *
+	 * @return int
+	 */
+	private static function get_block_length( $block ) {
+		$block_content = self::get_block_content( $block );
+		return strlen( wp_strip_all_tags( $block_content ) );
+	}
+
+	/**
 	 * Insert popups in a post content.
 	 *
 	 * @param string $content The post content.
@@ -349,8 +361,7 @@ final class Newspack_Popups_Inserter {
 				// Give length-ignored blocks a length of 1 so that prompts at 0% can still be inserted before them.
 				$total_length++;
 			} else {
-				$block_content = self::get_block_content( $block );
-				$total_length += strlen( wp_strip_all_tags( $block_content ) );
+				$total_length += self::get_block_length( $block );
 			}
 		}
 
@@ -385,7 +396,7 @@ final class Newspack_Popups_Inserter {
 					// Give length-ignored blocks a length of 1 so that prompts at 0% can still be inserted before them.
 					$pos++;
 				} else {
-					$pos += strlen( wp_strip_all_tags( $block['innerHTML'] ) );
+					$pos += self::get_block_length( $block );
 				}
 			}
 
