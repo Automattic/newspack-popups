@@ -91,7 +91,7 @@ final class Newspack_Popups_Inserter {
 		add_filter( 'the_content', [ $this, 'insert_popups_in_content' ], 1 );
 		add_shortcode( 'newspack-popup', [ $this, 'popup_shortcode' ] );
 		add_action( 'after_header', [ $this, 'insert_popups_after_header' ] ); // This is a Newspack theme hook. When used with other themes, popups won't be inserted on archive pages.
-		add_action( 'before_header', [ $this, 'insert_before_header' ] );
+		add_action( 'wp_body_open', [ $this, 'insert_before_header' ] );
 		add_action( 'after_archive_post', [ $this, 'insert_inline_prompt_in_archive_pages' ] );
 		add_action( 'wp_before_admin_bar_render', [ $this, 'add_preview_toggle' ] );
 
@@ -553,7 +553,7 @@ final class Newspack_Popups_Inserter {
 		foreach ( $archives_popups as $popup ) {
 			// insert popup only on selected archive page types.
 			if ( is_category() && ! in_array( 'category', $popup['options']['archive_page_types'] )
-				|| ( is_tag() && ! in_array( 'tag', $popup['options']['archive_page_types'] ) )
+				|| ( is_tag() && ! in_array( 'tag', $popup['options']['archive_page_types'] ) ) // phpcs:ignore Generic.CodeAnalysis.RequireExplicitBooleanOperatorPrecedence.MissingParentheses
 				|| ( is_author() && ! in_array( 'author', $popup['options']['archive_page_types'] ) )
 				|| ( is_date() && ! in_array( 'date', $popup['options']['archive_page_types'] ) )
 				|| ( is_post_type_archive() && ! in_array( 'post-type', $popup['options']['archive_page_types'] ) )
@@ -721,11 +721,22 @@ final class Newspack_Popups_Inserter {
 	 * @return HTML
 	 */
 	public static function popup_shortcode( $atts = array() ) {
+		if ( self::assess_has_disabled_popups() ) {
+			return;
+		}
+
+		$default_atts = [
+			'id'    => 0,
+			'class' => '',
+		];
+		$atts = \shortcode_atts( $default_atts, $atts, 'newspack-popup' );
+
+		$found_popup = false;
 		if ( Newspack_Popups::preset_popup_id() ) {
 			$found_popup = Newspack_Popups_Presets::retrieve_preset_popup( Newspack_Popups::preset_popup_id() );
-		} elseif ( isset( $atts['id'] ) ) {
+		} elseif ( ! empty( $atts['id'] ) && is_numeric( $atts['id'] ) ) {
 			$include_unpublished = Newspack_Popups::is_preview_request();
-			$found_popup         = Newspack_Popups_Model::retrieve_popup_by_id( $atts['id'], $include_unpublished );
+			$found_popup         = Newspack_Popups_Model::retrieve_popup_by_id( (int) $atts['id'], $include_unpublished );
 		}
 		if ( ! $found_popup ) {
 			return;
@@ -742,7 +753,7 @@ final class Newspack_Popups_Inserter {
 
 		$class_names = '';
 		if ( ! empty( $atts['class'] ) ) {
-			$class_names .= ' class="' . $atts['class'] . '"';
+			$class_names = sprintf( ' class="%s"', \esc_attr( $atts['class'] ) );
 		}
 
 		// Wrapping the inline popup in an aside element prevents the markup from being mangled

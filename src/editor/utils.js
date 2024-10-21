@@ -5,7 +5,7 @@ import { __, sprintf, _n } from '@wordpress/i18n';
  *
  * @param {Function} select Select function
  */
-export const optionsFieldsSelector = select => {
+export const promptEditorPropsSelector = select => {
 	const { getEditedPostAttribute } = select( 'core/editor' );
 	const meta = getEditedPostAttribute( 'meta' );
 	const {
@@ -35,9 +35,11 @@ export const optionsFieldsSelector = select => {
 		additional_classes,
 		excluded_categories,
 		excluded_tags,
+		expiration_date,
 	} = meta || {};
 
 	const isOverlay = isOverlayPlacement( placement );
+	const postStatus = select( 'core/editor' ).getEditedPostAttribute( 'status' );
 
 	return {
 		background_color,
@@ -67,6 +69,8 @@ export const optionsFieldsSelector = select => {
 		additional_classes,
 		excluded_categories,
 		excluded_tags,
+		expiration_date,
+		postStatus,
 	};
 };
 
@@ -242,41 +246,40 @@ export const getPlacementHelpMessage = props => {
 		case 'inline':
 			return props.trigger_type === 'blocks_count'
 				? sprintf(
-						// Translators: Blocks count until insertion.
-						_n(
-							'The prompt will be automatically inserted after %s block of content.',
-							'The prompt will be automatically inserted after %s blocks of content.',
-							props.trigger_blocks_count,
-							'newspack-popups'
-						),
-						props.trigger_blocks_count
-				  )
-				: sprintf(
-						// Translators: Article percentage count until insertion.
-						__(
-							'The prompt will be automatically inserted about %s into article content.',
-							'newspack-popups'
-						),
-						props.trigger_scroll_progress + '%'
-				  );
+					// Translators: Blocks count until insertion.
+					_n(
+						'The prompt will be automatically inserted after %s block of content.',
+						'The prompt will be automatically inserted after %s blocks of content.',
+						props.trigger_blocks_count,
+						'newspack-popups'
+					),
+					props.trigger_blocks_count
+				) : sprintf(
+					// Translators: Article percentage count until insertion.
+					__(
+						'The prompt will be automatically inserted about %s into article content.',
+						'newspack-popups'
+					),
+					props.trigger_scroll_progress + '%'
+				);
 		case 'archives':
 			return props.archive_insertion_is_repeating
 				? sprintf(
-						// Translators: Insertion period.
-						__(
-							'The prompt will be automatically inserted every %d articles in the archive pages.',
-							'newspack-popups'
-						),
-						props.archive_insertion_posts_count
-				  )
+					// Translators: Insertion period.
+					__(
+						'The prompt will be automatically inserted every %d articles in the archive pages.',
+						'newspack-popups'
+					),
+					props.archive_insertion_posts_count
+				)
 				: sprintf(
-						// Translators: Insertion period articles count.
-						__(
-							'The prompt will be automatically inserted after %d articles in the archive pages.',
-							'newspack-popups'
-						),
-						props.archive_insertion_posts_count
-				  );
+					// Translators: Insertion period articles count.
+					__(
+						'The prompt will be automatically inserted after %d articles in the archive pages.',
+						'newspack-popups'
+					),
+					props.archive_insertion_posts_count
+				);
 		case 'manual':
 			return __(
 				'The prompt will appear only where inserted using the Single Prompt block or a shortcode.',

@@ -1,3 +1,157 @@
+# [3.1.0](https://github.com/Automattic/newspack-popups/compare/v3.0.1...v3.1.0) (2024-10-08)
+
+
+### Bug Fixes
+
+* check for non-preview logged in user on account criteria ([#1347](https://github.com/Automattic/newspack-popups/issues/1347)) ([9f6f062](https://github.com/Automattic/newspack-popups/commit/9f6f062a9b121e626fca8043c97935b9493ea78a))
+* prioritize ras overlays for delayed prompts ([21c3091](https://github.com/Automattic/newspack-popups/commit/21c30910affecefe0ce137cc9f3f6f5d00c2ce39))
+* prioritize ras overlays for delayed prompts [#1341](https://github.com/Automattic/newspack-popups/issues/1341)  ([c0027d1](https://github.com/Automattic/newspack-popups/commit/c0027d1b28e5a503133898f33d55e8e3b377d635))
+* verify delayed prompt can still be displayed before showing ([#1344](https://github.com/Automattic/newspack-popups/issues/1344)) ([235f36b](https://github.com/Automattic/newspack-popups/commit/235f36b4915177da4b2a7a438cc2a29b79a376c5))
+
+
+### Features
+
+* store prompt activation date ([#1340](https://github.com/Automattic/newspack-popups/issues/1340)) ([2c11424](https://github.com/Automattic/newspack-popups/commit/2c114246949b394e8307c5e53e608b173d55c8e4))
+
+## [3.0.1](https://github.com/Automattic/newspack-popups/compare/v3.0.0...v3.0.1) (2024-09-04)
+
+
+### Bug Fixes
+
+* **segmentation:** handle bad MC API key ([aecc659](https://github.com/Automattic/newspack-popups/commit/aecc6591d57b1a6b560c264ba7145e95434ae7ff))
+
+# [3.0.0](https://github.com/Automattic/newspack-popups/compare/v2.34.1...v3.0.0) (2024-08-13)
+
+
+### Bug Fixes
+
+* update dependencies to support `@wordpress/scripts` ([#1316](https://github.com/Automattic/newspack-popups/issues/1316)) ([a541907](https://github.com/Automattic/newspack-popups/commit/a541907351b03368df1c1810ae8ed6abae8d4987))
+
+
+### BREAKING CHANGES
+
+* Updates dependencies for compatibility with WordPress 6.6.*, but breaks JS in WordPress 6.5.* and below. If you need support for WP 6.5.*, please do not upgrade to this new major version.
+
+* chore: refactor for updating dependencies in newspack-scripts
+
+* chore: update NPM version to lts/*
+
+* chore: update package-lock.json
+
+* refactor: use proxy script for eslint and stylelint scripts
+
+* fix: peer dependencies
+
+* deps: newspack-scripts@5.6.0-alpha.1; remove ajv
+
+* deps: update lint-staged (4066519d9c0f43aacb6961efa403994a4d8dd7a2)
+
+* chore: update newspack-scripts to v5.6.0-alpha.3
+
+* chore: add .stylelintrc.js
+
+* fix: remove outdated "main" entrypoint from package.json
+
+* chore: update newspack-scripts to v5.6.0-alpha.4
+
+* fix: add missing Prettier config files
+
+* chore: update newspack-scripts to 5.6.0-alpha.5
+
+* fix: stylelint scripts with newspack-scripts@5.6.0-alpha.6
+
+* fix: stylelint version with newspack-scripts@5.6.0-alpha.7
+
+* fix: reformat SCSS
+
+* chore: update newspack-scripts to v5.6.0-alpha.8
+
+* chore: update .blog URL
+
+* chore: add NPM scripts for PHP
+
+* chore: update newspack-components to v3.0.0
+
+* chore: bump newspack-scripts to v5.5.2
+
+## [2.34.1](https://github.com/Automattic/newspack-popups/compare/v2.34.0...v2.34.1) (2024-07-12)
+
+
+### Bug Fixes
+
+* use loose type comparison for list__in and list__not_in ([#1326](https://github.com/Automattic/newspack-popups/issues/1326)) ([1872c96](https://github.com/Automattic/newspack-popups/commit/1872c961189ae58becbb12c637e3866e421f3779))
+
+# [2.34.0](https://github.com/Automattic/newspack-popups/compare/v2.33.1...v2.34.0) (2024-07-01)
+
+
+### Bug Fixes
+
+* update newspack-scripts to v5.5.1 ([#1320](https://github.com/Automattic/newspack-popups/issues/1320)) ([554ba18](https://github.com/Automattic/newspack-popups/commit/554ba186520ebf5566b204d162a6e22458c09080))
+
+
+### Features
+
+* ensure regenerator-runtime is available (for WP 6.6) ([8ee878e](https://github.com/Automattic/newspack-popups/commit/8ee878ede71517b270d8e164c6cef20c5af987be))
+
+## [2.33.1](https://github.com/Automattic/newspack-popups/compare/v2.33.0...v2.33.1) (2024-06-18)
+
+
+### Bug Fixes
+
+* prevent prompt expiration with invalid expiration date ([#1318](https://github.com/Automattic/newspack-popups/issues/1318)) ([a83cf2a](https://github.com/Automattic/newspack-popups/commit/a83cf2af88feb1448b75313bb371b68e62898fc8))
+
+# [2.33.0](https://github.com/Automattic/newspack-popups/compare/v2.32.0...v2.33.0) (2024-06-12)
+
+
+### Features
+
+* prompt expiration date ([#1305](https://github.com/Automattic/newspack-popups/issues/1305)) ([301c41c](https://github.com/Automattic/newspack-popups/commit/301c41cd55e8ed468afe7e6b614be11a61db441d))
+
+# [2.32.0](https://github.com/Automattic/newspack-popups/compare/v2.31.3...v2.32.0) (2024-05-28)
+
+
+### Bug Fixes
+
+* improved attribute handling ([f3eb1ae](https://github.com/Automattic/newspack-popups/commit/f3eb1ae6007ed2ca3d76319c894f9d1830bfd740))
+
+
+### Features
+
+* update header hook to a more standard one ([#1302](https://github.com/Automattic/newspack-popups/issues/1302)) ([fe756a4](https://github.com/Automattic/newspack-popups/commit/fe756a4e00dd8fe74373df5d97bf001737a80b5c))
+
+
+### Reverts
+
+* automated file updates [skip ci] ([b59282c](https://github.com/Automattic/newspack-popups/commit/b59282cffa7284319ee85ee1d41cf8723086c4ea))
+
+## [2.31.3](https://github.com/Automattic/newspack-popups/compare/v2.31.2...v2.31.3) (2024-04-26)
+
+
+### Bug Fixes
+
+* disable manual & custom placement prompts when prompts are disabled ([#1299](https://github.com/Automattic/newspack-popups/issues/1299)) ([aff5777](https://github.com/Automattic/newspack-popups/commit/aff5777873785055ce3e24a03ad7f549bf48feb3))
+
+## [2.31.2](https://github.com/Automattic/newspack-popups/compare/v2.31.1...v2.31.2) (2024-04-23)
+
+
+### Bug Fixes
+
+* improved attribute handling ([b53415a](https://github.com/Automattic/newspack-popups/commit/b53415a95b8f7c65ecd421117d656c8e5effc3da))
+
+## [2.31.1](https://github.com/Automattic/newspack-popups/compare/v2.31.0...v2.31.1) (2024-04-08)
+
+
+### Bug Fixes
+
+* ga4 events ([11ca3b8](https://github.com/Automattic/newspack-popups/commit/11ca3b8a0e8e5b586d76a6a27659d33b0246683c))
+
+## [2.31.1-alpha.1](https://github.com/Automattic/newspack-popups/compare/v2.31.0...v2.31.1-alpha.1) (2024-03-28)
+
+
+### Bug Fixes
+
+* ga4 events ([11ca3b8](https://github.com/Automattic/newspack-popups/commit/11ca3b8a0e8e5b586d76a6a27659d33b0246683c))
+
 # [2.31.0](https://github.com/Automattic/newspack-popups/compare/v2.30.1...v2.31.0) (2024-03-04)
 
 

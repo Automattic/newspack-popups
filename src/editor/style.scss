@@ -1,4 +1,4 @@
-@use '~@wordpress/base-styles/colors' as wp-colors;
+@use "~@wordpress/base-styles/colors" as wp-colors;
 
 $overlay__gap: 16px;
 $size__x-small: 380px;
@@ -12,7 +12,7 @@ $size__large: 1264px;
 }
 
 .editor-post-title__input::placeholder {
-	color: var( --newspack-popups-editor-placeholder-color, #7d7d7d ) !important;
+	color: var(--newspack-popups-editor-placeholder-color, #7d7d7d) !important;
 }
 
 .newspack-popups {
@@ -96,8 +96,8 @@ $size__large: 1264px;
 
 	.components-button-group {
 		display: grid;
-		grid-template-columns: repeat( 3, 1fr );
-		grid-template-rows: repeat( 3, 1fr );
+		grid-template-columns: repeat(3, 1fr);
+		grid-template-rows: repeat(3, 1fr);
 
 		div {
 			padding: 1px;
@@ -110,19 +110,19 @@ $size__large: 1264px;
 			width: 100%;
 		}
 
-		div:nth-of-type( 1 ) .components-button {
+		div:nth-of-type(1) .components-button {
 			border-radius: 4px 0 0 !important;
 		}
 
-		div:nth-of-type( 3 ) .components-button {
+		div:nth-of-type(3) .components-button {
 			border-radius: 0 4px 0 0 !important;
 		}
 
-		div:nth-last-of-type( 1 ) .components-button {
+		div:nth-last-of-type(1) .components-button {
 			border-radius: 0 0 4px !important;
 		}
 
-		div:nth-last-of-type( 3 ) .components-button {
+		div:nth-last-of-type(3) .components-button {
 			border-radius: 0 0 0 4px !important;
 		}
 	}
@@ -134,7 +134,7 @@ $size__large: 1264px;
 			border-radius: 4px 4px 0 0 !important;
 		}
 
-		div:nth-of-type( 2 ) .components-button {
+		div:nth-of-type(2) .components-button {
 			border-radius: 0 !important;
 		}
 
@@ -154,7 +154,7 @@ $size__large: 1264px;
 .newspack-popups-style-selector {
 	display: grid;
 	gap: 8px;
-	grid-template-columns: repeat( 2, 1fr );
+	grid-template-columns: repeat(2, 1fr);
 
 	.components-button {
 		justify-content: center;
@@ -170,7 +170,7 @@ $size__large: 1264px;
 	margin-left: auto;
 	margin-right: auto;
 
-	&[class*='is-size-'] {
+	&[class*="is-size-"] {
 		max-width: $size__large;
 		padding: #{2 * $overlay__gap};
 	}
@@ -187,7 +187,7 @@ $size__large: 1264px;
 		max-width: $size__medium;
 	}
 
-	.editor-styles-wrapper &[class*='is-size-'] .wp-block {
+	.editor-styles-wrapper &[class*="is-size-"] .wp-block {
 		max-width: 100%;
 	}
 }
@@ -201,4 +201,8 @@ $size__large: 1264px;
 		margin-top: 15px;
 		font-weight: bold;
 	}
+}
+
+.components-datetime__date h3 {
+	margin: 0;
 }

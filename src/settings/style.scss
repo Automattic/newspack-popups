@@ -1,4 +1,4 @@
-@use '~newspack-components/shared/scss/colors';
+@use "~newspack-components/shared/scss/colors";
 
 .components-card {
 	margin: 2rem auto;
@@ -46,7 +46,7 @@
 
 		&::before {
 			background: colors.$primary-500;
-			content: '';
+			content: "";
 			display: block;
 			inset: 0 0 0 -20px;
 			position: absolute;
