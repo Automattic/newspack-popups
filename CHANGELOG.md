@@ -1,3 +1,11 @@
+## [3.1.1](https://github.com/Automattic/newspack-popups/compare/v3.1.0...v3.1.1) (2024-11-11)
+
+
+### Bug Fixes
+
+* prevent extra scrollbar ([#1354](https://github.com/Automattic/newspack-popups/issues/1354)) ([5138051](https://github.com/Automattic/newspack-popups/commit/5138051e2b0ff4a7010b872546a799ab87a36498))
+* remove inline-block display type ([#1356](https://github.com/Automattic/newspack-popups/issues/1356)) ([d2b0f21](https://github.com/Automattic/newspack-popups/commit/d2b0f211d1bd66fbae3862a3f38d4e8dc2507c89))
+
 # [3.1.0](https://github.com/Automattic/newspack-popups/compare/v3.0.1...v3.1.0) (2024-10-08)
 
 
