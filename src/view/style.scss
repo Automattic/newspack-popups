@@ -130,6 +130,10 @@ $width__tablet: 782px;
 			box-shadow: none;
 		}
 
+		&.newspack-lightbox-placement-center .newspack-popup-wrapper {
+			overflow: hidden;
+		}
+
 		.newspack-popup__content {
 			padding-top: 32px;
 		}
