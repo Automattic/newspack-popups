@@ -1,3 +1,10 @@
+## [3.1.2](https://github.com/Automattic/newspack-popups/compare/v3.1.1...v3.1.2) (2024-11-13)
+
+
+### Bug Fixes
+
+* ensure localized segments object is an object, not array ([#1364](https://github.com/Automattic/newspack-popups/issues/1364)) ([3b2403f](https://github.com/Automattic/newspack-popups/commit/3b2403fd6ba1f65ed944120c3fa1961cf6a87208))
+
 ## [3.1.1](https://github.com/Automattic/newspack-popups/compare/v3.1.0...v3.1.1) (2024-11-11)
 
 
