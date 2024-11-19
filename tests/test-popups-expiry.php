@@ -27,7 +27,7 @@ class Test_Newspack_Popups_Expiry extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Test the revert_expired_to_draft function.
+	 * Test the revert_expired_to_draft function with PHP date format  (YYYY-MM-DD HH:MM:SS).
 	 */
 	public function test_prompt_expiry_revert_expired_to_draft() {
 		// Create a post with an expiration date in the past.
@@ -97,5 +97,55 @@ class Test_Newspack_Popups_Expiry extends WP_UnitTestCase {
 
 		// Should not have been reverted to draft.
 		$this->assertEquals( 'publish', get_post_status( $post_id ) );
+	}
+
+	/**
+	 * Test date expiry logic with various datetime string formats.
+	 */
+	public function test_date_string_formats() {
+		$this->assertTrue(
+			Newspack_Popups_Expiry::is_expired( gmdate( 'Y-m-d H:i:s', strtotime( '-1 day' ) ) ),
+			'Anytime yesterday in PHP date format (YYYY-MM-DD HH:MM:SS) is expired.'
+		);
+		$this->assertTrue(
+			Newspack_Popups_Expiry::is_expired( gmdate( 'Y-m-d H:i:s', time() ) ),
+			'Anytime today in PHP date format (YYYY-MM-DD HH:MM:SS) is expired.'
+		);
+		$this->assertFalse(
+			Newspack_Popups_Expiry::is_expired( gmdate( 'Y-m-d H:i:s', strtotime( '+1 day' ) ) ),
+			'Anytime tomorrow in PHP date format (YYYY-MM-DD HH:MM:SS) is NOT expired.'
+		);
+		$this->assertTrue(
+			Newspack_Popups_Expiry::is_expired( gmdate( 'Y-m-d\TH:i:s', strtotime( '-1 day' ) ) ),
+			'Anytime yesterday in JS date format (YYYY-MM-DDTHH:MM:SS) is expired.'
+		);
+		$this->assertTrue(
+			Newspack_Popups_Expiry::is_expired( gmdate( 'Y-m-d\TH:i:s', time() ) ),
+			'Anytime today in JS date format (YYYY-MM-DDTHH:MM:SS) is expired.'
+		);
+		$this->assertFalse(
+			Newspack_Popups_Expiry::is_expired( gmdate( 'Y-m-d\TH:i:s', strtotime( '+1 day' ) ) ),
+			'Anytime tomorrow in JS date format (YYYY-MM-DDTHH:MM:SS) is NOT expired.'
+		);
+		$this->assertTrue(
+			Newspack_Popups_Expiry::is_expired( gmdate( 'F j, Y g:i:s A', strtotime( '-1 day' ) ) ),
+			'Anytime yesterday in human-readable date format is expired.'
+		);
+		$this->assertTrue(
+			Newspack_Popups_Expiry::is_expired( gmdate( 'F j, Y g:i:s A', time() ) ),
+			'Anytime today in human-readable date format is expired.'
+		);
+		$this->assertFalse(
+			Newspack_Popups_Expiry::is_expired( gmdate( 'F j, Y g:i:s A', strtotime( '+1 day' ) ) ),
+			'Anytime tomorrow in human-readable date format is NOT expired.'
+		);
+		$this->assertFalse(
+			Newspack_Popups_Expiry::is_expired( 'invalid date' ),
+			'Invalid date string is NOT expired.'
+		);
+		$this->assertFalse(
+			Newspack_Popups_Expiry::is_expired( '' ),
+			'Empty date string is NOT expired.'
+		);
 	}
 }
