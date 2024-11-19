@@ -287,3 +287,18 @@ export const getPlacementHelpMessage = props => {
 			return __( 'The placement where the prompt can appear.', 'newspack-popups' );
 	}
 };
+
+/**
+ * Convert a date object to a string in YYYY-MM-DDTHH:MM:SS format.
+ * Omit Z timezone so the date is parsed in the site's local timezone.
+ *
+ * @param {Date} date
+ * @return {string} Date string in Y-m-d H:i:s format or empty string if the given date can't be parsed.
+ */
+export const convertDateToString = date => {
+	if ( ! ( date instanceof Date ) ) {
+		return '';
+	}
+
+	return date.toISOString().split( '.' )[ 0 ];
+}
