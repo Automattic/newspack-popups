@@ -35,6 +35,7 @@ const ExpirationPanel = ( {
 					new Date( expiration_date ).toLocaleDateString()
 				),
 				{
+					id: 'newspack-popups__expired',
 					isDismissible: false,
 				}
 			).then( ( { notice } ) => {
@@ -51,7 +52,10 @@ const ExpirationPanel = ( {
 				__(
 					'This prompt has been published. The expiration date has been removed.',
 					'newspack-plugin'
-				)
+				),
+				{
+					id: 'newspack-popups__expiration-date-removed',
+				}
 			);
 			// This is just for quicked feedback, the actual meta field deletion will
 			// happen on the backend.
@@ -74,7 +78,7 @@ const ExpirationPanel = ( {
 					onMetaFieldChange( { expiration_date: expiration_date ? null : defaultExpirationDate } );
 				} }
 				help={ __(
-					'If set, the prompt will be automatically unpublished after this date.',
+					'If set, the prompt will be automatically unpublished at midnight on this date.',
 					'newspack-popups'
 				) }
 			/>
