@@ -100,7 +100,7 @@ class Test_Newspack_Popups_Expiry extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Test different expiry logic with various date string formats.
+	 * Test date expiry logic with various datetime string formats.
 	 */
 	public function test_date_string_formats() {
 		$this->assertTrue(
