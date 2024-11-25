@@ -1,3 +1,10 @@
+## [3.1.4](https://github.com/Automattic/newspack-popups/compare/v3.1.3...v3.1.4) (2024-11-25)
+
+
+### Bug Fixes
+
+* avoid fatal on get_segments ([#1359](https://github.com/Automattic/newspack-popups/issues/1359)) ([2fb88fb](https://github.com/Automattic/newspack-popups/commit/2fb88fbe7031d050397d46edffd7956902dd4e94))
+
 ## [3.1.3](https://github.com/Automattic/newspack-popups/compare/v3.1.2...v3.1.3) (2024-11-19)
 
 
