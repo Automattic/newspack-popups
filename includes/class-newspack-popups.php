@@ -334,6 +334,9 @@ final class Newspack_Popups {
 				'single'            => true,
 				'auth_callback'     => '__return_true',
 				'sanitize_callback' => function( $input ) {
+					if ( empty( $input ) ) {
+						return '';
+					}
 					return preg_replace( '~[^-\w0-9_\s]+~', '', $input );
 				},
 			]
