@@ -71,7 +71,7 @@ $width__tablet: 782px;
 		background: white;
 		border: none;
 		box-shadow: 0 0 1em 0.5em rgba(black, 0.1);
-		overflow-x: hidden;
+		overflow: hidden;
 		position: relative;
 		transform: none;
 		transition: transform 0.2s ease-in-out;
@@ -267,7 +267,6 @@ $width__tablet: 782px;
 	&.newspack-lightbox-placement-top_right {
 		.newspack-popup-wrapper {
 			max-height: calc(100% - #{$overlay__gap});
-			overflow-y: auto;
 		}
 	}
 
@@ -275,7 +274,6 @@ $width__tablet: 782px;
 	&.newspack-lightbox-placement-top {
 		.newspack-popup-wrapper {
 			max-height: 100%;
-			overflow-y: auto;
 		}
 	}
 
