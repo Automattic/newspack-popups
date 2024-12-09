@@ -1,3 +1,11 @@
+## [3.1.5](https://github.com/Automattic/newspack-popups/compare/v3.1.4...v3.1.5) (2024-12-09)
+
+
+### Bug Fixes
+
+* hide cpt from menu ([#1365](https://github.com/Automattic/newspack-popups/issues/1365)) ([6ec34ee](https://github.com/Automattic/newspack-popups/commit/6ec34eed785a73b0f621120a029e56a8f38f74f7))
+* prevent issue with double-scrollbars in really specific circumstances ([#1370](https://github.com/Automattic/newspack-popups/issues/1370)) ([c35772f](https://github.com/Automattic/newspack-popups/commit/c35772f65b429f3fdbfc9afe7cc0166685fd7a2a))
+
 ## [3.1.4](https://github.com/Automattic/newspack-popups/compare/v3.1.3...v3.1.4) (2024-11-25)
 
 
