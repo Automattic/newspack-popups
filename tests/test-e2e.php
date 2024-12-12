@@ -46,9 +46,17 @@ class E2ETest extends WP_UnitTestCase_PageWithPopups {
 				'slug'     => 'everyday',
 			]
 		);
-		wp_set_post_terms( $original_popup_id, [ $category_id ], 'category' );
-		wp_set_post_terms( $original_popup_id, [ $tag_id ], 'post_tag' );
-		wp_set_post_terms( $original_popup_id, [ $campaign_id ], Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY );
+		$segment_id  = self::factory()->term->create(
+			[
+				'name'     => 'Loyal Readers',
+				'taxonomy' => Newspack_Segments_Model::TAX_SLUG,
+				'slug'     => 'loyal-readers',
+			]
+		);
+		Newspack_Popups_Model::set_popup_terms( $original_popup_id, [ $category_id ], 'category' );
+		Newspack_Popups_Model::set_popup_terms( $original_popup_id, [ $tag_id ], 'post_tag' );
+		Newspack_Popups_Model::set_popup_terms( $original_popup_id, [ $campaign_id ], Newspack_Popups::NEWSPACK_POPUPS_TAXONOMY );
+		Newspack_Popups_Model::set_popup_terms( $original_popup_id, [ $segment_id ], Newspack_Segments_Model::TAX_SLUG );
 
 		$duplicate_popup_id          = Newspack_Popups::duplicate_popup( $original_popup_id );
 		$second_duplicate_id         = Newspack_Popups::duplicate_popup( $duplicate_popup_id );
@@ -93,6 +101,12 @@ class E2ETest extends WP_UnitTestCase_PageWithPopups {
 			Newspack_Popups_Model::get_popup_options( $original_popup_id ),
 			Newspack_Popups_Model::get_popup_options( $duplicate_popup_id ),
 			'Duplicated prompt has the same prompt options as the original prompt.'
+		);
+
+		self::assertEquals(
+			Newspack_Popups_Model::get_popup_segments( $original_popup_id ),
+			Newspack_Popups_Model::get_popup_segments( $duplicate_popup_id ),
+			'Duplicate prompt has the same segments as the original prompt.'
 		);
 	}
 }
