@@ -135,7 +135,7 @@ $width__tablet: 782px;
 		}
 
 		.newspack-popup__content {
-			padding-top: 32px;
+			padding: 0;
 		}
 
 		.newspack-popup__content-wrapper {
@@ -157,10 +157,6 @@ $width__tablet: 782px;
 				left: 32px;
 			}
 		}
-	}
-
-	&.newspack-lightbox-no-padding .newspack-popup__content {
-		padding: 0;
 	}
 
 	&.newspack-lightbox-large-border,

@@ -161,7 +161,7 @@ class Prompts extends Schema {
 							'required' => false,
 							'default'  => false,
 						],
-						"no_padding"                     => [
+						'no_padding'                     => [
 							'name'     => 'no_padding',
 							'type'     => 'boolean',
 							'required' => false,

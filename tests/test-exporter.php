@@ -74,7 +74,7 @@ class ExporterTest extends WP_UnitTestCase_PageWithPopups {
 						'overlay_size' => 'full',
 						'hide_border'  => false,
 						'large_border' => false,
-						'no_padding'       => false,
+						'no_padding'   => false,
 						'frequency'    => 'once',
 						'placement'    => 'inline',
 					],
