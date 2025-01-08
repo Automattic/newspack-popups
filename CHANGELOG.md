@@ -1,3 +1,47 @@
+## [3.1.6](https://github.com/Automattic/newspack-popups/compare/v3.1.5...v3.1.6) (2024-12-16)
+
+
+### Bug Fixes
+
+* copy original segments when duplicating prompt ([#1373](https://github.com/Automattic/newspack-popups/issues/1373)) ([96ba0ca](https://github.com/Automattic/newspack-popups/commit/96ba0ca989732614c43ca24cf85cd011f11e44ff))
+
+## [3.1.5](https://github.com/Automattic/newspack-popups/compare/v3.1.4...v3.1.5) (2024-12-09)
+
+
+### Bug Fixes
+
+* hide cpt from menu ([#1365](https://github.com/Automattic/newspack-popups/issues/1365)) ([6ec34ee](https://github.com/Automattic/newspack-popups/commit/6ec34eed785a73b0f621120a029e56a8f38f74f7))
+* prevent issue with double-scrollbars in really specific circumstances ([#1370](https://github.com/Automattic/newspack-popups/issues/1370)) ([c35772f](https://github.com/Automattic/newspack-popups/commit/c35772f65b429f3fdbfc9afe7cc0166685fd7a2a))
+
+## [3.1.4](https://github.com/Automattic/newspack-popups/compare/v3.1.3...v3.1.4) (2024-11-25)
+
+
+### Bug Fixes
+
+* avoid fatal on get_segments ([#1359](https://github.com/Automattic/newspack-popups/issues/1359)) ([2fb88fb](https://github.com/Automattic/newspack-popups/commit/2fb88fbe7031d050397d46edffd7956902dd4e94))
+
+## [3.1.3](https://github.com/Automattic/newspack-popups/compare/v3.1.2...v3.1.3) (2024-11-19)
+
+
+### Bug Fixes
+
+* ensure prompts with expiration dates expire correctly ([#1371](https://github.com/Automattic/newspack-popups/issues/1371)) ([85a63b6](https://github.com/Automattic/newspack-popups/commit/85a63b656208e6f73560dd975997d83462148682))
+
+## [3.1.2](https://github.com/Automattic/newspack-popups/compare/v3.1.1...v3.1.2) (2024-11-13)
+
+
+### Bug Fixes
+
+* ensure localized segments object is an object, not array ([#1364](https://github.com/Automattic/newspack-popups/issues/1364)) ([3b2403f](https://github.com/Automattic/newspack-popups/commit/3b2403fd6ba1f65ed944120c3fa1961cf6a87208))
+
+## [3.1.1](https://github.com/Automattic/newspack-popups/compare/v3.1.0...v3.1.1) (2024-11-11)
+
+
+### Bug Fixes
+
+* prevent extra scrollbar ([#1354](https://github.com/Automattic/newspack-popups/issues/1354)) ([5138051](https://github.com/Automattic/newspack-popups/commit/5138051e2b0ff4a7010b872546a799ab87a36498))
+* remove inline-block display type ([#1356](https://github.com/Automattic/newspack-popups/issues/1356)) ([d2b0f21](https://github.com/Automattic/newspack-popups/commit/d2b0f211d1bd66fbae3862a3f38d4e8dc2507c89))
+
 # [3.1.0](https://github.com/Automattic/newspack-popups/compare/v3.0.1...v3.1.0) (2024-10-08)
 
 

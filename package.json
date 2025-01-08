@@ -1,6 +1,6 @@
 {
 	"name": "newspack-popups",
-	"version": "3.1.0",
+	"version": "3.1.6",
 	"author": "Automattic",
 	"scripts": {
 		"cm": "newspack-scripts commit",
@@ -34,14 +34,14 @@
 		"classnames": "^2.5.1",
 		"intersection-observer": "^0.12.2",
 		"js-cookie": "^3.0.5",
-		"newspack-components": "^3.0.0",
-		"qs": "^6.13.0"
+		"newspack-components": "^3.1.0",
+		"qs": "^6.13.1"
 	},
 	"devDependencies": {
 		"@rushstack/eslint-patch": "^1.10.4",
-		"@wordpress/browserslist-config": "^6.10.0",
+		"@wordpress/browserslist-config": "^6.15.0",
 		"eslint": "^8.57.0",
-		"lint-staged": "^15.2.10",
+		"lint-staged": "^15.3.0",
 		"newspack-scripts": "^5.5.2",
 		"postcss-scss": "^4.0.9"
 	}
