@@ -11,13 +11,13 @@ import { useEffect } from '@wordpress/element';
 
 const StylesSidebar = props => {
 	const { onMetaFieldChange, hide_border, large_border, no_padding, isOverlay } = props;
-	
+
 	useEffect( () => {
-		{ ! isOverlay && no_padding && (
+		if ( ! isOverlay && no_padding ) {
 			onMetaFieldChange( { hide_border: false, large_border: false, no_padding: false } )
-		) }
+		}
 	}, [ isOverlay ] );
-	
+
 	return (
 		<div className="newspack-popups-style-selector">
 			<Button
