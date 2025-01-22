@@ -133,15 +133,9 @@ $width__tablet: 782px;
 			}
 		}
 
-		.newspack-inactive-popup-status {
-			&::before {
-				inset: 0 auto auto 0;
-			}
-		}
-
 		.newspack-lightbox__close {
-			height: 24px;
-			width: 24px;
+			height: 32px;
+			width: 32px;
 		}
 	}
 
@@ -205,15 +199,9 @@ $width__tablet: 782px;
 			max-width: 100%;
 		}
 
-		.newspack-inactive-popup-status {
-			&::before {
-				inset: 0 auto auto 0;
-			}
-		}
-
 		.newspack-lightbox__close {
-			height: 24px;
-			width: 24px;
+			height: 32px;
+			width: 32px;
 		}
 	}
 
