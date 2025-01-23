@@ -132,11 +132,6 @@ $width__tablet: 782px;
 				padding: $overlay__gap;
 			}
 		}
-
-		.newspack-lightbox__close {
-			height: 32px;
-			width: 32px;
-		}
 	}
 
 	// Large Padding overlay
@@ -197,11 +192,6 @@ $width__tablet: 782px;
 
 		&.newspack-lightbox-size-full-width .newspack-popup__content-wrapper {
 			max-width: 100%;
-		}
-
-		.newspack-lightbox__close {
-			height: 32px;
-			width: 32px;
 		}
 	}
 
