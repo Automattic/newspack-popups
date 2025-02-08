@@ -39,13 +39,13 @@
 	}
 
 	&__wrapper {
-		background: colors.$primary-500;
+		background: colors.$primary-600;
 		display: flex;
 		padding: 12px 0;
 		position: relative;
 
 		&::before {
-			background: colors.$primary-500;
+			background: colors.$primary-600;
 			content: "";
 			display: block;
 			inset: 0 0 0 -20px;
