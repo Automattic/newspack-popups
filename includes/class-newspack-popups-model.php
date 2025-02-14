@@ -450,7 +450,7 @@ final class Newspack_Popups_Model {
 			$filtered_options,
 			[
 				'background_color'               => '#FFFFFF',
-				'close_button_background_color'  => '#00000000',
+				'close_button_background_color'  => '#ffffff00',
 				'hide_border'                    => false,
 				'large_border'                   => false,
 				'no_padding'                     => false,

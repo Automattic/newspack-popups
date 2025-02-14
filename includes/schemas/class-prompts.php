@@ -154,7 +154,7 @@ class Prompts extends Schema {
 							'type'     => 'string',
 							'format'   => 'hex-color',
 							'required' => false,
-							'default'  => '#00000000',
+							'default'  => '#ffffff00',
 						],
 						'hide_border'                    => [
 							'name'     => 'hide_border',

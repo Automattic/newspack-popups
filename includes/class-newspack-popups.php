@@ -909,7 +909,7 @@ final class Newspack_Popups {
 		}
 
 		update_post_meta( $post_id, 'background_color', '#FFFFFF' );
-		update_post_meta( $post_id, 'close_button_background_color', '#00000000' );
+		update_post_meta( $post_id, 'close_button_background_color', '#ffffff00' );
 		update_post_meta( $post_id, 'hide_border', false );
 		update_post_meta( $post_id, 'large_border', false );
 		update_post_meta( $post_id, 'no_padding', false );
