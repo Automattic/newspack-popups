@@ -31,7 +31,7 @@ const ColorsSidebar = ( {
 				{ ! featured_image_id && (
 				<ColorPaletteControl
 					value={ close_button_background_color }
-					onChange={ value => onMetaFieldChange( { close_button_background_color: value || '#ffffff00' } ) }
+					onChange={ value => onMetaFieldChange( { close_button_background_color: value || '' } ) }
 					label={ __( 'Close Button Background Color', 'newspack-popups' ) }
 					enableAlpha={ true }
 				/>

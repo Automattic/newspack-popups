@@ -450,7 +450,7 @@ final class Newspack_Popups_Model {
 			$filtered_options,
 			[
 				'background_color'               => '#FFFFFF',
-				'close_button_background_color'  => '#ffffff00',
+				'close_button_background_color'  => '',
 				'hide_border'                    => false,
 				'large_border'                   => false,
 				'no_padding'                     => false,
@@ -1065,6 +1065,11 @@ final class Newspack_Popups_Model {
 		$is_scroll_triggered           = 'scroll' === $popup['options']['trigger_type'];
 		$assigned_segments             = Newspack_Segments_Model::get_popup_segments_ids_string( $popup['id'] );
 		$frequency_config              = self::get_frequency_config( $popup );
+
+		// If the Close button background is not set, base the close button color off the background_color value for backwards compability.
+		if ( $close_button_background_color === '' ) {
+			$close_button_color = self::foreground_color_for_background( $popup['options']['background_color'] );
+		}
 
 		$animation_id = 'a_' . $element_id;
 
