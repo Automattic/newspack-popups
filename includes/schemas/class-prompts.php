@@ -149,6 +149,13 @@ class Prompts extends Schema {
 							'required' => false,
 							'default'  => '#FFFFFF',
 						],
+						'close_button_background_color'  => [
+							'name'     => 'close_button_background_color',
+							'type'     => 'string',
+							'format'   => 'hex-color',
+							'required' => false,
+							'default'  => '#00000000',
+						],
 						'hide_border'                    => [
 							'name'     => 'hide_border',
 							'type'     => 'boolean',

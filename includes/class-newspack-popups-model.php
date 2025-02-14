@@ -242,6 +242,7 @@ final class Newspack_Popups_Model {
 	public static function get_preview_query_options() {
 		$options_filters = [
 			'background_color'               => FILTER_SANITIZE_FULL_SPECIAL_CHARS,
+			'close_button_background_color'  => FILTER_SANITIZE_FULL_SPECIAL_CHARS,
 			'hide_border'                    => FILTER_VALIDATE_BOOLEAN,
 			'large_border'                   => FILTER_VALIDATE_BOOLEAN,
 			'no_padding'                     => FILTER_VALIDATE_BOOLEAN,
@@ -404,6 +405,7 @@ final class Newspack_Popups_Model {
 	public static function get_popup_options( $id, $options = null ) {
 		$post_options = isset( $options ) ? $options : [
 			'background_color'               => get_post_meta( $id, 'background_color', true ),
+			'close_button_background_color'  => get_post_meta( $id, 'close_button_background_color', true ),
 			'hide_border'                    => get_post_meta( $id, 'hide_border', true ),
 			'large_border'                   => get_post_meta( $id, 'large_border', true ),
 			'no_padding'                     => get_post_meta( $id, 'no_padding', true ),
@@ -448,6 +450,7 @@ final class Newspack_Popups_Model {
 			$filtered_options,
 			[
 				'background_color'               => '#FFFFFF',
+				'close_button_background_color'  => '#00000000',
 				'hide_border'                    => false,
 				'large_border'                   => false,
 				'no_padding'                     => false,
@@ -1036,31 +1039,32 @@ final class Newspack_Popups_Model {
 		self::remove_form_hooks( $popup );
 		do_action( 'newspack_campaigns_after_campaign_render', $popup );
 
-		$element_id            = self::canonize_popup_id( $popup['id'] );
-		$hide_border           = $popup['options']['hide_border'];
-		$large_border          = $popup['options']['large_border'];
-		$no_padding            = $popup['options']['no_padding'];
-		$overlay_opacity       = absint( $popup['options']['overlay_opacity'] ) / 100;
-		$overlay_color         = $popup['options']['overlay_color'];
-		$overlay_size          = 'full' === $popup['options']['overlay_size'] ? 'full-width' : $popup['options']['overlay_size'];
-		$no_overlay_background = $popup['options']['no_overlay_background'];
-		$close_button_color    = self::foreground_color_for_background( $popup['options']['background_color'] );
-		$hidden_fields         = self::get_hidden_fields( $popup );
-		$is_newsletter_prompt  = self::has_newsletter_prompt( $popup );
-		$has_featured_image    = has_post_thumbnail( $popup['id'] ) || ! empty( $popup['options']['featured_image_id'] );
-		$classes               = [ 'newspack-popup-container', 'newspack-lightbox', 'newspack-popup', 'hidden', 'newspack-lightbox-placement-' . $popup['options']['placement'], 'newspack-lightbox-size-' . $overlay_size ];
-		$classes[]             = $hide_border ? 'newspack-lightbox-no-border' : null;
-		$classes[]             = $large_border ? 'newspack-lightbox-large-border' : null;
-		$classes[]             = $no_padding ? 'newspack-lightbox-no-padding' : null;
-		$classes[]             = $is_newsletter_prompt ? 'newspack-newsletter-prompt-overlay' : null;
-		$classes[]             = $no_overlay_background ? 'newspack-lightbox-no-overlay' : null;
-		$classes[]             = $has_featured_image ? 'newspack-lightbox-featured-image' : null;
-		$classes               = array_merge( $classes, explode( ' ', $popup['options']['additional_classes'] ) );
-		$wrapper_classes       = [ 'newspack-popup-wrapper' ];
-		$wrapper_classes[]     = 'publish' !== $popup['status'] ? 'newspack-inactive-popup-status' : null;
-		$is_scroll_triggered   = 'scroll' === $popup['options']['trigger_type'];
-		$assigned_segments     = Newspack_Segments_Model::get_popup_segments_ids_string( $popup['id'] );
-		$frequency_config      = self::get_frequency_config( $popup );
+		$element_id                    = self::canonize_popup_id( $popup['id'] );
+		$hide_border                   = $popup['options']['hide_border'];
+		$large_border                  = $popup['options']['large_border'];
+		$no_padding                    = $popup['options']['no_padding'];
+		$overlay_opacity               = absint( $popup['options']['overlay_opacity'] ) / 100;
+		$overlay_color                 = $popup['options']['overlay_color'];
+		$overlay_size                  = 'full' === $popup['options']['overlay_size'] ? 'full-width' : $popup['options']['overlay_size'];
+		$no_overlay_background         = $popup['options']['no_overlay_background'];
+		$has_featured_image            = has_post_thumbnail( $popup['id'] ) || ! empty( $popup['options']['featured_image_id'] );
+		$close_button_background_color = $has_featured_image ? '#00000080' : $popup['options']['close_button_background_color'];
+		$close_button_color            = $has_featured_image ? '#ffffff' : self::foreground_color_for_background( $popup['options']['close_button_background_color'] );
+		$hidden_fields                 = self::get_hidden_fields( $popup );
+		$is_newsletter_prompt          = self::has_newsletter_prompt( $popup );
+		$classes                       = [ 'newspack-popup-container', 'newspack-lightbox', 'newspack-popup', 'hidden', 'newspack-lightbox-placement-' . $popup['options']['placement'], 'newspack-lightbox-size-' . $overlay_size ];
+		$classes[]                     = $hide_border ? 'newspack-lightbox-no-border' : null;
+		$classes[]                     = $large_border ? 'newspack-lightbox-large-border' : null;
+		$classes[]                     = $no_padding ? 'newspack-lightbox-no-padding' : null;
+		$classes[]                     = $is_newsletter_prompt ? 'newspack-newsletter-prompt-overlay' : null;
+		$classes[]                     = $no_overlay_background ? 'newspack-lightbox-no-overlay' : null;
+		$classes[]                     = $has_featured_image ? 'newspack-lightbox-featured-image' : null;
+		$classes                       = array_merge( $classes, explode( ' ', $popup['options']['additional_classes'] ) );
+		$wrapper_classes               = [ 'newspack-popup-wrapper' ];
+		$wrapper_classes[]             = 'publish' !== $popup['status'] ? 'newspack-inactive-popup-status' : null;
+		$is_scroll_triggered           = 'scroll' === $popup['options']['trigger_type'];
+		$assigned_segments             = Newspack_Segments_Model::get_popup_segments_ids_string( $popup['id'] );
+		$frequency_config              = self::get_frequency_config( $popup );
 
 		$animation_id = 'a_' . $element_id;
 
@@ -1092,7 +1096,7 @@ final class Newspack_Popups_Model {
 					<div class="newspack-popup__content">
 						<?php echo do_shortcode( $body ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					</div>
-					<button class="newspack-lightbox__close" style="color: <?php echo esc_attr( $close_button_color ); ?>"aria-label="<?php esc_html_e( 'Close Pop-up', 'newspack-popups' ); // phpcs:ignore WordPressVIPMinimum.Security.ProperEscapingFunction.htmlAttrNotByEscHTML ?>">
+					<button class="newspack-lightbox__close" style="background-color: <?php echo esc_attr( $close_button_background_color ); ?>; color: <?php echo esc_attr( $close_button_color ); ?>"aria-label="<?php esc_html_e( 'Close Pop-up', 'newspack-popups' ); // phpcs:ignore WordPressVIPMinimum.Security.ProperEscapingFunction.htmlAttrNotByEscHTML ?>">
 						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" role="img" aria-hidden="true" focusable="false">
 							<path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/>
 						</svg>
