@@ -1067,7 +1067,7 @@ final class Newspack_Popups_Model {
 		$frequency_config              = self::get_frequency_config( $popup );
 
 		// If the Close button background is not set, base the close button color off the background_color value for backwards compability.
-		if ( $close_button_background_color === '' ) {
+		if ( $close_button_background_color === '' && ! $has_featured_image ) {
 			$close_button_color = self::foreground_color_for_background( $popup['options']['background_color'] );
 		}
 
