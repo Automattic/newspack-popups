@@ -381,7 +381,7 @@
             ],
             "options": {
                 "background_color": "#FFFFFF",
-                "close_button_background_color": "#ffffff00",
+                "close_button_background_color": "",
                 "hide_border": false,
                 "large_border": false,
                 "no_padding": false,
