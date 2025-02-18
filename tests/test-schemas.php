@@ -42,6 +42,8 @@ class SchemasTest extends WP_UnitTestCase {
 					'duplicate_of'      => 0,
 					'options'           => [
 						'background_color'               => '#FFFFFF',
+						'close_button_background_color'  => '#00000000',
+						'enable_close_button_background' => false,
 						'hide_border'                    => false,
 						'large_border'                   => false,
 						'no_padding'                     => false,
