@@ -242,8 +242,6 @@ final class Newspack_Popups_Model {
 	public static function get_preview_query_options() {
 		$options_filters = [
 			'background_color'               => FILTER_SANITIZE_FULL_SPECIAL_CHARS,
-			'close_button_background_color'  => FILTER_SANITIZE_FULL_SPECIAL_CHARS,
-			'enable_close_button_background' => FILTER_VALIDATE_BOOLEAN,
 			'hide_border'                    => FILTER_VALIDATE_BOOLEAN,
 			'large_border'                   => FILTER_VALIDATE_BOOLEAN,
 			'no_padding'                     => FILTER_VALIDATE_BOOLEAN,
@@ -252,6 +250,8 @@ final class Newspack_Popups_Model {
 			'frequency_start'                => FILTER_SANITIZE_FULL_SPECIAL_CHARS,
 			'frequency_between'              => FILTER_SANITIZE_FULL_SPECIAL_CHARS,
 			'frequency_reset'                => FILTER_SANITIZE_FULL_SPECIAL_CHARS,
+			'close_button_background_color'  => FILTER_SANITIZE_FULL_SPECIAL_CHARS,
+			'enable_close_button_background' => FILTER_VALIDATE_BOOLEAN,
 			'overlay_color'                  => FILTER_SANITIZE_FULL_SPECIAL_CHARS,
 			'overlay_opacity'                => FILTER_SANITIZE_FULL_SPECIAL_CHARS,
 			'overlay_size'                   => FILTER_SANITIZE_FULL_SPECIAL_CHARS,
@@ -406,8 +406,6 @@ final class Newspack_Popups_Model {
 	public static function get_popup_options( $id, $options = null ) {
 		$post_options = isset( $options ) ? $options : [
 			'background_color'               => get_post_meta( $id, 'background_color', true ),
-			'close_button_background_color'  => get_post_meta( $id, 'close_button_background_color', true ),
-			'enable_close_button_background' => get_post_meta( $id, 'enable_close_button_background', true ),
 			'hide_border'                    => get_post_meta( $id, 'hide_border', true ),
 			'large_border'                   => get_post_meta( $id, 'large_border', true ),
 			'no_padding'                     => get_post_meta( $id, 'no_padding', true ),
@@ -416,6 +414,8 @@ final class Newspack_Popups_Model {
 			'frequency_start'                => get_post_meta( $id, 'frequency_start', true ),
 			'frequency_between'              => get_post_meta( $id, 'frequency_between', true ),
 			'frequency_reset'                => get_post_meta( $id, 'frequency_reset', true ),
+			'close_button_background_color'  => get_post_meta( $id, 'close_button_background_color', true ),
+			'enable_close_button_background' => get_post_meta( $id, 'enable_close_button_background', true ),
 			'overlay_color'                  => get_post_meta( $id, 'overlay_color', true ),
 			'overlay_opacity'                => get_post_meta( $id, 'overlay_opacity', true ),
 			'overlay_size'                   => get_post_meta( $id, 'overlay_size', true ),
@@ -452,8 +452,6 @@ final class Newspack_Popups_Model {
 			$filtered_options,
 			[
 				'background_color'               => '#FFFFFF',
-				'close_button_background_color'  => '#00000000',
-				'enable_close_button_background' => false,
 				'hide_border'                    => false,
 				'large_border'                   => false,
 				'no_padding'                     => false,
@@ -462,6 +460,8 @@ final class Newspack_Popups_Model {
 				'frequency_start'                => 0,
 				'frequency_between'              => 0,
 				'frequency_reset'                => 'month',
+				'close_button_background_color'  => '#00000000',
+				'enable_close_button_background' => false,
 				'overlay_color'                  => '#000000',
 				'overlay_opacity'                => 30,
 				'overlay_size'                   => 'medium',

@@ -10,8 +10,6 @@ export const promptEditorPropsSelector = select => {
 	const meta = getEditedPostAttribute( 'meta' );
 	const {
 		background_color,
-		close_button_background_color,
-		enable_close_button_background,
 		frequency,
 		frequency_max,
 		frequency_start,
@@ -20,6 +18,8 @@ export const promptEditorPropsSelector = select => {
 		hide_border,
 		large_border,
 		no_padding,
+		close_button_background_color,
+		enable_close_button_background,
 		overlay_color,
 		overlay_opacity,
 		overlay_size,
@@ -46,8 +46,6 @@ export const promptEditorPropsSelector = select => {
 
 	return {
 		background_color,
-		close_button_background_color,
-		enable_close_button_background,
 		hide_border,
 		large_border,
 		no_padding,
@@ -56,6 +54,8 @@ export const promptEditorPropsSelector = select => {
 		frequency_start,
 		frequency_between,
 		frequency_reset,
+		close_button_background_color,
+		enable_close_button_background,
 		overlay_color,
 		overlay_opacity,
 		featured_image_id,

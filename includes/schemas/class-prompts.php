@@ -149,19 +149,6 @@ class Prompts extends Schema {
 							'required' => false,
 							'default'  => '#FFFFFF',
 						],
-						'close_button_background_color'  => [
-							'name'     => 'close_button_background_color',
-							'type'     => 'string',
-							'format'   => 'hex-color',
-							'required' => false,
-							'default'  => '',
-						],
-						'enable_close_button_background' => [
-							'name'     => 'enable_close_button_background',
-							'type'     => 'boolean',
-							'required' => false,
-							'default'  => false,
-						],
 						'hide_border'                    => [
 							'name'     => 'hide_border',
 							'type'     => 'boolean',
@@ -221,6 +208,19 @@ class Prompts extends Schema {
 								'week',
 								'day',
 							],
+						],
+						'close_button_background_color'  => [
+							'name'     => 'close_button_background_color',
+							'type'     => 'string',
+							'format'   => 'hex-color',
+							'required' => false,
+							'default'  => '',
+						],
+						'enable_close_button_background' => [
+							'name'     => 'enable_close_button_background',
+							'type'     => 'boolean',
+							'required' => false,
+							'default'  => false,
 						],
 						'overlay_color'                  => [
 							'name'     => 'overlay_color',

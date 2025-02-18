@@ -21,8 +21,6 @@ final class Newspack_Popups {
 
 	const PREVIEW_QUERY_KEYS = [
 		'background_color'               => 'n_bc',
-		'close_button_background_color'  => 'n_cb',
-		'enable_close_button_background' => 'n_cbg',
 		'hide_border'                    => 'n_hb',
 		'large_border'                   => 'n_lb',
 		'no_padding'                     => 'n_np',
@@ -31,6 +29,8 @@ final class Newspack_Popups {
 		'frequency_start'                => 'n_fs',
 		'frequency_between'              => 'n_fb',
 		'frequency_reset'                => 'n_ft',
+		'close_button_background_color'  => 'n_cb',
+		'enable_close_button_background' => 'n_cbg',
 		'overlay_color'                  => 'n_oc',
 		'overlay_opacity'                => 'n_oo',
 		'overlay_size'                   => 'n_os',
@@ -923,11 +923,12 @@ final class Newspack_Popups {
 		}
 
 		update_post_meta( $post_id, 'background_color', '#FFFFFF' );
-		update_post_meta( $post_id, 'close_button_background_color', '#00000000' );
 		update_post_meta( $post_id, 'hide_border', false );
 		update_post_meta( $post_id, 'large_border', false );
 		update_post_meta( $post_id, 'no_padding', false );
 		update_post_meta( $post_id, 'frequency', $frequency );
+		update_post_meta( $post_id, 'close_button_background_color', '#00000000' );
+		update_post_meta( $post_id, 'enable_close_button_background', false );
 		update_post_meta( $post_id, 'overlay_color', '#000000' );
 		update_post_meta( $post_id, 'overlay_opacity', 30 );
 		update_post_meta( $post_id, 'overlay_size', $overlay_size );
