@@ -22,6 +22,7 @@ final class Newspack_Popups {
 	const PREVIEW_QUERY_KEYS = [
 		'background_color'               => 'n_bc',
 		'close_button_background_color'  => 'n_cb',
+		'enable_close_button_background' => 'n_cbg',
 		'hide_border'                    => 'n_hb',
 		'large_border'                   => 'n_lb',
 		'no_padding'                     => 'n_np',
@@ -363,6 +364,19 @@ final class Newspack_Popups {
 				'object_subtype' => self::NEWSPACK_POPUPS_CPT,
 				'show_in_rest'   => true,
 				'type'           => 'string',
+				'single'         => true,
+				'auth_callback'  => '__return_true',
+			]
+		);
+
+		\register_meta(
+			'post',
+			'enable_close_button_background',
+			[
+				'object_subtype' => self::NEWSPACK_POPUPS_CPT,
+				'show_in_rest'   => true,
+				'type'           => 'boolean',
+				'default'        => false,
 				'single'         => true,
 				'auth_callback'  => '__return_true',
 			]
@@ -909,7 +923,7 @@ final class Newspack_Popups {
 		}
 
 		update_post_meta( $post_id, 'background_color', '#FFFFFF' );
-		update_post_meta( $post_id, 'close_button_background_color', '' );
+		update_post_meta( $post_id, 'close_button_background_color', '#00000000' );
 		update_post_meta( $post_id, 'hide_border', false );
 		update_post_meta( $post_id, 'large_border', false );
 		update_post_meta( $post_id, 'no_padding', false );

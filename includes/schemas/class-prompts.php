@@ -156,6 +156,12 @@ class Prompts extends Schema {
 							'required' => false,
 							'default'  => '',
 						],
+						'enable_close_button_background' => [
+							'name'     => 'enable_close_button_background',
+							'type'     => 'boolean',
+							'required' => false,
+							'default'  => false,
+						],
 						'hide_border'                    => [
 							'name'     => 'hide_border',
 							'type'     => 'boolean',

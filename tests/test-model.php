@@ -30,7 +30,8 @@ class ModelTest extends WP_UnitTestCase {
 			$popup_object_default['options'],
 			[
 				'background_color'               => '#FFFFFF',
-				'close_button_background_color'  => '',
+				'close_button_background_color'  => '#00000000',
+				'enable_close_button_background' => false,
 				'hide_border'                    => false,
 				'large_border'                   => false,
 				'no_padding'                     => false,

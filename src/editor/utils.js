@@ -11,6 +11,7 @@ export const promptEditorPropsSelector = select => {
 	const {
 		background_color,
 		close_button_background_color,
+		enable_close_button_background,
 		frequency,
 		frequency_max,
 		frequency_start,
@@ -46,6 +47,7 @@ export const promptEditorPropsSelector = select => {
 	return {
 		background_color,
 		close_button_background_color,
+		enable_close_button_background,
 		hide_border,
 		large_border,
 		no_padding,

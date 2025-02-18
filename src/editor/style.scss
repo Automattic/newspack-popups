@@ -82,6 +82,12 @@ $size__large: 1264px;
 			max-width: 25%;
 		}
 	}
+
+	&__color-toggle {
+		+ .newspack-popups__color-toggle {
+			margin-top: 24px;
+		}
+	}
 }
 
 .newspack-popups-css-grid-selector {

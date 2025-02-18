@@ -13,7 +13,8 @@
             ],
             "options": {
                 "background_color": "#FFFFFF",
-                "close_button_background_color": "",
+                "close_button_background_color": "#00000000",
+                "enable_close_button_background": false,
                 "hide_border": false,
                 "large_border": false,
                 "no_padding": false,
@@ -137,7 +138,8 @@
             ],
             "options": {
                 "background_color": "#FFFFFF",
-                "close_button_background_color": "",
+                "close_button_background_color": "#00000000",
+                "enable_close_button_background": false,
                 "hide_border": false,
                 "large_border": false,
                 "no_padding": false,
@@ -261,7 +263,8 @@
             ],
             "options": {
                 "background_color": "#FFFFFF",
-                "close_button_background_color": "",
+                "close_button_background_color": "#00000000",
+                "enable_close_button_background": false,
                 "hide_border": false,
                 "large_border": false,
                 "no_padding": false,
@@ -381,7 +384,8 @@
             ],
             "options": {
                 "background_color": "#FFFFFF",
-                "close_button_background_color": "",
+                "close_button_background_color": "#00000000",
+                "enable_close_button_background": false,
                 "hide_border": false,
                 "large_border": false,
                 "no_padding": false,
@@ -480,7 +484,8 @@
             "content": "<!-- wp:separator -->\n<hr class=\"wp-block-separator has-alpha-channel-opacity\"\/>\n<!-- \/wp:separator -->\n\n<!-- wp:heading -->\n<h2>{{heading}}<\/h2>\n<!-- \/wp:heading -->\n\n<!-- wp:paragraph -->\n<p>{{body}}<\/p>\n<!-- \/wp:paragraph -->\n\n<!-- wp:newspack-blocks\/donate {\"className\":\"is-style-alternate\",\"amounts\":{\"once\":[9,20,90,20],\"month\":[7,15,30,15],\"year\":[84,180,360,180]},\"disabledFrequencies\":{\"once\":false,\"month\":false,\"year\":false},\"thanksText\":\"{{thanks_message}}\",\"buttonText\": \"{{button_label}}\",\"minimumDonation\":5} \/-->",
             "options": {
                 "background_color": "#FFFFFF",
-                "close_button_background_color": "",
+                "close_button_background_color": "#00000000",
+                "enable_close_button_background": false,
                 "hide_border": true,
                 "large_border": false,
                 "no_padding": false,
