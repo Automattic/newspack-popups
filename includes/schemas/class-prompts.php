@@ -212,9 +212,8 @@ class Prompts extends Schema {
 						'close_button_background_color'  => [
 							'name'     => 'close_button_background_color',
 							'type'     => 'string',
-							'format'   => 'hex-color',
 							'required' => false,
-							'default'  => '',
+							'default'  => '#00000000',
 						],
 						'enable_close_button_background' => [
 							'name'     => 'enable_close_button_background',
