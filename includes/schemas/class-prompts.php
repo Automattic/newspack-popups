@@ -213,7 +213,7 @@ class Prompts extends Schema {
 							'name'     => 'close_button_background_color',
 							'type'     => 'string',
 							'required' => false,
-							'default'  => '#00000000',
+							'default'  => '#00000000', // format: 'hex-color' removed to pass tests with an 8-character hex. Related: https://core.trac.wordpress.org/ticket/55962.
 						],
 						'enable_close_button_background' => [
 							'name'     => 'enable_close_button_background',
