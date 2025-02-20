@@ -1071,6 +1071,11 @@ final class Newspack_Popups_Model {
 		$assigned_segments              = Newspack_Segments_Model::get_popup_segments_ids_string( $popup['id'] );
 		$frequency_config               = self::get_frequency_config( $popup );
 
+		$close_button_styles = 'color: ' . $close_button_color . ';';
+		if ( $enable_close_button_background ) {
+			$close_button_styles .= 'background-color: ' . $close_button_background_color . ';';
+		}
+
 		$animation_id = 'a_' . $element_id;
 
 		ob_start();
@@ -1101,7 +1106,7 @@ final class Newspack_Popups_Model {
 					<div class="newspack-popup__content">
 						<?php echo do_shortcode( $body ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					</div>
-					<button class="newspack-lightbox__close" style="background-color: <?php echo esc_attr( $close_button_background_color ); ?>; color: <?php echo esc_attr( $close_button_color ); ?>"aria-label="<?php esc_html_e( 'Close Pop-up', 'newspack-popups' ); // phpcs:ignore WordPressVIPMinimum.Security.ProperEscapingFunction.htmlAttrNotByEscHTML ?>">
+					<button class="newspack-lightbox__close" style="<?php echo esc_attr( $close_button_styles ); ?>" aria-label="<?php esc_html_e( 'Close Pop-up', 'newspack-popups' ); // phpcs:ignore WordPressVIPMinimum.Security.ProperEscapingFunction.htmlAttrNotByEscHTML ?>">
 						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" role="img" aria-hidden="true" focusable="false">
 							<path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/>
 						</svg>
