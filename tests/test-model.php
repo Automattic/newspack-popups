@@ -38,6 +38,8 @@ class ModelTest extends WP_UnitTestCase {
 				'frequency_start'                => 0,
 				'frequency_between'              => 0,
 				'frequency_reset'                => 'month',
+				'close_button_background_color'  => '#00000000',
+				'enable_close_button_background' => false,
 				'overlay_color'                  => '#000000',
 				'overlay_opacity'                => '30',
 				'overlay_size'                   => 'medium',

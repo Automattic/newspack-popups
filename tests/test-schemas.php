@@ -50,6 +50,8 @@ class SchemasTest extends WP_UnitTestCase {
 						'frequency_start'                => 1,
 						'frequency_between'              => 1,
 						'frequency_reset'                => 'day',
+						'close_button_background_color'  => '#00000000',
+						'enable_close_button_background' => false,
 						'overlay_color'                  => '#000000',
 						'overlay_opacity'                => 50,
 						'overlay_size'                   => 'medium',
