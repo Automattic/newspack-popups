@@ -235,9 +235,7 @@ $width__tablet: 782px;
 	&-featured-image {
 		@media only screen and ( min-width: $width__tablet ) {
 			.newspack-lightbox__close {
-				background-color: rgba(black, 0.5);
 				border-radius: 3px;
-				color: white !important; // !important to override inline styles.
 				height: 48px;
 				margin: 8px;
 				width: 48px;
@@ -251,6 +249,13 @@ $width__tablet: 782px;
 
 				&:focus {
 					outline-offset: 2px;
+				}
+			}
+
+			&:not(.newspack-lightbox-close-button-background) {
+				.newspack-lightbox__close {
+					background-color: rgba(black, 0.5);
+					color: white !important;
 				}
 			}
 		}
