@@ -127,6 +127,7 @@ export const shouldPromptBeDisplayed = ( prompt, matchingSegment, ras, override 
 	const debugInfo = {
 		element: prompt,
 	};
+	const suppressByUTM = prompt.getAttribute( 'data-suppression' );
 
 	// By override.
 	if ( true === override || false === override ) {
@@ -134,6 +135,22 @@ export const shouldPromptBeDisplayed = ( prompt, matchingSegment, ras, override 
 		if ( ! override ) {
 			display = false;
 			suppression.push( 'Prompt suppressed by override.' );
+		}
+	} else if ( suppressByUTM ) {
+		const suppressionValues = ras.store.get( 'utm_source' ) || [];
+		const params = new URLSearchParams( window.location.search );
+		const currentUTM = params.get( 'utm_source' )
+		let suppressedByUTM = false;
+		if ( -1 < suppressionValues.indexOf( suppressByUTM ) ) {
+			suppressedByUTM = true;
+		}
+		if ( ! suppressedByUTM && suppressByUTM === currentUTM ) {
+			suppressedByUTM = true;
+			ras.store.set( 'utm_source', [ ...suppressionValues, currentUTM ] );
+		}
+		if ( suppressedByUTM ) {
+			suppression.push( `Prompt suppressed by utm_source=${ suppressByUTM }.` );
+			display = false;
 		}
 	} else if ( ras ) {
 		// eslint-disable-next-line @wordpress/no-unused-vars-before-return
