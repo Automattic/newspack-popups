@@ -1,4 +1,4 @@
-/* global newspack_popups_data */
+/* global newspack_popups_data, newspack_popups_prompt_tags */
 
 /**
  * Popup Custom Post Type
@@ -12,9 +12,10 @@ import { compose } from '@wordpress/compose';
 import { withSelect, withDispatch, useSelect, useDispatch } from '@wordpress/data';
 import { registerPlugin } from '@wordpress/plugins';
 import { PluginDocumentSettingPanel, PluginPostStatusInfo } from '@wordpress/edit-post';
-import { ExternalLink, Flex } from '@wordpress/components';
+import { ExternalLink, PanelBody, Flex } from '@wordpress/components';
 import { store as coreStore } from '@wordpress/core-data';
 import { store as editorStore } from '@wordpress/editor';
+import { InspectorControls } from '@wordpress/block-editor';
 import { useEffect } from '@wordpress/element';
 
 /**
@@ -31,6 +32,7 @@ import Duplicate from './Duplicate';
 import EditorAdditions from './EditorAdditions';
 import PostTypesPanel from './PostTypesPanel';
 import ExpirationPanel from './ExpirationPanel';
+import PromptTagsPanel from './PromptTagsPanel';
 import './style.scss';
 
 const EMPTY_ARRAY = [];
@@ -65,6 +67,7 @@ const FrequencySidebarWithData = connectData( FrequencySidebar );
 const ColorsSidebarWithData = connectData( ColorsSidebar );
 const PostTypesPanelWithData = connectData( PostTypesPanel );
 const ExpirationPanelWithData = connectData( ExpirationPanel );
+const PromptTagsPanelWithData = connectData( PromptTagsPanel );
 const AdvancedSidebarWithData = connectData( AdvancedSidebar );
 
 // Register components.
@@ -141,6 +144,38 @@ registerPlugin( 'newspack-popups-expiration', {
 	),
 	icon: null,
 } );
+
+if ( newspack_popups_prompt_tags?.tags?.length ) {
+	wp.hooks.addFilter(
+		'editor.BlockEdit',
+		'newspack-popups/prompt-tags-panel',
+		BlockEdit => props => {
+			const blocksToRenderThePanel = [
+				'core/paragraph',
+				'core/heading',
+				'core/list-item',
+				'core/quote',
+				'core/pullquote',
+				'core/verse',
+				'core/preformatted',
+			];
+			if ( blocksToRenderThePanel.includes( props.name ) ) {
+				return (
+					<>
+						<BlockEdit { ...props } />
+						<InspectorControls>
+							<PanelBody title={ __( 'Prompt Tags', 'newspack-popups' ) }>
+								<PromptTagsPanelWithData tags={ newspack_popups_prompt_tags.tags } />
+							</PanelBody>
+						</InspectorControls>
+					</>
+				);
+			}
+			return <BlockEdit { ...props } />;
+		}
+	)
+}
+
 
 registerPlugin( 'newspack-popups-advanced', {
 	render: () => (
