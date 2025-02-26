@@ -1,6 +1,28 @@
 import { registerCriteria } from '../../criteria/utils';
 import { getBestPrioritySegment, getOverride, shouldPromptBeDisplayed, periods } from './index.js';
 
+// Mock the window.location object. See: https://developer.mozilla.org/en-US/docs/Web/API/Location
+const setWindowLocation = ( domain = 'example.com', search = '' ) => {
+	delete global.window.location;
+	global.window = Object.create( window );
+	global.window.location = {
+		ancestorOrigins: null,
+		hash: null,
+		host: domain,
+		port: '80',
+		protocol: 'http:',
+		hostname: domain,
+		href: 'https://' + domain + search,
+		origin: 'https://' + domain,
+		pathname: null,
+		search,
+		assign: null,
+		reload: null,
+		replace: null,
+		toString: () => 'https://' + domain + search,
+	};
+};
+
 // Mock some test criteria.
 const criteria = {
 	simple: {},
@@ -109,12 +131,17 @@ const createPrompt = (
 	assignedSegments = [],
 	frequency = '0,0,0,month',
 	id = '1',
-	type = 'inline'
+	type = 'inline',
+	utmSuppression = ''
 ) => {
 	const prompt = document.createElement( 'div' );
 	prompt.setAttribute( 'id', 'id_' + id );
 	prompt.setAttribute( 'data-segments', assignedSegments.join( ',' ) );
 	prompt.setAttribute( 'data-frequency', frequency );
+
+	if ( utmSuppression ) {
+		prompt.setAttribute( 'data-suppression', utmSuppression );
+	}
 
 	if ( 'inline' === type ) {
 		prompt.classList.add( 'newspack-inline-popup' );
@@ -127,6 +154,7 @@ const createPrompt = (
 
 describe( 'segmentation API', () => {
 	beforeEach( () => {
+		setWindowLocation();
 		window.newspackPopupsCriteria = { criteria: {} };
 		for ( const criteriaId in criteria ) {
 			registerCriteria( criteriaId, criteria[ criteriaId ] );
@@ -220,5 +248,20 @@ describe( 'segmentation API', () => {
 		const prompt = createPrompt( [], '0,0,0,month', '123' );
 		const pidOverride = getOverride( 123, false, false, '?pid=123' );
 		expect( shouldPromptBeDisplayed( prompt, null, ras, pidOverride ) ).toBeTruthy();
+	} );
+
+	it ( 'should return false if the reader has or had the UTM Suppression value in utm_source params', () => {
+		const prompt = createPrompt( [], '0,0,0,month', '1', 'inline', 'suppress_this' );
+
+		// If the URL does not contain the prompt's UTM suppression value in utm_source, the prompt should be displayed.
+		expect( shouldPromptBeDisplayed( prompt, null, ras ) ).toBeTruthy();
+
+		// If the URL has the prompt's UTM suppression value in utm_source, the prompt should not be displayed.
+		setWindowLocation( 'example.com', '?utm_source=suppress_this' );
+		expect( shouldPromptBeDisplayed( prompt, null, ras ) ).toBeFalsy();
+
+		// Once the reader has had the UTM suppression value, the prompt should no longer be displayed.
+		setWindowLocation( 'example.com', '' );
+		expect( shouldPromptBeDisplayed( prompt, null, ras ) ).toBeFalsy();
 	} );
 } );
