@@ -1,3 +1,16 @@
+# [3.2.0](https://github.com/Automattic/newspack-popups/compare/v3.1.7...v3.2.0) (2025-03-04)
+
+
+### Bug Fixes
+
+* make a real no-padding option for popups ([#1389](https://github.com/Automattic/newspack-popups/issues/1389)) ([fbfbe41](https://github.com/Automattic/newspack-popups/commit/fbfbe41ca6cd3ce18a87c23e1de54d588378f0e0))
+
+
+### Features
+
+* add control to change close button color ([#1396](https://github.com/Automattic/newspack-popups/issues/1396)) ([1689de9](https://github.com/Automattic/newspack-popups/commit/1689de94fdbbc076b29325b4ba0e4018ec85a80e))
+* update brand colours ([#1394](https://github.com/Automattic/newspack-popups/issues/1394)) ([158adb3](https://github.com/Automattic/newspack-popups/commit/158adb3dfb6babe572973f664400f458e730447d))
+
 ## [3.1.7](https://github.com/Automattic/newspack-popups/compare/v3.1.6...v3.1.7) (2025-02-26)
 
 
