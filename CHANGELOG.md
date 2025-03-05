@@ -1,3 +1,10 @@
+## [3.2.1](https://github.com/Automattic/newspack-popups/compare/v3.2.0...v3.2.1) (2025-03-05)
+
+
+### Bug Fixes
+
+* **data-events:** handle prompts with nested blocks in data events metadata ([#1401](https://github.com/Automattic/newspack-popups/issues/1401)) ([735d614](https://github.com/Automattic/newspack-popups/commit/735d614150eb4518b4ec34318d83326b716c8647))
+
 # [3.2.0](https://github.com/Automattic/newspack-popups/compare/v3.1.7...v3.2.0) (2025-03-04)
 
 
