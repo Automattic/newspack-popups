@@ -25,14 +25,13 @@ class Prompt_Tags {
 	 */
 	public static function init_hooks() {
 		if (
-			( ! defined( 'IS_TEST_ENV' ) || ! IS_TEST_ENV ) ||
-			( ! defined( 'NEWSPACK_PROMPT_TAGS' ) || ! NEWSPACK_PROMPT_TAGS )
+			( defined( 'IS_TEST_ENV' ) && IS_TEST_ENV ) ||
+			( defined( 'NEWSPACK_PROMPT_TAGS' ) && NEWSPACK_PROMPT_TAGS )
 		) {
-			return;
+			add_action( 'init', [ __CLASS__, 'register_default_tags' ] );
+			add_filter( 'newspack_popups_popup_content', [ __CLASS__, 'parse_tags' ] );
+			add_action( 'enqueue_block_editor_assets', [ __CLASS__, 'enqueue_block_editor_assets' ], 11 );
 		}
-		add_action( 'init', [ __CLASS__, 'register_default_tags' ] );
-		add_filter( 'newspack_popups_popup_content', [ __CLASS__, 'parse_tags' ] );
-		add_action( 'enqueue_block_editor_assets', [ __CLASS__, 'enqueue_block_editor_assets' ], 11 );
 	}
 
 	/**
