@@ -13,8 +13,8 @@ const icon = () => (
 )
 
 const MergeTagsBlockControl = ( { tags, attributes, setAttributes } ) => {
-	const { getSelectedBlockClientId, selectionStart, selectionEnd } = useSelect( select => ( {
-		getSelectedBlockClientId: select( 'core/block-editor' ).getSelectedBlockClientId(),
+	const { clientId, selectionStart, selectionEnd } = useSelect( select => ( {
+		clientId: select( 'core/block-editor' ).getSelectedBlockClientId(),
 		selectionStart: select( 'core/block-editor' ).getSelectionStart(),
 		selectionEnd: select( 'core/block-editor' ).getSelectionEnd(),
 	} ) );
@@ -45,7 +45,7 @@ const MergeTagsBlockControl = ( { tags, attributes, setAttributes } ) => {
 								const cursorPosition = selectionStart.offset + text.length;
 
 								setAttributes( { content: newContent } );
-								selectionChange( getSelectedBlockClientId, 'content', cursorPosition, cursorPosition );
+								selectionChange( clientId, 'content', cursorPosition, cursorPosition );
 							},
 						}
 					) ) }
