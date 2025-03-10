@@ -12,7 +12,7 @@ const MergeTagsPanel = ( { tags } ) => {
 			<ul>
 				{ tags.map( ( tag ) => (
 					<li key={ tag.name }>
-						<code>{ `{${tag.name}}` }</code>
+						<code>{ `{{${tag.name.toUpperCase()}}}` }</code>
 						{ tag.description && (
 							<>
 								<br />

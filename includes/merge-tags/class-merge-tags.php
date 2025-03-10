@@ -96,12 +96,12 @@ class Merge_Tags {
 	public static function parse_tags( $string ) {
 		$tags = self::$tags;
 
-		$pattern = '/\{(' . implode( '|', array_keys( $tags ) ) . ')\}/';
+		$pattern = '/\{\{(' . implode( '|', array_keys( $tags ) ) . ')\}\}/i';
 		preg_match_all( $pattern, $string, $matches );
 
 		foreach ( $matches[1] as $match ) {
-			$tag = $tags[ $match ];
-			$string = str_replace( '{' . $match . '}', $tag->get_content(), $string );
+			$tag = $tags[ strtolower( $match ) ];
+			$string = str_replace( '{{' . $match . '}}', $tag->get_content(), $string );
 		}
 
 		return $string;
