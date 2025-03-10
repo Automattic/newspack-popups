@@ -1,4 +1,4 @@
-/* global newspack_popups_data, newspack_popups_prompt_tags */
+/* global newspack_popups_data, newspack_popups_merge_tags */
 
 /**
  * Popup Custom Post Type
@@ -32,7 +32,7 @@ import Duplicate from './Duplicate';
 import EditorAdditions from './EditorAdditions';
 import PostTypesPanel from './PostTypesPanel';
 import ExpirationPanel from './ExpirationPanel';
-import PromptTagsPanel from './PromptTagsPanel';
+import MergeTagsPanel from './MergeTagsPanel';
 import './style.scss';
 
 const EMPTY_ARRAY = [];
@@ -67,7 +67,7 @@ const FrequencySidebarWithData = connectData( FrequencySidebar );
 const ColorsSidebarWithData = connectData( ColorsSidebar );
 const PostTypesPanelWithData = connectData( PostTypesPanel );
 const ExpirationPanelWithData = connectData( ExpirationPanel );
-const PromptTagsPanelWithData = connectData( PromptTagsPanel );
+const MergeTagsPanelWithData = connectData( MergeTagsPanel );
 const AdvancedSidebarWithData = connectData( AdvancedSidebar );
 
 // Register components.
@@ -145,10 +145,10 @@ registerPlugin( 'newspack-popups-expiration', {
 	icon: null,
 } );
 
-if ( newspack_popups_prompt_tags?.tags?.length ) {
+if ( newspack_popups_merge_tags?.tags?.length ) {
 	wp.hooks.addFilter(
 		'editor.BlockEdit',
-		'newspack-popups/prompt-tags-panel',
+		'newspack-popups/merge-tags-panel',
 		BlockEdit => props => {
 			const blocksToRenderThePanel = [
 				'core/paragraph',
@@ -165,7 +165,7 @@ if ( newspack_popups_prompt_tags?.tags?.length ) {
 						<BlockEdit { ...props } />
 						<InspectorControls>
 							<PanelBody title={ __( 'Prompt Tags', 'newspack-popups' ) }>
-								<PromptTagsPanelWithData tags={ newspack_popups_prompt_tags.tags } />
+								<MergeTagsPanelWithData tags={ newspack_popups_merge_tags.tags } />
 							</PanelBody>
 						</InspectorControls>
 					</>

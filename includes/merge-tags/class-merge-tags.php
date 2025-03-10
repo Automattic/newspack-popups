@@ -1,6 +1,6 @@
 <?php
 /**
- * Newspack Popups Prompt Tags
+ * Newspack Popups Merge Tags
  *
  * @package Newspack
  */
@@ -10,13 +10,13 @@ namespace Newspack\Campaigns;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Prompt Tags class.
+ * Merge Tags class.
  */
-class Prompt_Tags {
+class Merge_Tags {
 	/**
-	 * Registered prompt tags.
+	 * Registered merge tags.
 	 *
-	 * @var Prompt_Tag[]
+	 * @var Merge_Tag[]
 	 */
 	protected static $tags = [];
 
@@ -26,7 +26,7 @@ class Prompt_Tags {
 	public static function init_hooks() {
 		if (
 			( defined( 'IS_TEST_ENV' ) && IS_TEST_ENV ) ||
-			( defined( 'NEWSPACK_PROMPT_TAGS' ) && NEWSPACK_PROMPT_TAGS )
+			( defined( 'NEWSPACK_MERGE_TAGS' ) && NEWSPACK_MERGE_TAGS )
 		) {
 			add_action( 'init', [ __CLASS__, 'register_default_tags' ] );
 			add_filter( 'newspack_popups_popup_content', [ __CLASS__, 'parse_tags' ] );
@@ -35,7 +35,7 @@ class Prompt_Tags {
 	}
 
 	/**
-	 * Registers default prompt tags.
+	 * Registers default merge tags.
 	 *
 	 * @return void
 	 */
@@ -85,7 +85,7 @@ class Prompt_Tags {
 	 * @param array  $args Tag arguments.
 	 */
 	public static function register_tag( $tag, $args = [] ) {
-		self::$tags[ $tag ] = new Prompt_Tag( $tag, $args );
+		self::$tags[ $tag ] = new Merge_Tag( $tag, $args );
 	}
 
 	/**
@@ -114,7 +114,7 @@ class Prompt_Tags {
 		$tags = array_values( self::$tags );
 		wp_localize_script(
 			'newspack-popups',
-			'newspack_popups_prompt_tags',
+			'newspack_popups_merge_tags',
 			[
 				'tags' => array_map(
 					function( $tag ) {
@@ -126,4 +126,4 @@ class Prompt_Tags {
 		);
 	}
 }
-Prompt_Tags::init_hooks();
+Merge_Tags::init_hooks();

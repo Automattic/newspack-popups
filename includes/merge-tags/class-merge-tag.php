@@ -1,6 +1,6 @@
 <?php
 /**
- * Newspack Popups Prompt Tag
+ * Newspack Popups Merge Tag
  *
  * @package Newspack
  */
@@ -10,9 +10,9 @@ namespace Newspack\Campaigns;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Prompt Tag class.
+ * Merge Tag class.
  */
-final class Prompt_Tag {
+final class Merge_Tag {
 	/**
 	 * Tag name
 	 *
@@ -83,7 +83,7 @@ final class Prompt_Tag {
 	 */
 	public function get_content() {
 		return sprintf(
-			'<span class="prompt-tag" data-tag="%1$s" %2$s>%3$s</span>',
+			'<span class="merge-tag" data-tag="%1$s" %2$s>%3$s</span>',
 			esc_attr( $this->name ),
 			$this->criteria ? sprintf( 'data-criteria="%s"', $this->criteria ) : '',
 			call_user_func( $this->callback )

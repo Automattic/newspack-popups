@@ -3,7 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 
-const PromptTagsPanel = ( { tags } ) => {
+const MergeTagsPanel = ( { tags } ) => {
 	return (
 		<>
 			<p>
@@ -26,4 +26,4 @@ const PromptTagsPanel = ( { tags } ) => {
 	)
 };
 
-export default PromptTagsPanel;
+export default MergeTagsPanel;
