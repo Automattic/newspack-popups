@@ -146,9 +146,9 @@ registerPlugin( 'newspack-popups-expiration', {
 if ( newspack_popups_merge_tags?.tags?.length ) {
 	wp.hooks.addFilter(
 		'editor.BlockEdit',
-		'newspack-popups/merge-tags-panel',
+		'newspack-popups/merge-tags-block-control',
 		BlockEdit => props => {
-			const blocksToRenderThePanel = [
+			const blocks = [
 				'core/paragraph',
 				'core/heading',
 				'core/list-item',
@@ -157,7 +157,7 @@ if ( newspack_popups_merge_tags?.tags?.length ) {
 				'core/verse',
 				'core/preformatted',
 			];
-			if ( blocksToRenderThePanel.includes( props.name ) ) {
+			if ( blocks.includes( props.name ) ) {
 				return (
 					<>
 						<BlockEdit { ...props } />
