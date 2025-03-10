@@ -12,10 +12,9 @@ import { compose } from '@wordpress/compose';
 import { withSelect, withDispatch, useSelect, useDispatch } from '@wordpress/data';
 import { registerPlugin } from '@wordpress/plugins';
 import { PluginDocumentSettingPanel, PluginPostStatusInfo } from '@wordpress/edit-post';
-import { ExternalLink, PanelBody, Flex } from '@wordpress/components';
+import { ExternalLink, Flex } from '@wordpress/components';
 import { store as coreStore } from '@wordpress/core-data';
 import { store as editorStore } from '@wordpress/editor';
-import { InspectorControls } from '@wordpress/block-editor';
 import { useEffect } from '@wordpress/element';
 
 /**
@@ -32,7 +31,7 @@ import Duplicate from './Duplicate';
 import EditorAdditions from './EditorAdditions';
 import PostTypesPanel from './PostTypesPanel';
 import ExpirationPanel from './ExpirationPanel';
-import MergeTagsPanel from './MergeTagsPanel';
+import MergeTagsBlockControl from './MergeTagsBlockControl';
 import './style.scss';
 
 const EMPTY_ARRAY = [];
@@ -67,7 +66,6 @@ const FrequencySidebarWithData = connectData( FrequencySidebar );
 const ColorsSidebarWithData = connectData( ColorsSidebar );
 const PostTypesPanelWithData = connectData( PostTypesPanel );
 const ExpirationPanelWithData = connectData( ExpirationPanel );
-const MergeTagsPanelWithData = connectData( MergeTagsPanel );
 const AdvancedSidebarWithData = connectData( AdvancedSidebar );
 
 // Register components.
@@ -163,11 +161,7 @@ if ( newspack_popups_merge_tags?.tags?.length ) {
 				return (
 					<>
 						<BlockEdit { ...props } />
-						<InspectorControls>
-							<PanelBody title={ __( 'Merge Tags', 'newspack-popups' ) }>
-								<MergeTagsPanelWithData tags={ newspack_popups_merge_tags.tags } />
-							</PanelBody>
-						</InspectorControls>
+						<MergeTagsBlockControl tags={ newspack_popups_merge_tags.tags } { ...props } />
 					</>
 				);
 			}
