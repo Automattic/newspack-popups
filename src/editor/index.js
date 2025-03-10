@@ -164,7 +164,7 @@ if ( newspack_popups_merge_tags?.tags?.length ) {
 					<>
 						<BlockEdit { ...props } />
 						<InspectorControls>
-							<PanelBody title={ __( 'Prompt Tags', 'newspack-popups' ) }>
+							<PanelBody title={ __( 'Merge Tags', 'newspack-popups' ) }>
 								<MergeTagsPanelWithData tags={ newspack_popups_merge_tags.tags } />
 							</PanelBody>
 						</InspectorControls>

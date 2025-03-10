@@ -79,7 +79,7 @@ class Merge_Tags {
 	}
 
 	/**
-	 * Registers a prompt tag.
+	 * Registers a merge tag.
 	 *
 	 * @param string $tag  Tag name.
 	 * @param array  $args Tag arguments.
@@ -89,7 +89,7 @@ class Merge_Tags {
 	}
 
 	/**
-	 * Parses prompt tags in a string.
+	 * Parses merge tags in a string.
 	 *
 	 * @param string $string String to parse.
 	 */
