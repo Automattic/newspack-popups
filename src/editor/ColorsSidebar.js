@@ -12,6 +12,8 @@ import { ColorPaletteControl } from '@wordpress/block-editor';
 
 const ColorsSidebar = ( {
 	background_color,
+	close_button_background_color,
+	enable_close_button_background,
 	onMetaFieldChange,
 	overlay_opacity,
 	overlay_color,
@@ -26,13 +28,27 @@ const ColorsSidebar = ( {
 		/>
 		{ isOverlay && (
 			<Fragment>
-				<ToggleControl
+				<ToggleControl className="newspack-popups__color-toggle"
+					label={ __( 'Customize close button background', 'newspack-popups' ) }
+					checked={ enable_close_button_background }
+					value={ enable_close_button_background}
+					onChange={ value => onMetaFieldChange( { enable_close_button_background: value } ) }
+				/>
+				{ enable_close_button_background && (
+					<ColorPaletteControl
+						value={ close_button_background_color }
+						onChange={ value => onMetaFieldChange( { close_button_background_color: value || '#00000000' } ) }
+						label={ __( 'Close Button Background Color', 'newspack-popups' ) }
+						enableAlpha={ true }
+					/>
+				) }
+
+				<ToggleControl className="newspack-popups__color-toggle"
 					label={ __( 'Display overlay background', 'newspack-popups' ) }
 					checked={ ! no_overlay_background }
 					value={ ! no_overlay_background }
 					onChange={ value => onMetaFieldChange( { no_overlay_background: ! value } ) }
 				/>
-
 				{ ! no_overlay_background && (
 					<>
 						<ColorPaletteControl

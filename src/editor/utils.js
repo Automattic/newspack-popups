@@ -18,6 +18,8 @@ export const promptEditorPropsSelector = select => {
 		hide_border,
 		large_border,
 		no_padding,
+		close_button_background_color,
+		enable_close_button_background,
 		overlay_color,
 		overlay_opacity,
 		overlay_size,
@@ -40,6 +42,7 @@ export const promptEditorPropsSelector = select => {
 
 	const isOverlay = isOverlayPlacement( placement );
 	const postStatus = select( 'core/editor' ).getEditedPostAttribute( 'status' );
+	const featured_image_id = getEditedPostAttribute( 'featured_media' );
 
 	return {
 		background_color,
@@ -51,8 +54,11 @@ export const promptEditorPropsSelector = select => {
 		frequency_start,
 		frequency_between,
 		frequency_reset,
+		close_button_background_color,
+		enable_close_button_background,
 		overlay_color,
 		overlay_opacity,
+		featured_image_id,
 		overlay_size: 'full' === overlay_size ? 'full-width' : overlay_size,
 		no_overlay_background,
 		placement,
