@@ -35,7 +35,7 @@ const MergeTagsBlockControl = ( { tags, attributes, setAttributes } ) => {
 					menuProps={ { className: "newspack-popups__merge-tags-menu" } }
 					controls={ tags.map( ( tag ) => (
 						{
-							title: `${tag.description}`,
+							title: tag.description,
 							onClick: () => {
 								const text = `{{${tag.name.toUpperCase()}}}`;
 								const newContent =
