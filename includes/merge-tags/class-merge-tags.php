@@ -44,7 +44,7 @@ class Merge_Tags {
 			'site_name',
 			[
 				'title'       => __( 'Site Name', 'newspack-popups' ),
-				'description' => __( 'The name of the site.', 'newspack-popups' ),
+				'description' => __( 'The name of this site', 'newspack-popups' ),
 				'callback'    => function() {
 					return get_bloginfo( 'name' );
 				},
@@ -54,7 +54,7 @@ class Merge_Tags {
 			'site_description',
 			[
 				'title'       => __( 'Site Description', 'newspack-popups' ),
-				'description' => __( 'The description of the site.', 'newspack-popups' ),
+				'description' => __( 'The description of this site', 'newspack-popups' ),
 				'callback'    => function() {
 					return get_bloginfo( 'description' );
 				},
@@ -64,7 +64,7 @@ class Merge_Tags {
 			'articles_read',
 			[
 				'title'       => __( 'Articles Read', 'newspack-popups' ),
-				'description' => __( 'Number of articles read in the last 30 day period.', 'newspack-popups' ),
+				'description' => __( 'Number of articles read in the last 30 day period', 'newspack-popups' ),
 				'criteria'    => 'articles_read',
 			]
 		);
@@ -72,7 +72,7 @@ class Merge_Tags {
 			'articles_read_in_session',
 			[
 				'title'       => __( 'Articles Read in Session', 'newspack-popups' ),
-				'description' => __( 'Number of articles recently read before 30 minutes of inactivity.', 'newspack-popups' ),
+				'description' => __( 'Number of articles recently read before 30 minutes of inactivity', 'newspack-popups' ),
 				'criteria'    => 'articles_read_in_session',
 			]
 		);

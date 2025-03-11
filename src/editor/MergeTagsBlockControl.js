@@ -31,10 +31,11 @@ const MergeTagsBlockControl = ( { tags, attributes, setAttributes } ) => {
 			<ToolbarGroup>
 				<ToolbarDropdownMenu
 					icon={ icon }
-					label={ __( 'Merge Tags', 'newspack-popups' ) }
+					label={ __( 'Merge tags', 'newspack-popups' ) }
+					menuProps={ { className: "newspack-popups__merge-tags-menu" } }
 					controls={ tags.map( ( tag ) => (
 						{
-							title: `${tag.name.toUpperCase()}: ${tag.description}`,
+							title: `${tag.description}`,
 							onClick: () => {
 								const text = `{{${tag.name.toUpperCase()}}}`;
 								const newContent =
