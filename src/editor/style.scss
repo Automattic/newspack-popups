@@ -88,6 +88,18 @@ $size__large: 1264px;
 			margin-top: 24px;
 		}
 	}
+
+	&__merge-tags-menu {
+		min-width: 234px;
+
+		.components-dropdown-menu__menu-item {
+			height: auto;
+			line-height: 1.8465;
+			min-height: 36px;
+			text-align: inherit;
+			white-space: inherit;
+		}
+	}
 }
 
 .newspack-popups-css-grid-selector {

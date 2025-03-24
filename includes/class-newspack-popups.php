@@ -111,6 +111,8 @@ final class Newspack_Popups {
 		include_once __DIR__ . '/class-newspack-popups-data-api.php';
 		include_once __DIR__ . '/class-newspack-popups-criteria.php';
 		include_once __DIR__ . '/class-newspack-popups-expiry.php';
+		include_once __DIR__ . '/merge-tags/class-merge-tag.php';
+		include_once __DIR__ . '/merge-tags/class-merge-tags.php';
 	}
 
 	/**
