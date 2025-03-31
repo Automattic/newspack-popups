@@ -1,3 +1,11 @@
+# [3.3.0](https://github.com/Automattic/newspack-popups/compare/v3.2.1...v3.3.0) (2025-03-31)
+
+
+### Features
+
+* information architecture ([4a7f3f6](https://github.com/Automattic/newspack-popups/commit/4a7f3f6e7e0b89f715ccfa2006a39e8208f8d28e))
+* prompt merge tags ([#1400](https://github.com/Automattic/newspack-popups/issues/1400)) ([5bcb5c2](https://github.com/Automattic/newspack-popups/commit/5bcb5c2acfd218b751f608fd0347b6d79402f5be))
+
 ## [3.2.1](https://github.com/Automattic/newspack-popups/compare/v3.2.0...v3.2.1) (2025-03-05)
 
 
