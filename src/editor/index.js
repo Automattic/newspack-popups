@@ -1,4 +1,4 @@
-/* global newspack_popups_data, newspack_popups_merge_tags */
+/* global newspack_popups_data */
 
 /**
  * Popup Custom Post Type
@@ -143,7 +143,7 @@ registerPlugin( 'newspack-popups-expiration', {
 	icon: null,
 } );
 
-if ( newspack_popups_merge_tags?.tags?.length ) {
+if ( window.newspack_popups_merge_tags?.tags?.length ) {
 	wp.hooks.addFilter(
 		'editor.BlockEdit',
 		'newspack-popups/merge-tags-block-control',
@@ -161,7 +161,7 @@ if ( newspack_popups_merge_tags?.tags?.length ) {
 				return (
 					<>
 						<BlockEdit { ...props } />
-						<MergeTagsBlockControl tags={ newspack_popups_merge_tags.tags } { ...props } />
+						<MergeTagsBlockControl tags={ window.newspack_popups_merge_tags.tags } { ...props } />
 					</>
 				);
 			}
