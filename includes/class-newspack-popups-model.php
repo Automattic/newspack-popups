@@ -1001,7 +1001,15 @@ final class Newspack_Popups_Model {
 			</div>
 		<?php
 		self::$current_popup = null;
-		return ob_get_clean();
+
+		/**
+		 * Filters the popup content.
+		 *
+		 * @param string $popup_content The popup content.
+		 * @param array  $popup The popup object.
+		 * @param string $element_id The popup element ID.
+		 */
+		return apply_filters( 'newspack_popups_popup_content', ob_get_clean(), $popup, $element_id );
 	}
 
 	/**
@@ -1130,7 +1138,15 @@ final class Newspack_Popups_Model {
 		<?php endif; ?>
 		<?php
 		self::$current_popup = null;
-		return ob_get_clean();
+
+		/**
+		 * Filters the popup content.
+		 *
+		 * @param string $popup_content The popup content.
+		 * @param array  $popup The popup object.
+		 * @param string $element_id The popup element ID.
+		 */
+		return apply_filters( 'newspack_popups_popup_content', ob_get_clean(), $popup, $element_id );
 	}
 
 	/**
