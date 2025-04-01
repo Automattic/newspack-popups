@@ -31,6 +31,34 @@ $criteria = [
 		'category'          => 'reader_engagement',
 		'matching_function' => 'list__in',
 	],
+	'devices'                  => [
+		'name'        => __( 'Devices', 'newspack-popups' ),
+		'description' => __( "Device – segment based on the user's device", 'newspack-popups' ),
+		'help'        => __( 'TODO', 'newspack-popups' ),
+		'category'    => 'reader_engagement',
+		'options'     => [
+			[
+				'label' => __( 'Mobile (small phones) - 360px/640px', 'newspack-popups' ),
+				'value' => 'mobile_small',
+			],
+			[
+				'label' => __( 'Mobile (large phones)', 'newspack-popups' ),
+				'value' => 'mobile',
+			],
+			[
+				'label' => __( 'Tablet', 'newspack-popups' ),
+				'value' => 'tablet',
+			],
+			[
+				'label' => __( 'Laptop', 'newspack-popups' ),
+				'value' => 'laptop',
+			],
+			[
+				'label' => __( 'Desktop', 'newspack-popups' ),
+				'value' => 'desktop',
+			],
+		],
+	],
 	/**
 	 * Reader Activity.
 	 */
