@@ -7,7 +7,6 @@ setMatchingFunction('devices', (config) => {
 		return false;
 	}
 
-	// Get window dimensions once
 	const width = window.innerWidth;
 	// On desktop if the screen is wide enough, no need for more checks.
 	if (width > 1280 && selectedDevices.includes('desktop')) {
@@ -36,14 +35,12 @@ setMatchingFunction('devices', (config) => {
 		},
 	};
 
-	// Check each requested type and return the matching one
 	for (const device of selectedDevices) {
 		if (!breakpoints[device]) {
 			continue;
 		}
 
 		const { min, max } = breakpoints[device][orientationMode];
-
 		if (width >= min && width <= max) {
 			return true;
 		}

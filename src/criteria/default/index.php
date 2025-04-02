@@ -33,28 +33,28 @@ $criteria = [
 	],
 	'devices'                  => [
 		'name'        => __( 'Devices', 'newspack-popups' ),
-		'description' => __( "Device – segment based on the user's device", 'newspack-popups' ),
-		'help'        => __( 'TODO', 'newspack-popups' ),
+		'description' => __( "Segment based on the user's device", 'newspack-popups' ),
+		'help'        => __( 'The device the user is viewing the site on – e.g. mobile, tablet, etc.', 'newspack-popups' ),
 		'category'    => 'reader_engagement',
 		'options'     => [
 			[
-				'label' => __( 'Mobile (small phones) - 360px/640px', 'newspack-popups' ),
+				'label' => __( 'Mobile (small phones) - 360/640 px wide', 'newspack-popups' ),
 				'value' => 'mobile_small',
 			],
 			[
-				'label' => __( 'Mobile (large phones)', 'newspack-popups' ),
+				'label' => __( 'Mobile (large phones) - 480/768 px wide', 'newspack-popups' ),
 				'value' => 'mobile',
 			],
 			[
-				'label' => __( 'Tablet', 'newspack-popups' ),
+				'label' => __( 'Tablet - 768/1024 px wide', 'newspack-popups' ),
 				'value' => 'tablet',
 			],
 			[
-				'label' => __( 'Laptop', 'newspack-popups' ),
+				'label' => __( 'Laptop - 1024/1280 px wide', 'newspack-popups' ),
 				'value' => 'laptop',
 			],
 			[
-				'label' => __( 'Desktop', 'newspack-popups' ),
+				'label' => __( 'Desktop - 1280 px and above', 'newspack-popups' ),
 				'value' => 'desktop',
 			],
 		],
