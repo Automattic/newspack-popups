@@ -65,7 +65,7 @@ const ExpirationPanel = ( {
 
 	const defaultExpirationDate = useMemo( () => {
 		const date = new Date();
-		date.setDate(date.getDate() + 1);
+		date.setHours( date.getHours() + 24 );
 		return convertDateToString( date );
 	}, [] );
 
@@ -85,10 +85,7 @@ const ExpirationPanel = ( {
 			{ expiration_date ? (
 				<DatePicker
 					currentDate={ expiration_date }
-					onChange={ value => {
-						const selectedDate = new Date( value );
-						onMetaFieldChange( { expiration_date: convertDateToString( selectedDate ) } );
-					} }
+					onChange={ value => onMetaFieldChange( { expiration_date: convertDateToString( new Date( value ) ) } ) }
 					isInvalidDate={ date => ! isInTheFuture( date ) }
 				/>
 			) : null }
