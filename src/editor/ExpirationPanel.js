@@ -2,7 +2,7 @@
  * WordPress dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import { ToggleControl, DatePicker } from '@wordpress/components';
+import { ToggleControl, DateTimePicker } from '@wordpress/components';
 import { isInTheFuture } from '@wordpress/date';
 import { useEffect, useState, useMemo } from '@wordpress/element';
 
@@ -65,7 +65,9 @@ const ExpirationPanel = ( {
 
 	const defaultExpirationDate = useMemo( () => {
 		const date = new Date();
-		date.setHours( date.getHours() + 24 );
+		date.setDate( date.getDate() + 1 );
+		// Set time to 23:59:59
+		date.setHours( 23, 59, 59, 999 );
 		return convertDateToString( date );
 	}, [] );
 
@@ -83,9 +85,14 @@ const ExpirationPanel = ( {
 				) }
 			/>
 			{ expiration_date ? (
-				<DatePicker
+				<DateTimePicker
 					currentDate={ expiration_date }
-					onChange={ value => onMetaFieldChange( { expiration_date: convertDateToString( new Date( value ) ) } ) }
+					onChange={ value => {
+						const selectedDate = new Date( value );
+						// Set time to 23:59:59
+						selectedDate.setHours( 23, 59, 59, 999 );
+						onMetaFieldChange( { expiration_date: convertDateToString( selectedDate ) } );
+					} }
 					isInvalidDate={ date => ! isInTheFuture( date ) }
 				/>
 			) : null }
