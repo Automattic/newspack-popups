@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  newspack: newspack/newspack@1.4.3
+  newspack: newspack/newspack@1.4.4
 
 workflows:
   version: 2
@@ -14,10 +14,6 @@ workflows:
       - newspack/test-js:
           requires:
             - newspack/build
-      - newspack/build-distributable:
-          requires:
-            - newspack/build
-          archive-name: 'newspack-popups'
       - newspack/release:
           requires:
             - newspack/build
@@ -28,6 +24,12 @@ workflows:
                 - alpha
                 - /^hotfix\/.*/
                 - /^epic\/.*/
+      - newspack/build-distributable:
+          requires:
+            - newspack/build
+            # Running this after release ensure the version number in files will be correct.
+            - newspack/release
+          archive-name: 'newspack-popups'
       - newspack/post-release:
           requires:
             - newspack/release
