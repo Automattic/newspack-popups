@@ -24,14 +24,9 @@ class Merge_Tags {
 	 * Initialize hooks.
 	 */
 	public static function init_hooks() {
-		if (
-			( defined( 'IS_TEST_ENV' ) && IS_TEST_ENV ) ||
-			( defined( 'NEWSPACK_MERGE_TAGS' ) && NEWSPACK_MERGE_TAGS )
-		) {
-			add_action( 'init', [ __CLASS__, 'register_default_tags' ] );
-			add_filter( 'newspack_popups_popup_content', [ __CLASS__, 'parse_tags' ] );
-			add_action( 'enqueue_block_editor_assets', [ __CLASS__, 'enqueue_block_editor_assets' ], 11 );
-		}
+		add_action( 'init', [ __CLASS__, 'register_default_tags' ] );
+		add_filter( 'newspack_popups_popup_content', [ __CLASS__, 'parse_tags' ] );
+		add_action( 'enqueue_block_editor_assets', [ __CLASS__, 'enqueue_block_editor_assets' ], 11 );
 	}
 
 	/**
