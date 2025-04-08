@@ -35,7 +35,12 @@ final class Newspack_Popups_Criteria {
 	 * Initialize the hooks.
 	 */
 	public static function init() {
-		require_once __DIR__ . '/../src/criteria/default/index.php';
+		add_action(
+			'init',
+			function() {
+				require_once __DIR__ . '/../src/criteria/default/index.php';
+			}
+		);
 		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_scripts' ] );
 	}
 
