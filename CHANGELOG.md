@@ -1,3 +1,10 @@
+## [3.4.1](https://github.com/Automattic/newspack-popups/compare/v3.4.0...v3.4.1) (2025-04-14)
+
+
+### Bug Fixes
+
+* update merge tags data reference to use window ([#1410](https://github.com/Automattic/newspack-popups/issues/1410)) ([c66bdb9](https://github.com/Automattic/newspack-popups/commit/c66bdb9e19f3746de3c7ebfcc4d687c56ecb12e1))
+
 # [3.4.0](https://github.com/Automattic/newspack-popups/compare/v3.3.0...v3.4.0) (2025-04-07)
 
 
