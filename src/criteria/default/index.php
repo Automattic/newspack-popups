@@ -37,24 +37,44 @@ $criteria = [
 		'category'    => 'reader_engagement',
 		'options'     => [
 			[
-				'label' => __( 'Desktop - 1280 px and above', 'newspack-popups' ),
-				'value' => 'desktop',
+				'label'  => __( 'Desktop - 1280 px and above', 'newspack-popups' ),
+				'value'  => 'Desktop',
+				'params' => [
+					'max_width' => PHP_INT_MAX,
+					'min_width' => 1280,
+				],
 			],
 			[
-				'label' => __( 'Laptop - 1024 px wide', 'newspack-popups' ),
-				'value' => 'laptop',
+				'label'  => __( 'Laptop - 1024 px wide', 'newspack-popups' ),
+				'value'  => 'Laptop',
+				'params' => [
+					'max_width' => 1280,
+					'min_width' => 1024,
+				],
 			],
 			[
-				'label' => __( 'Tablet - 768 px wide', 'newspack-popups' ),
-				'value' => 'tablet',
+				'label'  => __( 'Tablet - 768 px wide', 'newspack-popups' ),
+				'value'  => 'Tablet',
+				'params' => [
+					'max_width' => 1024,
+					'min_width' => 768,
+				],
 			],
 			[
-				'label' => __( 'Mobile (large phones) - 480 px wide', 'newspack-popups' ),
-				'value' => 'mobile',
+				'label'  => __( 'Mobile (large phones) - 480 px wide', 'newspack-popups' ),
+				'value'  => 'Mobile',
+				'params' => [
+					'max_width' => 768,
+					'min_width' => 480,
+				],
 			],
 			[
-				'label' => __( 'Mobile (small phones) - 360 px wide', 'newspack-popups' ),
-				'value' => 'mobile_small',
+				'label'  => __( 'Mobile (small phones) - 360 px wide', 'newspack-popups' ),
+				'value'  => 'Mobile small',
+				'params' => [
+					'max_width' => 360,
+					'min_width' => 0,
+				],
 			],
 		],
 	],

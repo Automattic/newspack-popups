@@ -1,27 +1,20 @@
 import {setMatchingFunction} from '../utils';
 
-setMatchingFunction('devices', (config) => {
+setMatchingFunction('devices', ( config, ras, { optionParams } )  => {
 	const selectedDevices = Array.isArray(config.value) ? config.value : [];
 	if (selectedDevices.length === 0) {
 		return false;
 	}
 
 	const width = window.innerWidth;
-	if (width >= 1280 && selectedDevices.includes('desktop')) {
-		return true;
-	}
-	if (width >= 1024 && width < 1280 && selectedDevices.includes('laptop')) {
-		return true;
-	}
-	if (width >= 768 && width < 1024 && selectedDevices.includes('tablet')) {
-		return true;
-	}
-	if (width >= 360 && width < 768 && selectedDevices.includes('mobile')) {
-		return true;
-	}
-	if (width < 360 && selectedDevices.includes('mobile_small')) {
-		return true;
-	}
 
-	return false;
+	return selectedDevices.some(deviceType => {
+		const device = optionParams[deviceType];
+		if (!device || !device.min_width || !device.max_width) {
+			return false;
+		}
+
+		return width >= device.min_width && width < device.max_width;
+	});
+
 });
