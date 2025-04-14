@@ -10,13 +10,13 @@ setMatchingFunction('devices', (config) => {
 	if (width >= 1280 && selectedDevices.includes('desktop')) {
 		return true;
 	}
-	if (width <= 1024 && width > 768 && selectedDevices.includes('laptop')) {
+	if (width >= 1024 && width < 1280 && selectedDevices.includes('laptop')) {
 		return true;
 	}
-	if (width <= 768 && width > 480 && selectedDevices.includes('tablet')) {
+	if (width >= 768 && width < 1024 && selectedDevices.includes('tablet')) {
 		return true;
 	}
-	if (width <= 480 && width > 360 && selectedDevices.includes('mobile')) {
+	if (width >= 360 && width < 768 && selectedDevices.includes('mobile')) {
 		return true;
 	}
 	if (width < 360 && selectedDevices.includes('mobile_small')) {
