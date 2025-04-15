@@ -80,4 +80,49 @@ class CriteriaTest extends WP_UnitTestCase {
 		$this->assertEquals( $config['matching_attribute'], $criteria['matching_attribute'] );
 		$this->assertEquals( $config['matching_function'], $criteria['matching_function'] );
 	}
+
+	/**
+	 * Test get_criteria_config()
+	 */
+	public function test_get_criteria_config() {
+		$config = [
+			'name'               => 'Criteria Name',
+			'matching_function'  => 'list__in',
+			'matching_attribute' => 'criteria_attribute',
+			'options'            => [
+				[
+					'name'   => 'Option 1',
+					'value'  => '1',
+					'params' => [
+						'foo' => 'bar',
+					],
+				],
+				[
+					'name'   => 'Option 2',
+					'value'  => '2',
+					'params' => [
+						'foo' => 'baz',
+					],
+				],
+			],
+		];
+
+		Newspack_Popups_Criteria::register_criteria( 'test_criteria_config', $config );
+
+		$criteria_config = Newspack_Popups_Criteria::get_criteria_config();
+
+		$this->assertEquals( $config['matching_function'], $criteria_config['test_criteria_config']['matchingFunction'] );
+		$this->assertEquals( $config['matching_attribute'], $criteria_config['test_criteria_config']['matchingAttribute'] );
+		$this->assertEquals(
+			[
+				'1' => [
+					'foo' => 'bar',
+				],
+				'2' => [
+					'foo' => 'baz',
+				],
+			],
+			$criteria_config['test_criteria_config']['optionParams']
+		);
+	}
 }
