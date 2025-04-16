@@ -45,7 +45,7 @@ $criteria = [
 				],
 			],
 			[
-				'label'  => __( 'Laptop - 1024 px wide', 'newspack-popups' ),
+				'label'  => __( 'Laptop - between 1024 and 1280 px wide', 'newspack-popups' ),
 				'value'  => 'Laptop',
 				'params' => [
 					'max_width' => 1280,
@@ -53,7 +53,7 @@ $criteria = [
 				],
 			],
 			[
-				'label'  => __( 'Tablet - 768 px wide', 'newspack-popups' ),
+				'label'  => __( 'Tablet - between 768 and 1024 px wide', 'newspack-popups' ),
 				'value'  => 'Tablet',
 				'params' => [
 					'max_width' => 1024,
@@ -61,7 +61,7 @@ $criteria = [
 				],
 			],
 			[
-				'label'  => __( 'Mobile (large phones) - 480 px wide', 'newspack-popups' ),
+				'label'  => __( 'Mobile (large phones) - between 480 and 786 px wide', 'newspack-popups' ),
 				'value'  => 'Mobile',
 				'params' => [
 					'max_width' => 768,
@@ -69,10 +69,10 @@ $criteria = [
 				],
 			],
 			[
-				'label'  => __( 'Mobile (small phones) - 360 px wide', 'newspack-popups' ),
+				'label'  => __( 'Mobile (small phones) - 480 px and below wide', 'newspack-popups' ),
 				'value'  => 'Mobile small',
 				'params' => [
-					'max_width' => 360,
+					'max_width' => 480,
 					'min_width' => 0,
 				],
 			],
