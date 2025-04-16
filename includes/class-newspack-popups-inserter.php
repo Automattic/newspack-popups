@@ -66,14 +66,13 @@ final class Newspack_Popups_Inserter {
 		$view_as_spec        = Newspack_Popups_View_As::parse_view_as();
 		$campaign_id         = isset( $view_as_spec['campaign'] ) ? $view_as_spec['campaign'] : false;
 		$include_unpublished = isset( $view_as_spec['show_unpublished'] ) && 'true' === $view_as_spec['show_unpublished'] ? true : false;
+		$segment_id          = $view_as_spec['segment'] ?? false;
 
 		// Retrieve all prompts eligible for display.
 		$popups_to_maybe_display = Newspack_Popups_Model::retrieve_eligible_popups( $include_unpublished, $campaign_id );
-		$popups_to_display       = array_filter(
+		$popups_to_display = array_filter(
 			$popups_to_maybe_display,
-			function( $popup ) {
-				return self::should_display( $popup, true );
-			}
+			fn( $popup ) => self::should_display( $popup, true ) && ( empty( $segment_id ) || in_array( $segment_id, wp_list_pluck( $popup['segments'], 'term_id' ) ) )
 		);
 
 		// Cache results so we don't have to query again.

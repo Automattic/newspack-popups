@@ -49,7 +49,7 @@ final class Newspack_Popups_View_As {
 	 * Parse "view as" spec.
 	 *
 	 * @param string|null $raw_spec Raw spec. If null, read from $_GET['view_as'].
-	 * @return object Parsed spac.
+	 * @return array Parsed spec.
 	 */
 	public static function parse_view_as( $raw_spec = null ) {
 		if ( empty( $raw_spec ) ) {
