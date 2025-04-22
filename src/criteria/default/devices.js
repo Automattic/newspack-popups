@@ -10,7 +10,7 @@ setMatchingFunction('devices', ( config, ras, { optionParams } )  => {
 
 	return selectedDevices.some(deviceType => {
 		const device = optionParams[deviceType];
-		if (!device || !device.min_width || !device.max_width) {
+		if (isNaN(device?.min_width) || isNaN(device?.max_width)) {
 			return false;
 		}
 
