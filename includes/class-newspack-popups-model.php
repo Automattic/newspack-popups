@@ -1082,6 +1082,7 @@ final class Newspack_Popups_Model {
 		$is_scroll_triggered            = 'scroll' === $popup['options']['trigger_type'];
 		$assigned_segments              = Newspack_Segments_Model::get_popup_segments_ids_string( $popup['id'] );
 		$frequency_config               = self::get_frequency_config( $popup );
+		$utm_suppression                = $popup['options']['utm_suppression'];
 
 		$close_button_styles = 'color: ' . $close_button_color . ';';
 		if ( $enable_close_button_background ) {
