@@ -1100,6 +1100,9 @@ final class Newspack_Popups_Model {
 			id="<?php echo esc_attr( $element_id ); ?>"
 			data-segments="<?php echo esc_attr( $assigned_segments ); ?>"
 			data-frequency="<?php echo esc_attr( $frequency_config ); ?>"
+			<?php if ( ! empty( $utm_suppression ) ) : ?>
+					data-suppression="<?php echo esc_attr( $utm_suppression ); ?>"
+				<?php endif; ?>
 
 			<?php if ( $is_scroll_triggered ) : ?>
 			data-scroll="<?php echo esc_attr( $popup['options']['trigger_scroll_progress'] ); ?>"
