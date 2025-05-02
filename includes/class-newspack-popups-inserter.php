@@ -625,7 +625,7 @@ final class Newspack_Popups_Inserter {
 
 		// Don't enqueue assets if prompts are disabled on this post.
 		$has_disabled_prompts = is_singular() && ! empty( get_post_meta( get_the_ID(), 'newspack_popups_has_disabled_popups', true ) );
-		if ( $has_disabled_prompts ) {
+		if ( $has_disabled_prompts && ! Newspack_Popups::is_preview_request() ) {
 			return;
 		}
 
