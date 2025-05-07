@@ -284,8 +284,7 @@ final class Newspack_Popups_Data_Api {
 	public static function register_reader_metadata( $metadata ) {
 		$popup_id = filter_input( INPUT_POST, 'newspack_popup_id', FILTER_SANITIZE_NUMBER_INT );
 		if ( ! empty( $popup_id ) && isset( $metadata['registration_method'] ) ) {
-			$metadata['newspack_popup_id']   = $popup_id;
-			$metadata['registration_method'] = $metadata['registration_method'] . '-popup';
+			$metadata['newspack_popup_id'] = $popup_id;
 		}
 		return $metadata;
 	}
