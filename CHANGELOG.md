@@ -1,3 +1,10 @@
+## [3.4.3](https://github.com/Automattic/newspack-popups/compare/v3.4.2...v3.4.3) (2025-05-08)
+
+
+### Bug Fixes
+
+* **segmentation:** should prompt display logic ([#1433](https://github.com/Automattic/newspack-popups/issues/1433)) ([5ab76eb](https://github.com/Automattic/newspack-popups/commit/5ab76eb68b76b788c32fa92efdaa067c7e0911ad))
+
 ## [3.4.2](https://github.com/Automattic/newspack-popups/compare/v3.4.1...v3.4.2) (2025-05-05)
 
 
