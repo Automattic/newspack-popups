@@ -122,37 +122,27 @@ export const getBestPrioritySegment = ( segments, viewAsString = null ) => {
  */
 export const shouldPromptBeDisplayed = ( prompt, matchingSegment, ras, override = null ) => {
 	const id = prompt.getAttribute( 'id' );
-	let display = true;
 	const suppression = [];
 	const debugInfo = {
 		element: prompt,
 	};
-	const suppressByUTM = prompt.getAttribute( 'data-suppression' );
 
-	// By override.
-	if ( true === override || false === override ) {
-		debugInfo.override = true;
-		if ( ! override ) {
-			display = false;
-			suppression.push( 'Prompt suppressed by override.' );
+	const shouldDisplay = () => {
+		// By override.
+		if ( true === override || false === override ) {
+			debugInfo.override = true;
+			if ( ! override ) {
+				suppression.push( 'Prompt suppressed by override.' );
+			}
+			return override;
 		}
-	} else if ( suppressByUTM ) {
-		const suppressionValues = ras.store.get( 'utm_source' ) || [];
-		const params = new URLSearchParams( window.location.search );
-		const currentUTM = params.get( 'utm_source' )
-		let suppressedByUTM = false;
-		if ( -1 < suppressionValues.indexOf( suppressByUTM ) ) {
-			suppressedByUTM = true;
+
+		// If RAS is not available, the prompt should not be displayed.
+		if ( ! ras ) {
+			suppression.push( 'Prompt not displayed because RAS is not available.' );
+			return false;
 		}
-		if ( ! suppressedByUTM && suppressByUTM === currentUTM ) {
-			suppressedByUTM = true;
-			ras.store.set( 'utm_source', [ ...suppressionValues, currentUTM ] );
-		}
-		if ( suppressedByUTM ) {
-			suppression.push( `Prompt suppressed by utm_source=${ suppressByUTM }.` );
-			display = false;
-		}
-	} else if ( ras ) {
+
 		// eslint-disable-next-line @wordpress/no-unused-vars-before-return
 		const [ start, between, max, reset ] = prompt.getAttribute( 'data-frequency' ).split( ',' );
 		const pageviews = ras.store.get( 'pageviews' );
@@ -166,7 +156,7 @@ export const shouldPromptBeDisplayed = ( prompt, matchingSegment, ras, override 
 						parseInt( start ) + 1
 					}. Reader has only ${ views } pageviews.`
 				);
-				display = false;
+				return false;
 			}
 
 			// If not displaying every pageview.
@@ -174,7 +164,7 @@ export const shouldPromptBeDisplayed = ( prompt, matchingSegment, ras, override 
 				const viewsAfterStart = Math.max( 0, views - ( parseInt( start ) + 1 ) );
 				if ( 0 < viewsAfterStart % ( parseInt( between ) + 1 ) ) {
 					suppression.push( `Prompt displayed once every ${ parseInt( between ) + 1 } pageviews.` );
-					display = false;
+					return false;
 				}
 			}
 
@@ -188,7 +178,27 @@ export const shouldPromptBeDisplayed = ( prompt, matchingSegment, ras, override 
 			} );
 			if ( 0 < parseInt( max ) && seenEvents.length >= parseInt( max ) ) {
 				suppression.push( `Prompt already displayed the max of ${ max } times.` );
-				display = false;
+				return false;
+			}
+		}
+
+		// Handle UTM suppression.
+		const suppressByUTM = prompt.getAttribute( 'data-suppression' );
+		if ( suppressByUTM ) {
+			const suppressionValues = ras.store.get( 'utm_source' ) || [];
+			const params = new URLSearchParams( window.location.search );
+			const currentUTM = params.get( 'utm_source' )
+			let suppressedByUTM = false;
+			if ( -1 < suppressionValues.indexOf( suppressByUTM ) ) {
+				suppressedByUTM = true;
+			}
+			if ( ! suppressedByUTM && suppressByUTM === currentUTM ) {
+				suppressedByUTM = true;
+				ras.store.set( 'utm_source', [ ...suppressionValues, currentUTM ] );
+			}
+			if ( suppressedByUTM ) {
+				suppression.push( `Prompt suppressed by utm_source=${ suppressByUTM }.` );
+				return false;
 			}
 		}
 
@@ -198,10 +208,13 @@ export const shouldPromptBeDisplayed = ( prompt, matchingSegment, ras, override 
 			: null;
 		if ( assignedSegments && 0 > assignedSegments.indexOf( matchingSegment ) ) {
 			suppression.push( 'Reader does not match prompt’s assigned segments.' );
-			display = false;
+			return false;
 		}
-	}
 
+		return true;
+	};
+
+	const display = shouldDisplay();
 	debugInfo.displayed = display;
 	if ( 0 < suppression.length ) {
 		debugInfo.suppression = suppression;
