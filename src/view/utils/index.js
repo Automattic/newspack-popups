@@ -1,4 +1,4 @@
-/* globals newspack_popups_view */
+/* globals newspack_popups_log_pageview_data */
 
 export * from './analytics';
 export * from './prompts';
@@ -113,7 +113,7 @@ export const logPageview = ras => {
 			pageId = parseInt( className.replace( 'page-id-', '' ) );
 		}
 	} );
-	if ( pageId && parseInt( newspack_popups_view?.donor_landing_page ) === pageId ) {
+	if ( pageId && parseInt( newspack_popups_log_pageview_data?.donor_landing_page ) === pageId ) {
 		ras.store.set( 'is_donor', true );
 	}
 

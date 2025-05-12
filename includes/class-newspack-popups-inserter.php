@@ -634,7 +634,7 @@ final class Newspack_Popups_Inserter {
 				'in_footer' => true,
 			]
 		);
-		\wp_localize_script( $script_handle, 'newspack_popups_view', [ 'donor_landing_page' => Newspack_Popups_Settings::donor_landing_page() ] );
+		\wp_localize_script( $script_handle, 'newspack_popups_log_pageview_data', [ 'donor_landing_page' => Newspack_Popups_Settings::donor_landing_page() ] );
 		\wp_enqueue_script( $script_handle );
 
 		// Don't enqueue assets if prompts are disabled on this post.
