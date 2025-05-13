@@ -682,7 +682,7 @@ final class Newspack_Popups_Inserter {
 				[
 					'wp-url',
 					Newspack_Popups_Criteria::SCRIPT_HANDLE,
-					$page_view_script_handle,
+					$pageview_script_handle,
 				],
 				filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/view.js' ),
 				true
