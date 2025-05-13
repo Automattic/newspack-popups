@@ -623,9 +623,9 @@ final class Newspack_Popups_Inserter {
 			return;
 		}
 
-		$script_handle = 'log-page-view';
+		$pageview_script_handle = 'log-page-view';
 		\wp_register_script(
-			$script_handle,
+			$pageview_script_handle,
 			plugins_url( '../dist/logPageView.js', __FILE__ ),
 			[],
 			filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/logPageView.js' ),
@@ -634,8 +634,8 @@ final class Newspack_Popups_Inserter {
 				'in_footer' => true,
 			]
 		);
-		\wp_localize_script( $script_handle, 'newspack_popups_log_pageview_data', [ 'donor_landing_page' => Newspack_Popups_Settings::donor_landing_page() ] );
-		\wp_enqueue_script( $script_handle );
+		\wp_localize_script( $pageview_script_handle, 'newspack_popups_log_pageview_data', [ 'donor_landing_page' => Newspack_Popups_Settings::donor_landing_page() ] );
+		\wp_enqueue_script( $pageview_script_handle );
 
 		// Don't enqueue assets if prompts are disabled on this post.
 		$has_disabled_prompts = is_singular() && ! empty( get_post_meta( get_the_ID(), 'newspack_popups_has_disabled_popups', true ) );
@@ -682,6 +682,7 @@ final class Newspack_Popups_Inserter {
 				[
 					'wp-url',
 					Newspack_Popups_Criteria::SCRIPT_HANDLE,
+					$page_view_script_handle,
 				],
 				filemtime( dirname( NEWSPACK_POPUPS_PLUGIN_FILE ) . '/dist/view.js' ),
 				true
