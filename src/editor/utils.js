@@ -298,7 +298,6 @@ export const getPlacementHelpMessage = props => {
 
 /**
  * Convert a date object to a string in YYYY-MM-DDTHH:MM:SS format.
- * Omit Z timezone so the date is parsed in the site's local timezone.
  *
  * @param {Date} date
  * @return {string} Date string in Y-m-d H:i:s format or empty string if the given date can't be parsed.
@@ -308,5 +307,11 @@ export const convertDateToString = date => {
 		return '';
 	}
 
-	return date.toISOString().split( '.' )[ 0 ];
-}
+	// Format the date string
+	const year = date.getFullYear();
+	const month = String( date.getMonth() + 1 ).padStart( 2, '0' );
+	const day = String( date.getDate() ).padStart( 2, '0' );
+	const time = 'T23:59:59'; // Set to the very end of the day.
+
+	return `${ year }-${ month }-${ day }${ time }`;
+};
