@@ -16,7 +16,6 @@ const path = require( 'path' );
 const entry = {
 	editor: path.join( __dirname, 'src', 'editor' ),
 	view: path.join( __dirname, 'src', 'view' ),
-	logPageView: path.join( __dirname, 'src', 'view', 'log-page-view' ),
 	admin: path.join( __dirname, 'src', 'view', 'admin' ),
 	documentSettings: path.join( __dirname, 'src', 'document-settings' ),
 	settings: path.join( __dirname, 'src', 'settings' ),
