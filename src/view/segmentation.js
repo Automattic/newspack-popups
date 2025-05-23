@@ -8,7 +8,6 @@ import {
 	getRawId,
 	getOverride,
 	handleSeen,
-	logPageview,
 	shouldPromptBeDisplayed,
 } from './utils';
 
@@ -20,10 +19,6 @@ export const handleSegmentation = prompts => {
 		const segments = newspack_popups_view?.segments || {};
 		const matchingSegment = getBestPrioritySegment( segments );
 		debug( 'matchingSegment', matchingSegment );
-		// Log a pageview for frequency counts.
-		if ( ras ) {
-			logPageview( ras );
-		}
 		let overlayDisplayed;
 
 		prompts.forEach( prompt => {
