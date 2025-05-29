@@ -1,3 +1,10 @@
+## [3.5.1](https://github.com/Automattic/newspack-popups/compare/v3.5.0...v3.5.1) (2025-05-29)
+
+
+### Bug Fixes
+
+* **data:** hidden field integration with Checkout Button block ([#1441](https://github.com/Automattic/newspack-popups/issues/1441)) ([6fac0c7](https://github.com/Automattic/newspack-popups/commit/6fac0c763614f09e2ba93c33a6a697836548bf76))
+
 # [3.5.0](https://github.com/Automattic/newspack-popups/compare/v3.4.3...v3.5.0) (2025-05-14)
 
 
