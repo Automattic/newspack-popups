@@ -705,6 +705,29 @@ final class Newspack_Popups_Inserter {
 		);
 		\wp_style_add_data( $script_handle, 'rtl', 'replace' );
 		\wp_enqueue_style( $script_handle );
+
+		// Enqueue Jetpack contact form styles if any active popups contain contact forms.
+		self::maybe_enqueue_contact_form_styles();
+	}
+
+	/**
+	 * Enqueue Jetpack contact form styles if any active popups contain contact forms.
+	 */
+	public static function maybe_enqueue_contact_form_styles() {
+		// Only proceed if Jetpack contact forms are available.
+		if ( ! class_exists( '\Automattic\Jetpack\Extensions\Contact_Form\Contact_Form_Block' ) ) {
+			return;
+		}
+
+		// Check if any active popups contain Jetpack contact forms.
+		$active_popups = Newspack_Popups_Model::retrieve_active_popups();
+		foreach ( $active_popups as $popup ) {
+			if ( false !== strpos( $popup['content'], 'wp:jetpack/contact-form' ) ) {
+				// Enqueue the grunion.css stylesheet.
+				\wp_enqueue_style( 'grunion.css' );
+				break;
+			}
+		}
 	}
 
 	/**
