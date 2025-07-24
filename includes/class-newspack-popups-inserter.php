@@ -825,8 +825,9 @@ final class Newspack_Popups_Inserter {
 	 * @return bool Whether the prompt should be shown based on matching terms.
 	 */
 	public static function assess_taxonomy_filter( $popup, $taxonomy = 'category' ) {
-		// If a preview request, ensure the prompt appears in the first post loaded in the preview window.
-		if ( Newspack_Popups::is_preview_request() ) {
+		// For single popup preview, ensure the prompt appears in the first post loaded in the preview window.
+		// But for view_as preview, we should still apply category filtering.
+		if ( Newspack_Popups::is_preview_request() && ! Newspack_Popups_View_As::viewing_as_spec() ) {
 			return true;
 		}
 
