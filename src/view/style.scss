@@ -511,3 +511,19 @@ $width__tablet: 782px;
 		display: none !important;
 	}
 }
+
+// Contextual content styling
+.newspack-contextual-content {
+	position: relative;
+
+	&::after {
+		content: "✨";
+		position: absolute;
+		top: 8px;
+		right: 8px;
+		font-size: 12px;
+		opacity: 0.6;
+		pointer-events: none;
+		z-index: 10;
+	}
+}

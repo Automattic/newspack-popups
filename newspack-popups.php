@@ -25,3 +25,8 @@ require_once __DIR__ . '/vendor/autoload.php';
 if ( ! class_exists( 'Newspack_Popups' ) ) {
 	include_once __DIR__ . '/includes/class-newspack-popups.php';
 }
+
+// Include contextual content class.
+if ( ! class_exists( 'Newspack_Popups_Contextual_Content' ) ) {
+	include_once __DIR__ . '/includes/class-newspack-popups-contextual-content.php';
+}

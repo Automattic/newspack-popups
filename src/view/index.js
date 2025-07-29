@@ -7,6 +7,7 @@ import './style.scss';
 import './patterns.scss';
 import { handleSegmentation } from './segmentation';
 import { handleAnalytics } from './analytics/ga4';
+import { handleContextualContent } from './contextual-content';
 import { domReady, logPageview, getPrompts } from './utils';
 
 import './merge-tags';
@@ -21,5 +22,6 @@ domReady( () => {
 
 		handleSegmentation( prompts );
 		handleAnalytics( prompts );
+		handleContextualContent( prompts );
 	}
 } );
