@@ -653,6 +653,10 @@ final class Newspack_Popups_Inserter {
 			\wp_enqueue_style( $admin_script_handle );
 		}
 
+		if ( self::assess_has_disabled_popups() ) {
+			return;
+		}
+
 		$script_handle = 'newspack-popups-view';
 
 		if ( ! self::is_amp() ) {
