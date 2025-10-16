@@ -16,6 +16,10 @@ import {
  */
 export const handleSegmentation = prompts => {
 	const maybeDisplayPrompts = ( ras = null ) => {
+		// Don't display prompts if the content is locked.
+		if ( document.body.classList.contains( 'newspack-content-locked' ) ) {
+			return;
+		}
 		const segments = newspack_popups_view?.segments || {};
 		const matchingSegment = getBestPrioritySegment( segments );
 		debug( 'matchingSegment', matchingSegment );
@@ -69,7 +73,9 @@ export const handleSegmentation = prompts => {
 
 					// Register the overlay in RAS.
 					if ( isOverlay && ras?.overlays ) {
-						prompt.overlayId = ras.overlays.add();
+						if ( ! document.body.classList.contains( 'newspack-content-locked' ) ) {
+							prompt.overlayId = ras.overlays.add( `prompt_${ promptId }` );
+						}
 					}
 				};
 				if ( isOverlay ) {
