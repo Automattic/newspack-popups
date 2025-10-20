@@ -7,7 +7,7 @@ export default {
 	/**
 	 * Matches the exact value of the criteria against the segment config.
 	 */
-	default: (criteria, config) => criteria.value === config.value,
+	default: ( criteria, config ) => criteria.value === config.value,
 	/**
 	 * Matches the criteria value against a list provided by the segment config,
 	 * returns true if the value is on the list.
@@ -15,18 +15,18 @@ export default {
 	 * If the criteria value is an array, it returns true if any of the values
 	 * are on the list.
 	 */
-	list__in: (criteria, config) => {
+	list__in: ( criteria, config ) => {
 		let list = config.value;
-		if (typeof list === 'string') {
-			list = config.value.split(',').map(item => item.trim());
+		if ( typeof list === 'string' ) {
+			list = config.value.split( ',' ).map( item => item.trim() );
 		}
-		if (!Array.isArray(list)) {
+		if ( ! Array.isArray( list ) ) {
 			return false;
 		}
-		if (Array.isArray(criteria.value)) {
-			return criteria.value.some(value => list.some(configValue => configValue == value));
+		if ( Array.isArray( criteria.value ) ) {
+			return criteria.value.some( value => list.some( configValue => configValue == value ) );
 		}
-		if (!criteria.value || !list.some(configValue => configValue == criteria.value)) {
+		if ( ! criteria.value || ! list.some( configValue => configValue == criteria.value ) ) {
 			return false;
 		}
 		return true;
@@ -38,18 +38,18 @@ export default {
 	 * If the criteria value is an array, it returns true if none of the values
 	 * are on the list.
 	 */
-	list__not_in: (criteria, config) => {
+	list__not_in: ( criteria, config ) => {
 		let list = config.value;
-		if (typeof list === 'string') {
-			list = config.value.split(',').map(item => item.trim());
+		if ( typeof list === 'string' ) {
+			list = config.value.split( ',' ).map( item => item.trim() );
 		}
-		if (!Array.isArray(list)) {
+		if ( ! Array.isArray( list ) ) {
 			return true;
 		}
-		if (Array.isArray(criteria.value)) {
-			return !criteria.value.some(value => list.some(configValue => configValue == value));
+		if ( Array.isArray( criteria.value ) ) {
+			return ! criteria.value.some( value => list.some( configValue => configValue == value ) );
 		}
-		if (!criteria.value || !list.some(configValue => configValue == criteria.value)) {
+		if ( ! criteria.value || ! list.some( configValue => configValue == criteria.value ) ) {
 			return true;
 		}
 		return false;
@@ -58,12 +58,12 @@ export default {
 	 * Matches the criteria value against a range of 'min' and 'max' provided by
 	 * the segment config.
 	 */
-	range: (criteria, config) => {
-		if (isNaN(criteria.value)) {
+	range: ( criteria, config ) => {
+		if ( isNaN( criteria.value ) ) {
 			return false;
 		}
 		const { min, max } = config.value;
-		if ((min && criteria.value < min) || (max && criteria.value > max)) {
+		if ( ( min && criteria.value < min ) || ( max && criteria.value > max ) ) {
 			return false;
 		}
 		return true;

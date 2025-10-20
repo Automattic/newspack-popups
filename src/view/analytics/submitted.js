@@ -7,13 +7,13 @@ import { getEventPayload, getRawId, sendEvent } from '../utils';
  */
 
 export const manageFormSubmissions = prompts => {
-	prompts.forEach(prompt => {
-		const forms = [...prompt.querySelectorAll('.newspack-popup-container form')];
+	prompts.forEach( prompt => {
+		const forms = [ ...prompt.querySelectorAll( '.newspack-popup-container form' ) ];
 		const handleEvent = () => {
-			const payload = getEventPayload('form_submission', getRawId(prompt.getAttribute('id')));
-			sendEvent(payload);
+			const payload = getEventPayload( 'form_submission', getRawId( prompt.getAttribute( 'id' ) ) );
+			sendEvent( payload );
 		};
 
-		forms.forEach(form => form.addEventListener('submit', handleEvent));
-	});
+		forms.forEach( form => form.addEventListener( 'submit', handleEvent ) );
+	} );
 };

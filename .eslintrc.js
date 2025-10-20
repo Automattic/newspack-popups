@@ -1,5 +1,5 @@
-require('@rushstack/eslint-patch/modern-module-resolution');
+require( '@rushstack/eslint-patch/modern-module-resolution' );
 
 module.exports = {
-	extends: ['./node_modules/newspack-scripts/config/eslintrc.js'],
+	extends: [ './node_modules/newspack-scripts/config/eslintrc.js' ],
 };

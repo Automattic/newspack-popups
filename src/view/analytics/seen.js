@@ -5,13 +5,13 @@ import { getEventPayload, sendEvent } from '../utils';
  */
 export const manageSeenEvents = () => {
 	window.newspackRAS = window.newspackRAS || [];
-	window.newspackRAS.push(ras => {
-		ras.on('activity', ({ detail: { action, data } }) => {
-			if (action === 'prompt_seen') {
+	window.newspackRAS.push( ras => {
+		ras.on( 'activity', ( { detail: { action, data } } ) => {
+			if ( action === 'prompt_seen' ) {
 				const { prompt_id: promptId } = data;
-				const payload = getEventPayload('seen', promptId);
-				sendEvent(payload);
+				const payload = getEventPayload( 'seen', promptId );
+				sendEvent( payload );
 			}
-		});
-	});
+		} );
+	} );
 };

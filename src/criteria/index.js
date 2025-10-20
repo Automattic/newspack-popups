@@ -9,8 +9,8 @@ import './default';
 newspackPopupsCriteria.criteria = {};
 
 // Register criteria from the global newspackPopupsCriteria object.
-if (newspackPopupsCriteria?.config) {
-	for (const id in newspackPopupsCriteria.config) {
-		registerCriteria(id, newspackPopupsCriteria.config[id]);
+if ( newspackPopupsCriteria?.config ) {
+	for ( const id in newspackPopupsCriteria.config ) {
+		registerCriteria( id, newspackPopupsCriteria.config[ id ] );
 	}
 }

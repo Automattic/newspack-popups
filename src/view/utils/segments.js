@@ -15,24 +15,24 @@ export const periods = {
  *
  * @return {Object|null} View_as object or null.
  */
-const parseViewAs = (queryString = null) => {
-	if (!queryString) {
+const parseViewAs = ( queryString = null ) => {
+	if ( ! queryString ) {
 		queryString = window.location.search;
 	}
-	const params = new URLSearchParams(queryString);
-	if (params.get('view_as')) {
+	const params = new URLSearchParams( queryString );
+	if ( params.get( 'view_as' ) ) {
 		const viewAs = params
-			.get('view_as')
-			.split(';')
-			.reduce((acc, item) => {
-				const parts = item.split(':');
-				if (1 === parts.length) {
-					acc[parts[0]] = true;
+			.get( 'view_as' )
+			.split( ';' )
+			.reduce( ( acc, item ) => {
+				const parts = item.split( ':' );
+				if ( 1 === parts.length ) {
+					acc[ parts[ 0 ] ] = true;
 				} else {
-					acc[parts[0]] = parts[1];
+					acc[ parts[ 0 ] ] = parts[ 1 ];
 				}
 				return acc;
-			}, {});
+			}, {} );
 		return viewAs;
 	}
 
@@ -46,13 +46,13 @@ const parseViewAs = (queryString = null) => {
  *
  * @return {number|null} Prompt ID, or null.
  */
-export const getPreviewedPromptId = (queryString = null) => {
-	if (!queryString) {
+export const getPreviewedPromptId = ( queryString = null ) => {
+	if ( ! queryString ) {
 		queryString = window.location.search;
 	}
-	const params = new URLSearchParams(queryString);
-	if (params.get('pid')) {
-		return parseInt(params.get('pid'));
+	const params = new URLSearchParams( queryString );
+	if ( params.get( 'pid' ) ) {
+		return parseInt( params.get( 'pid' ) );
 	}
 	return null;
 };
@@ -65,12 +65,12 @@ export const getPreviewedPromptId = (queryString = null) => {
  * @return {boolean} True if the reader matches all of the segment's criteria, false if not.
  */
 const match = segmentCriteria => {
-	for (const item of segmentCriteria) {
-		const criteria = getCriteria(item.criteria_id);
-		if (!criteria) {
+	for ( const item of segmentCriteria ) {
+		const criteria = getCriteria( item.criteria_id );
+		if ( ! criteria ) {
 			continue;
 		}
-		if (!criteria.matches(item)) {
+		if ( ! criteria.matches( item ) ) {
 			return false;
 		}
 	}
@@ -85,30 +85,30 @@ const match = segmentCriteria => {
  *
  * @return {string|null} Segment ID, or null.
  */
-export const getBestPrioritySegment = (segments, viewAsString = null) => {
+export const getBestPrioritySegment = ( segments, viewAsString = null ) => {
 	// If previewing as a specific segment.
-	const viewAs = parseViewAs(viewAsString);
-	if (viewAs?.segment) {
+	const viewAs = parseViewAs( viewAsString );
+	if ( viewAs?.segment ) {
 		return viewAs.segment;
 	}
 
 	const matchingSegments = [];
-	for (const segmentId in segments) {
-		if (match(segments[segmentId].criteria)) {
-			matchingSegments.push({
+	for ( const segmentId in segments ) {
+		if ( match( segments[ segmentId ].criteria ) ) {
+			matchingSegments.push( {
 				id: segmentId,
-				priority: segments[segmentId].priority,
-			});
+				priority: segments[ segmentId ].priority,
+			} );
 		}
 	}
 
-	if (!matchingSegments.length) {
+	if ( ! matchingSegments.length ) {
 		return null;
 	}
 
-	matchingSegments.sort((a, b) => a.priority - b.priority);
+	matchingSegments.sort( ( a, b ) => a.priority - b.priority );
 
-	return matchingSegments[0].id;
+	return matchingSegments[ 0 ].id;
 };
 
 /**
@@ -120,8 +120,8 @@ export const getBestPrioritySegment = (segments, viewAsString = null) => {
  * @param {null|boolean} override        If true or false, force the value.
  * @return {boolean} True if the prompt should be displayed, false if not.
  */
-export const shouldPromptBeDisplayed = (prompt, matchingSegment, ras, override = null) => {
-	const id = prompt.getAttribute('id');
+export const shouldPromptBeDisplayed = ( prompt, matchingSegment, ras, override = null ) => {
+	const id = prompt.getAttribute( 'id' );
 	const suppression = [];
 	const debugInfo = {
 		element: prompt,
@@ -129,76 +129,85 @@ export const shouldPromptBeDisplayed = (prompt, matchingSegment, ras, override =
 
 	const shouldDisplay = () => {
 		// By override.
-		if (true === override || false === override) {
+		if ( true === override || false === override ) {
 			debugInfo.override = true;
-			if (!override) {
-				suppression.push('Prompt suppressed by override.');
+			if ( ! override ) {
+				suppression.push( 'Prompt suppressed by override.' );
 			}
 			return override;
 		}
 
 		// If RAS is not available, the prompt should not be displayed.
-		if (!ras) {
-			suppression.push('Prompt not displayed because RAS is not available.');
+		if ( ! ras ) {
+			suppression.push( 'Prompt not displayed because RAS is not available.' );
 			return false;
 		}
 
 		// eslint-disable-next-line @wordpress/no-unused-vars-before-return
-		const [start, between, max, reset] = prompt.getAttribute('data-frequency').split(',');
-		const pageviews = ras.store.get('pageviews');
-		if (pageviews[reset]) {
-			const views = pageviews[reset].count || 0;
+		const [ start, between, max, reset ] = prompt.getAttribute( 'data-frequency' ).split( ',' );
+		const pageviews = ras.store.get( 'pageviews' );
+		if ( pageviews[ reset ] ) {
+			const views = pageviews[ reset ].count || 0;
 
 			// If reader hasn't amassed enough pageviews yet.
-			if (views <= parseInt(start)) {
-				suppression.push(`Prompt displayed starting at pageview ${parseInt(start) + 1}. Reader has only ${views} pageviews.`);
+			if ( views <= parseInt( start ) ) {
+				suppression.push(
+					`Prompt displayed starting at pageview ${
+						parseInt( start ) + 1
+					}. Reader has only ${ views } pageviews.`
+				);
 				return false;
 			}
 
 			// If not displaying every pageview.
-			if (0 < between) {
-				const viewsAfterStart = Math.max(0, views - (parseInt(start) + 1));
-				if (0 < viewsAfterStart % (parseInt(between) + 1)) {
-					suppression.push(`Prompt displayed once every ${parseInt(between) + 1} pageviews.`);
+			if ( 0 < between ) {
+				const viewsAfterStart = Math.max( 0, views - ( parseInt( start ) + 1 ) );
+				if ( 0 < viewsAfterStart % ( parseInt( between ) + 1 ) ) {
+					suppression.push( `Prompt displayed once every ${ parseInt( between ) + 1 } pageviews.` );
 					return false;
 				}
 			}
 
 			// If there's a max frequency.
-			const promptId = getRawId(id);
-			const seenEvents = (ras.getActivities('prompt_seen') || []).filter(activity => {
-				return activity.data?.prompt_id === promptId && periods[reset] > Date.now() - activity.timestamp;
-			});
-			if (0 < parseInt(max) && seenEvents.length >= parseInt(max)) {
-				suppression.push(`Prompt already displayed the max of ${max} times.`);
+			const promptId = getRawId( id );
+			const seenEvents = ( ras.getActivities( 'prompt_seen' ) || [] ).filter( activity => {
+				return (
+					activity.data?.prompt_id === promptId &&
+					periods[ reset ] > Date.now() - activity.timestamp
+				);
+			} );
+			if ( 0 < parseInt( max ) && seenEvents.length >= parseInt( max ) ) {
+				suppression.push( `Prompt already displayed the max of ${ max } times.` );
 				return false;
 			}
 		}
 
 		// Handle UTM suppression.
-		const suppressByUTM = prompt.getAttribute('data-suppression');
-		if (suppressByUTM) {
-			const suppressionValues = ras.store.get('utm_source') || [];
-			const params = new URLSearchParams(window.location.search);
-			const currentUTM = params.get('utm_source');
+		const suppressByUTM = prompt.getAttribute( 'data-suppression' );
+		if ( suppressByUTM ) {
+			const suppressionValues = ras.store.get( 'utm_source' ) || [];
+			const params = new URLSearchParams( window.location.search );
+			const currentUTM = params.get( 'utm_source' )
 			let suppressedByUTM = false;
-			if (-1 < suppressionValues.indexOf(suppressByUTM)) {
+			if ( -1 < suppressionValues.indexOf( suppressByUTM ) ) {
 				suppressedByUTM = true;
 			}
-			if (!suppressedByUTM && suppressByUTM === currentUTM) {
+			if ( ! suppressedByUTM && suppressByUTM === currentUTM ) {
 				suppressedByUTM = true;
-				ras.store.set('utm_source', [...suppressionValues, currentUTM]);
+				ras.store.set( 'utm_source', [ ...suppressionValues, currentUTM ] );
 			}
-			if (suppressedByUTM) {
-				suppression.push(`Prompt suppressed by utm_source=${suppressByUTM}.`);
+			if ( suppressedByUTM ) {
+				suppression.push( `Prompt suppressed by utm_source=${ suppressByUTM }.` );
 				return false;
 			}
 		}
 
 		// By assigned segments.
-		const assignedSegments = prompt.getAttribute('data-segments') ? prompt.getAttribute('data-segments').split(',') : null;
-		if (assignedSegments && 0 > assignedSegments.indexOf(matchingSegment)) {
-			suppression.push('Reader does not match prompt’s assigned segments.');
+		const assignedSegments = prompt.getAttribute( 'data-segments' )
+			? prompt.getAttribute( 'data-segments' ).split( ',' )
+			: null;
+		if ( assignedSegments && 0 > assignedSegments.indexOf( matchingSegment ) ) {
+			suppression.push( 'Reader does not match prompt’s assigned segments.' );
 			return false;
 		}
 
@@ -207,10 +216,10 @@ export const shouldPromptBeDisplayed = (prompt, matchingSegment, ras, override =
 
 	const display = shouldDisplay();
 	debugInfo.displayed = display;
-	if (0 < suppression.length) {
+	if ( 0 < suppression.length ) {
 		debugInfo.suppression = suppression;
 	}
-	debug(id, debugInfo);
+	debug( id, debugInfo );
 
 	return display;
 };
@@ -228,14 +237,19 @@ export const shouldPromptBeDisplayed = (prompt, matchingSegment, ras, override =
  *
  * @return {boolean|null} The override value to pass to the shouldPromptBeDisplayed function.
  */
-export const getOverride = (promptId, isOverlay = false, overlayDisplayed = false, pidString = null) => {
+export const getOverride = (
+	promptId,
+	isOverlay = false,
+	overlayDisplayed = false,
+	pidString = null
+) => {
 	// If previewing a single prompt, it should always be displayed.
-	if (promptId === getPreviewedPromptId(pidString)) {
+	if ( promptId === getPreviewedPromptId( pidString ) ) {
 		return true;
 	}
 
 	// If an overlay and another overlay has already been displayed, it should not be displaeyd.
-	if (isOverlay && overlayDisplayed) {
+	if ( isOverlay && overlayDisplayed ) {
 		return false;
 	}
 
