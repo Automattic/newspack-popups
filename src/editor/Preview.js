@@ -12,15 +12,15 @@ import { addQueryArgs } from '@wordpress/url';
  */
 import { WebPreview } from 'newspack-components';
 
-const PreviewSetting = ( { autosavePost, isSavingPost, postId, metaFields } ) => {
+const PreviewSetting = ({ autosavePost, isSavingPost, postId, metaFields }) => {
 	const previewQueryKeys = window.newspack_popups_data?.preview_query_keys || {};
 	const frontendUrl = window?.newspack_popups_data?.frontend_url || '/';
 	const abbreviatedKeys = {};
-	Object.keys( metaFields ).forEach( key => {
-		if ( previewQueryKeys.hasOwnProperty( key ) ) {
-			abbreviatedKeys[ previewQueryKeys[ key ] ] = metaFields[ key ];
+	Object.keys(metaFields).forEach(key => {
+		if (previewQueryKeys.hasOwnProperty(key)) {
+			abbreviatedKeys[previewQueryKeys[key]] = metaFields[key];
 		}
-	} );
+	});
 
 	const query = {
 		pid: postId,
@@ -29,51 +29,43 @@ const PreviewSetting = ( { autosavePost, isSavingPost, postId, metaFields } ) =>
 	};
 
 	const isArchivePagesPrompt = metaFields.placement === 'archives';
-	const previewURL =
-		window.newspack_popups_data[ isArchivePagesPrompt ? 'preview_archive' : 'preview_post' ] || '/';
+	const previewURL = window.newspack_popups_data[isArchivePagesPrompt ? 'preview_archive' : 'preview_post'] || '/';
 
 	const onWebPreviewLoad = iframeEl => {
-		if ( iframeEl ) {
-			[
-				...iframeEl.contentWindow.document.querySelectorAll( 'a[href^="' + frontendUrl + '"]' ),
-			].forEach( anchor => {
-				anchor.setAttribute( 'href', addQueryArgs( anchor.getAttribute( 'href' ), query ) );
-			} );
+		if (iframeEl) {
+			[...iframeEl.contentWindow.document.querySelectorAll('a[href^="' + frontendUrl + '"]')].forEach(anchor => {
+				anchor.setAttribute('href', addQueryArgs(anchor.getAttribute('href'), query));
+			});
 		}
 	};
 
 	return (
 		<WebPreview
-			url={ addQueryArgs( previewURL, query ) }
-			onLoad={ onWebPreviewLoad }
-			renderButton={ ( { showPreview } ) => (
-				<Button
-					isPrimary
-					isBusy={ isSavingPost }
-					disabled={ isSavingPost }
-					onClick={ () => autosavePost().then( showPreview ) }
-				>
-					{ __( 'Preview', 'newspack-popups' ) }
+			url={addQueryArgs(previewURL, query)}
+			onLoad={onWebPreviewLoad}
+			renderButton={({ showPreview }) => (
+				<Button isPrimary isBusy={isSavingPost} disabled={isSavingPost} onClick={() => autosavePost().then(showPreview)}>
+					{__('Preview', 'newspack-popups')}
 				</Button>
-			) }
+			)}
 		/>
 	);
 };
 
-const connectPreviewSetting = compose( [
-	withSelect( select => {
-		const { isSavingPost, getCurrentPostId, getEditedPostAttribute } = select( 'core/editor' );
+const connectPreviewSetting = compose([
+	withSelect(select => {
+		const { isSavingPost, getCurrentPostId, getEditedPostAttribute } = select('core/editor');
 		return {
 			postId: getCurrentPostId(),
-			metaFields: getEditedPostAttribute( 'meta' ),
+			metaFields: getEditedPostAttribute('meta'),
 			isSavingPost: isSavingPost(),
 		};
-	} ),
-	withDispatch( dispatch => {
+	}),
+	withDispatch(dispatch => {
 		return {
-			autosavePost: () => dispatch( 'core/editor' ).autosave(),
+			autosavePost: () => dispatch('core/editor').autosave(),
 		};
-	} ),
-] );
+	}),
+]);
 
-export default connectPreviewSetting( PreviewSetting );
+export default connectPreviewSetting(PreviewSetting);

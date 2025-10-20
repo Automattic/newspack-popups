@@ -11,17 +11,11 @@ import { useEffect, useState, useMemo } from '@wordpress/element';
  */
 import { convertDateToString } from './utils';
 
-const ExpirationPanel = ( {
-	expiration_date = null,
-	postStatus,
-	onMetaFieldChange,
-	createNotice,
-	removeNotice,
-} ) => {
-	const [ noticeId, setNoticeId ] = useState( false );
-	useEffect( () => {
-		if ( expiration_date && ! isInTheFuture( expiration_date ) ) {
-			if ( noticeId ) {
+const ExpirationPanel = ({ expiration_date = null, postStatus, onMetaFieldChange, createNotice, removeNotice }) => {
+	const [noticeId, setNoticeId] = useState(false);
+	useEffect(() => {
+		if (expiration_date && !isInTheFuture(expiration_date)) {
+			if (noticeId) {
 				return;
 			}
 			createNotice(
@@ -32,63 +26,53 @@ const ExpirationPanel = ( {
 						'This prompt has expired on %s and has been reverted to draft. Publishing it will reset the expiration date.',
 						'newspack-plugin'
 					),
-					new Date( expiration_date ).toLocaleDateString()
+					new Date(expiration_date).toLocaleDateString()
 				),
 				{
 					id: 'newspack-popups__expired',
 					isDismissible: false,
 				}
-			).then( ( { notice } ) => {
-				setNoticeId( notice.id );
-			} );
+			).then(({ notice }) => {
+				setNoticeId(notice.id);
+			});
 		}
-	}, [ expiration_date ] );
+	}, [expiration_date]);
 
-	useEffect( () => {
-		if ( postStatus === 'publish' && noticeId ) {
-			removeNotice( noticeId );
-			createNotice(
-				'info',
-				__(
-					'This prompt has been published. The expiration date has been removed.',
-					'newspack-plugin'
-				),
-				{
-					id: 'newspack-popups__expiration-date-removed',
-				}
-			);
+	useEffect(() => {
+		if (postStatus === 'publish' && noticeId) {
+			removeNotice(noticeId);
+			createNotice('info', __('This prompt has been published. The expiration date has been removed.', 'newspack-plugin'), {
+				id: 'newspack-popups__expiration-date-removed',
+			});
 			// This is just for quicked feedback, the actual meta field deletion will
 			// happen on the backend.
-			onMetaFieldChange( { expiration_date: null } );
+			onMetaFieldChange({ expiration_date: null });
 		}
-	}, [ postStatus ] );
+	}, [postStatus]);
 
-	const defaultExpirationDate = useMemo( () => {
+	const defaultExpirationDate = useMemo(() => {
 		const date = new Date();
-		date.setHours( date.getHours() + 24 );
-		return convertDateToString( date );
-	}, [] );
+		date.setHours(date.getHours() + 24);
+		return convertDateToString(date);
+	}, []);
 
 	return (
 		<>
 			<ToggleControl
-				label={ __( 'Expiration Date', 'newspack-newsletters' ) }
-				checked={ !! expiration_date }
-				onChange={ () => {
-					onMetaFieldChange( { expiration_date: expiration_date ? null : defaultExpirationDate } );
-				} }
-				help={ __(
-					'If set, the prompt will be automatically unpublished at midnight on this date.',
-					'newspack-popups'
-				) }
+				label={__('Expiration Date', 'newspack-newsletters')}
+				checked={!!expiration_date}
+				onChange={() => {
+					onMetaFieldChange({ expiration_date: expiration_date ? null : defaultExpirationDate });
+				}}
+				help={__('If set, the prompt will be automatically unpublished at midnight on this date.', 'newspack-popups')}
 			/>
-			{ expiration_date ? (
+			{expiration_date ? (
 				<DatePicker
-					currentDate={ expiration_date }
-					onChange={ value => onMetaFieldChange( { expiration_date: convertDateToString( new Date( value ) ) } ) }
-					isInvalidDate={ date => ! isInTheFuture( date ) }
+					currentDate={expiration_date}
+					onChange={value => onMetaFieldChange({ expiration_date: convertDateToString(new Date(value)) })}
+					isInvalidDate={date => !isInTheFuture(date)}
 				/>
-			) : null }
+			) : null}
 		</>
 	);
 };
