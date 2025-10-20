@@ -9,174 +9,158 @@ import { useEffect, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 import { addQueryArgs } from '@wordpress/url';
 
-const DuplicateButton = ( {
-	autosave,
-	campaignGroups,
-	duplicateOf,
-	isSavingPost,
-	postId,
-	title,
-} ) => {
-	const [ error, setError ] = useState( null );
-	const [ modalVisible, setModalVisible ] = useState( false );
-	const [ duplicateTitle, setDuplicateTitle ] = useState( null );
-	const [ duplicated, setDuplicated ] = useState( null );
+const DuplicateButton = ({ autosave, campaignGroups, duplicateOf, isSavingPost, postId, title }) => {
+	const [error, setError] = useState(null);
+	const [modalVisible, setModalVisible] = useState(false);
+	const [duplicateTitle, setDuplicateTitle] = useState(null);
+	const [duplicated, setDuplicated] = useState(null);
 
-	useEffect( () => {
-		setError( null );
-		if ( modalVisible && ! duplicateTitle ) {
+	useEffect(() => {
+		setError(null);
+		if (modalVisible && !duplicateTitle) {
 			getDefaultDupicateTitle();
 		}
-		if ( ! modalVisible ) {
-			setDuplicated( null );
-			setDuplicateTitle( null );
+		if (!modalVisible) {
+			setDuplicated(null);
+			setDuplicateTitle(null);
 		}
-	}, [ modalVisible ] );
+	}, [modalVisible]);
 
 	const getDefaultDupicateTitle = async () => {
-		const promptToDuplicate = parseInt( duplicateOf || postId );
+		const promptToDuplicate = parseInt(duplicateOf || postId);
 		try {
-			const defaultTitle = await apiFetch( {
-				path: `/newspack-popups/v1/${ promptToDuplicate }/${ postId }/duplicate`,
-			} );
+			const defaultTitle = await apiFetch({
+				path: `/newspack-popups/v1/${promptToDuplicate}/${postId}/duplicate`,
+			});
 
-			setDuplicateTitle( defaultTitle );
-		} catch ( e ) {
-			setDuplicateTitle( title + __( ' copy', 'newspack-popups' ) );
+			setDuplicateTitle(defaultTitle);
+		} catch (e) {
+			setDuplicateTitle(title + __(' copy', 'newspack-popups'));
 		}
 	};
 
-	const duplicatePrompt = async ( popupId, titleForDuplicate ) => {
-		setError( null );
+	const duplicatePrompt = async (popupId, titleForDuplicate) => {
+		setError(null);
 		try {
-			const newId = await apiFetch( {
-				path: addQueryArgs( `/newspack-popups/v1/${ popupId }/duplicate`, {
+			const newId = await apiFetch({
+				path: addQueryArgs(`/newspack-popups/v1/${popupId}/duplicate`, {
 					title: titleForDuplicate,
-				} ),
+				}),
 				method: 'POST',
-			} );
+			});
 
-			if ( isNaN( newId ) ) {
-				throw new Error( __( 'Error duplicating prompt.', 'newspack-popups' ) );
+			if (isNaN(newId)) {
+				throw new Error(__('Error duplicating prompt.', 'newspack-popups'));
 			}
 
 			// Redirect to edit page for the copy.
-			setDuplicated( newId );
-		} catch ( e ) {
-			setError( e?.message || __( 'Error duplicating prompt.', 'newspack-popups' ) );
+			setDuplicated(newId);
+		} catch (e) {
+			setError(e?.message || __('Error duplicating prompt.', 'newspack-popups'));
 		}
 	};
 
 	return (
 		<>
-			<Button
-				isSecondary
-				isBusy={ isSavingPost }
-				disabled={ isSavingPost }
-				onClick={ () => setModalVisible( true ) }
-			>
-				{ __( 'Duplicate', 'newspack-popups' ) }
+			<Button isSecondary isBusy={isSavingPost} disabled={isSavingPost} onClick={() => setModalVisible(true)}>
+				{__('Duplicate', 'newspack-popups')}
 			</Button>
-			{ modalVisible && (
+			{modalVisible && (
 				<Modal
 					className="newspack-popups__duplicate-modal"
 					// Translators: Title of the duplicated popup.
-					title={ sprintf( __( 'Duplicate “%s”', 'newspack-popups' ), title ) }
-					onRequestClose={ () => setModalVisible( false ) }
+					title={sprintf(__('Duplicate “%s”', 'newspack-popups'), title)}
+					onRequestClose={() => setModalVisible(false)}
 				>
-					{ error && (
-						<Notice isDismissible={ false } status="error">
-							{ error }
+					{error && (
+						<Notice isDismissible={false} status="error">
+							{error}
 						</Notice>
-					) }
-					{ duplicated ? (
+					)}
+					{duplicated ? (
 						<>
-							<Notice status="success" isDismissible={ false }>
-								{ sprintf(
+							<Notice status="success" isDismissible={false}>
+								{sprintf(
 									// Translators: Title of the duplicated popup.
-									__( 'Duplicate of “%s” created as a draft.', 'newspack-popups' ),
+									__('Duplicate of “%s” created as a draft.', 'newspack-popups'),
 									title
-								) }
+								)}
 							</Notice>
-							{ ( ! campaignGroups || 0 === campaignGroups.length ) && (
-								<Notice status="warning" isDismissible={ false }>
-									{ __(
-										'This prompt is currently not assigned to any campaign.',
-										'newspack-popups'
-									) }
+							{(!campaignGroups || 0 === campaignGroups.length) && (
+								<Notice status="warning" isDismissible={false}>
+									{__('This prompt is currently not assigned to any campaign.', 'newspack-popups')}
 								</Notice>
-							) }
+							)}
 							<Flex justify="flex-end">
-								<Button isSecondary onClick={ () => setModalVisible( false ) }>
-									{ __( 'Close', 'newspack-popups' ) }
+								<Button isSecondary onClick={() => setModalVisible(false)}>
+									{__('Close', 'newspack-popups')}
 								</Button>
-								<Button isPrimary href={ `/wp-admin/post.php?post=${ duplicated }&action=edit` }>
-									{ __( 'Edit', 'newspack-popups' ) }
+								<Button isPrimary href={`/wp-admin/post.php?post=${duplicated}&action=edit`}>
+									{__('Edit', 'newspack-popups')}
 								</Button>
 							</Flex>
 						</>
 					) : (
 						<>
-							{ ( ! campaignGroups || 0 === campaignGroups.length ) && (
-								<Notice status="warning" isDismissible={ false }>
-									{ __( 'This prompt will not be assigned to any campaign.', 'newspack-popups' ) }
+							{(!campaignGroups || 0 === campaignGroups.length) && (
+								<Notice status="warning" isDismissible={false}>
+									{__('This prompt will not be assigned to any campaign.', 'newspack-popups')}
 								</Notice>
-							) }
+							)}
 							<TextControl
-								disabled={ isSavingPost || null === duplicateTitle }
-								label={ __( 'Title', 'newspack-popups' ) }
-								value={ duplicateTitle }
-								onChange={ value => setDuplicateTitle( value ) }
+								disabled={isSavingPost || null === duplicateTitle}
+								label={__('Title', 'newspack-popups')}
+								value={duplicateTitle}
+								onChange={value => setDuplicateTitle(value)}
 							/>
 							<Flex justify="flex-end">
 								<Button
-									isBusy={ isSavingPost }
+									isBusy={isSavingPost}
 									isSecondary
-									onClick={ () => {
-										setModalVisible( false );
-									} }
+									onClick={() => {
+										setModalVisible(false);
+									}}
 								>
-									{ __( 'Cancel', 'newspack-popups' ) }
+									{__('Cancel', 'newspack-popups')}
 								</Button>
 								<Button
-									isBusy={ isSavingPost }
-									disabled={ null === duplicateTitle }
+									isBusy={isSavingPost}
+									disabled={null === duplicateTitle}
 									isPrimary
-									onClick={ () => {
-										const titleForDuplicate =
-											duplicateTitle.trim() || title + __( ' copy', 'newspack-popups' );
-										autosave().then( duplicatePrompt( postId, titleForDuplicate ) );
-									} }
+									onClick={() => {
+										const titleForDuplicate = duplicateTitle.trim() || title + __(' copy', 'newspack-popups');
+										autosave().then(duplicatePrompt(postId, titleForDuplicate));
+									}}
 								>
-									{ __( 'Duplicate', 'newspack-popups' ) }
+									{__('Duplicate', 'newspack-popups')}
 								</Button>
 							</Flex>
 						</>
-					) }
+					)}
 				</Modal>
-			) }
+			)}
 		</>
 	);
 };
 
-export default compose( [
-	withSelect( select => {
-		const { isSavingPost, getCurrentPostId, getEditedPostAttribute } = select( 'core/editor' );
-		const { duplicate_of: duplicateOf } = getEditedPostAttribute( 'meta' );
+export default compose([
+	withSelect(select => {
+		const { isSavingPost, getCurrentPostId, getEditedPostAttribute } = select('core/editor');
+		const { duplicate_of: duplicateOf } = getEditedPostAttribute('meta');
 		return {
 			postId: getCurrentPostId(),
 			isSavingPost: isSavingPost(),
-			title: getEditedPostAttribute( 'title' ),
-			campaignGroups: getEditedPostAttribute( 'newspack_popups_taxonomy' ),
+			title: getEditedPostAttribute('title'),
+			campaignGroups: getEditedPostAttribute('newspack_popups_taxonomy'),
 			duplicateOf,
 		};
-	} ),
-	withDispatch( dispatch => {
-		const { autosave } = dispatch( 'core/editor' );
-		const { createNotice } = dispatch( 'core/notices' );
+	}),
+	withDispatch(dispatch => {
+		const { autosave } = dispatch('core/editor');
+		const { createNotice } = dispatch('core/notices');
 		return {
 			autosave,
 			createNotice,
 		};
-	} ),
-] )( DuplicateButton );
+	}),
+])(DuplicateButton);

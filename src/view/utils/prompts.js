@@ -6,7 +6,7 @@
  * @return {Array} Array of prompt elements.
  */
 export const getPrompts = () => {
-	return [ ...document.querySelectorAll( '.newspack-popup-container' ) ];
+	return [...document.querySelectorAll('.newspack-popup-container')];
 };
 
 /**
@@ -17,8 +17,8 @@ export const getPrompts = () => {
  * @return {number} Raw ID number from the element ID.
  */
 export const getRawId = id => {
-	const parts = id.split( '_' );
-	return parseInt( parts[ parts.length - 1 ] );
+	const parts = id.split('_');
+	return parseInt(parts[parts.length - 1]);
 };
 
 /**
@@ -27,15 +27,15 @@ export const getRawId = id => {
  * @param {Event} event Dispatched click event.
  */
 export const closeOverlay = event => {
-	const parent = event.currentTarget.closest( '.newspack-lightbox' );
+	const parent = event.currentTarget.closest('.newspack-lightbox');
 
-	if ( parent && parent.contains( event.currentTarget ) ) {
+	if (parent && parent.contains(event.currentTarget)) {
 		parent.style.display = 'none';
 	}
 
 	// Remove the overlay from RAS.
-	if ( parent.overlayId && window.newspackReaderActivation?.overlays ) {
-		window.newspackReaderActivation.overlays.remove( parent.overlayId );
+	if (parent.overlayId && window.newspackReaderActivation?.overlays) {
+		window.newspackReaderActivation.overlays.remove(parent.overlayId);
 	}
 
 	event.preventDefault();
@@ -47,11 +47,11 @@ export const closeOverlay = event => {
  * @param {string} key  Key name for debug data.
  * @param {any}    data Data to log.
  */
-export const debug = ( key, data ) => {
-	if ( ! newspack_popups_view.debug ) {
+export const debug = (key, data) => {
+	if (!newspack_popups_view.debug) {
 		return;
 	}
 
 	window.newspack_popups_debug = window.newspack_popups_debug || {};
-	window.newspack_popups_debug[ key ] = data;
+	window.newspack_popups_debug[key] = data;
 };

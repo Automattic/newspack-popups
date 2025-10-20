@@ -7,26 +7,24 @@
 /**
  * External dependencies
  */
-const getBaseWebpackConfig = require( 'newspack-scripts/config/getWebpackConfig' );
-const path = require( 'path' );
+const getBaseWebpackConfig = require('newspack-scripts/config/getWebpackConfig');
+const path = require('path');
 
 /**
  * Internal variables
  */
 const entry = {
-	editor: path.join( __dirname, 'src', 'editor' ),
-	view: path.join( __dirname, 'src', 'view' ),
-	admin: path.join( __dirname, 'src', 'view', 'admin' ),
-	documentSettings: path.join( __dirname, 'src', 'document-settings' ),
-	settings: path.join( __dirname, 'src', 'settings' ),
-	blocks: path.join( __dirname, 'src', 'blocks' ),
-	criteria: path.join( __dirname, 'src', 'criteria' ),
+	editor: path.join(__dirname, 'src', 'editor'),
+	view: path.join(__dirname, 'src', 'view'),
+	admin: path.join(__dirname, 'src', 'view', 'admin'),
+	documentSettings: path.join(__dirname, 'src', 'document-settings'),
+	settings: path.join(__dirname, 'src', 'settings'),
+	blocks: path.join(__dirname, 'src', 'blocks'),
+	criteria: path.join(__dirname, 'src', 'criteria'),
 };
 
-const webpackConfig = getBaseWebpackConfig(
-	{
-		entry,
-	}
-);
+const webpackConfig = getBaseWebpackConfig({
+	entry,
+});
 
 module.exports = webpackConfig;

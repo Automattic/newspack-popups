@@ -23,19 +23,19 @@ export const getIntersectionObserver = handleEvent => {
 	let timer;
 	const observer = new IntersectionObserver(
 		entries => {
-			entries.forEach( observerEntry => {
-				if ( observerEntry.isIntersecting ) {
-					if ( ! timer ) {
-						timer = setTimeout( () => {
+			entries.forEach(observerEntry => {
+				if (observerEntry.isIntersecting) {
+					if (!timer) {
+						timer = setTimeout(() => {
 							handleEvent();
-							observer.unobserve( observerEntry.target );
-						}, MINIMUM_VISIBLE_TIME || 0 );
+							observer.unobserve(observerEntry.target);
+						}, MINIMUM_VISIBLE_TIME || 0);
 					}
-				} else if ( timer ) {
-					clearTimeout( timer );
+				} else if (timer) {
+					clearTimeout(timer);
 					timer = false;
 				}
-			} );
+			});
 		},
 		{
 			threshold: MINIMUM_VISIBLE_PERCENTAGE,
@@ -53,8 +53,8 @@ export const getIntersectionObserver = handleEvent => {
  * @param {Function} callback A function to execute after the DOM is ready.
  * @return {void}
  */
-export function domReady( callback ) {
-	if ( typeof document === 'undefined' ) {
+export function domReady(callback) {
+	if (typeof document === 'undefined') {
 		return;
 	}
 	if (
@@ -64,7 +64,7 @@ export function domReady( callback ) {
 		return void callback();
 	}
 	// DOMContentLoaded has not fired yet, delay callback until then.
-	document.addEventListener( 'DOMContentLoaded', callback );
+	document.addEventListener('DOMContentLoaded', callback);
 }
 
 /**
@@ -73,10 +73,9 @@ export function domReady( callback ) {
  * @param {HTMLElement} prompt HTML element for prompt.
  * @param {Object}      ras    Reader Data Library object.
  */
-export const handleSeen = ( prompt, ras ) => {
-	const handleEvent = () =>
-		ras.dispatchActivity( 'prompt_seen', { prompt_id: getRawId( prompt.getAttribute( 'id' ) ) } );
-	getIntersectionObserver( handleEvent ).observe( prompt, { attributes: true } );
+export const handleSeen = (prompt, ras) => {
+	const handleEvent = () => ras.dispatchActivity('prompt_seen', { prompt_id: getRawId(prompt.getAttribute('id')) });
+	getIntersectionObserver(handleEvent).observe(prompt, { attributes: true });
 };
 
 /**
@@ -103,32 +102,32 @@ export const logPageview = ras => {
 		},
 	};
 
-	const priorPageviews = ras.store.get( 'pageviews' ) || {};
+	const priorPageviews = ras.store.get('pageviews') || {};
 	const pageviews = { ...pageviewTemplate, ...priorPageviews };
 
 	// If the current page is the donor landing page, mark the reader as a donor.
 	let pageId;
-	document.body.classList.forEach( className => {
-		if ( 0 === className.indexOf( 'page-id-' ) ) {
-			pageId = parseInt( className.replace( 'page-id-', '' ) );
+	document.body.classList.forEach(className => {
+		if (0 === className.indexOf('page-id-')) {
+			pageId = parseInt(className.replace('page-id-', ''));
 		}
-	} );
-	if ( pageId && parseInt( newspack_popups_view?.donor_landing_page ) === pageId ) {
-		ras.store.set( 'is_donor', true );
+	});
+	if (pageId && parseInt(newspack_popups_view?.donor_landing_page) === pageId) {
+		ras.store.set('is_donor', true);
 	}
 
-	for ( const period in pageviews ) {
+	for (const period in pageviews) {
 		// If the period has elapsed, reset the count.
-		if ( periods[ period ] < now - pageviews[ period ].start ) {
-			pageviews[ period ].count = 0;
-			pageviews[ period ].start = now;
+		if (periods[period] < now - pageviews[period].start) {
+			pageviews[period].count = 0;
+			pageviews[period].start = now;
 		}
 
 		// Increment the count.
-		pageviews[ period ].count++;
+		pageviews[period].count++;
 	}
 
 	// Persist to the Reader Data Library store.
-	ras.store.set( 'pageviews', pageviews );
+	ras.store.set('pageviews', pageviews);
 	return pageviews;
 };

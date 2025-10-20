@@ -9,12 +9,12 @@
  *
  * @return {Object} Event payload.
  */
-export const getEventPayload = ( action, promptId, extraParams = {} ) => {
-	if ( ! newspackPopupsData || ! newspackPopupsData[ promptId ] ) {
+export const getEventPayload = (action, promptId, extraParams = {}) => {
+	if (!newspackPopupsData || !newspackPopupsData[promptId]) {
 		return false;
 	}
 
-	return { ...newspackPopupsData[ promptId ], ...extraParams, action };
+	return { ...newspackPopupsData[promptId], ...extraParams, action };
 };
 
 /**
@@ -23,8 +23,8 @@ export const getEventPayload = ( action, promptId, extraParams = {} ) => {
  * @param {Object} payload   Event payload.
  * @param {string} eventName Name of the event. Defaults to `np_prompt_interaction` but can be overriden if necessary.
  */
-export const sendEvent = ( payload, eventName = 'np_prompt_interaction' ) => {
-	if ( 'function' === typeof gtag && payload ) {
-		gtag( 'event', eventName, payload );
+export const sendEvent = (payload, eventName = 'np_prompt_interaction') => {
+	if ('function' === typeof gtag && payload) {
+		gtag('event', eventName, payload);
 	}
 };
