@@ -1,6 +1,6 @@
-import { setMatchingFunction } from '../utils';
+import {setMatchingFunction} from '../utils';
 
-setMatchingFunction('devices', (config, ras, { optionParams }) => {
+setMatchingFunction('devices', ( config, ras, { optionParams } )  => {
 	const selectedDevices = Array.isArray(config.value) ? config.value : [];
 	if (selectedDevices.length === 0) {
 		return false;
@@ -16,4 +16,5 @@ setMatchingFunction('devices', (config, ras, { optionParams }) => {
 
 		return width >= device.min_width && width < device.max_width;
 	});
+
 });

@@ -8,11 +8,11 @@ import { manageFormSubmissions } from './submitted';
 
 export const handleAnalytics = prompts => {
 	// Must have a gtag instance to proceed.
-	if ('function' === typeof gtag) {
-		manageLoadedEvents(prompts);
+	if ( 'function' === typeof gtag ) {
+		manageLoadedEvents( prompts );
 		manageSeenEvents();
-		manageDismissals(prompts);
-		manageClickedEvents(prompts);
-		manageFormSubmissions(prompts);
+		manageDismissals( prompts );
+		manageClickedEvents( prompts );
+		manageFormSubmissions( prompts );
 	}
 };
