@@ -18,15 +18,15 @@ const pendingConfig = {};
  *
  * @throws {Error} If the criteria ID is not provided.
  */
-export function registerCriteria(id, config = {}) {
-	if (!id) {
-		throw new Error('Criteria must have an ID.');
+export function registerCriteria( id, config = {} ) {
+	if ( ! id ) {
+		throw new Error( 'Criteria must have an ID.' );
 	}
 	const criteria = {
 		id,
 		matchingFunction: 'default',
 		...config,
-		...pendingConfig[id],
+		...pendingConfig[ id ],
 	};
 
 	/**
@@ -34,71 +34,79 @@ export function registerCriteria(id, config = {}) {
 	 */
 	const setup = ras => {
 		// Run setup only once.
-		if (criteria._configured) {
+		if ( criteria._configured ) {
 			return;
 		}
 		criteria._configured = true;
 
 		// Default attribute to the criteria ID.
-		if (!criteria.matchingAttribute) {
+		if ( ! criteria.matchingAttribute ) {
 			criteria.matchingAttribute = criteria.id;
 		}
 
 		// Configure matching function.
-		if (typeof criteria.matchingFunction === 'string' && matchingFunctions[criteria.matchingFunction]) {
-			criteria.matchingFunction = matchingFunctions[criteria.matchingFunction].bind(null, criteria);
+		if (
+			typeof criteria.matchingFunction === 'string' &&
+			matchingFunctions[ criteria.matchingFunction ]
+		) {
+			criteria.matchingFunction = matchingFunctions[ criteria.matchingFunction ].bind(
+				null,
+				criteria
+			);
 		}
 
 		// Bail if unable to configure matching function.
-		if (typeof criteria.matchingFunction !== 'function') {
-			console.warn(`Unable to configure matching function for criteria ${criteria.id}.`); // eslint-disable-line no-console
+		if ( typeof criteria.matchingFunction !== 'function' ) {
+			console.warn( `Unable to configure matching function for criteria ${ criteria.id }.` ); // eslint-disable-line no-console
 			return;
 		}
 
 		// Clear matched cache when the reader data library store changes.
-		if (typeof ras?.on === 'function') {
-			ras.on('data', () => {
+		if ( typeof ras?.on === 'function' ) {
+			ras.on( 'data', () => {
 				criteria._matched = {};
-			});
+			} );
 		}
 
 		// Set criteria value.
-		criteria.value = criteria.getValue(ras);
+		criteria.value = criteria.getValue( ras );
 	};
 
 	criteria.getValue = ras => {
-		if (typeof criteria.matchingAttribute === 'function') {
-			return criteria.matchingAttribute(ras);
+		if ( typeof criteria.matchingAttribute === 'function' ) {
+			return criteria.matchingAttribute( ras );
 		}
-		if (typeof criteria.matchingAttribute === 'string') {
-			if (typeof ras?.store?.get === 'function') {
-				return ras.store.get(criteria.matchingAttribute);
+		if ( typeof criteria.matchingAttribute === 'string' ) {
+			if ( typeof ras?.store?.get === 'function' ) {
+				return ras.store.get( criteria.matchingAttribute );
 			}
 			// eslint-disable-next-line no-console
-			console.warn(`Reader data library not loaded. Unable to fetch value for '${criteria.id}'`);
+			console.warn(
+				`Reader data library not loaded. Unable to fetch value for '${ criteria.id }'`
+			);
 		}
 		return criteria.value;
-	};
+	}
 
 	// Check if the criteria matches the segment config.
 	criteria._matched = {}; // Cache results.
 	criteria.matches = segmentConfig => {
-		const configString = JSON.stringify(segmentConfig);
-		if (criteria._matched[configString] !== undefined) {
-			return criteria._matched[configString];
+		const configString = JSON.stringify( segmentConfig );
+		if ( criteria._matched[ configString ] !== undefined ) {
+			return criteria._matched[ configString ];
 		}
 		const ras = window.newspackReaderActivation;
-		if (!ras) {
-			console.warn('Reader activation script not loaded.'); // eslint-disable-line no-console
+		if ( ! ras ) {
+			console.warn( 'Reader activation script not loaded.' ); // eslint-disable-line no-console
 		}
-		setup(ras);
-		criteria._matched[configString] = criteria.matchingFunction(segmentConfig, ras, criteria);
-		return criteria._matched[configString];
+		setup( ras );
+		criteria._matched[ configString ] = criteria.matchingFunction( segmentConfig, ras, criteria );
+		return criteria._matched[ configString ];
 	};
-	if (!window.newspackPopupsCriteria.criteria) {
+	if ( ! window.newspackPopupsCriteria.criteria ) {
 		window.newspackPopupsCriteria.criteria = {};
 	}
-	window.newspackPopupsCriteria.criteria[id] = criteria;
+	window.newspackPopupsCriteria.criteria[ id ] = criteria;
 
 	return criteria;
 }
@@ -111,9 +119,9 @@ export function registerCriteria(id, config = {}) {
  * @return {Object|undefined} The criteria object or an object of all criteria.
  *                            undefined if the criteria ID is not found.
  */
-export function getCriteria(id) {
-	if (id) {
-		return window.newspackPopupsCriteria.criteria[id];
+export function getCriteria( id ) {
+	if ( id ) {
+		return window.newspackPopupsCriteria.criteria[ id ];
 	}
 	return window.newspackPopupsCriteria.criteria;
 }
@@ -127,11 +135,11 @@ export function getCriteria(id) {
  *
  * @throws {Error} If the criteria ID is not found.
  */
-export function setMatchingAttribute(id, matchingAttribute) {
-	let criteria = getCriteria(id);
-	if (!criteria) {
-		pendingConfig[id] = pendingConfig[id] || {};
-		criteria = pendingConfig[id];
+export function setMatchingAttribute( id, matchingAttribute ) {
+	let criteria = getCriteria( id );
+	if ( ! criteria ) {
+		pendingConfig[ id ] = pendingConfig[ id ] || {};
+		criteria = pendingConfig[ id ];
 	}
 	criteria._matched = {}; // Clear matched cache.
 	criteria.matchingAttribute = matchingAttribute;
@@ -145,11 +153,11 @@ export function setMatchingAttribute(id, matchingAttribute) {
  *
  * @throws {Error} If the criteria ID is not found.
  */
-export function setMatchingFunction(id, matchingFunction) {
-	let criteria = getCriteria(id);
-	if (!criteria) {
-		pendingConfig[id] = pendingConfig[id] || {};
-		criteria = pendingConfig[id];
+export function setMatchingFunction( id, matchingFunction ) {
+	let criteria = getCriteria( id );
+	if ( ! criteria ) {
+		pendingConfig[ id ] = pendingConfig[ id ] || {};
+		criteria = pendingConfig[ id ];
 	}
 	criteria._matched = {}; // Clear matched cache.
 	criteria.matchingFunction = matchingFunction;

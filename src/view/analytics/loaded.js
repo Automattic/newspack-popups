@@ -7,13 +7,17 @@ import { getEventPayload, getRawId, sendEvent } from '../utils';
  * @return {MutationObserver} Observer instance.
  */
 const getObserver = handleEvent => {
-	return new MutationObserver(mutations => {
-		mutations.forEach(mutation => {
-			if (mutation.attributeName === 'amp-access-hide' && mutation.type === 'attributes' && !mutation.target.hasAttribute('amp-access-hide')) {
+	return new MutationObserver( mutations => {
+		mutations.forEach( mutation => {
+			if (
+				mutation.attributeName === 'amp-access-hide' &&
+				mutation.type === 'attributes' &&
+				! mutation.target.hasAttribute( 'amp-access-hide' )
+			) {
 				handleEvent();
 			}
-		});
-	});
+		} );
+	} );
 };
 
 /**
@@ -22,12 +26,12 @@ const getObserver = handleEvent => {
  * @param {Array} prompts Array of prompts loaded in the DOM.
  */
 export const manageLoadedEvents = prompts => {
-	prompts.forEach(prompt => {
+	prompts.forEach( prompt => {
 		const handleEvent = () => {
-			const payload = getEventPayload('loaded', getRawId(prompt.getAttribute('id')));
-			sendEvent(payload);
+			const payload = getEventPayload( 'loaded', getRawId( prompt.getAttribute( 'id' ) ) );
+			sendEvent( payload );
 		};
 
-		getObserver(handleEvent).observe(prompt, { attributes: true });
-	});
+		getObserver( handleEvent ).observe( prompt, { attributes: true } );
+	} );
 };
