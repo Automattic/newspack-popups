@@ -22,7 +22,7 @@ import {
 /**
  * Newspack dependencies.
  */
-import { NewspackLogo } from 'newspack-components';
+import { NewspackIcon } from 'newspack-components';
 
 /**
  * Internal dependencies
@@ -117,7 +117,7 @@ const App = () => {
 					target="_blank"
 					label={ __( 'By Newspack' ) }
 				>
-					<NewspackLogo height={ 32 } />
+					<NewspackIcon height={ 32 } />
 				</Button>
 			</div>
 			<Card>
