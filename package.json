@@ -34,7 +34,7 @@
 		"classnames": "^2.5.1",
 		"intersection-observer": "^0.12.2",
 		"js-cookie": "^3.0.5",
-		"newspack-components": "^3.1.0",
+		"newspack-components": "^4.1.0",
 		"qs": "^6.14.0"
 	},
 	"devDependencies": {
