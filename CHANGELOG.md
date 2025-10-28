@@ -1,3 +1,24 @@
+## [3.6.2](https://github.com/Automattic/newspack-popups/compare/v3.6.1...v3.6.2) (2025-10-16)
+
+
+### Bug Fixes
+
+* don’t add overlays to ras store if locked via front-end metering ([#1480](https://github.com/Automattic/newspack-popups/issues/1480)) ([8abfc1d](https://github.com/Automattic/newspack-popups/commit/8abfc1d4c667626742aba445822f77b7a46865f4))
+
+## [3.6.1](https://github.com/Automattic/newspack-popups/compare/v3.6.0...v3.6.1) (2025-09-08)
+
+
+### Bug Fixes
+
+* scheduling expiry check for midnight using AS ([#1467](https://github.com/Automattic/newspack-popups/issues/1467)) ([9ccb1fa](https://github.com/Automattic/newspack-popups/commit/9ccb1faebeaa16777780f67cddbb6f3e00df754b))
+
+# [3.6.0](https://github.com/Automattic/newspack-popups/compare/v3.5.4...v3.6.0) (2025-08-25)
+
+
+### Features
+
+* add i18n ([#1460](https://github.com/Automattic/newspack-popups/issues/1460)) ([1462aca](https://github.com/Automattic/newspack-popups/commit/1462aca5a5e933a0c3f3024ead24c11cbf9c817f))
+
 ## [3.5.4](https://github.com/Automattic/newspack-popups/compare/v3.5.3...v3.5.4) (2025-08-11)
 
 
