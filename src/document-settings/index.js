@@ -9,10 +9,7 @@ import { registerPlugin } from '@wordpress/plugins';
 import { ToggleControl } from '@wordpress/components';
 
 const PopupsSettingsPanel = ( { hasDisabledPopups, onChange } ) => (
-	<PluginDocumentSettingPanel
-		name="newsletters-popups-settings-panel"
-		title={ __( 'Newspack Campaigns Settings', 'newspack-popups' ) }
-	>
+	<PluginDocumentSettingPanel name="newsletters-popups-settings-panel" title={ __( 'Newspack Campaigns Settings', 'newspack-popups' ) }>
 		<ToggleControl
 			checked={ hasDisabledPopups }
 			onChange={ () => onChange( ! hasDisabledPopups ) }

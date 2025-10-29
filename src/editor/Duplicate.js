@@ -9,14 +9,7 @@ import { useEffect, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 import { addQueryArgs } from '@wordpress/url';
 
-const DuplicateButton = ( {
-	autosave,
-	campaignGroups,
-	duplicateOf,
-	isSavingPost,
-	postId,
-	title,
-} ) => {
+const DuplicateButton = ( { autosave, campaignGroups, duplicateOf, isSavingPost, postId, title } ) => {
 	const [ error, setError ] = useState( null );
 	const [ modalVisible, setModalVisible ] = useState( false );
 	const [ duplicateTitle, setDuplicateTitle ] = useState( null );
@@ -42,7 +35,7 @@ const DuplicateButton = ( {
 
 			setDuplicateTitle( defaultTitle );
 		} catch ( e ) {
-			setDuplicateTitle( title + __( ' copy', 'newspack-popups' ) );
+			setDuplicateTitle( title + __( 'copy', 'newspack-popups' ) );
 		}
 	};
 
@@ -69,18 +62,13 @@ const DuplicateButton = ( {
 
 	return (
 		<>
-			<Button
-				isSecondary
-				isBusy={ isSavingPost }
-				disabled={ isSavingPost }
-				onClick={ () => setModalVisible( true ) }
-			>
+			<Button isSecondary isBusy={ isSavingPost } disabled={ isSavingPost } onClick={ () => setModalVisible( true ) }>
 				{ __( 'Duplicate', 'newspack-popups' ) }
 			</Button>
 			{ modalVisible && (
 				<Modal
 					className="newspack-popups__duplicate-modal"
-					// Translators: Title of the duplicated popup.
+					// translators: %s: title of the duplicated popup.
 					title={ sprintf( __( 'Duplicate “%s”', 'newspack-popups' ), title ) }
 					onRequestClose={ () => setModalVisible( false ) }
 				>
@@ -93,17 +81,14 @@ const DuplicateButton = ( {
 						<>
 							<Notice status="success" isDismissible={ false }>
 								{ sprintf(
-									// Translators: Title of the duplicated popup.
+									// translators: %s: title of the duplicated popup.
 									__( 'Duplicate of “%s” created as a draft.', 'newspack-popups' ),
 									title
 								) }
 							</Notice>
 							{ ( ! campaignGroups || 0 === campaignGroups.length ) && (
 								<Notice status="warning" isDismissible={ false }>
-									{ __(
-										'This prompt is currently not assigned to any campaign.',
-										'newspack-popups'
-									) }
+									{ __( 'This prompt is currently not assigned to any campaign.', 'newspack-popups' ) }
 								</Notice>
 							) }
 							<Flex justify="flex-end">
@@ -143,8 +128,7 @@ const DuplicateButton = ( {
 									disabled={ null === duplicateTitle }
 									isPrimary
 									onClick={ () => {
-										const titleForDuplicate =
-											duplicateTitle.trim() || title + __( ' copy', 'newspack-popups' );
+										const titleForDuplicate = duplicateTitle.trim() || title + __( 'copy', 'newspack-popups' );
 										autosave().then( duplicatePrompt( postId, titleForDuplicate ) );
 									} }
 								>

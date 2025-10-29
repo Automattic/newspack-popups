@@ -23,10 +23,8 @@ const entry = {
 	criteria: path.join( __dirname, 'src', 'criteria' ),
 };
 
-const webpackConfig = getBaseWebpackConfig(
-	{
-		entry,
-	}
-);
+const webpackConfig = getBaseWebpackConfig( {
+	entry,
+} );
 
 module.exports = webpackConfig;

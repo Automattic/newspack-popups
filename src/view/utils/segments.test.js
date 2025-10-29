@@ -127,13 +127,7 @@ window.newspackReaderActivation = {
 
 const ras = window.newspackReaderActivation;
 
-const createPrompt = (
-	assignedSegments = [],
-	frequency = '0,0,0,month',
-	id = '1',
-	type = 'inline',
-	utmSuppression = ''
-) => {
+const createPrompt = ( assignedSegments = [], frequency = '0,0,0,month', id = '1', type = 'inline', utmSuppression = '' ) => {
 	const prompt = document.createElement( 'div' );
 	prompt.setAttribute( 'id', 'id_' + id );
 	prompt.setAttribute( 'data-segments', assignedSegments.join( ',' ) );
@@ -197,17 +191,13 @@ describe( 'segmentation API', () => {
 
 	it( 'should return false if the reader doesn’t match the prompt’s segments', () => {
 		const prompt = createPrompt( [ 'segment4' ] );
-		expect(
-			shouldPromptBeDisplayed( prompt, getBestPrioritySegment( segments ), ras )
-		).toBeFalsy();
+		expect( shouldPromptBeDisplayed( prompt, getBestPrioritySegment( segments ), ras ) ).toBeFalsy();
 	} );
 
 	it( 'should return true if the reader matches the prompt’s segments', () => {
 		const prompt = createPrompt( [ 'segment4' ] );
 		ras.store.set( 'list__in', 'list-value' );
-		expect(
-			shouldPromptBeDisplayed( prompt, getBestPrioritySegment( segments ), ras )
-		).toBeTruthy();
+		expect( shouldPromptBeDisplayed( prompt, getBestPrioritySegment( segments ), ras ) ).toBeTruthy();
 	} );
 
 	it( 'should return true if the prompt has no assigned segments', () => {
@@ -217,16 +207,12 @@ describe( 'segmentation API', () => {
 
 	it( 'should return false if the reader hasn’t amassed enough pageviews', () => {
 		const prompt = createPrompt( [], '2,0,0,month' );
-		expect(
-			shouldPromptBeDisplayed( prompt, getBestPrioritySegment( segments ), ras )
-		).toBeFalsy();
+		expect( shouldPromptBeDisplayed( prompt, getBestPrioritySegment( segments ), ras ) ).toBeFalsy();
 	} );
 
 	it( 'should return false if the reader has already viewed the prompt the max number of times', () => {
 		const prompt = createPrompt( [], '0,0,1,month' );
-		expect(
-			shouldPromptBeDisplayed( prompt, getBestPrioritySegment( segments ), ras )
-		).toBeFalsy();
+		expect( shouldPromptBeDisplayed( prompt, getBestPrioritySegment( segments ), ras ) ).toBeFalsy();
 	} );
 
 	it( 'should only show one overlay prompt per request', () => {
@@ -250,7 +236,7 @@ describe( 'segmentation API', () => {
 		expect( shouldPromptBeDisplayed( prompt, null, ras, pidOverride ) ).toBeTruthy();
 	} );
 
-	it ( 'should return false if the reader has or had the UTM Suppression value in utm_source params', () => {
+	it( 'should return false if the reader has or had the UTM Suppression value in utm_source params', () => {
 		const prompt = createPrompt( [], '0,0,0,month', '1', 'inline', 'suppress_this' );
 
 		// If the URL does not contain the prompt's UTM suppression value in utm_source, the prompt should be displayed.

@@ -14,12 +14,7 @@ import { BaseControl } from '@wordpress/components';
  */
 import { CategoryAutocomplete, TextControl } from 'newspack-components';
 
-const AdvancedSidebar = ( {
-	onMetaFieldChange,
-	excluded_categories = [],
-	excluded_tags = [],
-	additional_classes = '',
-} ) => {
+const AdvancedSidebar = ( { onMetaFieldChange, excluded_categories = [], excluded_tags = [], additional_classes = '' } ) => {
 	return (
 		<Fragment>
 			<BaseControl>
@@ -36,10 +31,7 @@ const AdvancedSidebar = ( {
 				<hr />
 				<CategoryAutocomplete
 					label={ __( 'Excluded Categories', 'newspack-popups' ) }
-					description={ __(
-						'The prompt will not be shown on posts that have any these categories.',
-						'newspack-popups'
-					) }
+					description={ __( 'The prompt will not be shown on posts that have any these categories.', 'newspack-popups' ) }
 					value={ excluded_categories }
 					onChange={ tokens =>
 						onMetaFieldChange( {
@@ -50,10 +42,7 @@ const AdvancedSidebar = ( {
 				<hr />
 				<CategoryAutocomplete
 					label={ __( 'Excluded Tags', 'newspack-popups' ) }
-					description={ __(
-						'The prompt will not be shown on posts that have any these tags.',
-						'newspack-popups'
-					) }
+					description={ __( 'The prompt will not be shown on posts that have any these tags.', 'newspack-popups' ) }
 					taxonomy="tags"
 					value={ excluded_tags }
 					onChange={ tokens =>

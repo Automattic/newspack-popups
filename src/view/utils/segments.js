@@ -151,11 +151,7 @@ export const shouldPromptBeDisplayed = ( prompt, matchingSegment, ras, override 
 
 			// If reader hasn't amassed enough pageviews yet.
 			if ( views <= parseInt( start ) ) {
-				suppression.push(
-					`Prompt displayed starting at pageview ${
-						parseInt( start ) + 1
-					}. Reader has only ${ views } pageviews.`
-				);
+				suppression.push( `Prompt displayed starting at pageview ${ parseInt( start ) + 1 }. Reader has only ${ views } pageviews.` );
 				return false;
 			}
 
@@ -171,10 +167,7 @@ export const shouldPromptBeDisplayed = ( prompt, matchingSegment, ras, override 
 			// If there's a max frequency.
 			const promptId = getRawId( id );
 			const seenEvents = ( ras.getActivities( 'prompt_seen' ) || [] ).filter( activity => {
-				return (
-					activity.data?.prompt_id === promptId &&
-					periods[ reset ] > Date.now() - activity.timestamp
-				);
+				return activity.data?.prompt_id === promptId && periods[ reset ] > Date.now() - activity.timestamp;
 			} );
 			if ( 0 < parseInt( max ) && seenEvents.length >= parseInt( max ) ) {
 				suppression.push( `Prompt already displayed the max of ${ max } times.` );
@@ -187,7 +180,7 @@ export const shouldPromptBeDisplayed = ( prompt, matchingSegment, ras, override 
 		if ( suppressByUTM ) {
 			const suppressionValues = ras.store.get( 'utm_source' ) || [];
 			const params = new URLSearchParams( window.location.search );
-			const currentUTM = params.get( 'utm_source' )
+			const currentUTM = params.get( 'utm_source' );
 			let suppressedByUTM = false;
 			if ( -1 < suppressionValues.indexOf( suppressByUTM ) ) {
 				suppressedByUTM = true;
@@ -203,9 +196,7 @@ export const shouldPromptBeDisplayed = ( prompt, matchingSegment, ras, override 
 		}
 
 		// By assigned segments.
-		const assignedSegments = prompt.getAttribute( 'data-segments' )
-			? prompt.getAttribute( 'data-segments' ).split( ',' )
-			: null;
+		const assignedSegments = prompt.getAttribute( 'data-segments' ) ? prompt.getAttribute( 'data-segments' ).split( ',' ) : null;
 		if ( assignedSegments && 0 > assignedSegments.indexOf( matchingSegment ) ) {
 			suppression.push( 'Reader does not match prompt’s assigned segments.' );
 			return false;
@@ -237,12 +228,7 @@ export const shouldPromptBeDisplayed = ( prompt, matchingSegment, ras, override 
  *
  * @return {boolean|null} The override value to pass to the shouldPromptBeDisplayed function.
  */
-export const getOverride = (
-	promptId,
-	isOverlay = false,
-	overlayDisplayed = false,
-	pidString = null
-) => {
+export const getOverride = ( promptId, isOverlay = false, overlayDisplayed = false, pidString = null ) => {
 	// If previewing a single prompt, it should always be displayed.
 	if ( promptId === getPreviewedPromptId( pidString ) ) {
 		return true;

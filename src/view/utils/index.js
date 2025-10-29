@@ -74,8 +74,7 @@ export function domReady( callback ) {
  * @param {Object}      ras    Reader Data Library object.
  */
 export const handleSeen = ( prompt, ras ) => {
-	const handleEvent = () =>
-		ras.dispatchActivity( 'prompt_seen', { prompt_id: getRawId( prompt.getAttribute( 'id' ) ) } );
+	const handleEvent = () => ras.dispatchActivity( 'prompt_seen', { prompt_id: getRawId( prompt.getAttribute( 'id' ) ) } );
 	getIntersectionObserver( handleEvent ).observe( prompt, { attributes: true } );
 };
 
