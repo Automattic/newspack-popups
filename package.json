@@ -2,6 +2,7 @@
 	"name": "newspack-popups",
 	"version": "3.6.2",
 	"author": "Automattic",
+	"main": "srsc/view/index.js",
 	"scripts": {
 		"cm": "newspack-scripts commit",
 		"semantic-release": "newspack-scripts release --files=newspack-popups.php",
@@ -32,17 +33,10 @@
 	},
 	"dependencies": {
 		"classnames": "^2.5.1",
-		"intersection-observer": "^0.12.2",
 		"js-cookie": "^3.0.5",
-		"newspack-components": "^4.1.0",
-		"qs": "^6.14.0"
+		"newspack-components": "^4.1.0"
 	},
 	"devDependencies": {
-		"@rushstack/eslint-patch": "^1.14.1",
-		"@wordpress/browserslist-config": "^6.33.0",
-		"eslint": "^8.57.0",
-		"lint-staged": "^15.5.1",
-		"newspack-scripts": "^5.5.2",
-		"postcss-scss": "^4.0.9"
+		"newspack-scripts": "github:Automattic/newspack-scripts#chore/refresh-dependencies"
 	}
 }
