@@ -54,10 +54,7 @@ const mapDispatchToProps = dispatch => {
 	};
 };
 
-const connectData = compose( [
-	withSelect( promptEditorPropsSelector ),
-	withDispatch( mapDispatchToProps ),
-] );
+const connectData = compose( [ withSelect( promptEditorPropsSelector ), withDispatch( mapDispatchToProps ) ] );
 
 // Connect data to components.
 const SidebarWithData = connectData( Sidebar );
@@ -71,10 +68,7 @@ const AdvancedSidebarWithData = connectData( AdvancedSidebar );
 // Register components.
 registerPlugin( 'newspack-popups-styles', {
 	render: () => (
-		<PluginDocumentSettingPanel
-			name="popup-styles-panel"
-			title={ __( 'Styles', 'newspack-popups' ) }
-		>
+		<PluginDocumentSettingPanel name="popup-styles-panel" title={ __( 'Styles', 'newspack-popups' ) }>
 			<StylesSidebarWithData />
 		</PluginDocumentSettingPanel>
 	),
@@ -83,10 +77,7 @@ registerPlugin( 'newspack-popups-styles', {
 
 registerPlugin( 'newspack-popups', {
 	render: () => (
-		<PluginDocumentSettingPanel
-			name="popup-settings-panel"
-			title={ __( 'Settings', 'newspack-popups' ) }
-		>
+		<PluginDocumentSettingPanel name="popup-settings-panel" title={ __( 'Settings', 'newspack-popups' ) }>
 			<SidebarWithData />
 		</PluginDocumentSettingPanel>
 	),
@@ -96,10 +87,7 @@ registerPlugin( 'newspack-popups', {
 if ( window?.newspack_popups_data?.segmentation_enabled ) {
 	registerPlugin( 'newspack-popups-frequency', {
 		render: () => (
-			<PluginDocumentSettingPanel
-				name="-frequency-panel"
-				title={ __( 'Frequency', 'newspack-popups' ) }
-			>
+			<PluginDocumentSettingPanel name="-frequency-panel" title={ __( 'Frequency', 'newspack-popups' ) }>
 				<FrequencySidebarWithData />
 			</PluginDocumentSettingPanel>
 		),
@@ -109,10 +97,7 @@ if ( window?.newspack_popups_data?.segmentation_enabled ) {
 
 registerPlugin( 'newspack-popups-colors', {
 	render: () => (
-		<PluginDocumentSettingPanel
-			name="popup-colors-panel"
-			title={ __( 'Color', 'newspack-popups' ) }
-		>
+		<PluginDocumentSettingPanel name="popup-colors-panel" title={ __( 'Color', 'newspack-popups' ) }>
 			<ColorsSidebarWithData />
 		</PluginDocumentSettingPanel>
 	),
@@ -121,10 +106,7 @@ registerPlugin( 'newspack-popups-colors', {
 
 registerPlugin( 'newspack-popups-post-types', {
 	render: () => (
-		<PluginDocumentSettingPanel
-			name="post-types-panel"
-			title={ __( 'Post Types', 'newspack-popups' ) }
-		>
+		<PluginDocumentSettingPanel name="post-types-panel" title={ __( 'Post Types', 'newspack-popups' ) }>
 			<PostTypesPanelWithData />
 		</PluginDocumentSettingPanel>
 	),
@@ -133,10 +115,7 @@ registerPlugin( 'newspack-popups-post-types', {
 
 registerPlugin( 'newspack-popups-expiration', {
 	render: () => (
-		<PluginDocumentSettingPanel
-			name="expiration-panel"
-			title={ __( 'Expiration', 'newspack-popups' ) }
-		>
+		<PluginDocumentSettingPanel name="expiration-panel" title={ __( 'Expiration', 'newspack-popups' ) }>
 			<ExpirationPanelWithData />
 		</PluginDocumentSettingPanel>
 	),
@@ -144,39 +123,23 @@ registerPlugin( 'newspack-popups-expiration', {
 } );
 
 if ( window.newspack_popups_merge_tags?.tags?.length ) {
-	wp.hooks.addFilter(
-		'editor.BlockEdit',
-		'newspack-popups/merge-tags-block-control',
-		BlockEdit => props => {
-			const blocks = [
-				'core/paragraph',
-				'core/heading',
-				'core/list-item',
-				'core/quote',
-				'core/pullquote',
-				'core/verse',
-				'core/preformatted',
-			];
-			if ( blocks.includes( props.name ) ) {
-				return (
-					<>
-						<BlockEdit { ...props } />
-						<MergeTagsBlockControl tags={ window.newspack_popups_merge_tags.tags } { ...props } />
-					</>
-				);
-			}
-			return <BlockEdit { ...props } />;
+	wp.hooks.addFilter( 'editor.BlockEdit', 'newspack-popups/merge-tags-block-control', BlockEdit => props => {
+		const blocks = [ 'core/paragraph', 'core/heading', 'core/list-item', 'core/quote', 'core/pullquote', 'core/verse', 'core/preformatted' ];
+		if ( blocks.includes( props.name ) ) {
+			return (
+				<>
+					<BlockEdit { ...props } />
+					<MergeTagsBlockControl tags={ window.newspack_popups_merge_tags.tags } { ...props } />
+				</>
+			);
 		}
-	)
+		return <BlockEdit { ...props } />;
+	} );
 }
-
 
 registerPlugin( 'newspack-popups-advanced', {
 	render: () => (
-		<PluginDocumentSettingPanel
-			name="popup-advanced-panel"
-			title={ __( 'Advanced Settings', 'newspack-popups' ) }
-		>
+		<PluginDocumentSettingPanel name="popup-advanced-panel" title={ __( 'Advanced Settings', 'newspack-popups' ) }>
 			<AdvancedSidebarWithData />
 		</PluginDocumentSettingPanel>
 	),
@@ -249,24 +212,12 @@ const NewspackPopupsSegmentsHelper = ( { slug } ) => {
 	return (
 		<Flex direction="column" gap="4">
 			<div className="newspack-popups-segments-tax-control-helper">
-				{ terms.length === 0 && (
-					<p>{ __( 'The prompt will be shown to all readers.', 'newspack-popups' ) }</p>
-				) }
+				{ terms.length === 0 && <p>{ __( 'The prompt will be shown to all readers.', 'newspack-popups' ) }</p> }
 				{ terms.length === 1 && (
-					<p>
-						{ __(
-							'The prompt will be shown only to readers who match the selected segment.',
-							'newspack-popups'
-						) }
-					</p>
+					<p>{ __( 'The prompt will be shown only to readers who match the selected segment.', 'newspack-popups' ) }</p>
 				) }
 				{ terms.length > 1 && (
-					<p>
-						{ __(
-							'The prompt will be shown only to readers who match the selected segments.',
-							'newspack-popups'
-						) }
-					</p>
+					<p>{ __( 'The prompt will be shown only to readers who match the selected segments.', 'newspack-popups' ) }</p>
 				) }
 			</div>
 
@@ -291,8 +242,4 @@ function customizeSelector( OriginalComponent ) {
 	};
 }
 
-wp.hooks.addFilter(
-	'editor.PostTaxonomyType',
-	'newspack/multibranded-site/brand-selector-filter',
-	customizeSelector
-);
+wp.hooks.addFilter( 'editor.PostTaxonomyType', 'newspack/multibranded-site/brand-selector-filter', customizeSelector );

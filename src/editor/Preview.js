@@ -29,14 +29,11 @@ const PreviewSetting = ( { autosavePost, isSavingPost, postId, metaFields } ) =>
 	};
 
 	const isArchivePagesPrompt = metaFields.placement === 'archives';
-	const previewURL =
-		window.newspack_popups_data[ isArchivePagesPrompt ? 'preview_archive' : 'preview_post' ] || '/';
+	const previewURL = window.newspack_popups_data[ isArchivePagesPrompt ? 'preview_archive' : 'preview_post' ] || '/';
 
 	const onWebPreviewLoad = iframeEl => {
 		if ( iframeEl ) {
-			[
-				...iframeEl.contentWindow.document.querySelectorAll( 'a[href^="' + frontendUrl + '"]' ),
-			].forEach( anchor => {
+			[ ...iframeEl.contentWindow.document.querySelectorAll( 'a[href^="' + frontendUrl + '"]' ) ].forEach( anchor => {
 				anchor.setAttribute( 'href', addQueryArgs( anchor.getAttribute( 'href' ), query ) );
 			} );
 		}
@@ -47,12 +44,7 @@ const PreviewSetting = ( { autosavePost, isSavingPost, postId, metaFields } ) =>
 			url={ addQueryArgs( previewURL, query ) }
 			onLoad={ onWebPreviewLoad }
 			renderButton={ ( { showPreview } ) => (
-				<Button
-					isPrimary
-					isBusy={ isSavingPost }
-					disabled={ isSavingPost }
-					onClick={ () => autosavePost().then( showPreview ) }
-				>
+				<Button isPrimary isBusy={ isSavingPost } disabled={ isSavingPost } onClick={ () => autosavePost().then( showPreview ) }>
 					{ __( 'Preview', 'newspack-popups' ) }
 				</Button>
 			) }

@@ -3,7 +3,6 @@ import { getCriteria } from '../../criteria/utils';
 
 window.newspackRAS = window.newspackRAS || [];
 window.newspackRAS.push( ras => {
-
 	function attachCriteria( mergeTag ) {
 		const criteria = getCriteria( mergeTag.dataset.criteria );
 		if ( ! criteria ) {
@@ -27,5 +26,4 @@ window.newspackRAS.push( ras => {
 			attachCriteria( mergeTag );
 		}
 	} );
-
 } );

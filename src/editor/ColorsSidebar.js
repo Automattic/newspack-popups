@@ -28,10 +28,11 @@ const ColorsSidebar = ( {
 		/>
 		{ isOverlay && (
 			<Fragment>
-				<ToggleControl className="newspack-popups__color-toggle"
+				<ToggleControl
+					className="newspack-popups__color-toggle"
 					label={ __( 'Customize close button background', 'newspack-popups' ) }
 					checked={ enable_close_button_background }
-					value={ enable_close_button_background}
+					value={ enable_close_button_background }
 					onChange={ value => onMetaFieldChange( { enable_close_button_background: value } ) }
 				/>
 				{ enable_close_button_background && (
@@ -43,7 +44,8 @@ const ColorsSidebar = ( {
 					/>
 				) }
 
-				<ToggleControl className="newspack-popups__color-toggle"
+				<ToggleControl
+					className="newspack-popups__color-toggle"
 					label={ __( 'Display overlay background', 'newspack-popups' ) }
 					checked={ ! no_overlay_background }
 					value={ ! no_overlay_background }

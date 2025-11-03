@@ -2,12 +2,13 @@
 	"name": "newspack-popups",
 	"version": "3.7.0",
 	"author": "Automattic",
+	"main": "srsc/view/index.js",
 	"scripts": {
 		"cm": "newspack-scripts commit",
 		"semantic-release": "newspack-scripts release --files=newspack-popups.php",
 		"clean": "rm -rf dist",
 		"build": "npm run clean && newspack-scripts wp-scripts build",
-		"start": "npm ci --legacy-peer-deps && npm run watch",
+		"start": "npm ci && npm run watch",
 		"watch": "npm run clean && newspack-scripts wp-scripts start",
 		"test": "newspack-scripts test",
 		"lint": "npm run lint:scss && npm run lint:js",
@@ -21,28 +22,23 @@
 		"lint:scss": "newspack-scripts wp-scripts lint-style '**/{src,includes}/**/*.scss' --customSyntax postcss-scss",
 		"lint:scss:staged": "newspack-scripts wp-scripts lint-style --customSyntax postcss-scss",
 		"format:scss": "newspack-scripts wp-scripts lint-style '**/{src,includes}/**/*.scss' --customSyntax postcss-scss --fix",
-		"typescript:check": "newspack-scripts typescript-check",
 		"release": "npm run build && npm run semantic-release",
 		"release:archive": "rm -rf release && mkdir -p release && rsync -r . ./release/newspack-popups --exclude-from='./.distignore' && cd release && zip -r newspack-popups.zip newspack-popups"
 	},
+	"browserslist": [
+		"extends @wordpress/browserslist-config"
+	],
 	"lint-staged": {
-		"*.js": "npm run lint:js:staged",
+		"*.{js,jsx,ts,tsx}": "npm run lint:js:staged",
 		"*.scss": "npm run lint:scss:staged",
 		"*.php": "npm run lint:php:staged"
 	},
 	"dependencies": {
 		"classnames": "^2.5.1",
-		"intersection-observer": "^0.12.2",
 		"js-cookie": "^3.0.5",
-		"newspack-components": "^4.1.0",
-		"qs": "^6.14.0"
+		"newspack-components": "^4.2.0"
 	},
 	"devDependencies": {
-		"@rushstack/eslint-patch": "^1.14.1",
-		"@wordpress/browserslist-config": "^6.34.0",
-		"eslint": "^8.57.0",
-		"lint-staged": "^16.2.6",
-		"newspack-scripts": "^5.5.2",
-		"postcss-scss": "^4.0.9"
+		"newspack-scripts": "^5.8.0"
 	}
 }

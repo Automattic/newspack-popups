@@ -7,13 +7,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Fragment } from '@wordpress/element';
-import {
-	RadioControl,
-	RangeControl,
-	SelectControl,
-	ToggleControl,
-	CheckboxControl,
-} from '@wordpress/components';
+import { RadioControl, RangeControl, SelectControl, ToggleControl, CheckboxControl } from '@wordpress/components';
 
 /**
  * External dependencies
@@ -192,9 +186,7 @@ const Sidebar = props => {
 					/>
 
 					<div className="newspack-popups__prompt-type-control">
-						<legend className="components-base-control__legend">
-							{ __( 'Archive Page Types', 'newspack-popups' ) }
-						</legend>
+						<legend className="components-base-control__legend">{ __( 'Archive Page Types', 'newspack-popups' ) }</legend>
 						{ availableArchivePageTypes.map( ( { name, label } ) => (
 							<CheckboxControl
 								key={ name }
@@ -202,9 +194,7 @@ const Sidebar = props => {
 								checked={ archive_page_types.indexOf( name ) > -1 }
 								onChange={ isIncluded => {
 									onMetaFieldChange( {
-										archive_page_types: isIncluded
-											? [ ...archive_page_types, name ]
-											: without( archive_page_types, name ),
+										archive_page_types: isIncluded ? [ ...archive_page_types, name ] : without( archive_page_types, name ),
 									} );
 								} }
 							/>
