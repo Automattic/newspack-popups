@@ -31,9 +31,7 @@ export const handleSegmentation = prompts => {
 			const override = getOverride( getRawId( promptId ), isOverlay, overlayDisplayed );
 
 			// Attach event listeners to overlay close buttons.
-			const closeButtons = [
-				...prompt.querySelectorAll( '.newspack-lightbox__close, button.newspack-lightbox-overlay' ),
-			];
+			const closeButtons = [ ...prompt.querySelectorAll( '.newspack-lightbox__close, button.newspack-lightbox-overlay' ) ];
 			closeButtons.forEach( closeButton => {
 				closeButton.addEventListener( 'click', closeOverlay );
 			} );
@@ -51,7 +49,7 @@ export const handleSegmentation = prompts => {
 					// By delay.
 					const delay = prompt.getAttribute( 'data-delay' ) || 0;
 					setTimeout( unhide, delay );
-				}
+				};
 				const unhide = () => {
 					// Conditions may have changed since the prompt was delayed.
 					// Verify whether the prompt can still be displayed.

@@ -11,13 +11,7 @@ import { useEffect, useState, useMemo } from '@wordpress/element';
  */
 import { convertDateToString } from './utils';
 
-const ExpirationPanel = ( {
-	expiration_date = null,
-	postStatus,
-	onMetaFieldChange,
-	createNotice,
-	removeNotice,
-} ) => {
+const ExpirationPanel = ( { expiration_date = null, postStatus, onMetaFieldChange, createNotice, removeNotice } ) => {
 	const [ noticeId, setNoticeId ] = useState( false );
 	useEffect( () => {
 		if ( expiration_date && ! isInTheFuture( expiration_date ) ) {
@@ -47,16 +41,9 @@ const ExpirationPanel = ( {
 	useEffect( () => {
 		if ( postStatus === 'publish' && noticeId ) {
 			removeNotice( noticeId );
-			createNotice(
-				'info',
-				__(
-					'This prompt has been published. The expiration date has been removed.',
-					'newspack-plugin'
-				),
-				{
-					id: 'newspack-popups__expiration-date-removed',
-				}
-			);
+			createNotice( 'info', __( 'This prompt has been published. The expiration date has been removed.', 'newspack-plugin' ), {
+				id: 'newspack-popups__expiration-date-removed',
+			} );
 			// This is just for quicked feedback, the actual meta field deletion will
 			// happen on the backend.
 			onMetaFieldChange( { expiration_date: null } );
@@ -77,10 +64,7 @@ const ExpirationPanel = ( {
 				onChange={ () => {
 					onMetaFieldChange( { expiration_date: expiration_date ? null : defaultExpirationDate } );
 				} }
-				help={ __(
-					'If set, the prompt will be automatically unpublished at midnight on this date.',
-					'newspack-popups'
-				) }
+				help={ __( 'If set, the prompt will be automatically unpublished at midnight on this date.', 'newspack-popups' ) }
 			/>
 			{ expiration_date ? (
 				<DatePicker

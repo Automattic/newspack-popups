@@ -20,9 +20,7 @@ export const manageDismissals = prompts => {
 
 			// If a form inside an overlay prompt is submitted, closing it should not result in a `dismissed` action.
 			forms.forEach( form => {
-				form.addEventListener( 'submit', () =>
-					closeButton.removeEventListener( 'click', handleEvent )
-				);
+				form.addEventListener( 'submit', () => closeButton.removeEventListener( 'click', handleEvent ) );
 			} );
 		}
 	} );
