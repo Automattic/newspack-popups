@@ -31,6 +31,13 @@ final class Newspack_Popups_Inserter {
 	protected static $segments = [];
 
 	/**
+	 * Whether we're exporting to Apple News.
+	 *
+	 * @var boolean
+	 */
+	private static $is_apple_news_exporting = false;
+
+	/**
 	 * Whether we've already inserted prompts into the content.
 	 * If we've already inserted popups into the content, don't try to do it again.
 	 *
@@ -97,42 +104,8 @@ final class Newspack_Popups_Inserter {
 
 		// Always enqueue scripts, since this plugin's scripts are handling pageview sending via GTAG.
 		add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
-
-		add_filter(
-			'newspack_popups_assess_has_disabled_popups',
-			function ( $disabled ) {
-				if ( get_post_meta( get_the_ID(), 'newspack_popups_has_disabled_popups', true ) ) {
-					return true;
-				}
-
-				return $disabled;
-			}
-		);
-
-		// Suppress popups on product pages.
-		// Until the popups non-AMP refactoring happens, they will break Add to Cart buttons.
-		add_filter(
-			'newspack_popups_assess_has_disabled_popups',
-			function( $disabled ) {
-				if ( function_exists( 'is_product' ) && is_product() ) {
-					return true;
-				}
-				return $disabled;
-			}
-		);
-
-		// The suppress filter used to be named 'newspack_newsletters_assess_has_disabled_popups'.
-		// Maintain that filter for backwards compatibility.
-		add_filter(
-			'newspack_popups_assess_has_disabled_popups',
-			function( $disabled ) {
-				if ( apply_filters( 'newspack_newsletters_assess_has_disabled_popups', false ) ) {
-					return true;
-				}
-
-				return $disabled;
-			}
-		);
+		add_action( 'apple_news_do_fetch_exporter', [ __CLASS__, 'apple_news_do_fetch_exporter' ] );
+		add_filter( 'newspack_popups_assess_has_disabled_popups', [ __CLASS__, 'disable_prompts' ] );
 
 		// These hooks are fired before and after rendering posts in the Homepage Posts block.
 		// By removing the the_content filter before rendering, we avoid incorrectly injecting popup content into excerpts in the block.
@@ -149,6 +122,31 @@ final class Newspack_Popups_Inserter {
 				add_filter( 'the_content', [ $this, 'insert_popups_in_content' ], 1 );
 			}
 		);
+	}
+
+	/**
+	 * Disable prompts for specific conditions.
+	 *
+	 * @param bool $disabled Whether prompts are disabled.
+	 * @return bool Whether prompts are disabled.
+	 */
+	public static function disable_prompts( $disabled ) {
+		// If the post has been set to disable prompts.
+		if ( get_post_meta( get_the_ID(), 'newspack_popups_has_disabled_popups', true ) ) {
+			return true;
+		}
+
+		// The suppress filter used to be named 'newspack_newsletters_assess_has_disabled_popups'.
+		// Maintain that filter for backwards compatibility.
+		if ( apply_filters( 'newspack_newsletters_assess_has_disabled_popups', false ) ) {
+			return true;
+		}
+
+		// If exporting to Apple News.
+		if ( self::$is_apple_news_exporting ) {
+			return true;
+		}
+		return $disabled;
 	}
 
 	/**
@@ -952,6 +950,13 @@ final class Newspack_Popups_Inserter {
 				],
 			]
 		);
+	}
+
+	/**
+	 * Mark this request as an Apple News exporter request.
+	 */
+	public static function apple_news_do_fetch_exporter() {
+		self::$is_apple_news_exporting = true;
 	}
 }
 $newspack_popups_inserter = new Newspack_Popups_Inserter();
