@@ -913,7 +913,6 @@ final class Newspack_Popups_Inserter {
 			// Popup's post types are *set* - different than defaults. These should override the global post types.
 			$supported_post_types = $popup_post_types;
 		}
-
 		$is_post_context_matching = $is_taxonomy_matching && in_array( $post_type, $supported_post_types );
 
 		/**
