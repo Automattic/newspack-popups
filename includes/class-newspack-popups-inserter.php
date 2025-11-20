@@ -31,13 +31,6 @@ final class Newspack_Popups_Inserter {
 	protected static $segments = [];
 
 	/**
-	 * Whether we're exporting to Apple News.
-	 *
-	 * @var boolean
-	 */
-	private static $is_apple_news_exporting = false;
-
-	/**
 	 * Whether we've already inserted prompts into the content.
 	 * If we've already inserted popups into the content, don't try to do it again.
 	 *
@@ -46,50 +39,11 @@ final class Newspack_Popups_Inserter {
 	public static $the_content_has_rendered = false;
 
 	/**
-	 * Retrieve the appropriate popups for the current post.
+	 * Whether we're exporting to Apple News.
 	 *
-	 * @return array Popup objects.
+	 * @var boolean
 	 */
-	public static function popups_for_post() {
-		if ( ! empty( self::$popups ) ) {
-			return self::$popups;
-		}
-
-		// Get the previewed popup and return early.
-		if ( Newspack_Popups::previewed_popup_id() ) {
-			$preview_popup = Newspack_Popups_Model::retrieve_preview_popup( Newspack_Popups::previewed_popup_id() );
-			return [ $preview_popup ];
-		}
-		if ( Newspack_Popups::preset_popup_id() ) {
-			$preset_popup = Newspack_Popups_Presets::retrieve_preset_popup( Newspack_Popups::preset_popup_id() );
-			return [ $preset_popup ];
-		}
-
-		// Popups disabled for this page.
-		if ( self::assess_has_disabled_popups() ) {
-			return [];
-		}
-
-		$view_as_spec        = Newspack_Popups_View_As::parse_view_as();
-		$campaign_id         = isset( $view_as_spec['campaign'] ) ? $view_as_spec['campaign'] : false;
-		$include_unpublished = isset( $view_as_spec['show_unpublished'] ) && 'true' === $view_as_spec['show_unpublished'] ? true : false;
-
-		// Retrieve all prompts eligible for display.
-		$popups_to_maybe_display = Newspack_Popups_Model::retrieve_eligible_popups( $include_unpublished, $campaign_id );
-		$popups_to_display       = array_filter(
-			$popups_to_maybe_display,
-			function( $popup ) {
-				return self::should_display( $popup, true );
-			}
-		);
-
-		// Cache results so we don't have to query again.
-		if ( ! defined( 'IS_TEST_ENV' ) || ! IS_TEST_ENV ) {
-			self::$popups = $popups_to_display;
-		}
-
-		return $popups_to_display;
-	}
+	private static $is_apple_news_exporting = false;
 
 	/**
 	 * Constructor.
@@ -147,6 +101,52 @@ final class Newspack_Popups_Inserter {
 			return true;
 		}
 		return $disabled;
+	}
+
+	/**
+	 * Retrieve the appropriate popups for the current post.
+	 *
+	 * @return array Popup objects.
+	 */
+	public static function popups_for_post() {
+		if ( ! empty( self::$popups ) ) {
+			return self::$popups;
+		}
+
+		// Get the previewed popup and return early.
+		if ( Newspack_Popups::previewed_popup_id() ) {
+			$preview_popup = Newspack_Popups_Model::retrieve_preview_popup( Newspack_Popups::previewed_popup_id() );
+			return [ $preview_popup ];
+		}
+		if ( Newspack_Popups::preset_popup_id() ) {
+			$preset_popup = Newspack_Popups_Presets::retrieve_preset_popup( Newspack_Popups::preset_popup_id() );
+			return [ $preset_popup ];
+		}
+
+		// Popups disabled for this page.
+		if ( self::assess_has_disabled_popups() ) {
+			return [];
+		}
+
+		$view_as_spec        = Newspack_Popups_View_As::parse_view_as();
+		$campaign_id         = isset( $view_as_spec['campaign'] ) ? $view_as_spec['campaign'] : false;
+		$include_unpublished = isset( $view_as_spec['show_unpublished'] ) && 'true' === $view_as_spec['show_unpublished'] ? true : false;
+
+		// Retrieve all prompts eligible for display.
+		$popups_to_maybe_display = Newspack_Popups_Model::retrieve_eligible_popups( $include_unpublished, $campaign_id );
+		$popups_to_display       = array_filter(
+			$popups_to_maybe_display,
+			function( $popup ) {
+				return self::should_display( $popup, true );
+			}
+		);
+
+		// Cache results so we don't have to query again.
+		if ( ! defined( 'IS_TEST_ENV' ) || ! IS_TEST_ENV ) {
+			self::$popups = $popups_to_display;
+		}
+
+		return $popups_to_display;
 	}
 
 	/**
@@ -467,8 +467,10 @@ final class Newspack_Popups_Inserter {
 		$filtered_content = explode( "\n", $content );
 		$post_content     = explode( "\n", $post->post_content );
 		if (
+			// If prompts are disabled for this post.
+			self::assess_has_disabled_popups()
 			// Avoid duplicate execution.
-			true === self::$the_content_has_rendered
+			|| true === self::$the_content_has_rendered
 			// Not Frontend.
 			|| is_admin()
 			// Content is empty.
