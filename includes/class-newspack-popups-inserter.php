@@ -895,10 +895,6 @@ final class Newspack_Popups_Inserter {
 		if ( Newspack_Popups::is_account_related_post( get_post() ) ) {
 			return false;
 		}
-		// Custom and manual placements should override context conditions, since they are placed arbitrarily.
-		if ( Newspack_Popups_Custom_Placements::is_custom_placement_or_manual( $popup ) ) {
-			return true;
-		}
 
 		// Context in which the popup appears.
 		// 1. the taxonomy of the post.
@@ -917,6 +913,7 @@ final class Newspack_Popups_Inserter {
 			// Popup's post types are *set* - different than defaults. These should override the global post types.
 			$supported_post_types = $popup_post_types;
 		}
+
 		$is_post_context_matching = $is_taxonomy_matching && in_array( $post_type, $supported_post_types );
 
 		/**
