@@ -14,7 +14,7 @@ const StylesSidebar = props => {
 
 	useEffect( () => {
 		if ( ! isOverlay && no_padding ) {
-			onMetaFieldChange( { hide_border: false, large_border: false, no_padding: false } )
+			onMetaFieldChange( { hide_border: false, large_border: false, no_padding: false } );
 		}
 	}, [ isOverlay ] );
 

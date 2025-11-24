@@ -16,11 +16,7 @@ export const manageClickedEvents = prompts => {
 				extraParams.action_value = e.currentTarget.getAttribute( 'href' );
 			}
 
-			const payload = getEventPayload(
-				'clicked',
-				getRawId( prompt.getAttribute( 'id' ) ),
-				extraParams
-			);
+			const payload = getEventPayload( 'clicked', getRawId( prompt.getAttribute( 'id' ) ), extraParams );
 			sendEvent( payload );
 		};
 
