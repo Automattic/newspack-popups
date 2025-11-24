@@ -1,3 +1,18 @@
+# [3.8.0](https://github.com/Automattic/newspack-popups/compare/v3.7.1...v3.8.0) (2025-11-24)
+
+
+### Features
+
+* trigger alpha release ([3860726](https://github.com/Automattic/newspack-popups/commit/38607266ccffbbf83d8db2c9999f8b4611faf9d4))
+
+## [3.7.1](https://github.com/Automattic/newspack-popups/compare/v3.7.0...v3.7.1) (2025-11-10)
+
+
+### Bug Fixes
+
+* revert [#1485](https://github.com/Automattic/newspack-popups/issues/1485) ([#1487](https://github.com/Automattic/newspack-popups/issues/1487)) ([e811f4f](https://github.com/Automattic/newspack-popups/commit/e811f4fdb373edb4c106756e23fc0e6431a1fa81))
+* update metering class namespace ([#1486](https://github.com/Automattic/newspack-popups/issues/1486)) ([8e13e05](https://github.com/Automattic/newspack-popups/commit/8e13e0506601608e8978a97921f9e3441ebe4c3c))
+
 # [3.7.0](https://github.com/Automattic/newspack-popups/compare/v3.6.2...v3.7.0) (2025-10-30)
 
 
