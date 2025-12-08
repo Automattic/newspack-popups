@@ -1,3 +1,10 @@
+## [3.8.1](https://github.com/Automattic/newspack-popups/compare/v3.8.0...v3.8.1) (2025-12-08)
+
+
+### Bug Fixes
+
+* make sure custom placements follow post type restrictions ([#1500](https://github.com/Automattic/newspack-popups/issues/1500)) ([488b71d](https://github.com/Automattic/newspack-popups/commit/488b71d99e9ac63d983a229aa74888b2cef97131))
+
 # [3.8.0](https://github.com/Automattic/newspack-popups/compare/v3.7.1...v3.8.0) (2025-11-24)
 
 
