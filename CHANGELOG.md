@@ -1,3 +1,10 @@
+## [3.8.2](https://github.com/Automattic/newspack-popups/compare/v3.8.1...v3.8.2) (2026-01-06)
+
+
+### Bug Fixes
+
+* **prompt-expiration:** evaluate expiration timestamp in site timezone ([#1507](https://github.com/Automattic/newspack-popups/issues/1507)) ([c4114b1](https://github.com/Automattic/newspack-popups/commit/c4114b1fd4d439b1d98d880ef2a4eb0ad8ecf7eb))
+
 ## [3.8.1](https://github.com/Automattic/newspack-popups/compare/v3.8.0...v3.8.1) (2025-12-08)
 
 
