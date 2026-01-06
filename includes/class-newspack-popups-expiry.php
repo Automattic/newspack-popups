@@ -81,7 +81,7 @@ final class Newspack_Popups_Expiry {
 		$now      = current_datetime(); // Site timezone aware.
 		$tomorrow = $now->setTime( 0, 0 )->modify( '+1 day' ); // Next occurring midnight in the site's timezone.
 
-		return $expiration_date <= $tomorrow;
+		return $expiration_date < $tomorrow;
 	}
 
 	/**
