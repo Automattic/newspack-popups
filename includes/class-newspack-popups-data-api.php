@@ -189,6 +189,9 @@ final class Newspack_Popups_Data_Api {
 		if ( ! empty( $data['prompt_id'] ) ) {
 			self::$popups[ $data['prompt_id'] ] = $data;
 		}
+		if ( ! empty( $data['prompt_title'] ) ) {
+			self::$popups[ $data['prompt_title'] ] = $data;
+		}
 	}
 
 	/**
@@ -256,6 +259,10 @@ final class Newspack_Popups_Data_Api {
 		if ( ! empty( $popup_id ) ) {
 			$cart_item_data['newspack_popup_id'] = $popup_id;
 		}
+		$prompt_title = filter_input( INPUT_GET, 'prompt_title', FILTER_SANITIZE_SPECIAL_CHARS );
+		if ( ! empty( $prompt_title ) ) {
+			$cart_item_data['prompt_title'] = $prompt_title;
+		}
 		return $cart_item_data;
 	}
 
@@ -271,6 +278,9 @@ final class Newspack_Popups_Data_Api {
 	public static function checkout_create_order_line_item( $item, $cart_item_key, $values, $order ) {
 		if ( ! empty( $values['newspack_popup_id'] ) ) {
 			$order->add_meta_data( '_newspack_popup_id', $values['newspack_popup_id'] );
+		}
+		if ( ! empty( $values['prompt_title'] ) ) {
+			$order->add_meta_data( '_prompt_title', $values['prompt_title'] );
 		}
 	}
 
