@@ -105,8 +105,8 @@ final class Newspack_Popups_Data_Api {
 			return $data;
 		}
 
-		$data['prompt_id']    = $popup['id'];
-		$data['prompt_title'] = $popup['title'];
+		$data['newspack_popup_id'] = $popup['id'];
+		$data['prompt_title']      = $popup['title'];
 
 		if ( isset( $popup['options'] ) ) {
 			$data['prompt_frequency'] = self::get_frequency_summary( $popup );
@@ -186,8 +186,8 @@ final class Newspack_Popups_Data_Api {
 	 */
 	public static function get_rendered_popups( $popup ) {
 		$data = self::get_popup_metadata( $popup );
-		if ( ! empty( $data['prompt_id'] ) ) {
-			self::$popups[ $data['prompt_id'] ] = $data;
+		if ( ! empty( $data['newspack_popup_id'] ) ) {
+			self::$popups[ $data['newspack_popup_id'] ] = $data;
 		}
 		if ( ! empty( $data['prompt_title'] ) ) {
 			self::$popups[ $data['prompt_title'] ] = $data;
@@ -206,7 +206,7 @@ final class Newspack_Popups_Data_Api {
 	 */
 	public static function prepare_popup_params_for_ga( $popup_params ) {
 		// Invalid input.
-		if ( ! is_array( $popup_params ) || ! isset( $popup_params['prompt_id'] ) ) {
+		if ( ! is_array( $popup_params ) || ! isset( $popup_params['newspack_popup_id'] ) ) {
 			return [];
 		}
 
