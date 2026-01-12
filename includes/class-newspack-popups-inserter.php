@@ -466,7 +466,7 @@ final class Newspack_Popups_Inserter {
 			return $content;
 		}
 
-		$filtered_content = explode( "\n", self::filter_content( $content ) );
+		$filtered_content = explode( "\n", self::get_validation_content( $content ) );
 		$post_content     = explode( "\n", $post->post_content );
 		if (
 			// Avoid duplicate execution.
@@ -613,9 +613,9 @@ final class Newspack_Popups_Inserter {
 	 *
 	 * @return string Filtered content.
 	 */
-	private static function filter_content( $content ) {
-		$blocks       = parse_blocks( $content );
-		$filtered     = array_filter(
+	private static function get_validation_content( $content ) {
+		$blocks   = parse_blocks( $content );
+		$filtered = array_filter(
 			$blocks,
 			function ( $block ) {
 				$excluded_blocks = [
