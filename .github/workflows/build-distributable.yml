@@ -11,4 +11,4 @@ jobs:
   build-distributable:
     uses: Automattic/newspack-scripts/.github/workflows/reusable-build-distributable.yml@refactor/deprecate-circle-ci
     with:
-      archive-name: newspack-plugin
+      archive-name: newspack-popups
