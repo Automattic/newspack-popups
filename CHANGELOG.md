@@ -1,3 +1,17 @@
+# [3.9.0](https://github.com/Automattic/newspack-popups/compare/v3.8.4...v3.9.0) (2026-02-02)
+
+
+### Bug Fixes
+
+* force alpha release ([9dfc1fe](https://github.com/Automattic/newspack-popups/commit/9dfc1fe46bbb7de5424345afae078651f9459d04))
+* remove form_submission from prompt data events ([#1510](https://github.com/Automattic/newspack-popups/issues/1510)) ([2c615e4](https://github.com/Automattic/newspack-popups/commit/2c615e4e909817f0232d2cbfd178a7fb992e7cbb))
+* rename prompt_id to newspack_popup_id for consistency ([#1509](https://github.com/Automattic/newspack-popups/issues/1509)) ([b9b1048](https://github.com/Automattic/newspack-popups/commit/b9b10489578603c2f3a1f505ae7666ea0213468d))
+
+
+### Features
+
+* make prompt_title available to modal checkout data events when available ([#1508](https://github.com/Automattic/newspack-popups/issues/1508)) ([3ea5e50](https://github.com/Automattic/newspack-popups/commit/3ea5e50cee0fce54c50f54672672bb8022c48c29))
+
 ## [3.8.4](https://github.com/Automattic/newspack-popups/compare/v3.8.3...v3.8.4) (2026-01-19)
 
 
