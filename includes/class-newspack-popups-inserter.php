@@ -640,6 +640,18 @@ final class Newspack_Popups_Inserter {
 	 * @return boolean
 	 */
 	private static function should_log_debug_info() {
+		/**
+		 * Enables debug logging for Newspack Popups (Campaigns).
+		 * When enabled, debugging info is logged to the newspack_popups_debug
+		 * JavaScript object, helpful for troubleshooting popup display issues.
+		 *
+		 * @constant NEWSPACK_POPUPS_DEBUG
+		 * @type     bool
+		 * @default  Debug disabled
+		 * @status   draft
+		 *
+		 * @example define( 'NEWSPACK_POPUPS_DEBUG', true );
+		 */
 		return ( defined( 'WP_DEBUG' ) && WP_DEBUG ) || ( defined( 'NEWSPACK_LOG_LEVEL' ) && 1 < NEWSPACK_LOG_LEVEL ) || ( defined( 'NEWSPACK_POPUPS_DEBUG' ) && NEWSPACK_POPUPS_DEBUG );
 	}
 

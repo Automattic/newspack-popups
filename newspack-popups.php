@@ -14,7 +14,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-// Define NEWSPACK_ADS_PLUGIN_FILE.
+// Define the plugin file path.
 if ( ! defined( 'NEWSPACK_POPUPS_PLUGIN_FILE' ) ) {
 	define( 'NEWSPACK_POPUPS_PLUGIN_FILE', __FILE__ );
 }
