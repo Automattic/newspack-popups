@@ -52,6 +52,13 @@ final class Newspack_Popups_Model {
 	protected static $current_popup = null;
 
 	/**
+	 * Override for block theme detection (used in tests).
+	 *
+	 * @var boolean|null
+	 */
+	protected static $block_theme_override = null;
+
+	/**
 	 * Retrieve all Popups (first 100).
 	 *
 	 * @param  boolean $include_unpublished Whether to include unpublished posts.
@@ -958,7 +965,20 @@ final class Newspack_Popups_Model {
 	 * @return boolean True if the current theme is a block theme.
 	 */
 	private static function is_block_theme() {
+		if ( null !== self::$block_theme_override ) {
+			return self::$block_theme_override;
+		}
+
 		return function_exists( 'wp_is_block_theme' ) && wp_is_block_theme();
+	}
+
+	/**
+	 * Override block theme detection (intended for tests).
+	 *
+	 * @param boolean|null $is_block_theme Override value; null resets.
+	 */
+	public static function set_block_theme_override( $is_block_theme ) {
+		self::$block_theme_override = $is_block_theme;
 	}
 
 	/**
