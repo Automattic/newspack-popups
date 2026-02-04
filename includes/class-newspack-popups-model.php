@@ -1135,7 +1135,7 @@ final class Newspack_Popups_Model {
 							<?php echo ! empty( $popup['options']['featured_image_id'] ) ? wp_get_attachment_image( $popup['options']['featured_image_id'], 'large' ) : get_the_post_thumbnail( $popup['id'], 'large' ); ?>
 						</div>
 					<?php endif; ?>
-					<div class="newspack-popup__content <?php echo self::is_block_theme() ? 'is-layout-flow' : ''; ?>">
+					<div class="newspack-popup__content <?php echo esc_attr( self::is_block_theme() ? 'is-layout-flow' : '' ); ?>">
 						<?php echo do_shortcode( $body ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					</div>
 					<button class="newspack-lightbox__close" style="<?php echo esc_attr( $close_button_styles ); ?>" aria-label="<?php esc_html_e( 'Close Pop-up', 'newspack-popups' ); // phpcs:ignore WordPressVIPMinimum.Security.ProperEscapingFunction.htmlAttrNotByEscHTML ?>">
