@@ -504,32 +504,38 @@ final class Newspack_Popups_Model {
 		 *
 		 * @param array Array of possible popup sizes.
 		 *     $params = [
-		 *          'value' => (string) size value.
-		 *          'label' => (string) size label to be displayed.
+		 *          'value'     => (string) size value.
+		 *          'label'     => (string) size label to be displayed.
+		 *          'shortname' => (string) short size label for compact UIs.
 		 *     ]
 		 */
 		return apply_filters(
 			'newspack_popups_size_options',
 			[
 				[
-					'value' => 'x-small',
-					'label' => __( 'Extra Small', 'newspack-popups' ),
+					'value'     => 'x-small',
+					'label'     => __( 'Extra small', 'newspack-popups' ),
+					'shortname' => _x( 'XS', 'prompt size label', 'newspack-popups' ),
 				],
 				[
-					'value' => 'small',
-					'label' => __( 'Small', 'newspack-popups' ),
+					'value'     => 'small',
+					'label'     => __( 'Small', 'newspack-popups' ),
+					'shortname' => _x( 'S', 'prompt size label', 'newspack-popups' ),
 				],
 				[
-					'value' => 'medium',
-					'label' => __( 'Medium', 'newspack-popups' ),
+					'value'     => 'medium',
+					'label'     => __( 'Medium', 'newspack-popups' ),
+					'shortname' => _x( 'M', 'prompt size label', 'newspack-popups' ),
 				],
 				[
-					'value' => 'large',
-					'label' => __( 'Large', 'newspack-popups' ),
+					'value'     => 'large',
+					'label'     => __( 'Large', 'newspack-popups' ),
+					'shortname' => _x( 'L', 'prompt size label', 'newspack-popups' ),
 				],
 				[
-					'value' => 'full-width',
-					'label' => __( 'Full-Width', 'newspack-popups' ),
+					'value'     => 'full-width',
+					'label'     => __( 'Full width', 'newspack-popups' ),
+					'shortname' => _x( 'Full width', 'prompt size label', 'newspack-popups' ),
 				],
 			]
 		);

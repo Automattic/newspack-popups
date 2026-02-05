@@ -81,8 +81,18 @@ const PositionPlacementControl = ( { layout, label, help, onChange, size, ...pro
 			  ];
 	return (
 		<div className={ classnames( 'newspack-popups-css-grid-selector', 'size-' + size ) }>
-			<p className="components-base-control__label">{ label }</p>
-			<ButtonGroup aria-label={ __( 'Select Position', 'newspack-popups' ) } { ...props }>
+			<p
+				className="components-base-control__label"
+				style={ {
+					fontSize: '11px',
+					fontWeight: 500,
+					lineHeight: 1.4,
+					textTransform: 'uppercase',
+				} }
+			>
+				{ label }
+			</p>
+			<ButtonGroup aria-label={ __( 'Select position', 'newspack-popups' ) } { ...props }>
 				{ layoutOptions.map( ( { label: layoutLabel, value }, index ) => {
 					return (
 						<Tooltip text={ layoutLabel } key={ `grid-tooltip-${ index }` }>
