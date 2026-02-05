@@ -25,6 +25,7 @@ import StylesSidebar from './StylesSidebar';
 import FrequencySidebar from './FrequencySidebar';
 import ColorsSidebar from './ColorsSidebar';
 import AdvancedSidebar from './AdvancedSidebar';
+import DocumentSidebarWithTabs from './DocumentSidebarWithTabs';
 import Preview from './Preview';
 import Duplicate from './Duplicate';
 import EditorAdditions from './EditorAdditions';
@@ -64,58 +65,24 @@ const PostTypesPanelWithData = connectData( PostTypesPanel );
 const ExpirationPanelWithData = connectData( ExpirationPanel );
 const AdvancedSidebarWithData = connectData( AdvancedSidebar );
 
-// Register components.
-registerPlugin( 'newspack-popups-styles', {
-	render: () => (
-		<PluginDocumentSettingPanel name="popup-styles-panel" title={ __( 'Styles', 'newspack-popups' ) }>
-			<StylesSidebarWithData />
-		</PluginDocumentSettingPanel>
-	),
-	icon: null,
-} );
+// Panels with group="styles" appear under the Styles tab; others under Settings.
+const promptPanels = [
+	{ name: 'settings', title: __( 'Settings', 'newspack-popups' ), Component: SidebarWithData },
+	...( window?.newspack_popups_data?.segmentation_enabled
+		? [ { name: 'frequency', title: __( 'Frequency', 'newspack-popups' ), Component: FrequencySidebarWithData } ]
+		: [] ),
+	{ name: 'expiration', title: __( 'Expiration', 'newspack-popups' ), Component: ExpirationPanelWithData, initialOpen: false },
+	{ name: 'post-types', title: __( 'Post types', 'newspack-popups' ), Component: PostTypesPanelWithData, initialOpen: false },
+	{ name: 'advanced', title: __( 'Advanced', 'newspack-popups' ), Component: AdvancedSidebarWithData, initialOpen: false },
+	{ name: 'styles', title: __( 'Styles', 'newspack-popups' ), Component: StylesSidebarWithData, group: 'styles' },
+	{ name: 'colors', title: __( 'Color', 'newspack-popups' ), Component: ColorsSidebarWithData, group: 'styles' },
+];
 
+// Register single document panel with Settings and Styles tabs at the top.
 registerPlugin( 'newspack-popups', {
 	render: () => (
-		<PluginDocumentSettingPanel name="popup-settings-panel" title={ __( 'Settings', 'newspack-popups' ) }>
-			<SidebarWithData />
-		</PluginDocumentSettingPanel>
-	),
-	icon: null,
-} );
-
-if ( window?.newspack_popups_data?.segmentation_enabled ) {
-	registerPlugin( 'newspack-popups-frequency', {
-		render: () => (
-			<PluginDocumentSettingPanel name="-frequency-panel" title={ __( 'Frequency', 'newspack-popups' ) }>
-				<FrequencySidebarWithData />
-			</PluginDocumentSettingPanel>
-		),
-		icon: null,
-	} );
-}
-
-registerPlugin( 'newspack-popups-colors', {
-	render: () => (
-		<PluginDocumentSettingPanel name="popup-colors-panel" title={ __( 'Color', 'newspack-popups' ) }>
-			<ColorsSidebarWithData />
-		</PluginDocumentSettingPanel>
-	),
-	icon: null,
-} );
-
-registerPlugin( 'newspack-popups-post-types', {
-	render: () => (
-		<PluginDocumentSettingPanel name="post-types-panel" title={ __( 'Post Types', 'newspack-popups' ) }>
-			<PostTypesPanelWithData />
-		</PluginDocumentSettingPanel>
-	),
-	icon: null,
-} );
-
-registerPlugin( 'newspack-popups-expiration', {
-	render: () => (
-		<PluginDocumentSettingPanel name="expiration-panel" title={ __( 'Expiration', 'newspack-popups' ) }>
-			<ExpirationPanelWithData />
+		<PluginDocumentSettingPanel name="popup-prompt-panel" initialOpen={ true }>
+			<DocumentSidebarWithTabs panels={ promptPanels } />
 		</PluginDocumentSettingPanel>
 	),
 	icon: null,
@@ -135,15 +102,6 @@ if ( window.newspack_popups_merge_tags?.tags?.length ) {
 		return <BlockEdit { ...props } />;
 	} );
 }
-
-registerPlugin( 'newspack-popups-advanced', {
-	render: () => (
-		<PluginDocumentSettingPanel name="popup-advanced-panel" title={ __( 'Advanced Settings', 'newspack-popups' ) }>
-			<AdvancedSidebarWithData />
-		</PluginDocumentSettingPanel>
-	),
-	icon: null,
-} );
 
 registerPlugin( 'newspack-popups-editor', {
 	render: EditorAdditions,
