@@ -11,10 +11,9 @@ import { __ } from '@wordpress/i18n';
 import { compose } from '@wordpress/compose';
 import { withSelect, withDispatch, useSelect, useDispatch } from '@wordpress/data';
 import { registerPlugin } from '@wordpress/plugins';
-import { PluginDocumentSettingPanel, PluginPostStatusInfo } from '@wordpress/edit-post';
 import { ExternalLink, Flex } from '@wordpress/components';
 import { store as coreStore } from '@wordpress/core-data';
-import { store as editorStore } from '@wordpress/editor';
+import { PluginDocumentSettingPanel, PluginPostStatusInfo, store as editorStore } from '@wordpress/editor';
 import { useEffect } from '@wordpress/element';
 
 /**
