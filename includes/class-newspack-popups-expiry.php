@@ -41,6 +41,9 @@ final class Newspack_Popups_Expiry {
 			return;
 		}
 
+		// Set the migration flag immediately to prevent race conditions.
+		update_option( self::HOURLY_MIGRATION_OPTION, true );
+
 		// Remove any existing daily WP Cron event.
 		wp_clear_scheduled_hook( self::CRON_HOOK );
 
@@ -48,8 +51,6 @@ final class Newspack_Popups_Expiry {
 		if ( function_exists( 'as_unschedule_all_actions' ) ) {
 			as_unschedule_all_actions( self::CRON_HOOK );
 		}
-
-		update_option( self::HOURLY_MIGRATION_OPTION, true );
 	}
 
 	/**
