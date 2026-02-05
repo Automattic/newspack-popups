@@ -24,24 +24,6 @@ $size__large: 1264px;
 		}
 	}
 
-	&__prompt-type-control {
-		margin-bottom: 1rem;
-
-		.components-base-control__label {
-			display: block;
-		}
-
-		.components-radio-control__option {
-			&:first-of-type {
-				margin-right: 1rem;
-			}
-		}
-
-		.components-base-control__legend {
-			padding-bottom: 4px;
-		}
-	}
-
 	&__segmentation-sidebar {
 		.components-form-token-field__help {
 			display: none;

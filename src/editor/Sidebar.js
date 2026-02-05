@@ -11,14 +11,12 @@ import {
 	/* eslint-disable @wordpress/no-unsafe-wp-apis */
 	__experimentalToggleGroupControl as ToggleGroupControl,
 	__experimentalToggleGroupControlOption as ToggleGroupControlOption,
-	__experimentalToggleGroupControlOptionIcon as ToggleGroupControlOptionIcon,
 	/* eslint-enable @wordpress/no-unsafe-wp-apis */
 	RangeControl,
 	SelectControl,
 	ToggleControl,
 	CheckboxControl,
 } from '@wordpress/components';
-import { stretchFullWidth } from '@wordpress/icons';
 
 /**
  * External dependencies
@@ -82,9 +80,13 @@ const Sidebar = props => {
 		<>
 			<ToggleGroupControl
 				__next40pxDefaultSize
-				className="newspack-popups__prompt-type-control"
 				isBlock
 				label={ __( 'Prompt type', 'newspack-popups' ) }
+				help={
+					isOverlay
+						? __( 'Overlay prompts appear over the page content as a popup.', 'newspack-popups' )
+						: __( 'Inline prompts are shown according to the selected placement.', 'newspack-popups' )
+				}
 				value={ isOverlay ? 'center' : 'inline' }
 				onChange={ updatePlacement }
 			>
@@ -99,14 +101,11 @@ const Sidebar = props => {
 						label={ __( 'Size', 'newspack-popups' ) }
 						value={ overlay_size }
 						onChange={ updateSize }
+						help={ popupSizeOptions.find( ( { value } ) => value === overlay_size )?.help }
 					>
-						{ popupSizeOptions.map( ( { value, label, shortname } ) =>
-							value === 'full-width' ? (
-								<ToggleGroupControlOptionIcon key={ value } icon={ stretchFullWidth } label={ label } value={ value } />
-							) : (
-								<ToggleGroupControlOption key={ value } aria-label={ label } label={ shortname } value={ value } />
-							)
-						) }
+						{ popupSizeOptions.map( ( { value, label, shortname } ) => (
+							<ToggleGroupControlOption key={ value } aria-label={ label } label={ shortname || label } value={ value } />
+						) ) }
 					</ToggleGroupControl>
 					<PositionPlacementControl
 						layout={ placement }
