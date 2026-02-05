@@ -1,3 +1,18 @@
+## [3.9.1](https://github.com/Automattic/newspack-popups/compare/v3.9.0...v3.9.1) (2026-02-05)
+
+
+### Bug Fixes
+
+* migrate expiry check from daily to hourly ([#1523](https://github.com/Automattic/newspack-popups/issues/1523)) ([14f30d7](https://github.com/Automattic/newspack-popups/commit/14f30d7e77fd0f5147bf2130ab2b8d9a6986a487)), closes [#1524](https://github.com/Automattic/newspack-popups/issues/1524)
+* trigger release ([0fee161](https://github.com/Automattic/newspack-popups/commit/0fee16130f1cd7fadd485c71280643b38fd54374))
+
+## [3.9.1](https://github.com/Automattic/newspack-popups/compare/v3.9.0...v3.9.1) (2026-02-05)
+
+
+### Bug Fixes
+
+* migrate expiry check from daily to hourly ([#1523](https://github.com/Automattic/newspack-popups/issues/1523)) ([14f30d7](https://github.com/Automattic/newspack-popups/commit/14f30d7e77fd0f5147bf2130ab2b8d9a6986a487)), closes [#1524](https://github.com/Automattic/newspack-popups/issues/1524)
+
 # [3.9.0](https://github.com/Automattic/newspack-popups/compare/v3.8.4...v3.9.0) (2026-02-02)
 
 
