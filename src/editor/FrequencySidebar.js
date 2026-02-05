@@ -123,20 +123,20 @@ const FrequencySidebar = ( {
 					/>
 				</>
 			) }
-			<div style={ { marginTop: '16px', marginBottom: '-12px' } }>
-				<TextControl
-					__next40pxDefaultSize
-					__nextNoMarginBottom
-					label={ __( 'UTM Suppression', 'newspack-popups' ) }
-					help={ __(
-						'Readers arriving at the site via URLs with this utm_source parameter will never be shown the prompt.',
-						'newspack-popups'
-					) }
-					value={ utm_suppression }
-					placeholder={ __( 'utm_campaign_name', 'newspack-popups' ) }
-					onChange={ value => onMetaFieldChange( { utm_suppression: value } ) }
-				/>
-			</div>
+			<div style={ { paddingTop: '8px' } } />
+			<TextControl
+				__next40pxDefaultSize
+				__nextNoMarginBottom
+				label={ __( 'UTM Suppression', 'newspack-popups' ) }
+				help={ __(
+					'Readers arriving at the site via URLs with this utm_source parameter will never be shown the prompt.',
+					'newspack-popups'
+				) }
+				value={ utm_suppression }
+				placeholder={ __( 'utm_campaign_name', 'newspack-popups' ) }
+				onChange={ value => onMetaFieldChange( { utm_suppression: value } ) }
+			/>
+			<div style={ { marginBottom: '-12px' } } />
 		</>
 	);
 };
