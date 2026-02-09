@@ -690,9 +690,7 @@ final class Newspack_Popups {
 	 * Load up common JS/CSS for the editor.
 	 */
 	public static function enqueue_block_assets() {
-		if ( ! is_admin() ) {
-			return;
-		}
+		$screen = get_current_screen();
 
 		// Block assets for Custom Placement and Prompt blocks.
 		\wp_enqueue_script(
@@ -723,7 +721,6 @@ final class Newspack_Popups {
 		wp_style_add_data( 'newspack-popups-blocks', 'rtl', 'replace' );
 		wp_enqueue_style( 'newspack-popups-blocks' );
 
-		$screen = get_current_screen();
 		// Don't enqueue Prompt editor files if we don't have a valid post type or ID (e.g. on the Widget Blocks screen).
 		if ( empty( $screen->post_type ) || empty( get_the_ID() ) ) {
 			return;
