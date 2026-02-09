@@ -2,6 +2,7 @@
  * WordPress dependencies.
  */
 import apiFetch from '@wordpress/api-fetch';
+import { useBlockProps } from '@wordpress/block-editor';
 import { __, sprintf } from '@wordpress/i18n';
 import { Button, ExternalLink, Notice, Placeholder, Spinner } from '@wordpress/components';
 import { useEffect, useState } from '@wordpress/element';
@@ -20,6 +21,7 @@ export const SinglePromptEditor = ( { attributes, setAttributes } ) => {
 	const [ error, setError ] = useState( null );
 	const { promptId } = attributes;
 	const { endpoint, post_type: postType } = window?.newspack_popups_blocks_data;
+	const blockProps = useBlockProps();
 
 	const getPrompt = async () => {
 		setError( null );
@@ -67,7 +69,7 @@ export const SinglePromptEditor = ( { attributes, setAttributes } ) => {
 
 	if ( ! loading && promptId && prompt ) {
 		return (
-			<div className="newspack-popups__single-prompt">
+			<div className="newspack-popups__single-prompt" { ...blockProps }>
 				<h4 className="newspack-popups__single-prompt-title">
 					{ prompt.title || __( '(no title)', 'newspack-popups' ) }{ ' ' }
 					<ExternalLink href={ `/wp-admin/post.php?post=${ promptId }&action=edit` }>{ __( 'edit', 'newspack-popups' ) }</ExternalLink>
@@ -87,67 +89,69 @@ export const SinglePromptEditor = ( { attributes, setAttributes } ) => {
 	}
 
 	return (
-		<Placeholder className="newspack-popups__single-prompt-placeholder" label={ __( 'Single Prompt', 'newspack-popups' ) } icon={ megaphone }>
-			{ loading && (
-				<div className="is-loading">
-					{ sprintf(
-						// translators: %s: an id of a popup.
-						__( 'Loading prompt with ID %s…', 'newspack-popups' ),
-						promptId
-					) }
-					<Spinner />
-				</div>
-			) }
+		<div { ...blockProps }>
+			<Placeholder className="newspack-popups__single-prompt-placeholder" label={ __( 'Single Prompt', 'newspack-popups' ) } icon={ megaphone }>
+				{ loading && (
+					<div className="is-loading">
+						{ sprintf(
+							// translators: %s: an id of a popup.
+							__( 'Loading prompt with ID %s…', 'newspack-popups' ),
+							promptId
+						) }
+						<Spinner />
+					</div>
+				) }
 
-			{ error && (
-				<Notice status="error" isDismissible={ false }>
-					{ error }
-				</Notice>
-			) }
+				{ error && (
+					<Notice status="error" isDismissible={ false }>
+						{ error }
+					</Notice>
+				) }
 
-			{ ! prompt && ! loading && (
-				<AutocompleteWithSuggestions
-					label={ __( 'Search for an inline or manual-only prompt:', 'newspack' ) }
-					help={ __( 'Begin typing prompt title, click autocomplete result to select.', 'newspack' ) }
-					fetchSavedPosts={ async postIDs => {
-						const posts = await apiFetch( {
-							path: addQueryArgs( endpoint, {
-								per_page: 100,
-								include: postIDs.join( ',' ),
-							} ),
-						} );
-
-						return posts.map( post => ( {
-							value: post.id,
-							label: decodeEntities( post.title ) || __( '(no title)', 'newspack' ),
-						} ) );
-					} }
-					fetchSuggestions={ async search => {
-						const posts = await apiFetch( {
-							path: addQueryArgs( endpoint, {
-								search,
-								per_page: 10,
-							} ),
-						} );
-
-						// Format suggestions for FormTokenField display.
-						const result = posts.reduce( ( acc, post ) => {
-							acc.push( {
-								value: post.id,
-								label: decodeEntities( post.title ) || __( '(no title)', 'newspack' ),
+				{ ! prompt && ! loading && (
+					<AutocompleteWithSuggestions
+						label={ __( 'Search for an inline or manual-only prompt:', 'newspack' ) }
+						help={ __( 'Begin typing prompt title, click autocomplete result to select.', 'newspack' ) }
+						fetchSavedPosts={ async postIDs => {
+							const posts = await apiFetch( {
+								path: addQueryArgs( endpoint, {
+									per_page: 100,
+									include: postIDs.join( ',' ),
+								} ),
 							} );
 
-							return acc;
-						}, [] );
-						return result;
-					} }
-					postType={ postType }
-					postTypeLabel={ 'prompt' }
-					maxLength={ 1 }
-					onChange={ items => setAttributes( { promptId: parseInt( items.pop().value ) } ) }
-					selectedPost={ null }
-				/>
-			) }
-		</Placeholder>
+							return posts.map( post => ( {
+								value: post.id,
+								label: decodeEntities( post.title ) || __( '(no title)', 'newspack' ),
+							} ) );
+						} }
+						fetchSuggestions={ async search => {
+							const posts = await apiFetch( {
+								path: addQueryArgs( endpoint, {
+									search,
+									per_page: 10,
+								} ),
+							} );
+
+							// Format suggestions for FormTokenField display.
+							const result = posts.reduce( ( acc, post ) => {
+								acc.push( {
+									value: post.id,
+									label: decodeEntities( post.title ) || __( '(no title)', 'newspack' ),
+								} );
+
+								return acc;
+							}, [] );
+							return result;
+						} }
+						postType={ postType }
+						postTypeLabel={ 'prompt' }
+						maxLength={ 1 }
+						onChange={ items => setAttributes( { promptId: parseInt( items.pop().value ) } ) }
+						selectedPost={ null }
+					/>
+				) }
+			</Placeholder>
+		</div>
 	);
 };

@@ -20,6 +20,7 @@ function register_block() {
 	register_block_type(
 		$block_json['name'],
 		[
+			'api_version'     => $block_json['apiVersion'],
 			'attributes'      => $block_json['attributes'],
 			'render_callback' => __NAMESPACE__ . '\render_block',
 		]
