@@ -88,7 +88,7 @@ final class Newspack_Popups {
 		add_action( 'init', [ __CLASS__, 'register_taxonomy' ] );
 		add_action( 'init', [ __CLASS__, 'disable_prompts_for_protected_pages' ] );
 		add_action( 'init', [ __CLASS__, 'maybe_create_temp_reader_session' ] );
-		add_action( 'enqueue_block_editor_assets', [ __CLASS__, 'enqueue_block_editor_assets' ] );
+		add_action( 'enqueue_block_assets', [ __CLASS__, 'enqueue_block_assets' ] );
 		add_filter( 'display_post_states', [ __CLASS__, 'display_post_states' ], 10, 2 );
 		add_action( 'save_post_' . self::NEWSPACK_POPUPS_CPT, [ __CLASS__, 'popup_default_fields' ], 10, 3 );
 		add_action( 'transition_post_status', [ __CLASS__, 'prevent_default_category_on_publish' ], 10, 3 );
@@ -689,8 +689,10 @@ final class Newspack_Popups {
 	/**
 	 * Load up common JS/CSS for the editor.
 	 */
-	public static function enqueue_block_editor_assets() {
-		$screen = get_current_screen();
+	public static function enqueue_block_assets() {
+		if ( ! is_admin() ) {
+			return;
+		}
 
 		// Block assets for Custom Placement and Prompt blocks.
 		\wp_enqueue_script(
@@ -721,6 +723,7 @@ final class Newspack_Popups {
 		wp_style_add_data( 'newspack-popups-blocks', 'rtl', 'replace' );
 		wp_enqueue_style( 'newspack-popups-blocks' );
 
+		$screen = get_current_screen();
 		// Don't enqueue Prompt editor files if we don't have a valid post type or ID (e.g. on the Widget Blocks screen).
 		if ( empty( $screen->post_type ) || empty( get_the_ID() ) ) {
 			return;
