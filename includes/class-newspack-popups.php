@@ -690,6 +690,9 @@ final class Newspack_Popups {
 	 * Load up common JS/CSS for the editor.
 	 */
 	public static function enqueue_block_assets() {
+		if ( ! is_admin() ) {
+			return;
+		}
 		$screen = get_current_screen();
 
 		// Block assets for Custom Placement and Prompt blocks.
