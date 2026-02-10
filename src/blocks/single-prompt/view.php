@@ -34,7 +34,9 @@ function register_block() {
 function render_block( $attributes ) {
 	$content     = '';
 	$prompt_id   = $attributes['promptId'];
-	$class_names = isset( $attributes['className'] ) ? ' class="' . $attributes['className'] . '"' : '';
+	$class_names = isset( $attributes['className'] )
+		? ' class="' . esc_attr( $attributes['className'] ) . '"'
+		: '';
 	$is_block_theme = function_exists( 'wp_is_block_theme' ) && wp_is_block_theme();
 
 	if ( empty( $prompt_id ) ) {
