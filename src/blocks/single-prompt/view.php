@@ -51,7 +51,8 @@ function render_block( $attributes ) {
 		}
 
 		$shortcode = '[newspack-popup id="' . $prompt_id . '"' . $class_names . ']';
-		$content  .= $is_block_theme
+		$render_shortcode = apply_filters( 'newspack_popups_render_prompt_shortcode', $is_block_theme, $attributes, $prompt_id );
+		$content  .= $render_shortcode
 			? do_shortcode( $shortcode )
 			: '<!-- wp:shortcode -->' . $shortcode . '<!-- /wp:shortcode -->';
 
