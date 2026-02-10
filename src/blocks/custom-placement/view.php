@@ -37,6 +37,7 @@ function render_block( $attributes ) {
 	$class_names         = isset( $attributes['className'] )
 		? ' class="' . esc_attr( $attributes['className'] ) . '"'
 		: '';
+	$in_post_content     = doing_filter( 'the_content' );
 	$is_block_theme      = function_exists( 'wp_is_block_theme' ) && wp_is_block_theme();
 
 	if ( empty( $custom_placement_id ) ) {
@@ -64,7 +65,8 @@ function render_block( $attributes ) {
 		}
 		foreach ( $prompts as $prompt_id ) {
 			$shortcode = '[newspack-popup id="' . $prompt_id . '"' . $class_names . ']';
-			$render_shortcode = apply_filters( 'newspack_popups_render_custom_placement_shortcode', $is_block_theme, $attributes, $custom_placement_id, $prompt_id );
+			$should_render = ! $in_post_content && $is_block_theme;
+			$render_shortcode = apply_filters( 'newspack_popups_render_custom_placement_shortcode', $should_render, $attributes, $custom_placement_id, $prompt_id );
 			$content  .= $render_shortcode
 				? do_shortcode( $shortcode )
 				: '<!-- wp:shortcode -->' . $shortcode . '<!-- /wp:shortcode -->';
