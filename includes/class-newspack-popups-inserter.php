@@ -55,7 +55,7 @@ final class Newspack_Popups_Inserter {
 		add_action( 'wp_body_open', [ $this, 'insert_before_header' ] );
 		add_action( 'after_archive_post', [ $this, 'insert_inline_prompt_in_archive_pages' ] );
 		add_action( 'wp_before_admin_bar_render', [ $this, 'add_preview_toggle' ] );
-		add_action( 'wp_enqueue_scripts', [ $this, 'prepare_above_header_popup_styles' ], 1 );
+		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'prepare_above_header_popup_styles' ], 1 );
 
 		// Always enqueue scripts, since this plugin's scripts are handling pageview sending via GTAG.
 		add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
