@@ -823,6 +823,15 @@ final class Newspack_Popups {
 	}
 
 	/**
+	 * Check if the current theme is a block theme.
+	 *
+	 * @return bool
+	 */
+	public static function is_block_theme() {
+		return function_exists( 'wp_is_block_theme' ) && wp_is_block_theme();
+	}
+
+	/**
 	 * Is it a preview request – a single popup preview or using "view as" feature.
 	 *
 	 * @return boolean Whether it's a preview request.

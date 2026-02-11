@@ -55,6 +55,7 @@ final class Newspack_Popups_Inserter {
 		add_action( 'wp_body_open', [ $this, 'insert_before_header' ] );
 		add_action( 'after_archive_post', [ $this, 'insert_inline_prompt_in_archive_pages' ] );
 		add_action( 'wp_before_admin_bar_render', [ $this, 'add_preview_toggle' ] );
+		add_action( 'wp_enqueue_scripts', [ $this, 'prepare_above_header_popup_styles' ], 1 );
 
 		// Always enqueue scripts, since this plugin's scripts are handling pageview sending via GTAG.
 		add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
@@ -527,6 +528,79 @@ final class Newspack_Popups_Inserter {
 		foreach ( $popups as $popup ) {
 			echo Newspack_Popups_Model::generate_popup( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		}
+	}
+
+	/**
+	 * Prepare above-header popup styles early so block layout CSS is printed in the head.
+	 *
+	 * Otherwise, per-block styles like alignment and spacing can be missing.
+	 */
+	public static function prepare_above_header_popup_styles() {
+		static $styles_prepared = false;
+		if ( $styles_prepared ) {
+			return;
+		}
+		if ( ! Newspack_Popups::is_block_theme() ) {
+			return;
+		}
+
+		$before_header_popups = array_filter( self::popups_for_post(), [ 'Newspack_Popups_Model', 'should_be_inserted_above_page_header' ] );
+		if ( empty( $before_header_popups ) ) {
+			return;
+		}
+
+		// Ensure the global styles handle exists before adding inline styles.
+		if ( function_exists( 'wp_enqueue_global_styles' ) ) {
+			wp_enqueue_global_styles();
+		}
+
+		// Get existing block-supports rules so we don't repeat them with the popup's styles.
+		$store              = null;
+		$existing_rule_keys = [];
+		if ( class_exists( '\WP_Style_Engine_CSS_Rules_Store' ) && method_exists( '\WP_Style_Engine_CSS_Rules_Store', 'get_store' ) ) {
+			$store = \WP_Style_Engine_CSS_Rules_Store::get_store( 'block-supports' );
+			if ( $store && method_exists( $store, 'get_all_rules' ) ) {
+				$existing_rule_keys = array_keys( $store->get_all_rules() );
+			}
+		}
+
+		// Temporarily swap the global post with each popup's post ID.
+		global $post;
+		$_post = $post;
+		foreach ( $before_header_popups as $popup ) {
+			$popup_post = \get_post( $popup['id'] );
+			if ( ! $popup_post ) {
+				continue;
+			}
+			$post = $popup_post; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+			setup_postdata( $post );
+			\do_blocks( $popup['content'] );
+		}
+
+		// Loop through the block-supports rules and get only the new rules added when the popups are rendered.
+		$block_supports_css = '';
+		if ( $store && method_exists( $store, 'get_all_rules' ) ) {
+			foreach ( $store->get_all_rules() as $key => $rule ) {
+				if ( in_array( $key, $existing_rule_keys, true ) ) {
+					continue;
+				}
+				if ( is_object( $rule ) && method_exists( $rule, 'get_css' ) ) {
+					$block_supports_css .= $rule->get_css();
+				}
+			}
+		}
+
+		// Print the popup's block-supports CSS inline.
+		if ( '' !== $block_supports_css ) {
+			wp_register_style( 'newspack-popups-block-supports', false, [], filemtime( NEWSPACK_POPUPS_PLUGIN_FILE ) );
+			wp_add_inline_style( 'newspack-popups-block-supports', $block_supports_css );
+			wp_enqueue_style( 'newspack-popups-block-supports' );
+		}
+
+		// Set the global post back to normal.
+		wp_reset_postdata();
+		$post = $_post; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+		$styles_prepared = true;
 	}
 
 	/**
