@@ -608,6 +608,7 @@ final class Newspack_Popups_Inserter {
 		}
 
 		// Set the global post back to normal.
+		wp_reset_postdata();
 		$post = $_post; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 		self::$above_header_styles_prepared = true;
 	}
