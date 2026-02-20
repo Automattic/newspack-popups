@@ -493,6 +493,9 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 
 		// Switch to a block theme so that prepare_above_header_popup_styles() proceeds past its is_block_theme() guard.
 		$original_theme = get_stylesheet();
+		if ( ! wp_get_theme( 'twentytwentyfour' )->exists() ) {
+			$this->markTestSkipped( 'The twentytwentyfour theme is not available in this test environment.' );
+		}
 		switch_theme( 'twentytwentyfour' );
 
 		// Reset the guard and deregister any previously enqueued handle so this test runs cleanly.
