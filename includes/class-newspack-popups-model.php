@@ -52,6 +52,13 @@ final class Newspack_Popups_Model {
 	protected static $current_popup = null;
 
 	/**
+	 * Cache of rendered popup bodies for the current request.
+	 *
+	 * @var array
+	 */
+	protected static $rendered_popup_bodies = [];
+
+	/**
 	 * Retrieve all Popups (first 100).
 	 *
 	 * @param  boolean $include_unpublished Whether to include unpublished posts.
@@ -961,13 +968,7 @@ final class Newspack_Popups_Model {
 	public static function generate_inline_popup( $popup ) {
 		global $wp;
 
-		$blocks = parse_blocks( $popup['content'] );
-		$body   = '';
-		self::add_form_hooks( $popup );
-		foreach ( $blocks as $block ) {
-			$body .= render_block( $block );
-		}
-		self::remove_form_hooks( $popup );
+		$body = self::get_rendered_popup_body( $popup );
 		do_action( 'newspack_campaigns_after_campaign_render', $popup );
 
 		$element_id           = self::canonize_popup_id( $popup['id'] );
@@ -1052,13 +1053,7 @@ final class Newspack_Popups_Model {
 			return self::generate_inline_popup( $popup );
 		}
 
-		$blocks = parse_blocks( $popup['content'] );
-		$body   = '';
-		self::add_form_hooks( $popup );
-		foreach ( $blocks as $block ) {
-			$body .= render_block( $block );
-		}
-		self::remove_form_hooks( $popup );
+		$body = self::get_rendered_popup_body( $popup );
 		do_action( 'newspack_campaigns_after_campaign_render', $popup );
 
 		$element_id                     = self::canonize_popup_id( $popup['id'] );
@@ -1158,6 +1153,46 @@ final class Newspack_Popups_Model {
 		 * @param string $element_id The popup element ID.
 		 */
 		return apply_filters( 'newspack_popups_popup_content', ob_get_clean(), $popup, $element_id );
+	}
+
+	/**
+	 * Render and memoize a popup body for this request.
+	 *
+	 * @param array $popup Popup data.
+	 * @return string Rendered popup body HTML.
+	 */
+	public static function get_rendered_popup_body( $popup ) {
+		$cache_key = self::get_rendered_popup_cache_key( $popup );
+		if ( isset( self::$rendered_popup_bodies[ $cache_key ] ) ) {
+			return self::$rendered_popup_bodies[ $cache_key ];
+		}
+		if ( empty( $popup['content'] ) ) {
+			self::$rendered_popup_bodies[ $cache_key ] = '';
+			return '';
+		}
+
+		$blocks = parse_blocks( $popup['content'] );
+		$body   = '';
+		self::add_form_hooks( $popup );
+		foreach ( $blocks as $block ) {
+			$body .= render_block( $block );
+		}
+		self::remove_form_hooks( $popup );
+
+		self::$rendered_popup_bodies[ $cache_key ] = $body;
+		return $body;
+	}
+
+	/**
+	 * Build the cache key for a popup body render.
+	 *
+	 * @param array $popup Popup data.
+	 * @return string Cache key.
+	 */
+	private static function get_rendered_popup_cache_key( $popup ) {
+		$popup_id = isset( $popup['id'] ) ? $popup['id'] : 'unknown';
+		$content  = isset( $popup['content'] ) ? $popup['content'] : '';
+		return $popup_id . ':' . md5( $content );
 	}
 
 	/**

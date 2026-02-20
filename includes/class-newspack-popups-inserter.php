@@ -39,6 +39,13 @@ final class Newspack_Popups_Inserter {
 	public static $the_content_has_rendered = false;
 
 	/**
+	 * Whether above-header popup styles have been prepared.
+	 *
+	 * @var boolean
+	 */
+	public static $above_header_styles_prepared = false;
+
+	/**
 	 * Whether we're exporting to Apple News.
 	 *
 	 * @var boolean
@@ -536,8 +543,7 @@ final class Newspack_Popups_Inserter {
 	 * Otherwise, per-block styles like alignment and spacing can be missing.
 	 */
 	public static function prepare_above_header_popup_styles() {
-		static $styles_prepared = false;
-		if ( $styles_prepared ) {
+		if ( self::$above_header_styles_prepared ) {
 			return;
 		}
 		if ( ! Newspack_Popups::is_block_theme() ) {
@@ -578,7 +584,7 @@ final class Newspack_Popups_Inserter {
 			}
 			$post = $popup_post; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 			setup_postdata( $post );
-			\do_blocks( $popup['content'] );
+			Newspack_Popups_Model::get_rendered_popup_body( $popup );
 		}
 
 		// Loop through the block-supports rules and get only the new rules added when the popups are rendered.
@@ -596,15 +602,14 @@ final class Newspack_Popups_Inserter {
 
 		// Print the popup's block-supports CSS inline.
 		if ( '' !== $block_supports_css ) {
-			wp_register_style( 'newspack-popups-block-supports', false, [], filemtime( NEWSPACK_POPUPS_PLUGIN_FILE ) );
+			wp_register_style( 'newspack-popups-block-supports', false, [], null ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion
 			wp_add_inline_style( 'newspack-popups-block-supports', $block_supports_css );
 			wp_enqueue_style( 'newspack-popups-block-supports' );
 		}
 
 		// Set the global post back to normal.
-		wp_reset_postdata();
 		$post = $_post; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-		$styles_prepared = true;
+		self::$above_header_styles_prepared = true;
 	}
 
 	/**

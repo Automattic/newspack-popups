@@ -472,4 +472,54 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 			'Does not include the popup content, since the post tag is excluded on this popup.'
 		);
 	}
+
+	/**
+	 * Test that block-supports CSS for above-header popups is enqueued in wp_head on block themes.
+	 */
+	public function test_above_header_popup_block_supports_css_in_head() {
+		// Remove the default popup.
+		wp_delete_post( self::$popup_id );
+
+		// Use a Group block with flex layout, justifyContent, and padding. The layout block support
+		// generates entries in the block-supports CSS store when this block is rendered.
+		$popup_content = '<!-- wp:group {"style":{"spacing":{"padding":{"top":"var:preset|spacing|40","bottom":"var:preset|spacing|40"}}},"layout":{"type":"flex","flexWrap":"nowrap","justifyContent":"space-between"}} --><div class="wp-block-group" style="padding-top:var(--wp--preset--spacing--40);padding-bottom:var(--wp--preset--spacing--40)"><!-- wp:paragraph --><p>Above header popup content.</p><!-- /wp:paragraph --></div><!-- /wp:group -->';
+		self::createPopup(
+			$popup_content,
+			[
+				'placement' => 'above_header',
+				'frequency' => 'daily',
+			]
+		);
+
+		// Switch to a block theme so that prepare_above_header_popup_styles() proceeds past its is_block_theme() guard.
+		$original_theme = get_stylesheet();
+		switch_theme( 'twentytwentyfour' );
+
+		// Reset the guard and deregister any previously enqueued handle so this test runs cleanly.
+		Newspack_Popups_Inserter::$above_header_styles_prepared = false;
+		wp_deregister_style( 'newspack-popups-block-supports' );
+
+		// Navigate to a post so popups_for_post() returns results.
+		$post_id = self::factory()->post->create( [ 'post_type' => 'post' ] );
+		self::go_to( get_permalink( $post_id ) );
+		global $wp_query, $post;
+		$wp_query->in_the_loop = true;
+		setup_postdata( $post );
+
+		Newspack_Popups_Inserter::prepare_above_header_popup_styles();
+
+		// Capture wp_head() to assert the inline style was output.
+		ob_start();
+		wp_head();
+		$head_output = ob_get_clean();
+
+		// Restore the original theme.
+		switch_theme( $original_theme );
+
+		self::assertStringContainsString(
+			'newspack-popups-block-supports',
+			$head_output,
+			'wp_head() output contains the newspack-popups-block-supports inline style for above-header popups on block themes.'
+		);
+	}
 }
