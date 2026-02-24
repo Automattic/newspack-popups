@@ -322,11 +322,99 @@ The `view` entry point (`src/view/index.js`) orchestrates the client-side prompt
 
 ### Criteria System
 
-Display criteria are registered in PHP (`Newspack_Popups_Criteria`) and evaluated client-side (`src/criteria/`).
+Display criteria determine whether a prompt is shown to a reader based on reader data (articles read, device, donation status, etc.). Criteria are registered in PHP and evaluated client-side against data from the Reader Data Library (`window.newspackRAS`).
 
-Default criteria types (in `src/criteria/default/`): `articles-read`, `devices`, `donation`, `favorite-categories`, `newsletter`, `user-account`.
+#### Registration API
 
-Extend via the `newspack_popups_registered_criteria` filter (PHP) and by adding new JS criteria modules.
+The primary PHP method is `Newspack_Popups_Criteria::register_criteria( $id, $config )` (in `includes/class-newspack-popups-criteria.php`).
+
+**Config keys:**
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| `name` | string | Derived from ID | Human-readable label |
+| `category` | string | `'reader_activity'` | Organizational grouping (see categories below) |
+| `description` | string | — | Description shown in the segment editor |
+| `help` | string | — | Help text for the input control |
+| `matching_function` | string | `'default'` | How the criteria value is compared to the segment config (see matching functions below) |
+| `matching_attribute` | string | The criteria ID | Key used to look up the reader's value from the Reader Data Library store |
+| `options` | array | — | Array of `[ 'label' => ..., 'value' => ..., 'params' => [...] ]` for predefined choices. `params` provides extra data to the matching function (e.g., viewport width ranges for `devices`) |
+
+**Categories** (organizational, used for grouping in the segment editor UI):
+- `reader_engagement` — Articles read, favorite categories, devices
+- `reader_activity` — User account status
+- `reader_revenue` — Donations, subscriptions, memberships
+- `newsletter` — Newsletter subscription status and lists
+- `referrer_sources` — Traffic source matching/exclusion
+
+**Matching functions** (defined in `src/criteria/matching-functions.js`):
+
+| Function | Behavior |
+|----------|----------|
+| `default` | Exact match: `criteria.value === config.value` |
+| `list__in` | True if the criteria value (or any element if array) appears in the config's comma-separated list |
+| `list__not_in` | True if the criteria value is empty or not in the config's list |
+| `range` | True if the criteria value falls within `{ min, max }` from the config |
+
+Custom matching functions can also be provided as a JS function (see JS-side registration below).
+
+#### Default Criteria
+
+Registered in `src/criteria/default/index.php` via `register_criteria()`. The `newspack_popups_default_criteria` filter is applied to the array before registration, allowing modification of built-in criteria.
+
+| ID | Category | Matching Function | Matching Attribute |
+|----|----------|-------------------|--------------------|
+| `articles_read` | `reader_engagement` | `range` | `articles_read` |
+| `articles_read_in_session` | `reader_engagement` | `range` | `articles_read_in_session` |
+| `favorite_categories` | `reader_engagement` | `list__in` | `favorite_categories` |
+| `devices` | `reader_engagement` | `default` | `devices` (uses `options` with `params` for viewport widths) |
+| `user_account` | `reader_activity` | `default` | `user_account` |
+| `newsletter` | `newsletter` | `default` | `newsletter` |
+| `subscribed_lists` | `newsletter` | `list__in` | `newsletter_subscribed_lists` |
+| `not_subscribed_lists` | `newsletter` | `list__not_in` | `newsletter_subscribed_lists` |
+| `donation` | `reader_revenue` | `default` | `donation` |
+| `active_subscriptions` | `reader_revenue` | `list__in` | `active_subscriptions` |
+| `not_active_subscriptions` | `reader_revenue` | `list__not_in` | `active_subscriptions` |
+| `active_memberships` | `reader_revenue` | `list__in` | `active_memberships` |
+| `not_active_memberships` | `reader_revenue` | `list__not_in` | `active_memberships` |
+| `sources_to_match` | `referrer_sources` | `list__in` | `referrer` |
+| `sources_to_exclude` | `referrer_sources` | `list__not_in` | `referrer` |
+
+Each default criterion also has a JS module in `src/criteria/default/` (e.g., `articles-read.js`, `devices.js`) that calls `setMatchingAttribute()` to provide the value-fetching logic. These are imported from `src/criteria/default/index.js`.
+
+#### Reader Data Library Integration
+
+Criteria values come from the Reader Data Library (`window.newspackRAS`), provided by the main Newspack plugin:
+- **Frontend (all readers)**: `window.newspackRAS.store.get('key')` reads a value; `window.newspackRAS.push(ras => ras.store.set('key', value))` sets a value.
+- **PHP (registered users)**: `\Newspack\Reader_Data::update_item( $user_id, 'key', wp_json_encode( $value ) )`.
+
+The `matchingAttribute` config key maps to the Reader Data Library store key. If it's a string, the criteria system calls `ras.store.get( matchingAttribute )` to get the value. If it's a function, the function is called with the `ras` instance and should return the value directly.
+
+#### JS-Side Registration
+
+`registerCriteria( id, config )` in `src/criteria/utils.js` registers criteria on the client side. Each PHP-registered criteria must have a corresponding JS registration (done automatically for default criteria via their JS modules).
+
+Config options:
+- `matchingFunction` — A string referencing a built-in function (`'default'`, `'list__in'`, `'list__not_in'`, `'range'`), or a custom function `( segmentConfig, ras, criteria ) => boolean`.
+- `matchingAttribute` — A string (Reader Data Library store key) or a function `( ras ) => value`.
+
+Helper functions for lazy configuration (can be called before or after `registerCriteria`):
+- `setMatchingAttribute( id, matchingAttribute )` — Sets or overrides the matching attribute.
+- `setMatchingFunction( id, matchingFunction )` — Sets or overrides the matching function.
+
+#### PHP Filters
+
+- `newspack_popups_default_criteria` — Applied to the default criteria array in `src/criteria/default/index.php` before `register_criteria()` is called. Allows modifying, adding, or removing built-in criteria.
+- `newspack_popups_registered_criteria` — Applied in `get_registered_criteria()` after all criteria are registered. Receives the full flat array of criteria configs. Can add, modify, or remove criteria.
+
+#### Key Source Files
+
+- `includes/class-newspack-popups-criteria.php` — PHP registration, config localization, script enqueuing.
+- `src/criteria/default/index.php` — Default criteria definitions (PHP).
+- `src/criteria/default/index.js` — Imports all default criteria JS modules.
+- `src/criteria/default/*.js` — Individual JS modules that call `setMatchingAttribute()` to provide value-fetching logic.
+- `src/criteria/utils.js` — `registerCriteria()`, `setMatchingAttribute()`, `setMatchingFunction()`, `getCriteria()`.
+- `src/criteria/matching-functions.js` — Built-in matching function implementations.
 
 ### SCSS
 
@@ -349,10 +437,46 @@ npm run test             # Run full JS test suite
 
 ### Add a new display criteria type
 
-1. Register the criteria in PHP via the `newspack_popups_registered_criteria` filter (or add to `src/criteria/default/index.php`).
-2. Create a JS module in `src/criteria/default/` with `name`, `matching_function`, and `matching_attribute`.
-3. Export it from `src/criteria/default/index.js`.
-4. Add tests in `src/criteria/index.test.js`.
+**For criteria built into the plugin:**
+
+1. Add the criteria definition to `src/criteria/default/index.php`:
+   ```php
+   'my_criteria' => [
+       'name'              => __( 'My Criteria', 'newspack-popups' ),
+       'category'          => 'reader_engagement',
+       'matching_function' => 'default', // or 'range', 'list__in', 'list__not_in'
+       'matching_attribute' => 'my_criteria', // Reader Data Library store key
+   ],
+   ```
+2. Create a JS module in `src/criteria/default/my-criteria.js` that calls `setMatchingAttribute()` from `../utils` to define how the value is fetched:
+   ```js
+   import { setMatchingAttribute } from '../utils';
+   setMatchingAttribute( 'my_criteria', ras => {
+       return ras?.store?.get( 'my_criteria' );
+   } );
+   ```
+3. Import the module from `src/criteria/default/index.js`.
+4. Set the reader data value so criteria evaluation has data to match against:
+   - Frontend: `window.newspackRAS.push( ras => ras.store.set( 'my_criteria', 'value' ) );`
+   - PHP (registered users): `\Newspack\Reader_Data::update_item( $user_id, 'my_criteria', wp_json_encode( $value ) );`
+5. Add tests in `src/criteria/index.test.js`.
+
+**For third-party criteria (from another plugin):**
+
+1. Register in PHP using the `register_criteria()` API:
+   ```php
+   add_action( 'init', function() {
+       if ( class_exists( 'Newspack_Popups_Criteria' ) ) {
+           Newspack_Popups_Criteria::register_criteria( 'my_criteria', [
+               'name'              => 'My Criteria',
+               'category'          => 'reader_engagement',
+               'matching_function' => 'default',
+           ] );
+       }
+   } );
+   ```
+2. Enqueue a JS script that imports from the `criteria` webpack entry (or uses `window.newspackPopupsCriteria`) to call `setMatchingAttribute()` for value fetching.
+3. Set reader data values as described above.
 
 ### Add a new merge tag
 
