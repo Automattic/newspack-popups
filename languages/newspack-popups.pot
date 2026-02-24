@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-02-19T21:37:59+00:00\n"
+"POT-Creation-Date: 2026-02-24T20:01:01+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: newspack-popups\n"
@@ -290,16 +290,16 @@ msgstr ""
 msgid "Add Campaign"
 msgstr ""
 
-#: includes/class-newspack-popups.php:806
+#: includes/class-newspack-popups.php:809
 #: dist/editor.js:43
 #: src/editor/Sidebar.js:75
 msgid "Inline"
 msgstr ""
 
 #. translators: %s: Duplicate prompt title
-#: includes/class-newspack-popups.php:1212
-#: includes/class-newspack-popups.php:1218
-#: includes/class-newspack-popups.php:1245
+#: includes/class-newspack-popups.php:1215
+#: includes/class-newspack-popups.php:1221
+#: includes/class-newspack-popups.php:1248
 #, php-format
 msgid "%s copy"
 msgstr ""
@@ -758,126 +758,126 @@ msgid "Segment based on traffic source - hide campaigns for visitors coming from
 msgstr ""
 
 #: dist/blocks.js:1
-#: src/blocks/custom-placement/edit.js:19
+#: src/blocks/custom-placement/edit.js:20
 msgid "Choose a custom placement"
 msgstr ""
 
 #: dist/blocks.js:1
-#: src/blocks/custom-placement/edit.js:45
+#: src/blocks/custom-placement/edit.js:47
 msgid "There was an error fetching prompts for this custom placement."
 msgstr ""
 
 #: dist/blocks.js:1
-#: src/blocks/custom-placement/edit.js:80
+#: src/blocks/custom-placement/edit.js:83
 msgid "Custom Placement"
 msgstr ""
 
 #: dist/blocks.js:1
-#: src/blocks/custom-placement/edit.js:104
+#: src/blocks/custom-placement/edit.js:107
 msgid "No active prompts found for this custom placement."
 msgstr ""
 
 #. translators: %1$s: max number of popups displayed. %2$s: plural modifier.
 #: dist/blocks.js:4
-#: src/blocks/custom-placement/edit.js:112
+#: src/blocks/custom-placement/edit.js:115
 #, js-format
 msgid "This custom placement will display at most %1$sthe following active prompt%2$s, depending on the reader’s top-priority segment:"
 msgstr ""
 
 #. translators: %s: segment name.
 #: dist/blocks.js:7
-#: src/blocks/custom-placement/edit.js:131
+#: src/blocks/custom-placement/edit.js:134
 #, js-format
 msgid "Segment: %s"
 msgstr ""
 
 #: dist/blocks.js:7
-#: src/blocks/custom-placement/edit.js:137
+#: src/blocks/custom-placement/edit.js:140
 msgid "Segment:"
 msgstr ""
 
 #: dist/blocks.js:7
-#: src/blocks/custom-placement/edit.js:140
+#: src/blocks/custom-placement/edit.js:143
 msgid "else"
 msgstr ""
 
 #. translators: %s: an id of a popup.
 #: dist/blocks.js:19
-#: src/blocks/single-prompt/edit.js:40
+#: src/blocks/single-prompt/edit.js:41
 #, js-format
 msgid "No active prompts found with ID %s. Try choosing another prompt."
 msgstr ""
 
 #. translators: %s: an id of a popup.
 #: dist/blocks.js:22
-#: src/blocks/single-prompt/edit.js:54
+#: src/blocks/single-prompt/edit.js:55
 #, js-format
 msgid "There was an error fetching prompt with ID %s."
 msgstr ""
 
 #: dist/blocks.js:22
-#: src/blocks/single-prompt/edit.js:72
-msgid "(no title)"
-msgstr ""
-
-#: dist/blocks.js:22
-#: src/blocks/single-prompt/edit.js:73
-msgid "edit"
-msgstr ""
-
-#: dist/blocks.js:22
-#: src/blocks/single-prompt/edit.js:90
+#: src/blocks/single-prompt/edit.js:78
 msgid "Single Prompt"
 msgstr ""
 
 #. translators: %s: an id of a popup.
 #: dist/blocks.js:25
-#: src/blocks/single-prompt/edit.js:95
+#: src/blocks/single-prompt/edit.js:85
 #, js-format
 msgid "Loading prompt with ID %s…"
 msgstr ""
 
 #: dist/blocks.js:25
-#: src/blocks/custom-placement/index.js:32
-#: src/blocks/single-prompt/index.js:32
-msgid "newspack"
+#: src/blocks/single-prompt/edit.js:149
+msgid "(no title)"
+msgstr ""
+
+#: dist/blocks.js:25
+#: src/blocks/single-prompt/edit.js:150
+msgid "edit"
 msgstr ""
 
 #: dist/blocks.js:25
 #: src/blocks/custom-placement/index.js:33
 #: src/blocks/single-prompt/index.js:33
-msgid "campaigns"
+msgid "newspack"
 msgstr ""
 
 #: dist/blocks.js:25
 #: src/blocks/custom-placement/index.js:34
 #: src/blocks/single-prompt/index.js:34
-msgid "campaign"
+msgid "campaigns"
 msgstr ""
 
 #: dist/blocks.js:25
 #: src/blocks/custom-placement/index.js:35
-#: src/blocks/single-prompt/index.js:36
-msgid "prompt"
+#: src/blocks/single-prompt/index.js:35
+msgid "campaign"
 msgstr ""
 
 #: dist/blocks.js:25
 #: src/blocks/custom-placement/index.js:36
-msgid "custom"
+#: src/blocks/single-prompt/index.js:37
+msgid "prompt"
 msgstr ""
 
 #: dist/blocks.js:25
 #: src/blocks/custom-placement/index.js:37
+msgid "custom"
+msgstr ""
+
+#: dist/blocks.js:25
+#: src/blocks/custom-placement/index.js:38
 msgid "placement"
 msgstr ""
 
 #: dist/blocks.js:25
-#: src/blocks/single-prompt/index.js:25
+#: src/blocks/single-prompt/index.js:26
 msgid "Campaigns: Single Prompt"
 msgstr ""
 
 #: dist/blocks.js:25
-#: src/blocks/single-prompt/index.js:35
+#: src/blocks/single-prompt/index.js:36
 msgid "single"
 msgstr ""
 
