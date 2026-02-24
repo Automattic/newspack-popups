@@ -2,16 +2,27 @@
 
 This file covers what is specific to `newspack-popups`. Shared conventions (Docker commands, `n` script, coding standards, git rules, etc.) are in the root `newspack-workspace/AGENTS.md`.
 
-## Linting Commands
+## Quick Reference (Code Pointers)
 
-```bash
-npm run lint             # JS + SCSS only (see gotchas)
-npm run lint:js          # JavaScript linting
-npm run lint:scss        # SCSS linting
-npm run lint:php         # PHP linting (PHPCS)
-npm run fix:js           # Auto-fix JS issues
-npm run fix:php          # Auto-fix PHP issues (PHPCBF)
-```
+**Commands:** All lint/build/test scripts are in `package.json`. Run PHP lint separately: `npm run lint:php`.
+
+**PHP backend at a glance:**
+- Constants & CPT registration → top of `includes/class-newspack-popups.php`
+- Placement types → `$overlay_placements` / `$inline_placements` in `includes/class-newspack-popups-model.php`
+- Post meta fields → `register_meta()` in `includes/class-newspack-popups.php` (lines 183–622)
+- REST routes → `register_api_endpoints()` in `includes/class-newspack-popups-api.php`. **Note:** the public `/custom-placement` endpoint lives in `Newspack_Popups_Custom_Placements::rest_api_init()` with `'permission_callback' => '__return_true'` (no auth).
+- WP-CLI commands → `includes/cli/` + `register_cli_commands()` in the main class
+- Logging → `Newspack_Popups_Logger::log()`, delegates to `\Newspack\Logger` or `error_log()`; gated by `NEWSPACK_LOG_LEVEL`
+
+**Frontend at a glance:**
+- Webpack entry points (7 entries) → `webpack.config.js`
+- Editor sidebar panels → `registerPlugin` calls in `src/editor/index.js`
+- Blocks (2) → `src/blocks/` (Custom Placement, Single Prompt), both server-rendered via `view.php`
+- Data attributes on `.newspack-popup-container` → template in `includes/class-newspack-popups-model.php` + `src/view/utils/segments.js`. **Note:** `data-frequency` is CSV-encoded as `start,between,max,reset_period`.
+
+**Testing:**
+- PHP tests in `tests/`, extend `WP_UnitTestCase` or [`WP_UnitTestCase_PageWithPopups`](https://github.com/Automattic/newspack-popups/blob/trunk/tests/wp-unittestcase-pagewithpopups.php#L11). Run with `n test-php`.
+- JS tests colocated with source (`.test.js` suffix). Run with `npm run test`.
 
 ## Common Gotchas
 
@@ -23,27 +34,7 @@ npm run fix:php          # Auto-fix PHP issues (PHPCBF)
 - The standalone Settings page (Campaigns > Settings) is only used when the main Newspack plugin UI is not available.
 - Shortcode `[newspack-popup id="..." class="..."]` renders a specific prompt inline. Handled by [`Newspack_Popups_Inserter::popup_shortcode()`](https://github.com/Automattic/newspack-popups/blob/trunk/includes/class-newspack-popups-inserter.php#L782).
 
-## PHP Backend
-
-### Bootstrap & Autoloading
-
-- **`newspack-popups.php`**: Main plugin file. Defines `NEWSPACK_POPUPS_PLUGIN_FILE`, loads Composer autoloader, and instantiates `Newspack_Popups`.
-- **`includes/class-newspack-popups.php`**: Singleton main class. Manually `include_once`s all other classes in the constructor.
-- **Autoloading**: Composer `classmap` strategy covering `includes/` and `includes/schemas/`. After adding a new PHP file, run `composer dump-autoload`.
-
-### Key Constants
-
-Defined in `class-newspack-popups.php`:
-
-| Constant | Value |
-|----------|-------|
-| `NEWSPACK_POPUPS_CPT` | `'newspack_popups_cpt'` |
-| `NEWSPACK_POPUPS_TAXONOMY` | `'newspack_popups_taxonomy'` |
-| `NEWSPACK_POPUPS_ACTIVE_CAMPAIGN_GROUP` | `'newspack_popups_active_campaign_group'` |
-| `NEWSPACK_POPUP_PREVIEW_QUERY_PARAM` | `'pid'` |
-| `NEWSPACK_POPUP_PRESET_QUERY_PARAM` | `'preset'` |
-| `NEWSPACK_POPUPS_TAXONOMY_STATUS` | `'newspack_popups_taxonomy_status'` |
-| `PREVIEW_QUERY_KEYS` | Array of 24 meta-key-to-short-param mappings for preview URLs ([lines 22–47](https://github.com/Automattic/newspack-popups/blob/trunk/includes/class-newspack-popups.php#L22-L47)) |
+## Architecture Deep Dive
 
 ### Class Initialization Patterns
 
@@ -64,33 +55,6 @@ The codebase uses a mix of patterns:
 
 Most classes in `includes/` use the global namespace with a `Newspack_Popups_` prefix. Newer code under `cli/`, `merge-tags/`, and `schemas/` uses the `Newspack\Campaigns` namespace.
 
-### Custom Post Type & Taxonomies
-
-- **CPT**: `newspack_popups_cpt` (Label: "Prompts"). Supports editor, title, custom-fields, thumbnail, revisions. Not publicly queryable.
-- **Campaign taxonomy**: `newspack_popups_taxonomy` — Hierarchical taxonomy for grouping prompts into campaigns (label: "Campaigns").
-- **Segment taxonomy**: `popup_segment` — Hierarchical. Managed via `Newspack_Segments_Model`.
-
-### Placement Types Reference
-
-| Slug | Type | Behavior |
-|------|------|----------|
-| `top` | Overlay | Fixed at top of viewport |
-| `bottom` | Overlay | Fixed at bottom of viewport |
-| `center` | Overlay | Centered modal |
-| `top_right` | Overlay | Top-right corner |
-| `top_left` | Overlay | Top-left corner |
-| `bottom_right` | Overlay | Bottom-right corner |
-| `bottom_left` | Overlay | Bottom-left corner |
-| `center_right` | Overlay | Right-side panel |
-| `center_left` | Overlay | Left-side panel |
-| `inline` | Inline | Inserted between content blocks |
-| `above_header` | Inline | Before the page header |
-| `archives` | Inline | Inserted between posts on archive pages |
-| `manual` | Special | Shortcode-only: `[newspack-popup id="..." class="..."]` |
-| `custom1`–`custom3`+ | Special | Rendered via Custom Placement blocks; more can be created in settings |
-
-Placements are defined in `Newspack_Popups_Model`: [`$overlay_placements`](https://github.com/Automattic/newspack-popups/blob/trunk/includes/class-newspack-popups-model.php#L19) (line 19) and [`$inline_placements`](https://github.com/Automattic/newspack-popups/blob/trunk/includes/class-newspack-popups-model.php#L26) (line 26).
-
 ### Content Insertion Algorithm
 
 The Inserter (`class-newspack-popups-inserter.php`) controls how prompts appear in post content:
@@ -102,211 +66,6 @@ The Inserter (`class-newspack-popups-inserter.php`) controls how prompts appear 
 5. **Above-header insertion**: Hooks `wp_body_open` for `above_header` placement.
 6. **Shortcode**: `[newspack-popup id="..." class="..."]` via [`popup_shortcode()`](https://github.com/Automattic/newspack-popups/blob/trunk/includes/class-newspack-popups-inserter.php#L782) for manual placement.
 7. **Homepage Posts block**: Removes and restores the `the_content` filter around Homepage Posts block rendering to prevent prompts inside excerpts.
-
-### Post Meta
-
-Registered in [`Newspack_Popups::register_meta()`](https://github.com/Automattic/newspack-popups/blob/trunk/includes/class-newspack-popups.php#L183-L622) (lines 183–622). All meta keys below use `object_subtype => newspack_popups_cpt` unless noted.
-
-**Trigger:**
-- `trigger_type` (string) — `scroll` or `time`
-- `trigger_scroll_progress` (integer) — Scroll percentage for scroll trigger
-- `trigger_blocks_count` (integer) — Number of blocks before inline prompt insertion
-- `trigger_delay` (integer) — Delay in ms for time trigger
-
-**Archive:**
-- `archive_insertion_posts_count` (integer) — Posts between prompt in archives
-- `archive_insertion_is_repeating` (boolean) — Whether to repeat in archives
-
-**Frequency:**
-- `frequency` (string) — Frequency type (e.g., `once`, `daily`, `always`, `custom`)
-- `frequency_max` (integer, default: 0) — Max display count
-- `frequency_start` (integer, default: 0) — Pageviews before first display
-- `frequency_between` (integer, default: 0) — Pageviews between displays
-- `frequency_reset` (string, default: `'month'`) — Reset period
-
-**Placement:**
-- `placement` (string) — Placement slug (see Placement Types Reference)
-- `post_types` (array) — Post types to display on
-- `archive_page_types` (array) — Archive page types to display on
-- `utm_suppression` (string) — UTM parameter value to suppress prompt
-
-**Styling:**
-- `background_color` (string), `overlay_color` (string), `overlay_opacity` (integer), `overlay_size` (string, default: `'medium'`), `no_overlay_background` (boolean, default: false)
-- `close_button_background_color` (string), `enable_close_button_background` (boolean, default: false)
-- `hide_border` (boolean), `large_border` (boolean), `no_padding` (boolean)
-- `additional_classes` (string, default: `''`)
-
-**Content:**
-- `excluded_categories` (array of integers, default: []), `excluded_tags` (array of integers, default: [])
-- `duplicate_of` (integer, default: 0) — ID of the original prompt if this is a duplicate
-
-**Dates:**
-- `expiration_date` (string), `activation_date` (string), `deactivation_date` (string)
-
-**Global (all post types — no `object_subtype`):**
-- `newspack_popups_has_disabled_popups` (boolean) — Per-post toggle to disable all prompts on that post/page.
-
-### REST API
-
-Base namespace: `newspack-popups/v1`
-
-| Method | Route | Auth | Description |
-|--------|-------|------|-------------|
-| POST | `/settings` | `manage_options` | Update plugin settings |
-| GET | `/prompts` | `manage_options` | Get inline/manual prompts with filtering |
-| GET | `/{original_id}/{id}/duplicate` | `manage_options` | Get suggested duplicate title |
-| POST | `/{id}/duplicate` | `manage_options` | Duplicate a popup |
-| GET | `/audience-management/campaign` | `manage_options` | Get Reader Activation campaign settings |
-| POST | `/audience-management/campaign` | `manage_options` | Update Reader Activation campaign settings |
-| GET | `/custom-placement` | **Public** | Get prompts for a custom placement (no auth required) |
-
-The first 6 endpoints use [`Newspack_Popups_API::permission_callback()`](https://github.com/Automattic/newspack-popups/blob/trunk/includes/class-newspack-popups-api.php#L188) (`manage_options`). The `/custom-placement` endpoint is registered in [`Newspack_Popups_Custom_Placements::rest_api_init()`](https://github.com/Automattic/newspack-popups/blob/trunk/includes/class-newspack-popups-custom-placements.php#L78) with `'permission_callback' => '__return_true'`.
-
-### Settings & Data Storage
-
-| Mechanism | Key/Pattern | Purpose |
-|-----------|-------------|---------|
-| `wp_options` | `newspack_popups_donor_landing_page`, etc. | Individual settings (see [`Newspack_Popups_Settings::get_settings()`](https://github.com/Automattic/newspack-popups/blob/trunk/includes/class-newspack-popups-settings.php#L215)) |
-| `wp_options` | `newspack_popups_segments` | Segment definitions |
-| `wp_options` | `newspack_popups_custom_placements` | Custom placement definitions |
-| `wp_options` | `newspack_popups_ras_prompts` | Preset prompt cache |
-| `wp_options` | `newspack_popups_expiry_migrated_to_hourly` | Migration flag |
-| Post meta | See Post Meta section above | Per-prompt configuration |
-
-### Key Hooks
-
-**Actions:**
-- `newspack_campaigns_after_campaign_render` — Fires after a popup renders (used by Data API for analytics).
-- `newspack_popups_check_expiry` — Hourly cron hook for expiring prompts.
-
-**Filters:**
-- `newspack_popups_popup_content` — Process popup content before output (used by merge tags).
-- `newspack_popups_registered_criteria` — Extend the list of display criteria types.
-- `newspack_popups_assess_has_disabled_popups` — Return `true` to disable all popups.
-- `newspack_popups_should_display_prompt` — Override whether a specific prompt displays.
-- `newspack_popups_admin_user_capability` — Change the admin capability (default: `edit_others_pages`).
-- `newspack_popups_size_options` — Modify available overlay size options.
-- `newspack_campaigns_post_types_for_campaigns` — Modify supported post types for campaign display.
-- `newspack_campaigns_archive_page_types_for_campaigns` — Modify supported archive page types.
-- `newspack_campaigns_default_supported_post_types` — Modify default supported post types.
-
-### Logging
-
-[`Newspack_Popups_Logger::log( $payload )`](https://github.com/Automattic/newspack-popups/blob/trunk/includes/class-newspack-popups-logger.php#L19) logs with header `NEWSPACK-POPUPS`. Delegates to `\Newspack\Logger` if available, otherwise falls back to `error_log()`. Gated by the `NEWSPACK_LOG_LEVEL` constant.
-
-### WP-CLI Commands
-
-Namespace: `newspack-popups`, defined in `includes/cli/`.
-
-| Command | Description |
-|---------|-------------|
-| `wp newspack-popups export [--file=<file>]` | Export prompts |
-| `wp newspack-popups import <file>` | Import prompts |
-| `wp newspack-popups prune-data` | Prune analytics data |
-| `wp newspack-popups delete-all` | Delete all prompts |
-
-### Integration with newspack-plugin
-
-The plugin checks for these Newspack classes at runtime (all with graceful fallback):
-- `\Newspack\Reader_Data` — Enables segmentation features.
-- `\Newspack\AMP_Enhancements` — Detects AMP+ configuration for frontend scripts.
-- `\Newspack\Logger` — Enhanced logging (falls back to `error_log()`).
-- `\Newspack\Patches` — Theme compatibility patches.
-- `\Newspack\Donations` — Donation settings for presets.
-- `\Newspack\Metering` — Content metering integration.
-- `\Newspack\Data_Events` — Event handling for reader actions.
-
-### Form & E-commerce Integration
-
-`Newspack_Popups_Data_Api` hooks into WooCommerce and newsletter/auth forms to track which prompt triggered a conversion:
-- `woocommerce_checkout_create_order_line_item` — Attaches prompt metadata to WooCommerce order line items.
-- `newspack_blocks_modal_checkout_cart_item_data` — Adds prompt data to checkout cart items.
-- `newspack_auth_form_metadata`, `newspack_register_reader_form_metadata`, `newspack_newsletters_subscription_form_metadata` — Attaches prompt metadata to reader registration and newsletter subscription forms.
-
-### PHP Testing
-
-```bash
-npm run lint:php         # PHP linting (PHPCS)
-npm run fix:php          # Auto-fix PHP issues (PHPCBF)
-```
-
-- Tests live in `tests/`, extend `WP_UnitTestCase` (or [`WP_UnitTestCase_PageWithPopups`](https://github.com/Automattic/newspack-popups/blob/trunk/tests/wp-unittestcase-pagewithpopups.php#L11) from `tests/wp-unittestcase-pagewithpopups.php`).
-- Bootstrap: `tests/bootstrap.php`. Defines `IS_TEST_ENV` constant (used to skip script enqueuing in tests).
-- No `@group` annotations are used. Run all tests via `n test-php` from the repo directory.
-- Test files cover: blocks, classic-block-encoding, content-insertion, criteria, e2e, exporter, importer, insertion-cpt, insertion, merge-tags, model, popups-expiry, presets, schemas, segmentation, segments.
-
-## Frontend (JS/React)
-
-### Architecture
-
-No TypeScript — the frontend is entirely JavaScript. No custom `@wordpress/data` stores. Editor components use WordPress core stores (`core/editor`, `core/edit-post`) via `withSelect`/`withDispatch` and `useSelect`/`useDispatch`. Settings page and editor sidebar use standard `@wordpress/components` and `@wordpress/api-fetch`.
-
-### Webpack Entry Points
-
-7 hardcoded entries in `webpack.config.js`:
-
-| Entry | Source | Purpose |
-|-------|--------|---------|
-| `editor` | `src/editor/` | Block editor sidebar panels (placement, frequency, colors, styles, preview, merge tags) |
-| `view` | `src/view/` | Frontend: segmentation, analytics, merge tag resolution |
-| `admin` | `src/view/admin.js` | Admin bar prompt preview toggle |
-| `documentSettings` | `src/document-settings/` | Per-post prompt visibility settings |
-| `settings` | `src/settings/` | Standalone settings page (fallback when newspack-plugin UI is unavailable) |
-| `blocks` | `src/blocks/` | Custom Placement and Single Prompt blocks |
-| `criteria` | `src/criteria/` | Display criteria evaluation scripts |
-
-### Editor Sidebar Panels
-
-Registered via `registerPlugin` in `src/editor/index.js`. These define the prompt editing experience:
-
-| Plugin ID | Panel Title | Component |
-|-----------|-------------|-----------|
-| `newspack-popups` | Settings | `Sidebar` — Placement, trigger type, size |
-| `newspack-popups-styles` | Styles | `StylesSidebar` — Border, padding options |
-| `newspack-popups-frequency` | Frequency | `FrequencySidebar` — Display frequency (conditional: only when segmentation is enabled) |
-| `newspack-popups-colors` | Color | `ColorsSidebar` — Background, overlay, close button colors |
-| `newspack-popups-post-types` | Post Types | `PostTypesPanel` — Target post types and archive types |
-| `newspack-popups-expiration` | Expiration | `ExpirationPanel` — Expiration/activation dates |
-| `newspack-popups-advanced` | Advanced Settings | `AdvancedSidebar` — Additional classes, UTM suppression |
-| `newspack-popups-preview` | *(Post Status)* | `Preview` + `Duplicate` buttons in the post status section |
-| `newspack-popups-editor` | *(hidden)* | `EditorAdditions` — Segment help text and campaign term management |
-| `newspack-popups-disable-newspack-blocks-deduplication` | *(hidden)* | Hides the Homepage Posts deduplication toggle for overlay prompts |
-
-Merge tag toolbar control is added via `editor.BlockEdit` filter (not `registerPlugin`) for paragraph, heading, list-item, quote, pullquote, verse, and preformatted blocks.
-
-### Localized JS Globals
-
-| Global | Script | Content |
-|--------|--------|---------|
-| `newspack_popups_data` | `editor` | Editor data: placements, sizes, taxonomies, preview URLs, post types |
-| `newspack_popups_view` | `view` | Frontend data: segments config, settings, debug flags, prompt suppression state |
-| `newspack_popups_admin` | `admin` | Admin bar: toggle labels, nonces |
-| `newspack_popups_settings` | `settings` | Settings page: full settings array |
-| `newspack_popups_blocks_data` | `blocks` | Block data: custom placements list |
-| `newspackPopupsCriteria` | `criteria` | Criteria config and user state |
-| `newspack_popups_merge_tags` | `editor` | Available merge tags for the editor |
-
-### Blocks
-
-Two blocks in `src/blocks/`, both with server-side rendering (`view.php`):
-
-- **`newspack-popups/custom-placement`** — Renders prompts at a custom insertion point.
-- **`newspack-popups/single-prompt`** — Renders a specific prompt by ID.
-
-### Data Attributes Reference
-
-Data attributes on `.newspack-popup-container` elements drive frontend display logic:
-
-| Attribute | Purpose |
-|-----------|---------|
-| `data-id` | Popup post ID |
-| `data-delay` | Display delay in ms (overlay time trigger) |
-| `data-scroll` | Scroll trigger marker element ID |
-| `data-frequency` | Encoded as `start,between,max,reset_period` |
-| `data-suppression` | UTM suppression value |
-| `data-segments` | Comma-separated segment IDs |
-
-Key CSS classes: `.newspack-popup-container`, `.newspack-lightbox` (overlay wrapper), `.newspack-lightbox__close` (close button), `.newspack-lightbox-overlay` (backdrop), `.hidden` (initially applied, removed to show prompt).
 
 ### Frontend Segmentation Flow
 
@@ -358,29 +117,7 @@ The primary PHP method is [`Newspack_Popups_Criteria::register_criteria( $id, $c
 
 Custom matching functions can also be provided as a JS function (see JS-side registration below).
 
-#### Default Criteria
-
-Registered in `src/criteria/default/index.php` via `register_criteria()`. The `newspack_popups_default_criteria` filter is applied to the array before registration, allowing modification of built-in criteria.
-
-| ID | Category | Matching Function | Matching Attribute |
-|----|----------|-------------------|--------------------|
-| `articles_read` | `reader_engagement` | `range` | `articles_read` |
-| `articles_read_in_session` | `reader_engagement` | `range` | `articles_read_in_session` |
-| `favorite_categories` | `reader_engagement` | `list__in` | `favorite_categories` |
-| `devices` | `reader_engagement` | `default` | `devices` (uses `options` with `params` for viewport widths) |
-| `user_account` | `reader_activity` | `default` | `user_account` |
-| `newsletter` | `newsletter` | `default` | `newsletter` |
-| `subscribed_lists` | `newsletter` | `list__in` | `newsletter_subscribed_lists` |
-| `not_subscribed_lists` | `newsletter` | `list__not_in` | `newsletter_subscribed_lists` |
-| `donation` | `reader_revenue` | `default` | `donation` |
-| `active_subscriptions` | `reader_revenue` | `list__in` | `active_subscriptions` |
-| `not_active_subscriptions` | `reader_revenue` | `list__not_in` | `active_subscriptions` |
-| `active_memberships` | `reader_revenue` | `list__in` | `active_memberships` |
-| `not_active_memberships` | `reader_revenue` | `list__not_in` | `active_memberships` |
-| `sources_to_match` | `referrer_sources` | `list__in` | `referrer` |
-| `sources_to_exclude` | `referrer_sources` | `list__not_in` | `referrer` |
-
-Each default criterion also has a JS module in `src/criteria/default/` (e.g., `articles-read.js`, `devices.js`) that calls `setMatchingAttribute()` to provide the value-fetching logic. These are imported from `src/criteria/default/index.js`.
+Default criteria are registered in `src/criteria/default/index.php` with corresponding JS modules in `src/criteria/default/*.js`. The `newspack_popups_default_criteria` filter is applied before registration.
 
 #### Reader Data Library Integration
 
@@ -416,22 +153,67 @@ Helper functions for lazy configuration (can be called before or after `register
 - `src/criteria/utils.js` — [`registerCriteria()`](https://github.com/Automattic/newspack-popups/blob/trunk/src/criteria/utils.js#L21), [`setMatchingAttribute()`](https://github.com/Automattic/newspack-popups/blob/trunk/src/criteria/utils.js#L130), [`setMatchingFunction()`](https://github.com/Automattic/newspack-popups/blob/trunk/src/criteria/utils.js#L148), [`getCriteria()`](https://github.com/Automattic/newspack-popups/blob/trunk/src/criteria/utils.js#L114).
 - `src/criteria/matching-functions.js` — Built-in matching function implementations.
 
-### SCSS
+## Cross-Plugin Integration
 
-- Editor styles: `src/editor/style.scss`
-- Frontend prompt styles: `src/view/style.scss`, `src/view/patterns.scss`
-- Settings page: `src/settings/style.scss`
-- Block editor styles: `src/blocks/*/editor.scss`
-- Admin bar styles: `src/view/admin.scss`
+### Integration with newspack-plugin
 
-### JS Testing
+The plugin checks for these Newspack classes at runtime (all with graceful fallback):
+- `\Newspack\Reader_Data` — Enables segmentation features.
+- `\Newspack\AMP_Enhancements` — Detects AMP+ configuration for frontend scripts.
+- `\Newspack\Logger` — Enhanced logging (falls back to `error_log()`).
+- `\Newspack\Patches` — Theme compatibility patches.
+- `\Newspack\Donations` — Donation settings for presets.
+- `\Newspack\Metering` — Content metering integration.
+- `\Newspack\Data_Events` — Event handling for reader actions.
 
-```bash
-npm run test             # Run full JS test suite
-```
+### Form & E-commerce Integration
 
-- Jest via `newspack-scripts test`.
-- Test files colocated with source using `.test.js` suffix.
+`Newspack_Popups_Data_Api` hooks into WooCommerce and newsletter/auth forms to track which prompt triggered a conversion:
+- `woocommerce_checkout_create_order_line_item` — Attaches prompt metadata to WooCommerce order line items.
+- `newspack_blocks_modal_checkout_cart_item_data` — Adds prompt data to checkout cart items.
+- `newspack_auth_form_metadata`, `newspack_register_reader_form_metadata`, `newspack_newsletters_subscription_form_metadata` — Attaches prompt metadata to reader registration and newsletter subscription forms.
+
+## Configuration Reference
+
+### Localized JS Globals
+
+| Global | Script | Content |
+|--------|--------|---------|
+| `newspack_popups_data` | `editor` | Editor data: placements, sizes, taxonomies, preview URLs, post types |
+| `newspack_popups_view` | `view` | Frontend data: segments config, settings, debug flags, prompt suppression state |
+| `newspack_popups_admin` | `admin` | Admin bar: toggle labels, nonces |
+| `newspack_popups_settings` | `settings` | Settings page: full settings array |
+| `newspack_popups_blocks_data` | `blocks` | Block data: custom placements list |
+| `newspackPopupsCriteria` | `criteria` | Criteria config and user state |
+| `newspack_popups_merge_tags` | `editor` | Available merge tags for the editor |
+
+### Settings & Data Storage
+
+| Mechanism | Key/Pattern | Purpose |
+|-----------|-------------|---------|
+| `wp_options` | `newspack_popups_donor_landing_page`, etc. | Individual settings (see [`Newspack_Popups_Settings::get_settings()`](https://github.com/Automattic/newspack-popups/blob/trunk/includes/class-newspack-popups-settings.php#L215)) |
+| `wp_options` | `newspack_popups_segments` | Segment definitions |
+| `wp_options` | `newspack_popups_custom_placements` | Custom placement definitions |
+| `wp_options` | `newspack_popups_ras_prompts` | Preset prompt cache |
+| `wp_options` | `newspack_popups_expiry_migrated_to_hourly` | Migration flag |
+| Post meta | See `register_meta()` in main class | Per-prompt configuration |
+
+### Key Hooks
+
+**Actions:**
+- `newspack_campaigns_after_campaign_render` — Fires after a popup renders (used by Data API for analytics).
+- `newspack_popups_check_expiry` — Hourly cron hook for expiring prompts.
+
+**Filters:**
+- `newspack_popups_popup_content` — Process popup content before output (used by merge tags).
+- `newspack_popups_registered_criteria` — Extend the list of display criteria types.
+- `newspack_popups_assess_has_disabled_popups` — Return `true` to disable all popups.
+- `newspack_popups_should_display_prompt` — Override whether a specific prompt displays.
+- `newspack_popups_admin_user_capability` — Change the admin capability (default: `edit_others_pages`).
+- `newspack_popups_size_options` — Modify available overlay size options.
+- `newspack_campaigns_post_types_for_campaigns` — Modify supported post types for campaign display.
+- `newspack_campaigns_archive_page_types_for_campaigns` — Modify supported archive page types.
+- `newspack_campaigns_default_supported_post_types` — Modify default supported post types.
 
 ## Recipes
 
