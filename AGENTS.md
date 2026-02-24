@@ -18,10 +18,10 @@ npm run fix:php          # Auto-fix PHP issues (PHPCBF)
 - `npm run lint` runs JS + SCSS only. PHP linting requires a separate `npm run lint:php`.
 - After adding a new PHP file, run `composer dump-autoload` to update the classmap (Composer uses `classmap`, not PSR-4).
 - The Inserter removes its `the_content` filter during Homepage Posts block rendering (via `newspack_blocks_homepage_posts_before_render` / `newspack_blocks_homepage_posts_after_render` hooks) to prevent popups from appearing inside post excerpts.
-- Two different capability checks exist: REST API endpoints use `manage_options` directly (`Newspack_Popups_API::permission_callback()`), while the general admin check (`Newspack_Popups::is_user_an_admin()`) defaults to `edit_others_pages` and is filterable via the `newspack_popups_admin_user_capability` filter.
-- Segmentation features require the main Newspack plugin (`\Newspack\Reader_Data` class). Without it, `Newspack_Popups::$segmentation_enabled` is `false`.
+- Two different capability checks exist: REST API endpoints use `manage_options` directly ([`Newspack_Popups_API::permission_callback()`](https://github.com/Automattic/newspack-popups/blob/trunk/includes/class-newspack-popups-api.php#L188)), while the general admin check ([`Newspack_Popups::is_user_admin()`](https://github.com/Automattic/newspack-popups/blob/trunk/includes/class-newspack-popups.php#L962)) defaults to `edit_others_pages` and is filterable via the `newspack_popups_admin_user_capability` filter.
+- Segmentation features require the main Newspack plugin (`\Newspack\Reader_Data` class). Without it, [`Newspack_Popups::$segmentation_enabled`](https://github.com/Automattic/newspack-popups/blob/trunk/includes/class-newspack-popups.php#L61) is `false`.
 - The standalone Settings page (Campaigns > Settings) is only used when the main Newspack plugin UI is not available.
-- Shortcode `[newspack-popup id="..." class="..."]` renders a specific prompt inline. Handled by `Newspack_Popups_Inserter::popup_shortcode()`.
+- Shortcode `[newspack-popup id="..." class="..."]` renders a specific prompt inline. Handled by [`Newspack_Popups_Inserter::popup_shortcode()`](https://github.com/Automattic/newspack-popups/blob/trunk/includes/class-newspack-popups-inserter.php#L782).
 
 ## PHP Backend
 
@@ -43,15 +43,15 @@ Defined in `class-newspack-popups.php`:
 | `NEWSPACK_POPUP_PREVIEW_QUERY_PARAM` | `'pid'` |
 | `NEWSPACK_POPUP_PRESET_QUERY_PARAM` | `'preset'` |
 | `NEWSPACK_POPUPS_TAXONOMY_STATUS` | `'newspack_popups_taxonomy_status'` |
-| `PREVIEW_QUERY_KEYS` | Array of 24 meta-key-to-short-param mappings for preview URLs (see `:22-47`) |
+| `PREVIEW_QUERY_KEYS` | Array of 24 meta-key-to-short-param mappings for preview URLs ([lines 22–47](https://github.com/Automattic/newspack-popups/blob/trunk/includes/class-newspack-popups.php#L22-L47)) |
 
 ### Class Initialization Patterns
 
 The codebase uses a mix of patterns:
 
-- **Singleton**: `Newspack_Popups::instance()`, `Newspack_Popups_Segmentation::instance()`, `Newspack_Popups_Custom_Placements::instance()`, `Newspack_Popups_View_As::instance()`.
+- **Singleton**: [`Newspack_Popups::instance()`](https://github.com/Automattic/newspack-popups/blob/trunk/includes/class-newspack-popups.php#L69), [`Newspack_Popups_Segmentation::instance()`](https://github.com/Automattic/newspack-popups/blob/trunk/includes/class-newspack-popups-segmentation.php#L44), [`Newspack_Popups_Custom_Placements::instance()`](https://github.com/Automattic/newspack-popups/blob/trunk/includes/class-newspack-popups-custom-placements.php#L32), [`Newspack_Popups_View_As::instance()`](https://github.com/Automattic/newspack-popups/blob/trunk/includes/class-newspack-popups-view-as.php#L27).
 - **File-level instantiation**: `Newspack_Popups_API` and `Newspack_Popups_Inserter` are instantiated via `new` at the bottom of their respective files (not in the main class constructor). The main constructor only `include_once`s the files.
-- **Static `init()`**: `Newspack_Popups_Settings::init()` (only when `is_admin()`), `Newspack_Popups_Criteria::init()`, `Newspack_Popups_Expiry::init()`, `Newspack_Popups_Data_Api::init()`, `Newspack_Segments_Model::init()`, `Newspack\Campaigns\Merge_Tags::init_hooks()`.
+- **Static `init()`**: [`Newspack_Popups_Settings::init()`](https://github.com/Automattic/newspack-popups/blob/trunk/includes/class-newspack-popups-settings.php#L19) (only when `is_admin()`), [`Newspack_Popups_Criteria::init()`](https://github.com/Automattic/newspack-popups/blob/trunk/includes/class-newspack-popups-criteria.php#L37), [`Newspack_Popups_Expiry::init()`](https://github.com/Automattic/newspack-popups/blob/trunk/includes/class-newspack-popups-expiry.php#L27), [`Newspack_Popups_Data_Api::init()`](https://github.com/Automattic/newspack-popups/blob/trunk/includes/class-newspack-popups-data-api.php#L27), [`Newspack_Segments_Model::init()`](https://github.com/Automattic/newspack-popups/blob/trunk/includes/class-newspack-segments-model.php#L27), [`Newspack\Campaigns\Merge_Tags::init_hooks()`](https://github.com/Automattic/newspack-popups/blob/trunk/includes/merge-tags/class-merge-tags.php#L26).
 
 ### Namespace Map
 
@@ -89,23 +89,23 @@ Most classes in `includes/` use the global namespace with a `Newspack_Popups_` p
 | `manual` | Special | Shortcode-only: `[newspack-popup id="..." class="..."]` |
 | `custom1`–`custom3`+ | Special | Rendered via Custom Placement blocks; more can be created in settings |
 
-Placements are defined in `Newspack_Popups_Model`: `$overlay_placements` (line 19) and `$inline_placements` (line 26).
+Placements are defined in `Newspack_Popups_Model`: [`$overlay_placements`](https://github.com/Automattic/newspack-popups/blob/trunk/includes/class-newspack-popups-model.php#L19) (line 19) and [`$inline_placements`](https://github.com/Automattic/newspack-popups/blob/trunk/includes/class-newspack-popups-model.php#L26) (line 26).
 
 ### Content Insertion Algorithm
 
 The Inserter (`class-newspack-popups-inserter.php`) controls how prompts appear in post content:
 
-1. **Content filter**: Hooks `the_content` at priority 1. The `$the_content_has_rendered` flag prevents duplicate insertion on subsequent calls.
+1. **Content filter**: Hooks `the_content` at priority 1. The [`$the_content_has_rendered`](https://github.com/Automattic/newspack-popups/blob/trunk/includes/class-newspack-popups-inserter.php#L39) flag prevents duplicate insertion on subsequent calls.
 2. **Block parsing**: Parses post content into blocks via `parse_blocks()`, converts classic blocks to structured blocks, and filters empty blocks.
-3. **Inline insertion**: For each inline prompt, inserts at block boundaries based on `trigger_blocks_count` (number of blocks before the prompt). Skips blocks that shouldn't be followed by prompts (headings, floated images — see `can_block_be_followed_by_prompt()`).
+3. **Inline insertion**: For each inline prompt, inserts at block boundaries based on `trigger_blocks_count` (number of blocks before the prompt). Skips blocks that shouldn't be followed by prompts (headings, floated images — see [`can_block_be_followed_by_prompt()`](https://github.com/Automattic/newspack-popups/blob/trunk/includes/class-newspack-popups-inserter.php#L158)).
 4. **Archive insertion**: Uses `archive_insertion_posts_count` to insert between posts, with an optional `archive_insertion_is_repeating` flag.
 5. **Above-header insertion**: Hooks `wp_body_open` for `above_header` placement.
-6. **Shortcode**: `[newspack-popup id="..." class="..."]` via `popup_shortcode()` for manual placement.
+6. **Shortcode**: `[newspack-popup id="..." class="..."]` via [`popup_shortcode()`](https://github.com/Automattic/newspack-popups/blob/trunk/includes/class-newspack-popups-inserter.php#L782) for manual placement.
 7. **Homepage Posts block**: Removes and restores the `the_content` filter around Homepage Posts block rendering to prevent prompts inside excerpts.
 
 ### Post Meta
 
-Registered in `Newspack_Popups::register_meta()` (lines 183–622). All meta keys below use `object_subtype => newspack_popups_cpt` unless noted.
+Registered in [`Newspack_Popups::register_meta()`](https://github.com/Automattic/newspack-popups/blob/trunk/includes/class-newspack-popups.php#L183-L622) (lines 183–622). All meta keys below use `object_subtype => newspack_popups_cpt` unless noted.
 
 **Trigger:**
 - `trigger_type` (string) — `scroll` or `time`
@@ -160,13 +160,13 @@ Base namespace: `newspack-popups/v1`
 | POST | `/audience-management/campaign` | `manage_options` | Update Reader Activation campaign settings |
 | GET | `/custom-placement` | **Public** | Get prompts for a custom placement (no auth required) |
 
-The first 6 endpoints use `Newspack_Popups_API::permission_callback()` (`manage_options`). The `/custom-placement` endpoint is registered in `Newspack_Popups_Custom_Placements::rest_api_init()` with `'permission_callback' => '__return_true'`.
+The first 6 endpoints use [`Newspack_Popups_API::permission_callback()`](https://github.com/Automattic/newspack-popups/blob/trunk/includes/class-newspack-popups-api.php#L188) (`manage_options`). The `/custom-placement` endpoint is registered in [`Newspack_Popups_Custom_Placements::rest_api_init()`](https://github.com/Automattic/newspack-popups/blob/trunk/includes/class-newspack-popups-custom-placements.php#L78) with `'permission_callback' => '__return_true'`.
 
 ### Settings & Data Storage
 
 | Mechanism | Key/Pattern | Purpose |
 |-----------|-------------|---------|
-| `wp_options` | `newspack_popups_donor_landing_page`, etc. | Individual settings (see `Newspack_Popups_Settings::get_settings()`) |
+| `wp_options` | `newspack_popups_donor_landing_page`, etc. | Individual settings (see [`Newspack_Popups_Settings::get_settings()`](https://github.com/Automattic/newspack-popups/blob/trunk/includes/class-newspack-popups-settings.php#L215)) |
 | `wp_options` | `newspack_popups_segments` | Segment definitions |
 | `wp_options` | `newspack_popups_custom_placements` | Custom placement definitions |
 | `wp_options` | `newspack_popups_ras_prompts` | Preset prompt cache |
@@ -192,7 +192,7 @@ The first 6 endpoints use `Newspack_Popups_API::permission_callback()` (`manage_
 
 ### Logging
 
-`Newspack_Popups_Logger::log( $payload )` logs with header `NEWSPACK-POPUPS`. Delegates to `\Newspack\Logger` if available, otherwise falls back to `error_log()`. Gated by the `NEWSPACK_LOG_LEVEL` constant.
+[`Newspack_Popups_Logger::log( $payload )`](https://github.com/Automattic/newspack-popups/blob/trunk/includes/class-newspack-popups-logger.php#L19) logs with header `NEWSPACK-POPUPS`. Delegates to `\Newspack\Logger` if available, otherwise falls back to `error_log()`. Gated by the `NEWSPACK_LOG_LEVEL` constant.
 
 ### WP-CLI Commands
 
@@ -230,7 +230,7 @@ npm run lint:php         # PHP linting (PHPCS)
 npm run fix:php          # Auto-fix PHP issues (PHPCBF)
 ```
 
-- Tests live in `tests/`, extend `WP_UnitTestCase` (or `WP_UnitTestCase_PageWithPopups` from `tests/wp-unittestcase-pagewithpopups.php`).
+- Tests live in `tests/`, extend `WP_UnitTestCase` (or [`WP_UnitTestCase_PageWithPopups`](https://github.com/Automattic/newspack-popups/blob/trunk/tests/wp-unittestcase-pagewithpopups.php#L11) from `tests/wp-unittestcase-pagewithpopups.php`).
 - Bootstrap: `tests/bootstrap.php`. Defines `IS_TEST_ENV` constant (used to skip script enqueuing in tests).
 - No `@group` annotations are used. Run all tests via `n test-php` from the repo directory.
 - Test files cover: blocks, classic-block-encoding, content-insertion, criteria, e2e, exporter, importer, insertion-cpt, insertion, merge-tags, model, popups-expiry, presets, schemas, segmentation, segments.
@@ -317,7 +317,7 @@ The `view` entry point (`src/view/index.js`) orchestrates the client-side prompt
 3. `segmentation.js` determines the reader's best-priority matching segment using localized segment config.
 4. Each prompt is checked against its assigned segments and frequency settings.
 5. Matching prompts are unhidden by removing the `.hidden` class. Overlay prompts use `IntersectionObserver` for scroll triggers and delay timers for time triggers.
-6. Only one overlay prompt displays per pageview. `closeOverlay()` handles dismissal.
+6. Only one overlay prompt displays per pageview. [`closeOverlay()`](https://github.com/Automattic/newspack-popups/blob/trunk/src/view/utils/prompts.js#L29) handles dismissal.
 7. `analytics/` modules track loaded, seen, clicked, and dismissed events via GA4.
 
 ### Criteria System
@@ -326,7 +326,7 @@ Display criteria determine whether a prompt is shown to a reader based on reader
 
 #### Registration API
 
-The primary PHP method is `Newspack_Popups_Criteria::register_criteria( $id, $config )` (in `includes/class-newspack-popups-criteria.php`).
+The primary PHP method is [`Newspack_Popups_Criteria::register_criteria( $id, $config )`](https://github.com/Automattic/newspack-popups/blob/trunk/includes/class-newspack-popups-criteria.php#L149) (in `includes/class-newspack-popups-criteria.php`).
 
 **Config keys:**
 
@@ -392,28 +392,28 @@ The `matchingAttribute` config key maps to the Reader Data Library store key. If
 
 #### JS-Side Registration
 
-`registerCriteria( id, config )` in `src/criteria/utils.js` registers criteria on the client side. Each PHP-registered criteria must have a corresponding JS registration (done automatically for default criteria via their JS modules).
+[`registerCriteria( id, config )`](https://github.com/Automattic/newspack-popups/blob/trunk/src/criteria/utils.js#L21) in `src/criteria/utils.js` registers criteria on the client side. Each PHP-registered criteria must have a corresponding JS registration (done automatically for default criteria via their JS modules).
 
 Config options:
 - `matchingFunction` — A string referencing a built-in function (`'default'`, `'list__in'`, `'list__not_in'`, `'range'`), or a custom function `( segmentConfig, ras, criteria ) => boolean`.
 - `matchingAttribute` — A string (Reader Data Library store key) or a function `( ras ) => value`.
 
 Helper functions for lazy configuration (can be called before or after `registerCriteria`):
-- `setMatchingAttribute( id, matchingAttribute )` — Sets or overrides the matching attribute.
-- `setMatchingFunction( id, matchingFunction )` — Sets or overrides the matching function.
+- [`setMatchingAttribute( id, matchingAttribute )`](https://github.com/Automattic/newspack-popups/blob/trunk/src/criteria/utils.js#L130) — Sets or overrides the matching attribute.
+- [`setMatchingFunction( id, matchingFunction )`](https://github.com/Automattic/newspack-popups/blob/trunk/src/criteria/utils.js#L148) — Sets or overrides the matching function.
 
 #### PHP Filters
 
-- `newspack_popups_default_criteria` — Applied to the default criteria array in `src/criteria/default/index.php` before `register_criteria()` is called. Allows modifying, adding, or removing built-in criteria.
-- `newspack_popups_registered_criteria` — Applied in `get_registered_criteria()` after all criteria are registered. Receives the full flat array of criteria configs. Can add, modify, or remove criteria.
+- `newspack_popups_default_criteria` — Applied to the default criteria array in `src/criteria/default/index.php` before [`register_criteria()`](https://github.com/Automattic/newspack-popups/blob/trunk/includes/class-newspack-popups-criteria.php#L149) is called. Allows modifying, adding, or removing built-in criteria.
+- `newspack_popups_registered_criteria` — Applied in [`get_registered_criteria()`](https://github.com/Automattic/newspack-popups/blob/trunk/includes/class-newspack-popups-criteria.php#L80) after all criteria are registered. Receives the full flat array of criteria configs. Can add, modify, or remove criteria.
 
 #### Key Source Files
 
 - `includes/class-newspack-popups-criteria.php` — PHP registration, config localization, script enqueuing.
 - `src/criteria/default/index.php` — Default criteria definitions (PHP).
 - `src/criteria/default/index.js` — Imports all default criteria JS modules.
-- `src/criteria/default/*.js` — Individual JS modules that call `setMatchingAttribute()` to provide value-fetching logic.
-- `src/criteria/utils.js` — `registerCriteria()`, `setMatchingAttribute()`, `setMatchingFunction()`, `getCriteria()`.
+- `src/criteria/default/*.js` — Individual JS modules that call [`setMatchingAttribute()`](https://github.com/Automattic/newspack-popups/blob/trunk/src/criteria/utils.js#L130) to provide value-fetching logic.
+- `src/criteria/utils.js` — [`registerCriteria()`](https://github.com/Automattic/newspack-popups/blob/trunk/src/criteria/utils.js#L21), [`setMatchingAttribute()`](https://github.com/Automattic/newspack-popups/blob/trunk/src/criteria/utils.js#L130), [`setMatchingFunction()`](https://github.com/Automattic/newspack-popups/blob/trunk/src/criteria/utils.js#L148), [`getCriteria()`](https://github.com/Automattic/newspack-popups/blob/trunk/src/criteria/utils.js#L114).
 - `src/criteria/matching-functions.js` — Built-in matching function implementations.
 
 ### SCSS
@@ -448,7 +448,7 @@ npm run test             # Run full JS test suite
        'matching_attribute' => 'my_criteria', // Reader Data Library store key
    ],
    ```
-2. Create a JS module in `src/criteria/default/my-criteria.js` that calls `setMatchingAttribute()` from `../utils` to define how the value is fetched:
+2. Create a JS module in `src/criteria/default/my-criteria.js` that calls [`setMatchingAttribute()`](https://github.com/Automattic/newspack-popups/blob/trunk/src/criteria/utils.js#L130) from `../utils` to define how the value is fetched:
    ```js
    import { setMatchingAttribute } from '../utils';
    setMatchingAttribute( 'my_criteria', ras => {
@@ -463,7 +463,7 @@ npm run test             # Run full JS test suite
 
 **For third-party criteria (from another plugin):**
 
-1. Register in PHP using the `register_criteria()` API:
+1. Register in PHP using the [`register_criteria()`](https://github.com/Automattic/newspack-popups/blob/trunk/includes/class-newspack-popups-criteria.php#L149) API:
    ```php
    add_action( 'init', function() {
        if ( class_exists( 'Newspack_Popups_Criteria' ) ) {
@@ -475,25 +475,25 @@ npm run test             # Run full JS test suite
        }
    } );
    ```
-2. Enqueue a JS script that imports from the `criteria` webpack entry (or uses `window.newspackPopupsCriteria`) to call `setMatchingAttribute()` for value fetching.
+2. Enqueue a JS script that imports from the `criteria` webpack entry (or uses `window.newspackPopupsCriteria`) to call [`setMatchingAttribute()`](https://github.com/Automattic/newspack-popups/blob/trunk/src/criteria/utils.js#L130) for value fetching.
 3. Set reader data values as described above.
 
 ### Add a new merge tag
 
-1. In `includes/merge-tags/class-merge-tags.php`, call `self::register_tag()` inside `register_default_tags()`.
+1. In `includes/merge-tags/class-merge-tags.php`, call [`self::register_tag()`](https://github.com/Automattic/newspack-popups/blob/trunk/includes/merge-tags/class-merge-tags.php#L82) inside [`register_default_tags()`](https://github.com/Automattic/newspack-popups/blob/trunk/includes/merge-tags/class-merge-tags.php#L37).
 2. Provide a `title`, `description`, and `callback` that returns the replacement value.
 3. The tag is automatically available in the editor (via localized `newspack_popups_merge_tags`) and processed at render time via the `newspack_popups_popup_content` filter.
 
 ### Add a new REST API endpoint
 
-1. Add the route in `Newspack_Popups_API::register_api_endpoints()` under the `newspack-popups/v1` namespace.
+1. Add the route in [`Newspack_Popups_API::register_api_endpoints()`](https://github.com/Automattic/newspack-popups/blob/trunk/includes/class-newspack-popups-api.php#L25) under the `newspack-popups/v1` namespace.
 2. Use `$this->permission_callback` for authorization.
 3. Follow existing patterns: `sanitize_callback` on all args, return `WP_REST_Response` or `WP_Error`.
 
 ### Add a new CLI command
 
 1. Create a class in `includes/cli/` under the `Newspack\Campaigns\CLI` namespace.
-2. Register it in `Newspack_Popups::register_cli_commands()` via `WP_CLI::add_command()`.
+2. Register it in [`Newspack_Popups::register_cli_commands()`](https://github.com/Automattic/newspack-popups/blob/trunk/includes/class-newspack-popups.php#L139) via `WP_CLI::add_command()`.
 3. Run `composer dump-autoload`.
 
 ## Debugging
@@ -501,7 +501,7 @@ npm run test             # Run full JS test suite
 ### PHP
 
 - Set `NEWSPACK_LOG_LEVEL` in `wp-config.php`: `0` = off, `1` = basic, `2` = verbose.
-- `Newspack_Popups_Logger::log( $payload )` outputs with header `NEWSPACK-POPUPS`.
+- [`Newspack_Popups_Logger::log( $payload )`](https://github.com/Automattic/newspack-popups/blob/trunk/includes/class-newspack-popups-logger.php#L19) outputs with header `NEWSPACK-POPUPS`.
 - Delegates to `\Newspack\Logger` when available, otherwise `error_log()`.
 
 ### JavaScript (Frontend)
