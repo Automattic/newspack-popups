@@ -14,7 +14,7 @@ The same thing has three names depending on context:
 Most PHP classes are in the global namespace with a `Newspack_Popups_` prefix. Newer code uses `Newspack\Campaigns`:
 - `includes/cli/` → `Newspack\Campaigns\CLI`
 - `includes/merge-tags/` → `Newspack\Campaigns`
-- `includes/schemas/` → `Newspack\Campaigns\Schemas`
+- `includes/schemas/` → `Newspack\Campaigns` / `Newspack\Campaigns\Schemas`
 
 ## Autoloading is classmap, not PSR-4
 
@@ -22,7 +22,7 @@ Composer uses `classmap` autoloading. After adding or renaming a PHP file, run `
 
 ## Class init pattern
 
-Newer classes use a static `init()` method called at file bottom (e.g. `Criteria`, `Expiry`, `Data_Api`, `Merge_Tags`). Follow this pattern for new classes. Older classes use singletons (`::instance()`) or bare `new` at file bottom.
+Newer classes use a static `init()` method called at file bottom (e.g. `Criteria`, `Expiry`, `Data_Api`). Follow this pattern for new classes. Older classes use singletons (`::instance()`) or bare `new` at file bottom.
 
 ## Criteria system spans PHP and JS
 
@@ -39,7 +39,7 @@ If `\Newspack\Reader_Data` doesn't exist (newspack-plugin not active), `Newspack
 
 ## data-frequency attribute is CSV, not JSON
 
-The `data-frequency` attribute on `.newspack-popup-container` elements is CSV-encoded as `start,between,max,reset_period` (not JSON). Parsed in `src/view/utils/index.js`.
+The `data-frequency` attribute on `.newspack-popup-container` elements is CSV-encoded as `start,between,max,reset_period` (not JSON). Parsed in `src/view/utils/segments.js`.
 
 ## Two different capability checks
 
