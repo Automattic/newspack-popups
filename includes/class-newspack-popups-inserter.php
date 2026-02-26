@@ -278,8 +278,8 @@ final class Newspack_Popups_Inserter {
 		usort(
 			$overlays,
 			function( $a, $b ) {
-				$a_count = count( $a['segments'] );
-				$b_count = count( $b['segments'] );
+				$a_count = isset( $a['segments'] ) && is_array( $a['segments'] ) ? count( $a['segments'] ) : 0;
+				$b_count = isset( $b['segments'] ) && is_array( $b['segments'] ) ? count( $b['segments'] ) : 0;
 				// Map zero-segment overlays to PHP_INT_MAX so they sort last.
 				$a_key = 0 === $a_count ? PHP_INT_MAX : $a_count;
 				$b_key = 0 === $b_count ? PHP_INT_MAX : $b_count;
