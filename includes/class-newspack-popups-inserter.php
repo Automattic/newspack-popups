@@ -566,8 +566,24 @@ final class Newspack_Popups_Inserter {
 	 */
 	public static function insert_before_header() {
 		$before_header_popups = array_filter( self::popups_for_post(), [ 'Newspack_Popups_Model', 'should_be_inserted_above_page_header' ] );
-		$before_header_popups = self::sort_overlays_by_specificity( array_values( $before_header_popups ) );
-		foreach ( $before_header_popups as $popup ) {
+		// Sort only the overlay subset by specificity — above-header inline prompts are
+		// not subject to the single visible overlay slot constraint and are left in their
+		// original order.
+		$overlay_popups = self::sort_overlays_by_specificity(
+			array_values( array_filter( $before_header_popups, [ 'Newspack_Popups_Model', 'is_overlay' ] ) )
+		);
+		$inline_popups  = array_values(
+			array_filter(
+				$before_header_popups,
+				function( $popup ) {
+					return ! Newspack_Popups_Model::is_overlay( $popup );
+				}
+			)
+		);
+		foreach ( $overlay_popups as $popup ) {
+			echo Newspack_Popups_Model::generate_popup( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		}
+		foreach ( $inline_popups as $popup ) {
 			echo Newspack_Popups_Model::generate_popup( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		}
 	}
