@@ -263,6 +263,33 @@ final class Newspack_Popups_Inserter {
 	}
 
 	/**
+	 * Sort overlay prompts so that segment-assigned ones appear first, ordered by
+	 * ascending segment count (i.e., decreasing specificity). Overlays with no
+	 * segments assigned appear last.
+	 *
+	 * Ensures segment-specific overlays claim the single visible overlay slot before
+	 * unsegmented "show to everyone" overlays, since only one overlay can be displayed
+	 * at a time and the first eligible one in the DOM wins.
+	 *
+	 * @param array $overlays Array of overlay popup objects.
+	 * @return array Sorted array, segment-assigned overlays first by ascending segment count.
+	 */
+	private static function sort_overlays_by_specificity( $overlays ) {
+		usort(
+			$overlays,
+			function( $a, $b ) {
+				$a_count = isset( $a['segments'] ) && is_array( $a['segments'] ) ? count( $a['segments'] ) : 0;
+				$b_count = isset( $b['segments'] ) && is_array( $b['segments'] ) ? count( $b['segments'] ) : 0;
+				// Map zero-segment overlays to PHP_INT_MAX so they sort last.
+				$a_key = 0 === $a_count ? PHP_INT_MAX : $a_count;
+				$b_key = 0 === $b_count ? PHP_INT_MAX : $b_count;
+				return $a_key - $b_key;
+			}
+		);
+		return $overlays;
+	}
+
+	/**
 	 * Insert popups in a post content.
 	 *
 	 * @param string $content The post content.
@@ -421,6 +448,10 @@ final class Newspack_Popups_Inserter {
 		}
 
 		// 4. Insert overlay prompts at the top of content.
+		// To leave the existing behavior (prepending each overlay) in place,
+		// we reverse our sorted overlays to ensure the most specific appear
+		// first in the DOM, and get priority for the single available slot.
+		$overlay_popups = array_reverse( self::sort_overlays_by_specificity( $overlay_popups ) );
 		foreach ( $overlay_popups as $overlay_popup ) {
 			$output = '<!-- wp:html -->' . Newspack_Popups_Model::generate_popup( $overlay_popup ) . '<!-- /wp:html -->' . $output;
 		}
@@ -524,6 +555,7 @@ final class Newspack_Popups_Inserter {
 				return Newspack_Popups_Model::should_be_inserted_in_page_content( $popup ) && Newspack_Popups_Model::is_overlay( $popup );
 			}
 		);
+		$popups = self::sort_overlays_by_specificity( array_values( $popups ) );
 		foreach ( $popups as $popup ) {
 			echo Newspack_Popups_Model::generate_popup( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		}
@@ -534,7 +566,24 @@ final class Newspack_Popups_Inserter {
 	 */
 	public static function insert_before_header() {
 		$before_header_popups = array_filter( self::popups_for_post(), [ 'Newspack_Popups_Model', 'should_be_inserted_above_page_header' ] );
-		foreach ( $before_header_popups as $popup ) {
+		// Sort only the overlay subset by specificity — above-header inline prompts are
+		// not subject to the single visible overlay slot constraint and are left in their
+		// original order.
+		$overlay_popups = self::sort_overlays_by_specificity(
+			array_values( array_filter( $before_header_popups, [ 'Newspack_Popups_Model', 'is_overlay' ] ) )
+		);
+		$inline_popups  = array_values(
+			array_filter(
+				$before_header_popups,
+				function( $popup ) {
+					return ! Newspack_Popups_Model::is_overlay( $popup );
+				}
+			)
+		);
+		foreach ( $overlay_popups as $popup ) {
+			echo Newspack_Popups_Model::generate_popup( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		}
+		foreach ( $inline_popups as $popup ) {
 			echo Newspack_Popups_Model::generate_popup( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		}
 	}
