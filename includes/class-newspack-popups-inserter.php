@@ -201,7 +201,7 @@ final class Newspack_Popups_Inserter {
 					$classic_content = force_balance_tags( wpautop( $block['innerHTML'] ) ); // Ensure we have paragraph tags and valid HTML.
 					$dom             = new DomDocument();
 					libxml_use_internal_errors( true );
-					$dom->loadHTML( htmlspecialchars_decode( htmlentities( mb_convert_encoding( $classic_content, 'UTF-8', get_bloginfo( 'charset' ) ) ) ) );
+					$dom->loadHTML( '<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />' . htmlspecialchars_decode( htmlentities( mb_convert_encoding( $classic_content, 'UTF-8', get_bloginfo( 'charset' ) ) ) ) );
 					$dom_body = $dom->getElementsByTagName( 'body' );
 					if ( 0 < $dom_body->length ) {
 						$dom_body_elements = $dom_body->item( 0 )->childNodes;
@@ -724,6 +724,18 @@ final class Newspack_Popups_Inserter {
 	 * @return boolean
 	 */
 	private static function should_log_debug_info() {
+		/**
+		 * Enables debug logging for Newspack Popups (Campaigns).
+		 * When enabled, debugging info is logged to the newspack_popups_debug
+		 * JavaScript object, helpful for troubleshooting popup display issues.
+		 *
+		 * @constant NEWSPACK_POPUPS_DEBUG
+		 * @type     bool
+		 * @default  Debug disabled
+		 * @status   draft
+		 *
+		 * @example define( 'NEWSPACK_POPUPS_DEBUG', true );
+		 */
 		return ( defined( 'WP_DEBUG' ) && WP_DEBUG ) || ( defined( 'NEWSPACK_LOG_LEVEL' ) && 1 < NEWSPACK_LOG_LEVEL ) || ( defined( 'NEWSPACK_POPUPS_DEBUG' ) && NEWSPACK_POPUPS_DEBUG );
 	}
 
