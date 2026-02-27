@@ -448,7 +448,7 @@ final class Newspack_Popups_Inserter {
 		}
 
 		// 4. Insert overlay prompts at the top of content.
-		// So's to leave the existing behavior (prepending each overlay) in place,
+		// To leave the existing behavior (prepending each overlay) in place,
 		// we reverse our sorted overlays to ensure the most specific appear
 		// first in the DOM, and get priority for the single available slot.
 		$overlay_popups = array_reverse( self::sort_overlays_by_specificity( $overlay_popups ) );
