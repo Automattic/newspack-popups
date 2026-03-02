@@ -6,7 +6,6 @@
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Fragment } from '@wordpress/element';
 import {
 	SelectControl,
 	TextControl,
@@ -36,9 +35,10 @@ const FrequencySidebar = ( {
 	utm_suppression,
 } ) => {
 	return (
-		<Fragment>
+		<>
 			<SelectControl
-				label={ __( 'Frequency' ) }
+				__next40pxDefaultSize
+				label={ __( 'Frequency', 'newspack-popups' ) }
 				value={ frequency }
 				onChange={ value => {
 					const metaToUpdate = {
@@ -101,6 +101,7 @@ const FrequencySidebar = ( {
 					/>
 					{ 0 < frequency_max && (
 						<NumberControl
+							__next40pxDefaultSize
 							className="newspack-popups__frequency-number-control"
 							disabled={ 0 === frequency_max }
 							label={ __( 'Max number of displays', 'newspack-popups' ) }
@@ -110,6 +111,7 @@ const FrequencySidebar = ( {
 						/>
 					) }
 					<SelectControl
+						__next40pxDefaultSize
 						label={ __( 'Reset counter per:', 'newspack-popups' ) }
 						value={ frequency_reset }
 						options={ [
@@ -121,15 +123,21 @@ const FrequencySidebar = ( {
 					/>
 				</>
 			) }
-			<hr />
+			<div style={ { paddingTop: '8px' } } />
 			<TextControl
-				label={ __( 'UTM Suppression' ) }
-				help={ __( 'Readers arriving at the site via URLs with this utm_source parameter will never be shown the prompt.' ) }
+				__next40pxDefaultSize
+				__nextNoMarginBottom
+				label={ __( 'UTM Suppression', 'newspack-popups' ) }
+				help={ __(
+					'Readers arriving at the site via URLs with this utm_source parameter will never be shown the prompt.',
+					'newspack-popups'
+				) }
 				value={ utm_suppression }
-				placeholder={ __( 'utm_campaign_name', 'newspack' ) }
+				placeholder={ __( 'utm_campaign_name', 'newspack-popups' ) }
 				onChange={ value => onMetaFieldChange( { utm_suppression: value } ) }
 			/>
-		</Fragment>
+			<div style={ { marginBottom: '-12px' } } />
+		</>
 	);
 };
 

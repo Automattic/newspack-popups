@@ -7,7 +7,16 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Fragment } from '@wordpress/element';
-import { RadioControl, RangeControl, SelectControl, ToggleControl, CheckboxControl } from '@wordpress/components';
+import {
+	/* eslint-disable @wordpress/no-unsafe-wp-apis */
+	__experimentalToggleGroupControl as ToggleGroupControl,
+	__experimentalToggleGroupControlOption as ToggleGroupControlOption,
+	/* eslint-enable @wordpress/no-unsafe-wp-apis */
+	RangeControl,
+	SelectControl,
+	ToggleControl,
+	CheckboxControl,
+} from '@wordpress/components';
 
 /**
  * External dependencies
@@ -34,6 +43,8 @@ const Sidebar = props => {
 		isOverlay,
 		archive_page_types = [],
 	} = props;
+	const overlayTriggerType = 'time' === trigger_type || 'scroll' === trigger_type ? trigger_type : 'time';
+	const inlineTriggerType = 'blocks_count' === trigger_type || 'scroll' === trigger_type ? trigger_type : 'scroll';
 	const updatePlacement = value => {
 		onMetaFieldChange( { placement: value } );
 	};
@@ -60,31 +71,42 @@ const Sidebar = props => {
 		}
 	};
 	const customPlacements = window.newspack_popups_data?.custom_placements || {};
-	const popupSizeOptions = window.newspack_popups_data?.popup_size_options || {};
+	const popupSizeOptions = window.newspack_popups_data?.popup_size_options || [];
 	const availableArchivePageTypes = window.newspack_popups_data?.available_archive_page_types || [];
 
 	const helpMessage = getPlacementHelpMessage( props );
 
 	return (
 		<>
-			<RadioControl
-				className="newspack-popups__prompt-type-control"
+			<ToggleGroupControl
+				__next40pxDefaultSize
+				isBlock
 				label={ __( 'Prompt type', 'newspack-popups' ) }
-				selected={ isOverlay ? 'center' : 'inline' }
-				options={ [
-					{ label: __( 'Inline', 'newspack-popups' ), value: 'inline' },
-					{ label: __( 'Overlay', 'newspack-popups' ), value: 'center' },
-				] }
+				help={
+					isOverlay
+						? __( 'Overlay prompts appear over the page content as a popup.', 'newspack-popups' )
+						: __( 'Inline prompts are shown according to the selected placement.', 'newspack-popups' )
+				}
+				value={ isOverlay ? 'center' : 'inline' }
 				onChange={ updatePlacement }
-			/>
+			>
+				<ToggleGroupControlOption label={ __( 'Inline', 'newspack-popups' ) } value="inline" />
+				<ToggleGroupControlOption label={ __( 'Overlay', 'newspack-popups' ) } value="center" />
+			</ToggleGroupControl>
 			{ isOverlay ? (
 				<>
-					<SelectControl
+					<ToggleGroupControl
+						__next40pxDefaultSize
+						isBlock
 						label={ __( 'Size', 'newspack-popups' ) }
 						value={ overlay_size }
 						onChange={ updateSize }
-						options={ popupSizeOptions }
-					/>
+						help={ popupSizeOptions.find( ( { value } ) => value === overlay_size )?.help }
+					>
+						{ popupSizeOptions.map( ( { value, label, shortname } ) => (
+							<ToggleGroupControlOption key={ value } aria-label={ label } label={ shortname || label } value={ value } />
+						) ) }
+					</ToggleGroupControl>
 					<PositionPlacementControl
 						layout={ placement }
 						label={ __( 'Position', 'newspack-popups' ) }
@@ -96,6 +118,7 @@ const Sidebar = props => {
 				</>
 			) : (
 				<SelectControl
+					__next40pxDefaultSize
 					label={ __( 'Placement' ) }
 					help={ helpMessage }
 					value={ placement }
@@ -116,18 +139,20 @@ const Sidebar = props => {
 
 			{ isOverlay && (
 				<>
-					<SelectControl
+					<ToggleGroupControl
+						__next40pxDefaultSize
+						isBlock
 						label={ __( 'Trigger', 'newspack-popups' ) }
 						help={ __( 'The event to trigger the prompt.', 'newspack-popups' ) }
-						value={ trigger_type }
-						options={ [
-							{ label: __( 'Timer', 'newspack-popups' ), value: 'time' },
-							{ label: __( 'Scroll Progress', 'newspack-popups' ), value: 'scroll' },
-						] }
+						value={ overlayTriggerType }
 						onChange={ value => onMetaFieldChange( { trigger_type: value } ) }
-					/>
-					{ 'scroll' === trigger_type ? (
+					>
+						<ToggleGroupControlOption label={ __( 'Timer', 'newspack-popups' ) } value="time" />
+						<ToggleGroupControlOption label={ __( 'Scroll Progress', 'newspack-popups' ) } value="scroll" />
+					</ToggleGroupControl>
+					{ 'scroll' === overlayTriggerType ? (
 						<RangeControl
+							__next40pxDefaultSize
 							label={ __( 'Scroll Progress (percent)', 'newspack-popups' ) }
 							value={ trigger_scroll_progress }
 							onChange={ value => onMetaFieldChange( { trigger_scroll_progress: value } ) }
@@ -136,6 +161,7 @@ const Sidebar = props => {
 						/>
 					) : (
 						<RangeControl
+							__next40pxDefaultSize
 							label={ __( 'Delay (seconds)', 'newspack-popups' ) }
 							value={ trigger_delay }
 							onChange={ value => onMetaFieldChange( { trigger_delay: value } ) }
@@ -147,18 +173,20 @@ const Sidebar = props => {
 			) }
 			{ placement === 'inline' && (
 				<>
-					<SelectControl
+					<ToggleGroupControl
+						__next40pxDefaultSize
+						isBlock
 						label={ __( 'Insertion position', 'newspack-popups' ) }
 						help={ __( 'The position at which to insert the prompt.', 'newspack-popups' ) }
-						value={ trigger_type }
-						options={ [
-							{ label: __( 'Percentage', 'newspack-popups' ), value: 'scroll' },
-							{ label: __( 'Blocks Count', 'newspack-popups' ), value: 'blocks_count' },
-						] }
+						value={ inlineTriggerType }
 						onChange={ value => onMetaFieldChange( { trigger_type: value } ) }
-					/>
-					{ 'blocks_count' === trigger_type ? (
+					>
+						<ToggleGroupControlOption label={ __( 'Percentage', 'newspack-popups' ) } value="scroll" />
+						<ToggleGroupControlOption label={ __( 'Blocks Count', 'newspack-popups' ) } value="blocks_count" />
+					</ToggleGroupControl>
+					{ 'blocks_count' === inlineTriggerType ? (
 						<RangeControl
+							__next40pxDefaultSize
 							label={ __( 'Number of blocks before the prompt', 'newspack-popups' ) }
 							value={ trigger_blocks_count }
 							onChange={ value => onMetaFieldChange( { trigger_blocks_count: value } ) }
@@ -166,6 +194,7 @@ const Sidebar = props => {
 						/>
 					) : (
 						<RangeControl
+							__next40pxDefaultSize
 							label={ __( 'Approximate Position (in percent)', 'newspack-popups' ) }
 							value={ trigger_scroll_progress }
 							onChange={ value => onMetaFieldChange( { trigger_scroll_progress: value } ) }
@@ -178,6 +207,7 @@ const Sidebar = props => {
 			{ placement === 'archives' && (
 				<Fragment>
 					<RangeControl
+						__next40pxDefaultSize
 						label={ __( 'Number of articles before prompt', 'newspack-popups' ) }
 						value={ archive_insertion_posts_count }
 						onChange={ value => onMetaFieldChange( { archive_insertion_posts_count: value } ) }
@@ -186,7 +216,12 @@ const Sidebar = props => {
 					/>
 
 					<div className="newspack-popups__prompt-type-control">
-						<legend className="components-base-control__legend">{ __( 'Archive Page Types', 'newspack-popups' ) }</legend>
+						<p
+							className="components-base-control__label"
+							style={ { fontSize: '11px', fontWeight: 500, lineHeight: 1.4, textTransform: 'uppercase' } }
+						>
+							{ __( 'Archive Page Types', 'newspack-popups' ) }
+						</p>
 						{ availableArchivePageTypes.map( ( { name, label } ) => (
 							<CheckboxControl
 								key={ name }

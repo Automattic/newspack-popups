@@ -511,32 +511,44 @@ final class Newspack_Popups_Model {
 		 *
 		 * @param array Array of possible popup sizes.
 		 *     $params = [
-		 *          'value' => (string) size value.
-		 *          'label' => (string) size label to be displayed.
-		 *     ]
+		 *          'value'     => (string) size value.
+		 *          'label'     => (string) size label to be displayed.
+		 *          'shortname' => (string) short size label for compact UIs.
+		 *          'help'      => (string) descriptive help text for the size.
+		 *     ].
 		 */
 		return apply_filters(
 			'newspack_popups_size_options',
 			[
 				[
-					'value' => 'x-small',
-					'label' => __( 'Extra Small', 'newspack-popups' ),
+					'value'     => 'x-small',
+					'label'     => __( 'Extra small', 'newspack-popups' ),
+					'shortname' => _x( 'XS', 'prompt size label', 'newspack-popups' ),
+					'help'      => __( 'Narrowest overlay, best for concise prompts (380px wide).', 'newspack-popups' ),
 				],
 				[
-					'value' => 'small',
-					'label' => __( 'Small', 'newspack-popups' ),
+					'value'     => 'small',
+					'label'     => __( 'Small', 'newspack-popups' ),
+					'shortname' => _x( 'S', 'prompt size label', 'newspack-popups' ),
+					'help'      => __( 'Compact overlay for short messages (544px wide).', 'newspack-popups' ),
 				],
 				[
-					'value' => 'medium',
-					'label' => __( 'Medium', 'newspack-popups' ),
+					'value'     => 'medium',
+					'label'     => __( 'Medium', 'newspack-popups' ),
+					'shortname' => _x( 'M', 'prompt size label', 'newspack-popups' ),
+					'help'      => __( 'Balanced size for most prompts (784px wide).', 'newspack-popups' ),
 				],
 				[
-					'value' => 'large',
-					'label' => __( 'Large', 'newspack-popups' ),
+					'value'     => 'large',
+					'label'     => __( 'Large', 'newspack-popups' ),
+					'shortname' => _x( 'L', 'prompt size label', 'newspack-popups' ),
+					'help'      => __( 'Larger overlay for richer content (1264px wide).', 'newspack-popups' ),
 				],
 				[
-					'value' => 'full-width',
-					'label' => __( 'Full-Width', 'newspack-popups' ),
+					'value'     => 'full-width',
+					'label'     => __( 'Full width', 'newspack-popups' ),
+					'shortname' => _x( 'FW', 'prompt size label', 'newspack-popups' ),
+					'help'      => __( 'Spans the full width of the viewport (100%).', 'newspack-popups' ),
 				],
 			]
 		);

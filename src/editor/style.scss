@@ -24,24 +24,6 @@ $size__large: 1264px;
 		}
 	}
 
-	&__prompt-type-control {
-		margin-bottom: 1rem;
-
-		.components-base-control__label {
-			display: block;
-		}
-
-		.components-radio-control__option {
-			&:first-of-type {
-				margin-right: 1rem;
-			}
-		}
-
-		.components-base-control__legend {
-			padding-bottom: 4px;
-		}
-	}
-
 	&__segmentation-sidebar {
 		.components-form-token-field__help {
 			display: none;
@@ -221,4 +203,23 @@ $size__large: 1264px;
 
 .components-datetime__date h3 {
 	margin: 0;
+}
+
+.newspack-popups__tabs {
+	.components-tab-panel__tabs {
+		margin-bottom: -1px;
+	}
+
+	.components-tab-panel__tabs-item {
+		flex: 1 1 100%;
+	}
+
+	.components-panel__body:has(&) {
+		border: 0;
+		padding: 0;
+
+		&:has(.newspack-popups__tab-styles.is-active) ~ .components-panel__body{
+			display: none;
+		}
+	}
 }
