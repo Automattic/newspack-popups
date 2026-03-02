@@ -36,7 +36,7 @@
 	"dependencies": {
 		"classnames": "^2.5.1",
 		"js-cookie": "^3.0.5",
-		"newspack-components": "^4.2.0"
+		"newspack-components": "^4.3.0"
 	},
 	"devDependencies": {
 		"newspack-scripts": "^5.9.0"
