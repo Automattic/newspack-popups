@@ -50,7 +50,7 @@ final class Newspack_Popups_Inserter {
 	 *
 	 * @var boolean
 	 */
-	private static $before_header_has_rendered = false;
+	private static $header_template_part_has_rendered = false;
 
 	/**
 	 * Constructor.
@@ -570,11 +570,8 @@ final class Newspack_Popups_Inserter {
 	}
 
 	/**
-	 * Build combined markup for all above-header prompts: overlays (sorted by specificity)
+	 * Get the combined markup for all above-header prompts: overlays (sorted by specificity)
 	 * first, then inline prompts in their original order.
-	 *
-	 * Both above-header inline prompts and time-triggered overlay prompts are included,
-	 * as both must appear before the header so they are visible without scrolling.
 	 *
 	 * @return string HTML markup, or empty string if there are no above-header prompts.
 	 */
@@ -590,7 +587,14 @@ final class Newspack_Popups_Inserter {
 		$overlay_popups = self::sort_overlays_by_specificity(
 			array_values( array_filter( $before_header_popups, [ 'Newspack_Popups_Model', 'is_overlay' ] ) )
 		);
-		$inline_popups  = array_values( array_filter( $before_header_popups, [ 'Newspack_Popups_Model', 'is_inline' ] ) );
+		$inline_popups  = array_values(
+			array_filter(
+				$before_header_popups,
+				function( $popup ) {
+					return ! Newspack_Popups_Model::is_overlay( $popup );
+				}
+			)
+		);
 
 		$markup = '';
 		foreach ( $overlay_popups as $popup ) {
@@ -606,10 +610,6 @@ final class Newspack_Popups_Inserter {
 	 * Insert popups markup before header (classic themes via wp_body_open).
 	 */
 	public static function insert_before_header() {
-		if ( self::$before_header_has_rendered ) {
-			return;
-		}
-
 		// In block themes, prompts are inserted via the header template-part render filter.
 		if ( function_exists( 'wp_is_block_theme' ) && wp_is_block_theme() ) {
 			return;
@@ -620,7 +620,6 @@ final class Newspack_Popups_Inserter {
 			return;
 		}
 
-		self::$before_header_has_rendered = true;
 		echo $markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 
@@ -633,7 +632,7 @@ final class Newspack_Popups_Inserter {
 	 * @return string Rendered content with campaign markup prepended when applicable.
 	 */
 	public static function insert_before_header_in_template_part( $block_content, $block, $instance ) {
-		if ( ! function_exists( 'wp_is_block_theme' ) || ! wp_is_block_theme() || is_admin() || self::$before_header_has_rendered ) {
+		if ( ! function_exists( 'wp_is_block_theme' ) || ! wp_is_block_theme() || is_admin() || self::$header_template_part_has_rendered ) {
 			return $block_content;
 		}
 
@@ -646,7 +645,7 @@ final class Newspack_Popups_Inserter {
 			return $block_content;
 		}
 
-		self::$before_header_has_rendered = true;
+		self::$header_template_part_has_rendered = true;
 		return $markup . $block_content;
 	}
 

@@ -28,7 +28,7 @@ class BlockThemeHeaderInsertionTest extends WP_UnitTestCase_PageWithPopups {
 	 *
 	 * @var ReflectionProperty
 	 */
-	private static $before_header_has_rendered_property;
+	private static $header_template_part_has_rendered_property;
 
 
 	/**
@@ -48,12 +48,12 @@ class BlockThemeHeaderInsertionTest extends WP_UnitTestCase_PageWithPopups {
 			self::$inserter_popups_property = new ReflectionProperty( 'Newspack_Popups_Inserter', 'popups' );
 			self::$inserter_popups_property->setAccessible( true );
 		}
-		if ( ! self::$before_header_has_rendered_property ) {
-			self::$before_header_has_rendered_property = new ReflectionProperty( 'Newspack_Popups_Inserter', 'before_header_has_rendered' );
-			self::$before_header_has_rendered_property->setAccessible( true );
+		if ( ! self::$header_template_part_has_rendered_property ) {
+			self::$header_template_part_has_rendered_property = new ReflectionProperty( 'Newspack_Popups_Inserter', 'header_template_part_has_rendered' );
+			self::$header_template_part_has_rendered_property->setAccessible( true );
 		}
 		self::$inserter_popups_property->setValue( null, [] );
-		self::$before_header_has_rendered_property->setValue( null, false );
+		self::$header_template_part_has_rendered_property->setValue( null, false );
 	}
 
 	/**
@@ -66,8 +66,8 @@ class BlockThemeHeaderInsertionTest extends WP_UnitTestCase_PageWithPopups {
 		if ( self::$inserter_popups_property ) {
 			self::$inserter_popups_property->setValue( null, [] );
 		}
-		if ( self::$before_header_has_rendered_property ) {
-			self::$before_header_has_rendered_property->setValue( null, false );
+		if ( self::$header_template_part_has_rendered_property ) {
+			self::$header_template_part_has_rendered_property->setValue( null, false );
 		}
 		parent::tear_down();
 	}
@@ -108,7 +108,7 @@ class BlockThemeHeaderInsertionTest extends WP_UnitTestCase_PageWithPopups {
 	 */
 	private function seed_inserter_popups( $popups ) {
 		self::$inserter_popups_property->setValue( null, $popups );
-		self::$before_header_has_rendered_property->setValue( null, false );
+		self::$header_template_part_has_rendered_property->setValue( null, false );
 	}
 
 	/**
