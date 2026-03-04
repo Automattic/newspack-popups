@@ -492,6 +492,11 @@ $width__tablet: 782px;
 	&.hidden {
 		display: none;
 	}
+
+	// Remove space below the above header campaign in block themes.
+	.wp-site-blocks & > * {
+		margin-block-start: 0;
+	}
 }
 
 // This is needed for the scroll-triggered popups to function properly.

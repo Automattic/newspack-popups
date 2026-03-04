@@ -46,6 +46,13 @@ final class Newspack_Popups_Inserter {
 	private static $is_apple_news_exporting = false;
 
 	/**
+	 * Whether above-header prompts have already been rendered.
+	 *
+	 * @var boolean
+	 */
+	private static $before_header_has_rendered = false;
+
+	/**
 	 * Constructor.
 	 */
 	public function __construct() {
@@ -53,6 +60,7 @@ final class Newspack_Popups_Inserter {
 		add_shortcode( 'newspack-popup', [ $this, 'popup_shortcode' ] );
 		add_action( 'after_header', [ $this, 'insert_popups_after_header' ] ); // This is a Newspack theme hook. When used with other themes, popups won't be inserted on archive pages.
 		add_action( 'wp_body_open', [ $this, 'insert_before_header' ] );
+		add_filter( 'render_block_core/template-part', [ $this, 'insert_before_header_in_template_part' ], 10, 3 );
 		add_action( 'after_archive_post', [ $this, 'insert_inline_prompt_in_archive_pages' ] );
 		add_action( 'wp_before_admin_bar_render', [ $this, 'add_preview_toggle' ] );
 
@@ -565,7 +573,20 @@ final class Newspack_Popups_Inserter {
 	 * Insert popups markup before header.
 	 */
 	public static function insert_before_header() {
+		if ( self::$before_header_has_rendered ) {
+			return;
+		}
+
+		// In block themes, prompts are inserted via the header template-part render filter.
+		if ( function_exists( 'wp_is_block_theme' ) && wp_is_block_theme() ) {
+			return;
+		}
+
 		$before_header_popups = array_filter( self::popups_for_post(), [ 'Newspack_Popups_Model', 'should_be_inserted_above_page_header' ] );
+		if ( empty( $before_header_popups ) ) {
+			return;
+		}
+
 		// Sort only the overlay subset by specificity — above-header inline prompts are
 		// not subject to the single visible overlay slot constraint and are left in their
 		// original order.
@@ -580,12 +601,75 @@ final class Newspack_Popups_Inserter {
 				}
 			)
 		);
+
+		self::$before_header_has_rendered = true;
 		foreach ( $overlay_popups as $popup ) {
 			echo Newspack_Popups_Model::generate_popup( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		}
 		foreach ( $inline_popups as $popup ) {
 			echo Newspack_Popups_Model::generate_popup( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		}
+	}
+
+	/**
+	 * Insert popups markup before the header template part in block themes.
+	 *
+	 * @param string   $block_content The rendered block content.
+	 * @param array    $block         The full block.
+	 * @param WP_Block $instance      The block instance.
+	 * @return string Rendered content with campaign markup prepended when applicable.
+	 */
+	public static function insert_before_header_in_template_part( $block_content, $block, $instance ) {
+		if ( ! function_exists( 'wp_is_block_theme' ) || ! wp_is_block_theme() || is_admin() || self::$before_header_has_rendered ) {
+			return $block_content;
+		}
+
+		if ( ! self::is_header_template_part_block( $block, $block_content ) ) {
+			return $block_content;
+		}
+
+		$before_header_popups = array_filter( self::popups_for_post(), [ 'Newspack_Popups_Model', 'should_be_inserted_above_page_header' ] );
+		if ( empty( $before_header_popups ) ) {
+			return $block_content;
+		}
+
+		$popup_markup = '';
+		foreach ( $before_header_popups as $popup ) {
+			$popup_markup .= Newspack_Popups_Model::generate_popup( $popup );
+		}
+
+		self::$before_header_has_rendered = true;
+		return $popup_markup . $block_content;
+	}
+
+	/**
+	 * Whether a template-part block appears to be a header template part.
+	 *
+	 * Some themes use custom header slugs (for example "header-post"), and in some
+	 * contexts area metadata is missing. Use progressively looser checks.
+	 *
+	 * @param array  $block         Parsed block data.
+	 * @param string $block_content Rendered block content.
+	 * @return boolean True if this block is likely a header template part.
+	 */
+	private static function is_header_template_part_block( $block, $block_content ) {
+		if ( empty( $block['blockName'] ) || 'core/template-part' !== $block['blockName'] ) {
+			return false;
+		}
+
+		$attrs = isset( $block['attrs'] ) ? $block['attrs'] : [];
+
+		// Most reliable signal when present.
+		if ( isset( $attrs['area'] ) && 'header' === $attrs['area'] ) {
+			return true;
+		}
+
+		// Many themes use non-exact slugs such as "header-post" or "site-header".
+		if ( isset( $attrs['slug'] ) && preg_match( '/(^|[-_])header([-_]|$)/', $attrs['slug'] ) ) {
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
