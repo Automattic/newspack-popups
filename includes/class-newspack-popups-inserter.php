@@ -570,7 +570,40 @@ final class Newspack_Popups_Inserter {
 	}
 
 	/**
-	 * Insert popups markup before header.
+	 * Build combined markup for all above-header prompts: overlays (sorted by specificity)
+	 * first, then inline prompts in their original order.
+	 *
+	 * Both above-header inline prompts and time-triggered overlay prompts are included,
+	 * as both must appear before the header so they are visible without scrolling.
+	 *
+	 * @return string HTML markup, or empty string if there are no above-header prompts.
+	 */
+	private static function get_before_header_markup() {
+		$before_header_popups = array_filter( self::popups_for_post(), [ 'Newspack_Popups_Model', 'should_be_inserted_above_page_header' ] );
+		if ( empty( $before_header_popups ) ) {
+			return '';
+		}
+
+		// Sort only the overlay subset by specificity — above-header inline prompts are
+		// not subject to the single visible overlay slot constraint and are left in their
+		// original order.
+		$overlay_popups = self::sort_overlays_by_specificity(
+			array_values( array_filter( $before_header_popups, [ 'Newspack_Popups_Model', 'is_overlay' ] ) )
+		);
+		$inline_popups  = array_values( array_filter( $before_header_popups, [ 'Newspack_Popups_Model', 'is_inline' ] ) );
+
+		$markup = '';
+		foreach ( $overlay_popups as $popup ) {
+			$markup .= Newspack_Popups_Model::generate_popup( $popup );
+		}
+		foreach ( $inline_popups as $popup ) {
+			$markup .= Newspack_Popups_Model::generate_popup( $popup );
+		}
+		return $markup;
+	}
+
+	/**
+	 * Insert popups markup before header (classic themes via wp_body_open).
 	 */
 	public static function insert_before_header() {
 		if ( self::$before_header_has_rendered ) {
@@ -582,33 +615,13 @@ final class Newspack_Popups_Inserter {
 			return;
 		}
 
-		$before_header_popups = array_filter( self::popups_for_post(), [ 'Newspack_Popups_Model', 'should_be_inserted_above_page_header' ] );
-		if ( empty( $before_header_popups ) ) {
+		$markup = self::get_before_header_markup();
+		if ( empty( $markup ) ) {
 			return;
 		}
 
-		// Sort only the overlay subset by specificity — above-header inline prompts are
-		// not subject to the single visible overlay slot constraint and are left in their
-		// original order.
-		$overlay_popups = self::sort_overlays_by_specificity(
-			array_values( array_filter( $before_header_popups, [ 'Newspack_Popups_Model', 'is_overlay' ] ) )
-		);
-		$inline_popups  = array_values(
-			array_filter(
-				$before_header_popups,
-				function( $popup ) {
-					return ! Newspack_Popups_Model::is_overlay( $popup );
-				}
-			)
-		);
-
 		self::$before_header_has_rendered = true;
-		foreach ( $overlay_popups as $popup ) {
-			echo Newspack_Popups_Model::generate_popup( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-		}
-		foreach ( $inline_popups as $popup ) {
-			echo Newspack_Popups_Model::generate_popup( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-		}
+		echo $markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 
 	/**
@@ -624,40 +637,17 @@ final class Newspack_Popups_Inserter {
 			return $block_content;
 		}
 
-		if ( ! self::is_header_template_part_block( $block, $block_content ) ) {
+		if ( ! self::is_header_template_part_block( $block ) ) {
 			return $block_content;
 		}
 
-		$before_header_popups = array_filter( self::popups_for_post(), [ 'Newspack_Popups_Model', 'should_be_inserted_above_page_header' ] );
-		if ( empty( $before_header_popups ) ) {
+		$markup = self::get_before_header_markup();
+		if ( empty( $markup ) ) {
 			return $block_content;
-		}
-
-		$popup_markup = '';
-		// Mirror the overlay/inline ordering used in insert_before_header() for classic themes.
-		$overlay_before_header_popups = array_filter(
-			$before_header_popups,
-			[ 'Newspack_Popups_Model', 'is_overlay' ]
-		);
-		$inline_before_header_popups  = array_filter(
-			$before_header_popups,
-			[ 'Newspack_Popups_Model', 'is_inline' ]
-		);
-		if ( ! empty( $overlay_before_header_popups ) ) {
-			$overlay_before_header_popups = self::sort_overlays_by_specificity( array_values( $overlay_before_header_popups ) );
-		}
-		$popup_markup = '';
-		// Render overlays first, in specificity order.
-		foreach ( $overlay_before_header_popups as $popup ) {
-			$popup_markup .= Newspack_Popups_Model::generate_popup( $popup );
-		}
-		// Then render inline prompts.
-		foreach ( $inline_before_header_popups as $popup ) {
-			$popup_markup .= Newspack_Popups_Model::generate_popup( $popup );
 		}
 
 		self::$before_header_has_rendered = true;
-		return $popup_markup . $block_content;
+		return $markup . $block_content;
 	}
 
 	/**
@@ -666,11 +656,10 @@ final class Newspack_Popups_Inserter {
 	 * Some themes use custom header slugs (for example "header-post"), and in some
 	 * contexts area metadata is missing. Use progressively looser checks.
 	 *
-	 * @param array  $block         Parsed block data.
-	 * @param string $block_content Rendered block content.
+	 * @param array $block Parsed block data.
 	 * @return boolean True if this block is likely a header template part.
 	 */
-	private static function is_header_template_part_block( $block, $block_content ) {
+	private static function is_header_template_part_block( $block ) {
 		if ( empty( $block['blockName'] ) || 'core/template-part' !== $block['blockName'] ) {
 			return false;
 		}
