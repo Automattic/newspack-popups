@@ -634,7 +634,25 @@ final class Newspack_Popups_Inserter {
 		}
 
 		$popup_markup = '';
-		foreach ( $before_header_popups as $popup ) {
+		// Mirror the overlay/inline ordering used in insert_before_header() for classic themes.
+		$overlay_before_header_popups = array_filter(
+			$before_header_popups,
+			[ 'Newspack_Popups_Model', 'is_overlay' ]
+		);
+		$inline_before_header_popups  = array_filter(
+			$before_header_popups,
+			[ 'Newspack_Popups_Model', 'is_inline' ]
+		);
+		if ( ! empty( $overlay_before_header_popups ) ) {
+			self::sort_overlays_by_specificity( $overlay_before_header_popups );
+		}
+		$popup_markup = '';
+		// Render overlays first, in specificity order.
+		foreach ( $overlay_before_header_popups as $popup ) {
+			$popup_markup .= Newspack_Popups_Model::generate_popup( $popup );
+		}
+		// Then render inline prompts.
+		foreach ( $inline_before_header_popups as $popup ) {
 			$popup_markup .= Newspack_Popups_Model::generate_popup( $popup );
 		}
 
