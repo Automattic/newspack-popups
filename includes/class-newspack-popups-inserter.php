@@ -644,7 +644,7 @@ final class Newspack_Popups_Inserter {
 			[ 'Newspack_Popups_Model', 'is_inline' ]
 		);
 		if ( ! empty( $overlay_before_header_popups ) ) {
-			self::sort_overlays_by_specificity( $overlay_before_header_popups );
+			$overlay_before_header_popups = self::sort_overlays_by_specificity( array_values( $overlay_before_header_popups ) );
 		}
 		$popup_markup = '';
 		// Render overlays first, in specificity order.
