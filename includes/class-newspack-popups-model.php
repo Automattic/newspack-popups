@@ -1006,6 +1006,7 @@ final class Newspack_Popups_Model {
 		$is_newsletter_prompt = self::has_newsletter_prompt( $popup );
 		$classes              = [ 'newspack-popup-container', 'newspack-popup', 'hidden' ];
 		$classes[]            = 'above_header' === $popup['options']['placement'] ? 'newspack-above-header-popup' : null;
+		$classes[]            = 'above_header' && self::is_block_theme() ? 'has-global-padding' : null;
 		$classes[]            = ! self::is_above_header( $popup ) ? 'newspack-inline-popup' : null;
 		$classes[]            = 'publish' !== $popup['status'] ? 'newspack-inactive-popup-status' : null;
 		$classes[]            = $hide_border ? 'newspack-lightbox-no-border' : null;
