@@ -640,12 +640,14 @@ final class Newspack_Popups_Inserter {
 			return $block_content;
 		}
 
+		// Set the guard before generating markup to prevent it running again before finishing.
+		self::$header_template_part_has_rendered = true;
+
 		$markup = self::get_before_header_markup();
 		if ( empty( $markup ) ) {
 			return $block_content;
 		}
 
-		self::$header_template_part_has_rendered = true;
 		return $markup . $block_content;
 	}
 
