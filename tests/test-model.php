@@ -152,6 +152,59 @@ class ModelTest extends WP_UnitTestCase {
 			$xpath->query( '//*[starts-with(@id,"page-position-marker")]' )->item( 0 )->getAttribute( 'style' ),
 			'The position marker is set at position passed in options.'
 		);
+
+		Newspack_Popups_Model::set_block_theme_override( true );
+		try {
+			$popup_object_inline_block_theme = Newspack_Popups_Model::create_popup_object(
+				get_post( self::$popup_id ),
+				false,
+				[
+					'placement'    => 'inline',
+					'trigger_type' => 'time',
+				]
+			);
+
+			$dom = new DomDocument();
+			@$dom->loadHTML( Newspack_Popups_Model::generate_popup( $popup_object_inline_block_theme ) ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+			$xpath = new DOMXpath( $dom );
+
+			$inline_container = $xpath->query( '//*[contains(concat(" ", normalize-space(@class), " "), " newspack-inline-popup ")]' )->item( 0 );
+			self::assertNotNull(
+				$inline_container,
+				'Inline popup container is present for block theme.'
+			);
+			self::assertStringContainsString(
+				'is-layout-constrained',
+				$inline_container->getAttribute( 'class' ),
+				'Inline popups receive block theme layout class.'
+			);
+
+			$popup_object_overlay_block_theme = Newspack_Popups_Model::create_popup_object(
+				get_post( self::$popup_id ),
+				false,
+				[
+					'placement'    => 'center',
+					'trigger_type' => 'time',
+				]
+			);
+
+			$dom = new DomDocument();
+			@$dom->loadHTML( Newspack_Popups_Model::generate_popup( $popup_object_overlay_block_theme ) ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+			$xpath = new DOMXpath( $dom );
+
+			$content = $xpath->query( '//*[contains(concat(" ", normalize-space(@class), " "), " newspack-popup__content ")]' )->item( 0 );
+			self::assertNotNull(
+				$content,
+				'Overlay popup content container is present for block theme.'
+			);
+			self::assertStringContainsString(
+				'is-layout-flow',
+				$content->getAttribute( 'class' ),
+				'Overlay popup content receives block theme layout class.'
+			);
+		} finally {
+			Newspack_Popups_Model::set_block_theme_override( null );
+		}
 	}
 
 	/**
