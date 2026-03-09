@@ -492,6 +492,11 @@ $width__tablet: 782px;
 	&.hidden {
 		display: none;
 	}
+
+	// Remove top margin from block immediately following the prompt in block themes.
+	.wp-site-blocks &:not(.hidden) + * {
+		margin-block-start: 0;
+	}
 }
 
 // This is needed for the scroll-triggered popups to function properly.
