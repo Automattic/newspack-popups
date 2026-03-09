@@ -164,6 +164,68 @@ class BlockThemeHeaderInsertionTest extends WP_UnitTestCase_PageWithPopups {
 	}
 
 	/**
+	 * Header-like slug fallback should insert when area is missing.
+	 */
+	public function test_inserts_for_slug_only_header_match() {
+		$popup_id = self::createPopup(
+			'Slug fallback prompt',
+			[
+				'placement' => 'above_header',
+				'frequency' => 'always',
+			]
+		);
+		$popup    = Newspack_Popups_Model::retrieve_popup_by_id( $popup_id );
+		$this->seed_inserter_popups( [ $popup ] );
+
+		$block_content = '<div class="wp-block-template-part">header content</div>';
+		$variants      = [ 'header-post', 'site-header' ];
+
+		foreach ( $variants as $slug ) {
+			self::$header_template_part_has_rendered_property->setValue( null, false );
+
+			$block = [
+				'blockName' => 'core/template-part',
+				'attrs'     => [
+					'slug' => $slug,
+				],
+			];
+
+			$result = Newspack_Popups_Inserter::insert_before_header_in_template_part( $block_content, $block, null );
+			$this->assertStringContainsString(
+				'Slug fallback prompt',
+				$result,
+				sprintf( 'Slug "%s" should match header fallback regex.', $slug )
+			);
+		}
+	}
+
+	/**
+	 * Slugs that merely contain "headers" should not match the header fallback regex.
+	 */
+	public function test_does_not_insert_for_slug_only_non_match() {
+		$popup_id = self::createPopup(
+			'Should not render for headers slug',
+			[
+				'placement' => 'above_header',
+				'frequency' => 'always',
+			]
+		);
+		$popup    = Newspack_Popups_Model::retrieve_popup_by_id( $popup_id );
+		$this->seed_inserter_popups( [ $popup ] );
+
+		$block_content = '<div class="wp-block-template-part">not header content</div>';
+		$block         = [
+			'blockName' => 'core/template-part',
+			'attrs'     => [
+				'slug' => 'my-headers-archive',
+			],
+		];
+
+		$result = Newspack_Popups_Inserter::insert_before_header_in_template_part( $block_content, $block, null );
+		$this->assertSame( $block_content, $result, 'Slug "my-headers-archive" should not match header fallback regex.' );
+	}
+
+	/**
 	 * Overlay specificity ordering should be preserved in block theme path.
 	 */
 	public function test_overlay_specificity_order_is_preserved() {
