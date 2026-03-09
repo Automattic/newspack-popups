@@ -494,7 +494,7 @@ $width__tablet: 782px;
 	}
 
 	// Remove top margin from block immediately following the prompt in block themes.
-	.wp-site-blocks & + * {
+	.wp-site-blocks &:not(.hidden) + * {
 		margin-block-start: 0;
 	}
 }
