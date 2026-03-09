@@ -60,7 +60,7 @@ final class Newspack_Popups_Inserter {
 		add_shortcode( 'newspack-popup', [ $this, 'popup_shortcode' ] );
 		add_action( 'after_header', [ $this, 'insert_popups_after_header' ] ); // This is a Newspack theme hook. When used with other themes, popups won't be inserted on archive pages.
 		add_action( 'wp_body_open', [ $this, 'insert_before_header' ] );
-		add_filter( 'render_block_core/template-part', [ $this, 'insert_before_header_in_template_part' ], 10, 3 );
+		add_filter( 'render_block_core/template-part', [ $this, 'insert_before_header_in_template_part' ], 10, 2 );
 		add_action( 'after_archive_post', [ $this, 'insert_inline_prompt_in_archive_pages' ] );
 		add_action( 'wp_before_admin_bar_render', [ $this, 'add_preview_toggle' ] );
 
@@ -626,12 +626,11 @@ final class Newspack_Popups_Inserter {
 	/**
 	 * Insert popups markup before the header template part in block themes.
 	 *
-	 * @param string   $block_content The rendered block content.
-	 * @param array    $block         The full block.
-	 * @param WP_Block $instance      The block instance.
+	 * @param string $block_content The rendered block content.
+	 * @param array  $block         The full block.
 	 * @return string Rendered content with campaign markup prepended when applicable.
 	 */
-	public static function insert_before_header_in_template_part( $block_content, $block, $instance ) {
+	public static function insert_before_header_in_template_part( $block_content, $block ) {
 		if ( ! Newspack_Popups_Model::is_block_theme() || is_admin() || self::$header_template_part_has_rendered ) {
 			return $block_content;
 		}

@@ -128,11 +128,11 @@ class BlockThemeHeaderInsertionTest extends WP_UnitTestCase_PageWithPopups {
 		$block_content = '<div class="wp-block-template-part">header content</div>';
 		$block         = $this->get_header_template_part_block();
 
-		$first = Newspack_Popups_Inserter::insert_before_header_in_template_part( $block_content, $block, null );
+		$first = Newspack_Popups_Inserter::insert_before_header_in_template_part( $block_content, $block );
 		$this->assertStringContainsString( 'Block theme header prompt', $first, 'Header template part is prepended with prompt markup.' );
 		$this->assertStringEndsWith( $block_content, $first, 'Original header template-part output remains after prepended markup.' );
 
-		$second = Newspack_Popups_Inserter::insert_before_header_in_template_part( $block_content, $block, null );
+		$second = Newspack_Popups_Inserter::insert_before_header_in_template_part( $block_content, $block );
 		$this->assertSame( $block_content, $second, 'Prompt is not inserted again after first render.' );
 	}
 
@@ -159,7 +159,7 @@ class BlockThemeHeaderInsertionTest extends WP_UnitTestCase_PageWithPopups {
 			],
 		];
 
-		$result = Newspack_Popups_Inserter::insert_before_header_in_template_part( $block_content, $block, null );
+		$result = Newspack_Popups_Inserter::insert_before_header_in_template_part( $block_content, $block );
 		$this->assertSame( $block_content, $result, 'Only header template-part blocks should be modified.' );
 	}
 
@@ -190,7 +190,7 @@ class BlockThemeHeaderInsertionTest extends WP_UnitTestCase_PageWithPopups {
 				],
 			];
 
-			$result = Newspack_Popups_Inserter::insert_before_header_in_template_part( $block_content, $block, null );
+			$result = Newspack_Popups_Inserter::insert_before_header_in_template_part( $block_content, $block );
 			$this->assertStringContainsString(
 				'Slug fallback prompt',
 				$result,
@@ -221,7 +221,7 @@ class BlockThemeHeaderInsertionTest extends WP_UnitTestCase_PageWithPopups {
 			],
 		];
 
-		$result = Newspack_Popups_Inserter::insert_before_header_in_template_part( $block_content, $block, null );
+		$result = Newspack_Popups_Inserter::insert_before_header_in_template_part( $block_content, $block );
 		$this->assertSame( $block_content, $result, 'Slug "my-headers-archive" should not match header fallback regex.' );
 	}
 
@@ -255,7 +255,7 @@ class BlockThemeHeaderInsertionTest extends WP_UnitTestCase_PageWithPopups {
 
 		$block_content = '<div class="wp-block-template-part">header content</div>';
 		$block         = $this->get_header_template_part_block();
-		$result        = Newspack_Popups_Inserter::insert_before_header_in_template_part( $block_content, $block, null );
+		$result        = Newspack_Popups_Inserter::insert_before_header_in_template_part( $block_content, $block );
 
 		$segment_pos = strpos( $result, 'Segment overlay' );
 		$generic_pos = strpos( $result, 'Generic overlay' );
