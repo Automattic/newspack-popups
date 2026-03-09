@@ -964,7 +964,7 @@ final class Newspack_Popups_Model {
 	 *
 	 * @return boolean True if the current theme is a block theme.
 	 */
-	private static function is_block_theme() {
+	public static function is_block_theme() {
 		if ( null !== self::$block_theme_override ) {
 			return self::$block_theme_override;
 		}

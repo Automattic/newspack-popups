@@ -611,7 +611,7 @@ final class Newspack_Popups_Inserter {
 	 */
 	public static function insert_before_header() {
 		// In block themes, prompts are inserted via the header template-part render filter.
-		if ( function_exists( 'wp_is_block_theme' ) && wp_is_block_theme() ) {
+		if ( Newspack_Popups_Model::is_block_theme() ) {
 			return;
 		}
 
@@ -632,7 +632,7 @@ final class Newspack_Popups_Inserter {
 	 * @return string Rendered content with campaign markup prepended when applicable.
 	 */
 	public static function insert_before_header_in_template_part( $block_content, $block, $instance ) {
-		if ( ! function_exists( 'wp_is_block_theme' ) || ! wp_is_block_theme() || is_admin() || self::$header_template_part_has_rendered ) {
+		if ( ! Newspack_Popups_Model::is_block_theme() || is_admin() || self::$header_template_part_has_rendered ) {
 			return $block_content;
 		}
 
