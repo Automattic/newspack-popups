@@ -964,7 +964,7 @@ final class Newspack_Popups_Model {
 	 *
 	 * @return boolean True if the current theme is a block theme.
 	 */
-	private static function is_block_theme() {
+	public static function is_block_theme() {
 		if ( null !== self::$block_theme_override ) {
 			return self::$block_theme_override;
 		}
@@ -1006,6 +1006,7 @@ final class Newspack_Popups_Model {
 		$is_newsletter_prompt = self::has_newsletter_prompt( $popup );
 		$classes              = [ 'newspack-popup-container', 'newspack-popup', 'hidden' ];
 		$classes[]            = 'above_header' === $popup['options']['placement'] ? 'newspack-above-header-popup' : null;
+		$classes[]            = 'above_header' === $popup['options']['placement'] && self::is_block_theme() ? 'has-global-padding' : null;
 		$classes[]            = ! self::is_above_header( $popup ) ? 'newspack-inline-popup' : null;
 		$classes[]            = 'publish' !== $popup['status'] ? 'newspack-inactive-popup-status' : null;
 		$classes[]            = $hide_border ? 'newspack-lightbox-no-border' : null;
