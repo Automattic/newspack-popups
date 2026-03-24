@@ -81,24 +81,6 @@ $criteria = [
 	/**
 	 * Reader Activity.
 	 */
-	'user_account'             => [
-		'name'     => __( 'User Account', 'newspack-popups' ),
-		'category' => 'reader_activity',
-		'options'  => [
-			[
-				'label' => __( 'All users', 'newspack-popups' ),
-				'value' => '',
-			],
-			[
-				'label' => __( 'Has user account', 'newspack-popups' ),
-				'value' => 'with-account',
-			],
-			[
-				'label' => __( 'Does not have user account', 'newspack-popups' ),
-				'value' => 'without-account',
-			],
-		],
-	],
 	'newsletter'               => [
 		'name'        => __( 'Newsletter', 'newspack-popups' ),
 		'description' => __( 'Subscriber status based on any newsletter list.', 'newspack-popups' ),
@@ -132,57 +114,6 @@ $criteria = [
 		'matching_function'  => 'list__not_in',
 		'matching_attribute' => 'newsletter_subscribed_lists',
 	],
-	'donation'                 => [
-		'name'        => __( 'Donation', 'newspack-popups' ),
-		'description' => __( 'If the reader has completed an onsite donation.', 'newspack-popups' ),
-		'category'    => 'reader_revenue',
-		'options'     => [
-			[
-				'label' => __( 'Donors and non-donors', 'newspack-popups' ),
-				'value' => '',
-			],
-			[
-				'label' => __( 'Donors', 'newspack-popups' ),
-				'value' => 'donors',
-			],
-			[
-				'label' => __( 'Non-donors', 'newspack-popups' ),
-				'value' => 'non-donors',
-			],
-			[
-				'label' => __( 'Former donors (who cancelled a recurring donation)', 'newspack-popups' ),
-				'value' => 'former-donors',
-			],
-		],
-	],
-	'active_subscriptions'     => [
-		'name'               => __( 'Has active subscription(s)', 'newspack-popups' ),
-		'description'        => __( 'If the reader is an active subscriber to non-donation products.', 'newspack-popups' ),
-		'category'           => 'reader_revenue',
-		'matching_function'  => 'list__in',
-		'matching_attribute' => 'active_subscriptions',
-	],
-	'not_active_subscriptions' => [
-		'name'               => __( 'Does not have active subscription(s)', 'newspack-popups' ),
-		'description'        => __( 'If the reader is NOT an active subscriber to non-donation products.', 'newspack-popups' ),
-		'category'           => 'reader_revenue',
-		'matching_function'  => 'list__not_in',
-		'matching_attribute' => 'active_subscriptions',
-	],
-	'active_memberships'       => [
-		'name'               => __( 'Has active membership(s)', 'newspack-popups' ),
-		'description'        => __( 'If the reader is a member of membership plans.', 'newspack-popups' ),
-		'category'           => 'reader_revenue',
-		'matching_function'  => 'list__in',
-		'matching_attribute' => 'active_memberships',
-	],
-	'not_active_memberships'   => [
-		'name'               => __( 'Does not have active membership(s)', 'newspack-popups' ),
-		'description'        => __( 'If the reader is NOT a member of membership plans.', 'newspack-popups' ),
-		'category'           => 'reader_revenue',
-		'matching_function'  => 'list__not_in',
-		'matching_attribute' => 'active_memberships',
-	],
 	/**
 	 * Referrer Sources.
 	 */
@@ -205,6 +136,25 @@ $criteria = [
 		'matching_attribute' => 'referrer',
 	],
 ];
+
+// Register promoted fields from newspack-plugin as segmentation criteria.
+if ( class_exists( '\Newspack\Reader_Activation\Promoted_Fields' ) ) {
+	$promoted = \Newspack\Reader_Activation\Promoted_Fields::get_promoted_fields();
+	foreach ( $promoted as $key => $field ) {
+		if ( empty( $field['is_segment_criteria'] ) ) {
+			continue;
+		}
+		$reader_data_key = $field['reader_data_key'] ?? $key;
+		$criteria[ $key ] = [
+			'name'               => $field['name'],
+			'category'           => $field['category'] ?? 'reader_activity',
+			'matching_function'  => $field['matching_function'] ?? 'default',
+			'matching_attribute' => $reader_data_key,
+			'options'            => $field['options'] ?? [],
+			'description'        => $field['description'] ?? '',
+		];
+	}
+}
 
 /**
  * Filters the default criteria to be registered.

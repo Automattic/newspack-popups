@@ -1,11 +1,14 @@
-/* globals newspackPopupsCriteria */
+/**
+ * User Account criteria matching function.
+ */
 import { setMatchingFunction } from '../utils';
 
-setMatchingFunction( 'user_account', ( config, { store } ) => {
-	switch ( config.value ) {
-		case 'with-account':
-			return newspackPopupsCriteria.is_non_preview_user || store.get( 'reader' )?.email;
-		case 'without-account':
-			return ! newspackPopupsCriteria.is_non_preview_user && ! store.get( 'reader' )?.email;
+setMatchingFunction( 'Account', ( config, { store } ) => {
+	if ( config.value === 'with-account' ) {
+		return window?.newspackPopupsCriteria?.is_non_preview_user || !! store.get( 'reader' )?.email;
 	}
+	if ( config.value === 'without-account' ) {
+		return ! window?.newspackPopupsCriteria?.is_non_preview_user && ! store.get( 'reader' )?.email;
+	}
+	return true;
 } );
