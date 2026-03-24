@@ -22,7 +22,7 @@ final class Newspack_Segments_Migration {
 	 *
 	 * @var int
 	 */
-	const DB_VERSION = 3;
+	const DB_VERSION = 4;
 
 	/**
 	 * The DB version option name. Where the current option is stored.
@@ -79,6 +79,9 @@ final class Newspack_Segments_Migration {
 		}
 		if ( $current_db_version < 3 ) {
 			self::update_db_version_to_3();
+		}
+		if ( $current_db_version < 4 ) {
+			self::update_db_version_to_4();
 		}
 		update_option( self::DB_VERSION_OPTION_NAME, self::DB_VERSION );
 
@@ -422,6 +425,82 @@ final class Newspack_Segments_Migration {
 
 		// Update user meta so we don't run this again for this user.
 		update_user_meta( $user_id, 'newspack_popups_reader_data_migrated', true );
+	}
+
+	/**
+	 * Updates the DB version to 4, migrating segment criteria IDs
+	 * from legacy names to promoted field names.
+	 *
+	 * @return void
+	 */
+	public static function update_db_version_to_4() {
+		$migration_map = [
+			'donation'                 => [
+				'new_id'    => 'Donor_Status',
+				'value_map' => [
+					'donors'         => 'donor',
+					'non-donors'     => 'non-donor',
+					'former-donors'  => 'former-donor',
+					'formers-donors' => 'former-donor', // Fix pre-existing JS typo.
+				],
+			],
+			'active_subscriptions'     => [ 'new_id' => 'Current_Subscription_Product_Name' ],
+			'not_active_subscriptions' => [ 'new_id' => 'not_Current_Subscription_Product_Name' ],
+			'active_memberships'       => [ 'new_id' => 'Active_Memberships' ],
+			'not_active_memberships'   => [ 'new_id' => 'not_Active_Memberships' ],
+			'user_account'             => [ 'new_id' => 'Account' ],
+		];
+
+		$segments = Newspack_Popups_Segmentation::get_segments();
+		if ( ! is_array( $segments ) ) {
+			return;
+		}
+
+		foreach ( $segments as $segment ) {
+			$criteria = $segment['criteria'] ?? [];
+			if ( ! is_array( $criteria ) || empty( $criteria ) ) {
+				continue;
+			}
+
+			$changed = false;
+			foreach ( $criteria as &$criterion ) {
+				$old_id = $criterion['criteria_id'] ?? '';
+				if ( ! isset( $migration_map[ $old_id ] ) ) {
+					continue;
+				}
+				$map                      = $migration_map[ $old_id ];
+				$criterion['criteria_id'] = $map['new_id'];
+
+				// Remap values if a value_map is defined.
+				if ( isset( $map['value_map'] ) ) {
+					$old_value = $criterion['value'] ?? '';
+					if ( is_string( $old_value ) && isset( $map['value_map'][ $old_value ] ) ) {
+						$criterion['value'] = $map['value_map'][ $old_value ];
+					}
+					// Remove criteria with empty value (e.g., "All donors and non-donors").
+					if ( is_string( $old_value ) && '' === $old_value ) {
+						$criterion['criteria_id'] = '__remove__';
+					}
+				}
+
+				$changed = true;
+			}
+			unset( $criterion );
+
+			if ( $changed ) {
+				// Remove criteria marked for removal.
+				$criteria = array_values(
+					array_filter(
+						$criteria,
+						function( $c ) {
+							return ( $c['criteria_id'] ?? '' ) !== '__remove__';
+						}
+					)
+				);
+				$segment['criteria'] = $criteria;
+				Newspack_Popups_Segmentation::update_segment( $segment );
+			}
+		}
 	}
 }
 
