@@ -94,6 +94,12 @@ final class Newspack_Popups {
 		add_action( 'transition_post_status', [ __CLASS__, 'prevent_default_category_on_publish' ], 10, 3 );
 		add_action( 'transition_post_status', [ __CLASS__, 'store_activation_dates' ], 10, 3 );
 		add_action( 'pre_delete_term', [ __CLASS__, 'prevent_default_category_on_term_delete' ], 10, 2 );
+		add_action( 'save_post_' . self::NEWSPACK_POPUPS_CPT, [ 'Newspack_Popups_Model', 'clear_popup_cache' ] );
+		add_action( 'transition_post_status', [ __CLASS__, 'maybe_clear_popup_cache_on_transition' ], 10, 3 );
+		add_action( 'set_object_terms', [ __CLASS__, 'maybe_clear_popup_cache_on_terms' ], 10, 4 );
+		add_action( 'added_post_meta', [ __CLASS__, 'maybe_clear_popup_cache_on_meta' ], 10, 4 );
+		add_action( 'updated_post_meta', [ __CLASS__, 'maybe_clear_popup_cache_on_meta' ], 10, 4 );
+		add_action( 'deleted_post_meta', [ __CLASS__, 'maybe_clear_popup_cache_on_meta' ], 10, 4 );
 		add_filter( 'show_admin_bar', [ __CLASS__, 'show_admin_bar' ], 10, 2 ); // phpcs:ignore WordPressVIPMinimum.UserExperience.AdminBarRemoval.RemovalDetected
 		add_filter( 'newspack_blocks_should_deduplicate', [ __CLASS__, 'newspack_blocks_should_deduplicate' ], 10, 2 );
 
@@ -1114,6 +1120,47 @@ final class Newspack_Popups {
 		}
 		if ( 'publish' === $old_status && 'publish' !== $new_status ) {
 			update_post_meta( $post->ID, 'deactivation_date', gmdate( 'Y-m-d H:i:s' ) );
+		}
+	}
+
+	/**
+	 * Clear popup cache when a popup's post status changes.
+	 *
+	 * @param string  $new_status New status.
+	 * @param string  $old_status Old status.
+	 * @param WP_Post $post       Post object.
+	 */
+	public static function maybe_clear_popup_cache_on_transition( $new_status, $old_status, $post ) {
+		if ( self::NEWSPACK_POPUPS_CPT === $post->post_type ) {
+			Newspack_Popups_Model::clear_popup_cache();
+		}
+	}
+
+	/**
+	 * Clear popup cache when terms are set on a popup.
+	 *
+	 * @param int    $object_id  Object ID.
+	 * @param array  $terms      Array of term IDs.
+	 * @param array  $tt_ids     Array of term taxonomy IDs.
+	 * @param string $taxonomy   Taxonomy slug.
+	 */
+	public static function maybe_clear_popup_cache_on_terms( $object_id, $terms, $tt_ids, $taxonomy ) {
+		if ( self::NEWSPACK_POPUPS_CPT === get_post_type( $object_id ) ) {
+			Newspack_Popups_Model::clear_popup_cache();
+		}
+	}
+
+	/**
+	 * Clear popup cache when popup meta is updated or deleted.
+	 *
+	 * @param int    $meta_id    Meta ID.
+	 * @param int    $object_id  Post ID.
+	 * @param string $meta_key   Meta key.
+	 * @param mixed  $meta_value Meta value.
+	 */
+	public static function maybe_clear_popup_cache_on_meta( $meta_id, $object_id, $meta_key, $meta_value ) {
+		if ( self::NEWSPACK_POPUPS_CPT === get_post_type( $object_id ) ) {
+			Newspack_Popups_Model::clear_popup_cache();
 		}
 	}
 
