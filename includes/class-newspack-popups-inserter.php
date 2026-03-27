@@ -860,6 +860,7 @@ final class Newspack_Popups_Inserter {
 				foreach ( $segments as $segment ) {
 					if ( ! empty( $segment ) && ! empty( $segment['criteria'] ) && ! isset( self::$segments[ $segment['id'] ] ) ) {
 						self::$segments[ $segment['id'] ] = [
+							'name'     => $segment['name'],
 							'criteria' => $segment['criteria'],
 							'priority' => $segment['priority'],
 						];
