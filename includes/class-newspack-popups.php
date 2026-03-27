@@ -1159,7 +1159,15 @@ final class Newspack_Popups {
 	 * @param mixed  $meta_value Meta value.
 	 */
 	public static function maybe_clear_popup_cache_on_meta( $meta_id, $object_id, $meta_key, $meta_value ) {
+		static $cache_cleared_for_request = false;
+
+		// Debounce cache clearing so it only happens once per request per popup save.
+		if ( $cache_cleared_for_request ) {
+			return;
+		}
+
 		if ( self::NEWSPACK_POPUPS_CPT === get_post_type( $object_id ) ) {
+			$cache_cleared_for_request = true;
 			Newspack_Popups_Model::clear_popup_cache();
 		}
 	}
