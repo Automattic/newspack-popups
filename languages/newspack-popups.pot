@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-02-27T22:12:07+00:00\n"
+"POT-Creation-Date: 2026-03-09T21:07:22+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: newspack-popups\n"
@@ -67,12 +67,12 @@ msgstr ""
 msgid "resetting every %s"
 msgstr ""
 
-#: includes/class-newspack-popups-inserter.php:734
-#: includes/class-newspack-popups-inserter.php:1033
+#: includes/class-newspack-popups-inserter.php:825
+#: includes/class-newspack-popups-inserter.php:1124
 msgid "Prompts Visible"
 msgstr ""
 
-#: includes/class-newspack-popups-inserter.php:735
+#: includes/class-newspack-popups-inserter.php:826
 msgid "Prompts Hidden"
 msgstr ""
 
@@ -121,7 +121,7 @@ msgstr ""
 msgid "draft"
 msgstr ""
 
-#: includes/class-newspack-popups-model.php:1161
+#: includes/class-newspack-popups-model.php:1162
 msgid "Close Pop-up"
 msgstr ""
 

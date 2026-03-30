@@ -46,6 +46,13 @@ final class Newspack_Popups_Inserter {
 	private static $is_apple_news_exporting = false;
 
 	/**
+	 * Whether above-header prompts have already been rendered.
+	 *
+	 * @var boolean
+	 */
+	private static $header_template_part_has_rendered = false;
+
+	/**
 	 * Constructor.
 	 */
 	public function __construct() {
@@ -53,6 +60,7 @@ final class Newspack_Popups_Inserter {
 		add_shortcode( 'newspack-popup', [ $this, 'popup_shortcode' ] );
 		add_action( 'after_header', [ $this, 'insert_popups_after_header' ] ); // This is a Newspack theme hook. When used with other themes, popups won't be inserted on archive pages.
 		add_action( 'wp_body_open', [ $this, 'insert_before_header' ] );
+		add_filter( 'render_block_core/template-part', [ $this, 'insert_before_header_in_template_part' ], 10, 2 );
 		add_action( 'after_archive_post', [ $this, 'insert_inline_prompt_in_archive_pages' ] );
 		add_action( 'wp_before_admin_bar_render', [ $this, 'add_preview_toggle' ] );
 
@@ -562,10 +570,17 @@ final class Newspack_Popups_Inserter {
 	}
 
 	/**
-	 * Insert popups markup before header.
+	 * Get the combined markup for all above-header prompts: overlays (sorted by specificity)
+	 * first, then inline prompts in their original order.
+	 *
+	 * @return string HTML markup, or empty string if there are no above-header prompts.
 	 */
-	public static function insert_before_header() {
+	private static function get_before_header_markup() {
 		$before_header_popups = array_filter( self::popups_for_post(), [ 'Newspack_Popups_Model', 'should_be_inserted_above_page_header' ] );
+		if ( empty( $before_header_popups ) ) {
+			return '';
+		}
+
 		// Sort only the overlay subset by specificity — above-header inline prompts are
 		// not subject to the single visible overlay slot constraint and are left in their
 		// original order.
@@ -580,12 +595,88 @@ final class Newspack_Popups_Inserter {
 				}
 			)
 		);
+
+		$markup = '';
 		foreach ( $overlay_popups as $popup ) {
-			echo Newspack_Popups_Model::generate_popup( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			$markup .= Newspack_Popups_Model::generate_popup( $popup );
 		}
 		foreach ( $inline_popups as $popup ) {
-			echo Newspack_Popups_Model::generate_popup( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			$markup .= Newspack_Popups_Model::generate_popup( $popup );
 		}
+		return $markup;
+	}
+
+	/**
+	 * Insert popups markup before header (classic themes via wp_body_open).
+	 */
+	public static function insert_before_header() {
+		// In block themes, prompts are inserted via the header template-part render filter.
+		if ( Newspack_Popups_Model::is_block_theme() ) {
+			return;
+		}
+
+		$markup = self::get_before_header_markup();
+		if ( empty( $markup ) ) {
+			return;
+		}
+
+		echo $markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	}
+
+	/**
+	 * Insert popups markup before the header template part in block themes.
+	 *
+	 * @param string $block_content The rendered block content.
+	 * @param array  $block         The full block.
+	 * @return string Rendered content with campaign markup prepended when applicable.
+	 */
+	public static function insert_before_header_in_template_part( $block_content, $block ) {
+		if ( ! Newspack_Popups_Model::is_block_theme() || is_admin() || self::$header_template_part_has_rendered ) {
+			return $block_content;
+		}
+
+		if ( ! self::is_header_template_part_block( $block ) ) {
+			return $block_content;
+		}
+
+		// Set the guard before generating markup to prevent it running again before finishing.
+		self::$header_template_part_has_rendered = true;
+
+		$markup = self::get_before_header_markup();
+		if ( empty( $markup ) ) {
+			return $block_content;
+		}
+
+		return $markup . $block_content;
+	}
+
+	/**
+	 * Whether a template-part block appears to be a header template part.
+	 *
+	 * Some themes use custom header slugs (for example "header-post"), and in some
+	 * contexts area metadata is missing. Use progressively looser checks.
+	 *
+	 * @param array $block Parsed block data.
+	 * @return boolean True if this block is likely a header template part.
+	 */
+	private static function is_header_template_part_block( $block ) {
+		if ( empty( $block['blockName'] ) || 'core/template-part' !== $block['blockName'] ) {
+			return false;
+		}
+
+		$attrs = isset( $block['attrs'] ) ? $block['attrs'] : [];
+
+		// Most reliable signal when present.
+		if ( isset( $attrs['area'] ) && 'header' === $attrs['area'] ) {
+			return true;
+		}
+
+		// Many themes use non-exact slugs such as "header-post" or "site-header".
+		if ( isset( $attrs['slug'] ) && preg_match( '/(^|[-_])header([-_]|$)/', $attrs['slug'] ) ) {
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
