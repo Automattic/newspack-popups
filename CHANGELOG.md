@@ -1,3 +1,10 @@
+## [3.10.1](https://github.com/Automattic/newspack-popups/compare/v3.10.0...v3.10.1) (2026-03-30)
+
+
+### Bug Fixes
+
+* **block-theme:** move where above header campaign is inserted ([#1533](https://github.com/Automattic/newspack-popups/issues/1533)) ([eb6bfba](https://github.com/Automattic/newspack-popups/commit/eb6bfba2c7cd2560f7bf7aa04371aea467b5d291))
+
 # [3.10.0](https://github.com/Automattic/newspack-popups/compare/v3.9.2...v3.10.0) (2026-03-16)
 
 
