@@ -504,7 +504,7 @@ final class Newspack_Popups_Inserter {
 		}
 
 		$filtered_content = explode( "\n", self::get_validation_content( $content ) );
-		$post_content     = explode( "\n", $post->post_content );
+		$post_content     = explode( "\n", ltrim( $post->post_content ) );
 		if (
 			// If prompts are disabled for this post.
 			self::assess_has_disabled_popups()
