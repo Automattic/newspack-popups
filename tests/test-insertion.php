@@ -472,4 +472,23 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 			'Does not include the popup content, since the post tag is excluded on this popup.'
 		);
 	}
+
+	/**
+	 * Test that inline prompts still render when post_content has leading whitespace.
+	 *
+	 * When post_content begins with newline characters (e.g. from migrations or
+	 * non-editor save flows), the guard clause in insert_popups_in_content() must
+	 * not bail due to a first-line mismatch between the validated and raw content.
+	 */
+	public function test_insertion_with_leading_whitespace_in_post_content() {
+		$post_content_with_leading_newlines = "\n\n<!-- wp:paragraph -->\n<p>Post content.</p>\n<!-- /wp:paragraph -->";
+
+		self::renderPost( '', $post_content_with_leading_newlines );
+
+		self::assertStringContainsString(
+			self::$popup_content,
+			self::$post_content,
+			'Inline prompt renders even when post_content has leading newlines.'
+		);
+	}
 }
