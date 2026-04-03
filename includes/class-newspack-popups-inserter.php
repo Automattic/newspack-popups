@@ -62,6 +62,7 @@ final class Newspack_Popups_Inserter {
 		add_action( 'wp_body_open', [ $this, 'insert_before_header' ] );
 		add_filter( 'render_block_core/template-part', [ $this, 'insert_before_header_in_template_part' ], 10, 2 );
 		add_action( 'after_archive_post', [ $this, 'insert_inline_prompt_in_archive_pages' ] );
+		add_filter( 'render_block', [ $this, 'insert_inline_prompt_in_block_theme_archives' ], 10, 2 );
 		add_action( 'wp_before_admin_bar_render', [ $this, 'add_preview_toggle' ] );
 
 		// Always enqueue scripts, since this plugin's scripts are handling pageview sending via GTAG.
@@ -687,9 +688,22 @@ final class Newspack_Popups_Inserter {
 	 * @return void
 	 */
 	public static function insert_inline_prompt_in_archive_pages( $post_count ) {
+		echo self::get_inline_prompt_html_for_archive_pages( $post_count ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	}
+
+	/**
+	 * Get the HTML for an inline prompt on archive pages.
+	 *
+	 * @param integer $post_count  Order of the post in the posts loop.
+	 * @param string  $wrapper     Opening tag (with any attributes) to wrap the prompt in. Defaults to 'article class="entry"' to match classic theme; uses 'aside' for block themes.
+	 * @return string HTML output, or empty string.
+	 */
+	public static function get_inline_prompt_html_for_archive_pages( $post_count, $wrapper = 'article class="entry"' ) {
+		$tag = strtok( $wrapper, ' ' );
 		global $wp_query;
 
 		$archives_popups = array_filter( self::popups_for_post(), [ 'Newspack_Popups_Model', 'should_be_inserted_in_archive_pages' ] );
+		$output          = '';
 		foreach ( $archives_popups as $popup ) {
 			// insert popup only on selected archive page types.
 			if ( is_category() && ! in_array( 'category', $popup['options']['archive_page_types'] )
@@ -699,7 +713,7 @@ final class Newspack_Popups_Inserter {
 				|| ( is_post_type_archive() && ! in_array( 'post-type', $popup['options']['archive_page_types'] ) )
 				|| ( is_tax() && ! in_array( 'taxonomy', $popup['options']['archive_page_types'] ) )
 			) {
-					return;
+				return '';
 			}
 
 			$archive_insertion_posts_count = intval( $popup['options']['archive_insertion_posts_count'] );
@@ -710,10 +724,53 @@ final class Newspack_Popups_Inserter {
 				|| ( $popup['options']['archive_insertion_is_repeating'] && 0 === $post_count % $archive_insertion_posts_count )
 				|| ( $archive_insertion_posts_count >= $wp_query->post_count && $post_count === $wp_query->post_count )
 			) {
-				// Wrapping the popup in an article with `entry` class element to keep the archive page markup.
-				echo '<article class="entry">' . Newspack_Popups_Model::generate_popup( $popup ) . '</article>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				$output .= '<' . $wrapper . '>' . Newspack_Popups_Model::generate_popup( $popup ) . '</' . $tag . '>';
 			}
 		}
+		return $output;
+	}
+
+	/**
+	 * Insert inline prompts into a rendered core/post-template block on archive/home pages.
+	 *
+	 * Uses the render_block filter so this works with block themes.
+	 *
+	 * @param string $block_content Rendered block HTML.
+	 * @param array  $block         Block data array, including 'blockName'.
+	 * @return string Filtered block HTML.
+	 */
+	public static function insert_inline_prompt_in_block_theme_archives( $block_content, $block ) {
+		if ( 'core/post-template' !== $block['blockName'] ) {
+			return $block_content;
+		}
+
+		if ( ! is_archive() && ! is_home() ) {
+			return $block_content;
+		}
+
+		$archives_popups = array_filter( self::popups_for_post(), [ 'Newspack_Popups_Model', 'should_be_inserted_in_archive_pages' ] );
+		if ( empty( $archives_popups ) ) {
+			return $block_content;
+		}
+
+		// Split on each post item boundary. core/post-template wraps each post in <li class="wp-block-post ..."> (list layout) or <div class="wp-block-post ..."> (grid layout).
+		// Use [\s"'] to avoid false matches on child element classes like wp-block-post-title, wp-block-post-excerpt, etc. (which also start with "wp-block-post").
+		$parts = preg_split( '/(?=<(?:li|div)[^>]*\bwp-block-post[\s"\'])/', $block_content );
+
+		if ( ! $parts || count( $parts ) < 2 ) {
+			return $block_content;
+		}
+
+		// $parts[0] is the opening wrapper (e.g. <ul ...>); $parts[1..n] are the post items.
+		$post_count = count( $parts ) - 1;
+		$output     = $parts[0];
+
+		for ( $i = 1; $i <= $post_count; $i++ ) {
+			$output .= $parts[ $i ];
+			$output .= self::get_inline_prompt_html_for_archive_pages( $i, 'aside' );
+		}
+
+		return $output;
 	}
 
 	/**
