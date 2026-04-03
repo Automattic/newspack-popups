@@ -753,25 +753,22 @@ final class Newspack_Popups_Inserter {
 
 		$archives_popups = array_filter( self::popups_for_post(), [ 'Newspack_Popups_Model', 'should_be_inserted_in_archive_pages' ] );
 
-		// Split on each post item boundary. core/post-template wraps each post in <li class="wp-block-post ..."> (list layout) or <div class="wp-block-post ..."> (grid layout).
-		// Use [\s"'] to avoid false matches on child element classes like wp-block-post-title, wp-block-post-excerpt, etc. (which also start with "wp-block-post").
-		$parts = preg_split( '/(?=<(?:li|div)[^>]*\bwp-block-post[\s"\'])/', $block_content );
+		// Split on each post item boundary. core/post-template wraps each post in
+		// <li class="wp-block-post ...">. Use [\s"'] to avoid false matches on child element
+		// classes like wp-block-post-title, wp-block-post-excerpt, etc.
+		$parts = preg_split( '/(?=<li[^>]*\bwp-block-post[\s"\'])/', $block_content );
 
 		if ( ! $parts || count( $parts ) < 2 ) {
 			return $block_content;
 		}
 
-		// $parts[0] is the opening wrapper (e.g. <ul ...>); $parts[1..n] are the post items.
-		// Detect the post item tag from the first item so the campaign wrapper matches:
-		// <li> for list layouts (valid inside <ul>), <div> for grid layouts.
-		preg_match( '/^<(li|div)/', $parts[1], $tag_match );
-		$item_tag   = $tag_match[1] ?? 'li';
+		// $parts[0] is the opening <ul>; $parts[1..n] are the post items.
 		$post_count = count( $parts ) - 1;
 		$output     = $parts[0];
 
 		for ( $i = 1; $i <= $post_count; $i++ ) {
 			$output .= $parts[ $i ];
-			$output .= self::get_inline_prompt_html_for_archive_pages( $i, $item_tag, $archives_popups );
+			$output .= self::get_inline_prompt_html_for_archive_pages( $i, 'li', $archives_popups );
 		}
 
 		return $output;

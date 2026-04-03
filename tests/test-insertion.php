@@ -521,41 +521,6 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 	}
 
 	/**
-	 * Block theme archive insertion — grid layout uses div wrapper.
-	 */
-	public function test_block_theme_archive_insertion_grid_layout() {
-		Newspack_Popups_Model::set_popup_options(
-			self::$popup_id,
-			[
-				'placement'                      => 'archives',
-				'frequency'                      => 'always',
-				'archive_insertion_posts_count'  => 1,
-				'archive_insertion_is_repeating' => false,
-			]
-		);
-
-		// Grid layout uses <div> instead of <li> for post items.
-		$block_content = '
-			<div class="wp-block-post-template is-flex-container">
-				<div class="wp-block-post post-type-post">Post 1 content</div>
-				<div class="wp-block-post post-type-post">Post 2 content</div>
-			</div>';
-
-		$block = [ 'blockName' => 'core/post-template' ];
-
-		$post_ids = self::factory()->post->create_many( 5 );
-		$this->go_to( home_url() );
-		$GLOBALS['post'] = get_post( end( $post_ids ) ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-
-		$result = Newspack_Popups_Inserter::insert_inline_prompt_in_block_theme_archives( $block_content, $block );
-
-		// Campaign should be present and wrapped in <div>, not <li>.
-		self::assertStringContainsString( self::$popup_content, $result, 'Campaign HTML is present in grid layout output.' );
-		self::assertMatchesRegularExpression( '/<div>\s*<div[^>]*newspack-popup-container/', $result, 'Campaign is wrapped in a <div> for grid layout.' );
-		self::assertDoesNotMatchRegularExpression( '/<li>\s*<div[^>]*newspack-popup-container/', $result, 'Campaign is not wrapped in a <li> for grid layout.' );
-	}
-
-	/**
 	 * Block theme archive insertion — non-archive page is untouched.
 	 */
 	public function test_block_theme_archive_insertion_skips_non_archive() {
