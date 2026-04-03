@@ -694,16 +694,19 @@ final class Newspack_Popups_Inserter {
 	/**
 	 * Get the HTML for an inline prompt on archive pages.
 	 *
-	 * @param integer $post_count  Order of the post in the posts loop.
-	 * @param string  $wrapper     Opening tag (with any attributes) to wrap the prompt in. Defaults to 'article class="entry"' to match classic theme; uses 'aside' for block themes.
+	 * @param integer $post_count      Order of the post in the posts loop.
+	 * @param string  $wrapper         Opening tag (with any attributes) to wrap the prompt in. Defaults to 'article class="entry"' to match classic theme; pass the post item tag for block themes.
+	 * @param array   $archives_popups Pre-filtered list of archive popups. If null, popups_for_post() is filtered internally.
 	 * @return string HTML output, or empty string.
 	 */
-	public static function get_inline_prompt_html_for_archive_pages( $post_count, $wrapper = 'article class="entry"' ) {
+	public static function get_inline_prompt_html_for_archive_pages( $post_count, $wrapper = 'article class="entry"', $archives_popups = null ) {
 		$tag = strtok( $wrapper, ' ' );
 		global $wp_query;
 
-		$archives_popups = array_filter( self::popups_for_post(), [ 'Newspack_Popups_Model', 'should_be_inserted_in_archive_pages' ] );
-		$output          = '';
+		if ( null === $archives_popups ) {
+			$archives_popups = array_filter( self::popups_for_post(), [ 'Newspack_Popups_Model', 'should_be_inserted_in_archive_pages' ] );
+		}
+		$output = '';
 		foreach ( $archives_popups as $popup ) {
 			// insert popup only on selected archive page types.
 			if ( is_category() && ! in_array( 'category', $popup['options']['archive_page_types'] )
@@ -749,9 +752,6 @@ final class Newspack_Popups_Inserter {
 		}
 
 		$archives_popups = array_filter( self::popups_for_post(), [ 'Newspack_Popups_Model', 'should_be_inserted_in_archive_pages' ] );
-		if ( empty( $archives_popups ) ) {
-			return $block_content;
-		}
 
 		// Split on each post item boundary. core/post-template wraps each post in <li class="wp-block-post ..."> (list layout) or <div class="wp-block-post ..."> (grid layout).
 		// Use [\s"'] to avoid false matches on child element classes like wp-block-post-title, wp-block-post-excerpt, etc. (which also start with "wp-block-post").
@@ -771,7 +771,7 @@ final class Newspack_Popups_Inserter {
 
 		for ( $i = 1; $i <= $post_count; $i++ ) {
 			$output .= $parts[ $i ];
-			$output .= self::get_inline_prompt_html_for_archive_pages( $i, $item_tag );
+			$output .= self::get_inline_prompt_html_for_archive_pages( $i, $item_tag, $archives_popups );
 		}
 
 		return $output;
