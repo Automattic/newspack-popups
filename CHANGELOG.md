@@ -1,3 +1,10 @@
+## [3.10.2](https://github.com/Automattic/newspack-popups/compare/v3.10.1...v3.10.2) (2026-04-06)
+
+
+### Bug Fixes
+
+* **inserter:** trim leading whitespace before content validation comparison ([e0b9f3f](https://github.com/Automattic/newspack-popups/commit/e0b9f3f9cc8a9c889ab4980bbe31aa7aa7c5d39a))
+
 ## [3.10.1](https://github.com/Automattic/newspack-popups/compare/v3.10.0...v3.10.1) (2026-03-30)
 
 
