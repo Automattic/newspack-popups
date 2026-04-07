@@ -69,7 +69,7 @@ final class Newspack_Popups_Inserter {
 		add_action( 'apple_news_do_fetch_exporter', [ __CLASS__, 'apple_news_do_fetch_exporter' ] );
 		add_filter( 'newspack_popups_assess_has_disabled_popups', [ __CLASS__, 'disable_prompts' ] );
 
-		// Allow read-only reader data keys to be writeable in certain conditions.
+		// Allow read-only reader data keys to be writable in certain conditions.
 		add_filter( 'newspack_reader_data_read_only_keys', [ __CLASS__, 'set_reader_data_read_only_keys' ] );
 
 		// These hooks are fired before and after rendering posts in the Homepage Posts block.
