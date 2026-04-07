@@ -905,8 +905,13 @@ final class Newspack_Popups_Inserter {
 			return $keys;
 		}
 
+		$donor_landing_page_id = absint( Newspack_Popups_Settings::donor_landing_page() );
+		if ( ! $donor_landing_page_id ) {
+			return $keys;
+		}
+
 		// Allow is_donor to be writeable on the donor landing page only.
-		if ( get_the_ID() === (int) Newspack_Popups_Settings::donor_landing_page() ) {
+		if ( get_queried_object_id() === $donor_landing_page_id ) {
 			$keys = array_values( array_diff( $keys, [ 'is_donor' ] ) );
 		}
 		return $keys;
