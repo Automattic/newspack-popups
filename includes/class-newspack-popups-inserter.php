@@ -895,7 +895,7 @@ final class Newspack_Popups_Inserter {
 	}
 
 	/**
-	 * Allow read-only reader data keys to be writeable in certain conditions.
+	 * Allow read-only reader data keys to be writable in certain conditions.
 	 *
 	 * @param string[] $keys Read-only reader data keys.
 	 * @return string[] Read-only reader data keys.
@@ -910,7 +910,7 @@ final class Newspack_Popups_Inserter {
 			return $keys;
 		}
 
-		// Allow is_donor to be writeable on the donor landing page only.
+		// Allow is_donor to be writable on the donor landing page only.
 		if ( get_queried_object_id() === $donor_landing_page_id ) {
 			$keys = array_values( array_diff( $keys, [ 'is_donor' ] ) );
 		}
