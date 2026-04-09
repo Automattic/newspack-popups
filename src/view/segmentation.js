@@ -23,6 +23,13 @@ export const handleSegmentation = prompts => {
 		const segments = newspack_popups_view?.segments || {};
 		const matchingSegment = getBestPrioritySegment( segments );
 		debug( 'matchingSegment', matchingSegment );
+
+		// Register segments and set match via RAS if available.
+		if ( ras?.segments ) {
+			ras.segments.register( segments );
+			ras.segments.setMatch( matchingSegment );
+		}
+
 		let overlayDisplayed;
 
 		prompts.forEach( prompt => {
@@ -54,6 +61,9 @@ export const handleSegmentation = prompts => {
 					// Conditions may have changed since the prompt was delayed.
 					// Verify whether the prompt can still be displayed.
 					const updatedMatchingSegment = getBestPrioritySegment( segments );
+					if ( ras?.segments ) {
+						ras.segments.setMatch( updatedMatchingSegment );
+					}
 					if ( ! shouldPromptBeDisplayed( prompt, updatedMatchingSegment, ras, override ) ) {
 						return;
 					}
