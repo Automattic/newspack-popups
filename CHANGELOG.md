@@ -1,3 +1,10 @@
+## [3.10.3](https://github.com/Automattic/newspack-popups/compare/v3.10.2...v3.10.3) (2026-04-13)
+
+
+### Bug Fixes
+
+* trigger release ([b04af9e](https://github.com/Automattic/newspack-popups/commit/b04af9e5e506a302cdb291ab16c6ef4faf9a4b7e))
+
 ## [3.10.2](https://github.com/Automattic/newspack-popups/compare/v3.10.1...v3.10.2) (2026-04-06)
 
 
