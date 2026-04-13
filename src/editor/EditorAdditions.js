@@ -42,36 +42,60 @@ const EditorAdditions = () => {
 
 		const iframe = document.querySelector( 'iframe[name="editor-canvas"]' );
 		if ( iframe ) {
-			// Iframe exists but may not have finished loading.
-			iframe.addEventListener( 'load', applyColors );
+			if ( iframe.contentDocument?.readyState === 'complete' ) {
+				// Iframe is already loaded — apply immediately.
+				applyColors();
+				return;
+			}
+			// Iframe exists but hasn't finished loading.
+			iframe.addEventListener( 'load', applyColors, { once: true } );
 			return () => iframe.removeEventListener( 'load', applyColors );
 		}
 
 		// Iframe hasn't been inserted yet — watch for it.
+		let capturedIframe = null;
 		const observer = new MutationObserver( () => {
 			const newIframe = document.querySelector( 'iframe[name="editor-canvas"]' );
 			if ( newIframe ) {
 				observer.disconnect();
-				newIframe.addEventListener( 'load', applyColors );
+				capturedIframe = newIframe;
+				newIframe.addEventListener( 'load', applyColors, { once: true } );
 			}
 		} );
 		observer.observe( document.body, { childList: true, subtree: true } );
-		return () => observer.disconnect();
+		return () => {
+			observer.disconnect();
+			if ( capturedIframe ) {
+				capturedIframe.removeEventListener( 'load', applyColors );
+			}
+		};
 	}, [] ); // eslint-disable-line react-hooks/exhaustive-deps
 
 	// Setting editor size as per the popup size.
 	useEffect( () => {
-		const blockEditor = getEditorDocument().querySelector( '.block-editor-block-list__layout' );
-		if ( blockEditor ) {
-			blockEditor.classList.forEach( className => {
-				if ( className.startsWith( 'is-size-' ) ) {
-					blockEditor.classList.remove( className );
-				}
-			} );
+		const applySize = () => {
+			const blockEditor = getEditorDocument().querySelector( '.block-editor-block-list__layout' );
+			if ( blockEditor ) {
+				blockEditor.classList.forEach( className => {
+					if ( className.startsWith( 'is-size-' ) ) {
+						blockEditor.classList.remove( className );
+					}
+				} );
 
-			if ( isOverlayPlacement( placement ) ) {
-				blockEditor.classList.add( `is-size-${ overlay_size }` );
+				if ( isOverlayPlacement( placement ) ) {
+					blockEditor.classList.add( `is-size-${ overlay_size }` );
+				}
 			}
+		};
+
+		applySize();
+
+		// In WP 7.0+, the block list lives inside the editor iframe and may not
+		// exist yet on the first run. Reapply when the iframe finishes loading.
+		const iframe = document.querySelector( 'iframe[name="editor-canvas"]' );
+		if ( iframe && iframe.contentDocument?.readyState !== 'complete' ) {
+			iframe.addEventListener( 'load', applySize, { once: true } );
+			return () => iframe.removeEventListener( 'load', applySize );
 		}
 	}, [ overlay_size, placement ] );
 	return null;

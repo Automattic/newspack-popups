@@ -96,7 +96,8 @@ const hexToRGB = hex =>
 /**
  * Get the document context for the block editor. In WordPress 7.0+, the editor
  * canvas is rendered inside an iframe, so querySelector on the parent document
- * will not find editor elements. Fall back to the parent document for older versions.
+ * will not find editor elements. Falls back to the parent document for older
+ * versions, or when the iframe's contentDocument is not yet available (null).
  *
  * TODO: Once WP 6.9 is no longer supported, this can be simplified to always
  * return the iframe's contentDocument.
@@ -105,7 +106,7 @@ const hexToRGB = hex =>
  */
 export const getEditorDocument = () => {
 	const iframe = document.querySelector( 'iframe[name="editor-canvas"]' );
-	return iframe ? iframe.contentDocument : document; // TODO: Remove `: document` fallback when WP 6.9 support is dropped.
+	return iframe?.contentDocument ?? document; // TODO: Remove `?? document` fallback when WP 6.9 support is dropped.
 };
 
 /**
