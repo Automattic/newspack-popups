@@ -94,6 +94,21 @@ const hexToRGB = hex =>
 		.map( x => parseInt( x, 16 ) );
 
 /**
+ * Get the document context for the block editor. In WordPress 7.0+, the editor
+ * canvas is rendered inside an iframe, so querySelector on the parent document
+ * will not find editor elements. Fall back to the parent document for older versions.
+ *
+ * TODO: Once WP 6.9 is no longer supported, this can be simplified to always
+ * return the iframe's contentDocument.
+ *
+ * @return {Document} The editor's document context.
+ */
+export const getEditorDocument = () => {
+	const iframe = document.querySelector( 'iframe[name="editor-canvas"]' );
+	return iframe ? iframe.contentDocument : document; // TODO: Remove `: document` fallback when WP 6.9 support is dropped.
+};
+
+/**
  * Set the background color meta field.
  * Based on https://github.com/Automattic/newspack-theme/blob/trunk/newspack-theme/inc/template-functions.php#L401-L431
  *
@@ -120,8 +135,9 @@ export const updateEditorColors = backgroundColor => {
 
 	const foregroundColor = contrastRatio > 5 ? blackColor : whiteColor;
 
-	const editorStylesEl = document.querySelector( '.editor-styles-wrapper' );
-	const editorPostTitleEl = document.querySelector( '.wp-block.editor-post-title__block .editor-post-title__input' );
+	const editorDoc = getEditorDocument();
+	const editorStylesEl = editorDoc.querySelector( '.editor-styles-wrapper' );
+	const editorPostTitleEl = editorDoc.querySelector( '.wp-block.editor-post-title__block .editor-post-title__input' );
 	if ( editorStylesEl ) {
 		editorStylesEl.style.backgroundColor = backgroundColor;
 		editorStylesEl.style.color = foregroundColor;
