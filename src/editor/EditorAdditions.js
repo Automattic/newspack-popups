@@ -11,7 +11,7 @@ import { useEffect, useRef } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import { getEditorDocument, isOverlayPlacement, updateEditorColors } from './utils';
+import { getEditorDocument, isOverlayPlacement, updateEditorColors, whenEditorReady } from './utils';
 
 const EditorAdditions = () => {
 	const meta = useSelect( select => select( 'core/editor' ).getEditedPostAttribute( 'meta' ) );
@@ -32,43 +32,7 @@ const EditorAdditions = () => {
 	// canvas is an iframe that may not be loaded when the component first mounts,
 	// so the color-picker effect above fires before the elements exist.
 	useEffect( () => {
-		const applyColors = () => updateEditorColors( backgroundColorRef.current );
-
-		// TODO: Remove this when WP 6.9 is no longer supported, and the iframe is always used for the editor.
-		if ( getEditorDocument().querySelector( '.editor-styles-wrapper' ) ) {
-			applyColors();
-			return;
-		}
-
-		const iframe = document.querySelector( 'iframe[name="editor-canvas"]' );
-		if ( iframe ) {
-			if ( iframe.contentDocument?.readyState === 'complete' ) {
-				// Iframe is already loaded — apply immediately.
-				applyColors();
-				return;
-			}
-			// Iframe exists but hasn't finished loading.
-			iframe.addEventListener( 'load', applyColors, { once: true } );
-			return () => iframe.removeEventListener( 'load', applyColors );
-		}
-
-		// Iframe hasn't been inserted yet — watch for it.
-		let capturedIframe = null;
-		const observer = new MutationObserver( () => {
-			const newIframe = document.querySelector( 'iframe[name="editor-canvas"]' );
-			if ( newIframe ) {
-				observer.disconnect();
-				capturedIframe = newIframe;
-				newIframe.addEventListener( 'load', applyColors, { once: true } );
-			}
-		} );
-		observer.observe( document.body, { childList: true, subtree: true } );
-		return () => {
-			observer.disconnect();
-			if ( capturedIframe ) {
-				capturedIframe.removeEventListener( 'load', applyColors );
-			}
-		};
+		return whenEditorReady( () => updateEditorColors( backgroundColorRef.current ) );
 	}, [] ); // eslint-disable-line react-hooks/exhaustive-deps
 
 	// Setting editor size as per the popup size.
@@ -87,16 +51,7 @@ const EditorAdditions = () => {
 				}
 			}
 		};
-
-		applySize();
-
-		// In WP 7.0+, the block list lives inside the editor iframe and may not
-		// exist yet on the first run. Reapply when the iframe finishes loading.
-		const iframe = document.querySelector( 'iframe[name="editor-canvas"]' );
-		if ( iframe && iframe.contentDocument?.readyState !== 'complete' ) {
-			iframe.addEventListener( 'load', applySize, { once: true } );
-			return () => iframe.removeEventListener( 'load', applySize );
-		}
+		return whenEditorReady( applySize );
 	}, [ overlay_size, placement ] );
 	return null;
 };

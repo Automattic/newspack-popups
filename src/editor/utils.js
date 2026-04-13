@@ -110,6 +110,61 @@ export const getEditorDocument = () => {
 };
 
 /**
+ * Calls `callback` once the editor canvas is available and returns a cleanup
+ * function suitable for use as a useEffect return value. Handles three cases:
+ *
+ * 1. Editor already rendered (WP 6.9 non-iframe, or iframe already loaded) —
+ *    calls the callback immediately.
+ * 2. Editor-canvas iframe exists but has not finished loading — waits for the
+ *    load event, then calls the callback.
+ * 3. Editor-canvas iframe has not been inserted yet — observes the DOM for its
+ *    insertion, then waits for its load event.
+ *
+ * TODO: Once WP 6.9 is no longer supported this can be simplified to cases 2/3
+ * only (the iframe is always used for the editor canvas).
+ *
+ * @param {Function} callback Function to invoke when the editor canvas is ready.
+ * @return {Function} Cleanup function that removes any pending listeners/observers.
+ */
+export const whenEditorReady = callback => {
+	// Case 1: editor already rendered (.editor-styles-wrapper present in current doc).
+	if ( getEditorDocument().querySelector( '.editor-styles-wrapper' ) ) {
+		callback();
+		return () => {};
+	}
+
+	const iframe = document.querySelector( 'iframe[name="editor-canvas"]' );
+	if ( iframe ) {
+		if ( iframe.contentDocument?.readyState === 'complete' ) {
+			// Case 1b: iframe exists and is fully loaded.
+			callback();
+			return () => {};
+		}
+		// Case 2: iframe exists but hasn't finished loading.
+		iframe.addEventListener( 'load', callback, { once: true } );
+		return () => iframe.removeEventListener( 'load', callback );
+	}
+
+	// Case 3: iframe hasn't been inserted yet — watch for it.
+	let capturedIframe = null;
+	const observer = new MutationObserver( () => {
+		const newIframe = document.querySelector( 'iframe[name="editor-canvas"]' );
+		if ( newIframe ) {
+			observer.disconnect();
+			capturedIframe = newIframe;
+			newIframe.addEventListener( 'load', callback, { once: true } );
+		}
+	} );
+	observer.observe( document.body, { childList: true, subtree: true } );
+	return () => {
+		observer.disconnect();
+		if ( capturedIframe ) {
+			capturedIframe.removeEventListener( 'load', callback );
+		}
+	};
+};
+
+/**
  * Set the background color meta field.
  * Based on https://github.com/Automattic/newspack-theme/blob/trunk/newspack-theme/inc/template-functions.php#L401-L431
  *
