@@ -62,7 +62,7 @@ final class Newspack_Popups_Inserter {
 		add_action( 'wp_body_open', [ $this, 'insert_before_header' ] );
 		add_filter( 'render_block_core/template-part', [ $this, 'insert_before_header_in_template_part' ], 10, 2 );
 		add_action( 'after_archive_post', [ $this, 'insert_inline_prompt_in_archive_pages' ] );
-		add_filter( 'render_block', [ $this, 'insert_inline_prompt_in_block_theme_archives' ], 10, 2 );
+		add_filter( 'render_block', [ $this, 'insert_inline_prompt_in_block_theme_archives' ], 10, 3 );
 		add_action( 'wp_before_admin_bar_render', [ $this, 'add_preview_toggle' ] );
 
 		// Always enqueue scripts, since this plugin's scripts are handling pageview sending via GTAG.
@@ -736,19 +736,33 @@ final class Newspack_Popups_Inserter {
 	/**
 	 * Insert inline prompts into a rendered core/post-template block on archive/home pages.
 	 *
-	 * Uses the render_block filter so this works with block themes.
+	 * Uses the render_block filter so this works with block themes. Only targets
+	 * the primary Query Loop (the one that inherits the global/main query) so
+	 * that secondary loops like "featured posts" or "you may also like" don't
+	 * receive prompt injection.
 	 *
-	 * @param string $block_content Rendered block HTML.
-	 * @param array  $block         Block data array, including 'blockName'.
+	 * @param string   $block_content Rendered block HTML.
+	 * @param array    $block         Block data array, including 'blockName'.
+	 * @param WP_Block $instance      The block instance (available since WP 5.9).
 	 * @return string Filtered block HTML.
 	 */
-	public static function insert_inline_prompt_in_block_theme_archives( $block_content, $block ) {
+	public static function insert_inline_prompt_in_block_theme_archives( $block_content, $block, $instance = null ) {
 		if ( 'core/post-template' !== $block['blockName'] ) {
 			return $block_content;
 		}
 
 		if ( ! is_archive() && ! is_home() ) {
 			return $block_content;
+		}
+
+		// Only inject into the Query Loop that inherits the main/global query.
+		// Secondary loops (custom queryId, inherit=false) should not get prompts.
+		if ( $instance instanceof WP_Block ) {
+			$query_context = $instance->context['query'] ?? [];
+			$inherits_main = ! empty( $query_context['inherit'] );
+			if ( ! $inherits_main ) {
+				return $block_content;
+			}
 		}
 
 		$archives_popups = array_filter( self::popups_for_post(), [ 'Newspack_Popups_Model', 'should_be_inserted_in_archive_pages' ] );

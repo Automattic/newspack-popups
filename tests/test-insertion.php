@@ -555,6 +555,41 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 	}
 
 	/**
+	 * Block theme archive insertion — secondary (non-inherited) Query Loops are skipped.
+	 */
+	public function test_block_theme_archive_insertion_skips_secondary_query_loop() {
+		Newspack_Popups_Model::set_popup_options(
+			self::$popup_id,
+			[
+				'placement'                      => 'archives',
+				'frequency'                      => 'always',
+				'archive_insertion_posts_count'  => 1,
+				'archive_insertion_is_repeating' => false,
+			]
+		);
+
+		$block_content = '<ul class="wp-block-post-template"><li class="wp-block-post post-type-post">Post 1</li></ul>';
+		$block         = [ 'blockName' => 'core/post-template' ];
+
+		$post_ids = self::factory()->post->create_many( 3 );
+		$this->go_to( home_url() );
+		$GLOBALS['post'] = get_post( end( $post_ids ) ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+
+		// Simulate a secondary Query Loop (inherit=false, custom queryId).
+		$instance = new WP_Block(
+			$block,
+			[
+				'query'   => [ 'inherit' => false ],
+				'queryId' => 42,
+			]
+		);
+
+		$result = Newspack_Popups_Inserter::insert_inline_prompt_in_block_theme_archives( $block_content, $block, $instance );
+
+		self::assertSame( $block_content, $result, 'Secondary Query Loop content is returned unchanged.' );
+	}
+
+	/**
 	 * Block theme archive insertion — non-archive page is untouched.
 	 */
 	public function test_block_theme_archive_insertion_skips_non_archive() {
