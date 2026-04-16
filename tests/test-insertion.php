@@ -508,7 +508,23 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 		);
 
 		self::factory()->post->create_many( 3 );
-		$this->go_to( home_url() );
+
+		$page_on_front  = self::factory()->post->create(
+			[
+				'post_type'  => 'page',
+				'post_title' => 'Front Page',
+			]
+		);
+		$page_for_posts = self::factory()->post->create(
+			[
+				'post_type'  => 'page',
+				'post_title' => 'Blog',
+			]
+		);
+		update_option( 'show_on_front', 'page' );
+		update_option( 'page_on_front', $page_on_front );
+		update_option( 'page_for_posts', $page_for_posts );
+		$this->go_to( get_permalink( $page_for_posts ) );
 
 		ob_start();
 		Newspack_Popups_Inserter::insert_inline_prompt_in_archive_pages( 1 );
