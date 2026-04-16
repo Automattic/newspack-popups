@@ -764,12 +764,25 @@ final class Newspack_Popups_Inserter {
 
 		// $parts[0] is the opening <ul>; $parts[1..n] are the post items.
 		$post_count = count( $parts ) - 1;
-		$output     = $parts[0];
+
+		// The closing </ul> (and any content that follows it) lives in the last part because
+		// preg_split's lookahead puts everything after the final post item there. Strip it off
+		// so that any injected prompt <li> elements are inserted before </ul>, not after it.
+		$trailing = '';
+		$close_ul = strripos( $parts[ $post_count ], '</ul' );
+		if ( false !== $close_ul ) {
+			$trailing            = substr( $parts[ $post_count ], $close_ul );
+			$parts[ $post_count ] = substr( $parts[ $post_count ], 0, $close_ul );
+		}
+
+		$output = $parts[0];
 
 		for ( $i = 1; $i <= $post_count; $i++ ) {
 			$output .= $parts[ $i ];
 			$output .= self::get_inline_prompt_html_for_archive_pages( $i, 'li', $archives_popups );
 		}
+
+		$output .= $trailing;
 
 		return $output;
 	}

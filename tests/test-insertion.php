@@ -521,6 +521,40 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 	}
 
 	/**
+	 * Block theme archive insertion — prompt <li> must stay inside </ul>, not after it.
+	 *
+	 * Regression: preg_split's lookahead left </ul> in the last part, so the injected
+	 * prompt <li> was appended after the closing </ul> tag.
+	 */
+	public function test_block_theme_archive_insertion_prompt_inside_ul() {
+		Newspack_Popups_Model::set_popup_options(
+			self::$popup_id,
+			[
+				'placement'                      => 'archives',
+				'frequency'                      => 'always',
+				'archive_insertion_posts_count'  => 1,
+				'archive_insertion_is_repeating' => true,
+			]
+		);
+
+		$block_content = '<ul class="wp-block-post-template"><li class="wp-block-post post-type-post">Post 1</li><li class="wp-block-post post-type-post">Post 2</li></ul>';
+		$block         = [ 'blockName' => 'core/post-template' ];
+
+		$post_ids = self::factory()->post->create_many( 5 );
+		$this->go_to( home_url() );
+		$GLOBALS['post'] = get_post( end( $post_ids ) ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+
+		$result = Newspack_Popups_Inserter::insert_inline_prompt_in_block_theme_archives( $block_content, $block );
+
+		$pos_close_ul = strpos( $result, '</ul>' );
+		$pos_popup    = strrpos( $result, self::$popup_content );
+
+		self::assertNotFalse( $pos_popup, 'Campaign HTML is present in the output.' );
+		self::assertNotFalse( $pos_close_ul, 'Closing </ul> is present in the output.' );
+		self::assertLessThan( $pos_close_ul, $pos_popup, 'Last campaign insertion appears before </ul>, not after it.' );
+	}
+
+	/**
 	 * Block theme archive insertion — non-archive page is untouched.
 	 */
 	public function test_block_theme_archive_insertion_skips_non_archive() {
