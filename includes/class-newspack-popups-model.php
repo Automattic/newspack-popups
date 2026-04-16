@@ -550,37 +550,37 @@ final class Newspack_Popups_Model {
 			[
 				'name'  => 'category',
 				/* translators: archive page */
-				'label' => __( 'Categories' ),
+				'label' => __( 'Categories', 'newspack-popups' ),
 			],
 			[
 				'name'  => 'tag',
 				/* translators: archive page */
-				'label' => __( 'Tags' ),
+				'label' => __( 'Tags', 'newspack-popups' ),
 			],
 			[
 				'name'  => 'author',
 				/* translators: archive page */
-				'label' => __( 'Authors' ),
+				'label' => __( 'Authors', 'newspack-popups' ),
 			],
 			[
 				'name'  => 'date',
 				/* translators: archive page */
-				'label' => __( 'Date' ),
+				'label' => __( 'Date', 'newspack-popups' ),
 			],
 			[
 				'name'  => 'post-type',
 				/* translators: archive page */
-				'label' => __( 'Custom Post Types' ),
+				'label' => __( 'Custom Post Types', 'newspack-popups' ),
 			],
 			[
 				'name'  => 'taxonomy',
 				/* translators: archive page */
-				'label' => __( 'Taxonomies' ),
+				'label' => __( 'Taxonomies', 'newspack-popups' ),
 			],
 			[
 				'name'  => 'home',
 				/* translators: archive page */
-				'label' => __( 'Posts Page' ),
+				'label' => __( 'Posts Page', 'newspack-popups' ),
 			],
 		];
 	}
