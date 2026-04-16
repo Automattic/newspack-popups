@@ -535,4 +535,96 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 			'Prompt restricted to categories is not inserted on the blog home page.'
 		);
 	}
+
+	/**
+	 * Prompt with 'home' in archive_page_types renders on blog home (is_home()).
+	 */
+	public function test_archive_prompt_rendered_on_home_when_in_page_types() {
+		Newspack_Popups_Model::set_popup_options(
+			self::$popup_id,
+			[
+				'placement'                      => 'archives',
+				'frequency'                      => 'always',
+				'archive_insertion_posts_count'  => 1,
+				'archive_insertion_is_repeating' => false,
+				'archive_page_types'             => [ 'home' ],
+			]
+		);
+
+		self::factory()->post->create_many( 3 );
+
+		$page_on_front  = self::factory()->post->create(
+			[
+				'post_type'  => 'page',
+				'post_title' => 'Front Page',
+			]
+		);
+		$page_for_posts = self::factory()->post->create(
+			[
+				'post_type'  => 'page',
+				'post_title' => 'Blog',
+			]
+		);
+		update_option( 'show_on_front', 'page' );
+		update_option( 'page_on_front', $page_on_front );
+		update_option( 'page_for_posts', $page_for_posts );
+		$this->go_to( get_permalink( $page_for_posts ) );
+
+		ob_start();
+		Newspack_Popups_Inserter::insert_inline_prompt_in_archive_pages( 1 );
+		$output = ob_get_clean();
+
+		self::assertNotEmpty(
+			$output,
+			'Prompt with home in archive_page_types is inserted on the blog home page.'
+		);
+	}
+
+	/**
+	 * Legacy prompt with no archive_page_types meta row is hidden on blog home.
+	 *
+	 * Simulates a prompt created before 'home' was an option: register_meta's
+	 * legacy default (no 'home') must apply so the prompt does not suddenly
+	 * start rendering on the posts page.
+	 */
+	public function test_archive_prompt_skipped_on_home_when_meta_missing() {
+		Newspack_Popups_Model::set_popup_options(
+			self::$popup_id,
+			[
+				'placement'                      => 'archives',
+				'frequency'                      => 'always',
+				'archive_insertion_posts_count'  => 1,
+				'archive_insertion_is_repeating' => false,
+			]
+		);
+		delete_post_meta( self::$popup_id, 'archive_page_types' );
+
+		self::factory()->post->create_many( 3 );
+
+		$page_on_front  = self::factory()->post->create(
+			[
+				'post_type'  => 'page',
+				'post_title' => 'Front Page',
+			]
+		);
+		$page_for_posts = self::factory()->post->create(
+			[
+				'post_type'  => 'page',
+				'post_title' => 'Blog',
+			]
+		);
+		update_option( 'show_on_front', 'page' );
+		update_option( 'page_on_front', $page_on_front );
+		update_option( 'page_for_posts', $page_for_posts );
+		$this->go_to( get_permalink( $page_for_posts ) );
+
+		ob_start();
+		Newspack_Popups_Inserter::insert_inline_prompt_in_archive_pages( 1 );
+		$output = ob_get_clean();
+
+		self::assertEmpty(
+			$output,
+			'Legacy prompt without archive_page_types meta is not inserted on the blog home page.'
+		);
+	}
 }
