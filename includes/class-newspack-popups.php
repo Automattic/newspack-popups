@@ -516,7 +516,10 @@ final class Newspack_Popups {
 					],
 				],
 				'type'           => 'array',
-				'default'        => Newspack_Popups_Model::get_default_popup_archive_page_types(),
+				// Legacy list (no 'home'): the fallback for existing prompts with no meta
+				// row, preserving their pre-existing behavior. New prompts receive the full
+				// default (including 'home') explicitly via popup_default_fields().
+				'default'        => Newspack_Popups_Model::get_legacy_default_archive_page_types(),
 				'single'         => true,
 				'auth_callback'  => '__return_true',
 			]
@@ -946,6 +949,7 @@ final class Newspack_Popups {
 		update_post_meta( $post_id, 'trigger_blocks_count', 3 );
 		update_post_meta( $post_id, 'archive_insertion_posts_count', 0 );
 		update_post_meta( $post_id, 'archive_insertion_is_repeating', false );
+		update_post_meta( $post_id, 'archive_page_types', Newspack_Popups_Model::get_default_popup_archive_page_types() );
 		update_post_meta( $post_id, 'utm_suppression', '' );
 
 		if ( $group ) {

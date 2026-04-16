@@ -483,7 +483,7 @@ final class Newspack_Popups_Model {
 				'archive_insertion_is_repeating' => false,
 				'utm_suppression'                => null,
 				'post_types'                     => self::get_default_popup_post_types(),
-				'archive_page_types'             => self::get_supported_archive_page_types(),
+				'archive_page_types'             => self::get_legacy_default_archive_page_types(),
 				'additional_classes'             => '',
 				'excluded_categories'            => [],
 				'excluded_tags'                  => [],
@@ -633,6 +633,15 @@ final class Newspack_Popups_Model {
 	 */
 	public static function get_default_popup_archive_page_types() {
 		return [ 'home', 'category', 'tag', 'author', 'date', 'post-type', 'taxonomy' ];
+	}
+
+	/**
+	 * Get the fallback archive page types for prompts saved before newer
+	 * options (like 'home') were introduced. Used when a prompt has no
+	 * archive_page_types meta, so it retains its pre-existing behavior.
+	 */
+	public static function get_legacy_default_archive_page_types() {
+		return [ 'category', 'tag', 'author', 'date', 'post-type', 'taxonomy' ];
 	}
 
 	/**
