@@ -629,6 +629,109 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 	}
 
 	/**
+	 * Block theme archive insertion — end-of-list fallback when post count < trigger count.
+	 *
+	 * The fallback path ($archive_insertion_posts_count >= $wp_query->post_count)
+	 * inserts a prompt at the very end of a short list. Verify that the prompt
+	 * still lands inside the <ul>, not after it.
+	 */
+	public function test_block_theme_archive_insertion_end_of_list_fallback() {
+		Newspack_Popups_Model::set_popup_options(
+			self::$popup_id,
+			[
+				'placement'                      => 'archives',
+				'frequency'                      => 'always',
+				'archive_insertion_posts_count'  => 10,
+				'archive_insertion_is_repeating' => false,
+			]
+		);
+
+		$block_content = '<ul class="wp-block-post-template"><li class="wp-block-post post-type-post">Post 1</li><li class="wp-block-post post-type-post">Post 2</li></ul>';
+		$block         = [ 'blockName' => 'core/post-template' ];
+
+		$post_ids = self::factory()->post->create_many( 2 );
+		$this->go_to( home_url() );
+		$GLOBALS['post'] = get_post( end( $post_ids ) ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+
+		// Force post_count to 2 so the fallback path fires
+		// ($archive_insertion_posts_count >= $wp_query->post_count).
+		global $wp_query;
+		$wp_query->post_count = 2;
+
+		$result = Newspack_Popups_Inserter::insert_inline_prompt_in_block_theme_archives( $block_content, $block );
+
+		$pos_popup    = strpos( $result, self::$popup_content );
+		$pos_close_ul = strpos( $result, '</ul>' );
+
+		self::assertNotFalse( $pos_popup, 'Campaign HTML is present via end-of-list fallback.' );
+		self::assertLessThan( $pos_close_ul, $pos_popup, 'End-of-list prompt appears before </ul>.' );
+	}
+
+	/**
+	 * Archive page type gate uses continue, not return — a skipped prompt does not
+	 * suppress subsequent prompts in the same loop iteration.
+	 */
+	public function test_archive_page_type_skip_does_not_suppress_other_prompts() {
+		$cat_id = self::factory()->term->create(
+			[
+				'name'     => 'News',
+				'taxonomy' => 'category',
+				'slug'     => 'news',
+			]
+		);
+
+		// Prompt A: restricted to 'tag' only — should be skipped on a category archive.
+		$popup_a_content = 'Prompt-A-tag-only';
+		$popup_a_id      = self::createPopup(
+			$popup_a_content,
+			[
+				'placement'                      => 'archives',
+				'frequency'                      => 'always',
+				'archive_insertion_posts_count'  => 1,
+				'archive_insertion_is_repeating' => false,
+				'archive_page_types'             => [ 'tag' ],
+			]
+		);
+
+		// Prompt B: restricted to 'category' — should render on a category archive.
+		$popup_b_content = 'Prompt-B-category';
+		$popup_b_id      = self::createPopup(
+			$popup_b_content,
+			[
+				'placement'                      => 'archives',
+				'frequency'                      => 'always',
+				'archive_insertion_posts_count'  => 1,
+				'archive_insertion_is_repeating' => false,
+				'archive_page_types'             => [ 'category' ],
+			]
+		);
+
+		// Remove the default popup so only A and B are active.
+		wp_delete_post( self::$popup_id );
+
+		$post_ids = self::factory()->post->create_many( 3 );
+		foreach ( $post_ids as $pid ) {
+			wp_set_post_terms( $pid, [ $cat_id ], 'category' );
+		}
+
+		$this->go_to( get_category_link( $cat_id ) );
+		$GLOBALS['post'] = get_post( end( $post_ids ) ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+
+		$output = Newspack_Popups_Inserter::get_inline_prompt_html_for_archive_pages( 1, 'li' );
+
+		self::assertStringNotContainsString(
+			$popup_a_content,
+			$output,
+			'Prompt restricted to tags is skipped on a category archive.'
+		);
+		self::assertStringContainsString(
+			$popup_b_content,
+			$output,
+			'Prompt restricted to categories still renders after a prior prompt was skipped.'
+		);
+	}
+
+	/**
 	 * Test tags exclusion has priority over inclusion.
 	 */
 	public function test_tags_exclusion_priority_over_inclusion() {
