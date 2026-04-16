@@ -688,19 +688,19 @@ final class Newspack_Popups_Inserter {
 	 * @return void
 	 */
 	public static function insert_inline_prompt_in_archive_pages( $post_count ) {
-		echo self::get_inline_prompt_html_for_archive_pages( $post_count ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo self::get_inline_prompt_html_for_archive_pages( $post_count, 'article', null, 'class="entry"' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 
 	/**
 	 * Get the HTML for an inline prompt on archive pages.
 	 *
 	 * @param integer $post_count      Order of the post in the posts loop.
-	 * @param string  $wrapper         Opening tag (with any attributes) to wrap the prompt in. Defaults to 'article class="entry"' to match classic theme; pass the post item tag for block themes.
+	 * @param string  $tag             Wrapper element tag name. Defaults to 'article'.
 	 * @param array   $archives_popups Pre-filtered list of archive popups. If null, popups_for_post() is filtered internally.
+	 * @param string  $attrs           Optional HTML attributes string for the wrapper element (e.g. 'class="entry"').
 	 * @return string HTML output, or empty string.
 	 */
-	public static function get_inline_prompt_html_for_archive_pages( $post_count, $wrapper = 'article class="entry"', $archives_popups = null ) {
-		$tag = strtok( $wrapper, ' ' );
+	public static function get_inline_prompt_html_for_archive_pages( $post_count, $tag = 'article', $archives_popups = null, $attrs = '' ) {
 		global $wp_query;
 
 		if ( null === $archives_popups ) {
@@ -727,7 +727,8 @@ final class Newspack_Popups_Inserter {
 				|| ( $popup['options']['archive_insertion_is_repeating'] && 0 === $post_count % $archive_insertion_posts_count )
 				|| ( $archive_insertion_posts_count >= $wp_query->post_count && $post_count === $wp_query->post_count )
 			) {
-				$output .= '<' . $wrapper . '>' . Newspack_Popups_Model::generate_popup( $popup ) . '</' . $tag . '>';
+					$open_tag = ! empty( $attrs ) ? $tag . ' ' . $attrs : $tag;
+				$output  .= '<' . $open_tag . '>' . Newspack_Popups_Model::generate_popup( $popup ) . '</' . $tag . '>';
 			}
 		}
 		return $output;
