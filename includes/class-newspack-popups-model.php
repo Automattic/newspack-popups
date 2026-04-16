@@ -548,6 +548,11 @@ final class Newspack_Popups_Model {
 	public static function get_available_archive_page_types() {
 		return [
 			[
+				'name'  => 'home',
+				/* translators: archive page */
+				'label' => __( 'Blog Home / Posts Page' ),
+			],
+			[
 				'name'  => 'category',
 				/* translators: archive page */
 				'label' => __( 'Categories' ),
@@ -627,7 +632,7 @@ final class Newspack_Popups_Model {
 	 * Get the default supported archive page types.
 	 */
 	public static function get_default_popup_archive_page_types() {
-		return [ 'category', 'tag', 'author', 'date', 'post-type', 'taxonomy' ];
+		return [ 'home', 'category', 'tag', 'author', 'date', 'post-type', 'taxonomy' ];
 	}
 
 	/**

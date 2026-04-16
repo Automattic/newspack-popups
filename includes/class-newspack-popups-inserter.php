@@ -691,15 +691,16 @@ final class Newspack_Popups_Inserter {
 
 		$archives_popups = array_filter( self::popups_for_post(), [ 'Newspack_Popups_Model', 'should_be_inserted_in_archive_pages' ] );
 		foreach ( $archives_popups as $popup ) {
-			// insert popup only on selected archive page types.
-			if ( is_category() && ! in_array( 'category', $popup['options']['archive_page_types'] )
-				|| ( is_tag() && ! in_array( 'tag', $popup['options']['archive_page_types'] ) ) // phpcs:ignore Generic.CodeAnalysis.RequireExplicitBooleanOperatorPrecedence.MissingParentheses
-				|| ( is_author() && ! in_array( 'author', $popup['options']['archive_page_types'] ) )
-				|| ( is_date() && ! in_array( 'date', $popup['options']['archive_page_types'] ) )
-				|| ( is_post_type_archive() && ! in_array( 'post-type', $popup['options']['archive_page_types'] ) )
-				|| ( is_tax() && ! in_array( 'taxonomy', $popup['options']['archive_page_types'] ) )
+			$page_types = $popup['options']['archive_page_types'];
+			if ( ( is_home() && ! in_array( 'home', $page_types ) )
+				|| ( is_category() && ! in_array( 'category', $page_types ) )
+				|| ( is_tag() && ! in_array( 'tag', $page_types ) )
+				|| ( is_author() && ! in_array( 'author', $page_types ) )
+				|| ( is_date() && ! in_array( 'date', $page_types ) )
+				|| ( is_post_type_archive() && ! in_array( 'post-type', $page_types ) )
+				|| ( is_tax() && ! in_array( 'taxonomy', $page_types ) )
 			) {
-					return;
+				continue;
 			}
 
 			$archive_insertion_posts_count = intval( $popup['options']['archive_insertion_posts_count'] );
