@@ -548,11 +548,6 @@ final class Newspack_Popups_Model {
 	public static function get_available_archive_page_types() {
 		return [
 			[
-				'name'  => 'home',
-				/* translators: archive page */
-				'label' => __( 'Blog Home / Posts Page' ),
-			],
-			[
 				'name'  => 'category',
 				/* translators: archive page */
 				'label' => __( 'Categories' ),
@@ -581,6 +576,11 @@ final class Newspack_Popups_Model {
 				'name'  => 'taxonomy',
 				/* translators: archive page */
 				'label' => __( 'Taxonomies' ),
+			],
+			[
+				'name'  => 'home',
+				/* translators: archive page */
+				'label' => __( 'Posts Page' ),
 			],
 		];
 	}
