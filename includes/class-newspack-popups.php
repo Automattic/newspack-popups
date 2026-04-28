@@ -826,15 +826,20 @@ final class Newspack_Popups {
 	}
 
 	/**
-	 * Is it a preview request – a single popup preview or using "view as" feature.
+	 * Is it a preview request ? a single popup preview or using "view as" feature.
 	 *
 	 * @return boolean Whether it's a preview request.
 	 */
 	public static function is_preview_request() {
+		static $result = null;
+		if ( null !== $result ) {
+			return $result;
+		}
 		$is_customizer_preview = is_customize_preview();
 		// Used by the Newspack Plugin's Campaigns Wizard.
 		$is_view_as_preview = false != Newspack_Popups_View_As::viewing_as_spec();
-		return ! empty( self::previewed_popup_id() ) || ! empty( self::preset_popup_id() ) || $is_view_as_preview || $is_customizer_preview;
+		$result = ! empty( self::previewed_popup_id() ) || ! empty( self::preset_popup_id() ) || $is_view_as_preview || $is_customizer_preview;
+		return $result;
 	}
 
 	/**
@@ -963,6 +968,10 @@ final class Newspack_Popups {
 	 * will not be fired for them.
 	 */
 	public static function is_user_admin() {
+		static $result = null;
+		if ( null !== $result ) {
+			return $result;
+		}
 		/**
 		 * Filter to allow other plugins to decide which capability should be checked
 		 * to determine whether a user's activity should be tracked via Google Analytics.
@@ -971,7 +980,8 @@ final class Newspack_Popups {
 		 * @return string Filtered capability string.
 		 */
 		$capability = apply_filters( 'newspack_popups_admin_user_capability', 'edit_others_pages' );
-		return is_user_logged_in() && current_user_can( $capability );
+		$result     = is_user_logged_in() && current_user_can( $capability );
+		return $result;
 	}
 
 	/**
