@@ -37,12 +37,20 @@ final class Newspack_Popups_View_As {
 	 * @return string "View as" specification.
 	 */
 	public static function viewing_as_spec() {
+		static $result = null;
+		if ( null !== $result ) {
+			return $result;
+		}
 		if ( ! Newspack_Popups::is_user_admin() ) {
-			return false;
+			$result = false;
+			return $result;
 		}
 		if ( isset( $_GET['view_as'] ) && $_GET['view_as'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-			return sanitize_text_field( $_GET['view_as'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$result = sanitize_text_field( $_GET['view_as'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return $result;
 		}
+		$result = false;
+		return $result;
 	}
 
 	/**
