@@ -113,8 +113,9 @@ export const getEditorDocument = () => {
  * Calls `callback` once the editor canvas is available and returns a cleanup
  * function suitable for use as a useEffect return value. Handles three cases:
  *
- * 1. Editor already rendered (WP 6.9 non-iframe, or iframe already loaded) —
- *    calls the callback immediately.
+ * 1. Editor-canvas iframe exists and is fully loaded, or (WP 6.9 fallback) the
+ *    non-iframe editor is already rendered in the parent document — calls the
+ *    callback immediately.
  * 2. Editor-canvas iframe exists but has not finished loading — waits for the
  *    load event, then calls the callback.
  * 3. Editor-canvas iframe has not been inserted yet — observes the DOM for its
@@ -127,22 +128,22 @@ export const getEditorDocument = () => {
  * @return {Function} Cleanup function that removes any pending listeners/observers.
  */
 export const whenEditorReady = callback => {
-	// Case 1: editor already rendered (.editor-styles-wrapper present in current doc).
-	if ( getEditorDocument().querySelector( '.editor-styles-wrapper' ) ) {
-		callback();
-		return () => {};
-	}
-
 	const iframe = document.querySelector( 'iframe[name="editor-canvas"]' );
 	if ( iframe ) {
+		// Case 1: iframe exists and is fully loaded.
 		if ( iframe.contentDocument?.readyState === 'complete' ) {
-			// Case 1b: iframe exists and is fully loaded.
 			callback();
 			return () => {};
 		}
 		// Case 2: iframe exists but hasn't finished loading.
 		iframe.addEventListener( 'load', callback, { once: true } );
 		return () => iframe.removeEventListener( 'load', callback );
+	}
+
+	// WP 6.9 fallback: no iframe, editor renders directly in the parent document.
+	if ( document.querySelector( '.editor-styles-wrapper' ) ) {
+		callback();
+		return () => {};
 	}
 
 	// Case 3: iframe hasn't been inserted yet — watch for it.
