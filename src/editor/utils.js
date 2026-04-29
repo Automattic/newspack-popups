@@ -93,6 +93,8 @@ const hexToRGB = hex =>
 		.match( /.{2}/g )
 		.map( x => parseInt( x, 16 ) );
 
+const EDITOR_CANVAS_SELECTOR = 'iframe[name="editor-canvas"]';
+
 /**
  * Get the document context for the block editor. In WordPress 7.0+, the editor
  * canvas is rendered inside an iframe, so querySelector on the parent document
@@ -105,7 +107,7 @@ const hexToRGB = hex =>
  * @return {Document} The editor's document context.
  */
 export const getEditorDocument = () => {
-	const iframe = document.querySelector( 'iframe[name="editor-canvas"]' );
+	const iframe = document.querySelector( EDITOR_CANVAS_SELECTOR );
 	return iframe?.contentDocument ?? document; // TODO: Remove `?? document` fallback when WP 6.9 support is dropped.
 };
 
@@ -135,7 +137,7 @@ export const getEditorDocument = () => {
  * @return {Function} Cleanup function that removes any pending listeners/observers.
  */
 export const whenEditorReady = callback => {
-	const iframe = document.querySelector( 'iframe[name="editor-canvas"]' );
+	const iframe = document.querySelector( EDITOR_CANVAS_SELECTOR );
 	if ( iframe ) {
 		// Case 1: iframe exists and is fully loaded.
 		if ( iframe.contentDocument?.readyState === 'complete' ) {
@@ -156,7 +158,7 @@ export const whenEditorReady = callback => {
 	// Case 3: iframe hasn't been inserted yet — watch for it.
 	let capturedIframe = null;
 	const observer = new MutationObserver( () => {
-		const newIframe = document.querySelector( 'iframe[name="editor-canvas"]' );
+		const newIframe = document.querySelector( EDITOR_CANVAS_SELECTOR );
 		if ( newIframe ) {
 			observer.disconnect();
 			capturedIframe = newIframe;
