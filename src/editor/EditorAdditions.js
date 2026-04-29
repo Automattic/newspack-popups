@@ -31,6 +31,8 @@ const EditorAdditions = () => {
 	// Apply the initial color once the editor canvas is ready. In WP 7.0+ the
 	// canvas is an iframe that may not be loaded when the component first mounts,
 	// so the color-picker effect above fires before the elements exist.
+	// Deps are intentionally empty so the readiness listener isn't re-registered
+	// on every colour change — the ref above captures the latest value.
 	useEffect( () => {
 		return whenEditorReady( () => updateEditorColors( backgroundColorRef.current ) );
 	}, [] ); // eslint-disable-line react-hooks/exhaustive-deps
