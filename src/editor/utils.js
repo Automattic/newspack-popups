@@ -121,6 +121,13 @@ export const getEditorDocument = () => {
  * 3. Editor-canvas iframe has not been inserted yet — observes the DOM for its
  *    insertion, then waits for its load event.
  *
+ * Limitation: only fires once per call. If Gutenberg later unmounts and
+ * remounts the canvas iframe (e.g. toggling code-editor or fullscreen), the
+ * new iframe won't get the callback applied — EditorAdditions stays mounted
+ * as a top-level slot fill, so its effects don't re-run on swap. In practice
+ * the dependent effects in EditorAdditions reapply the glue whenever
+ * `background_color`, `overlay_size`, or `placement` change.
+ *
  * TODO: Once WP 6.9 is no longer supported this can be simplified to cases 2/3
  * only (the iframe is always used for the editor canvas).
  *
