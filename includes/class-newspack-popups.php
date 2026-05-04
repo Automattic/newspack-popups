@@ -516,6 +516,7 @@ final class Newspack_Popups {
 					],
 				],
 				'type'           => 'array',
+				// Must match the wp_parse_args fallback in Newspack_Popups_Model::create_popup_options().
 				'default'        => Newspack_Popups_Model::get_archive_page_types_meta_default(),
 				'single'         => true,
 				'auth_callback'  => '__return_true',
