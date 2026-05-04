@@ -39,6 +39,6 @@
 		"newspack-components": "^4.3.0"
 	},
 	"devDependencies": {
-		"newspack-scripts": "^5.9.5"
+		"newspack-scripts": "^5.9.7"
 	}
 }
