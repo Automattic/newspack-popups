@@ -516,10 +516,7 @@ final class Newspack_Popups {
 					],
 				],
 				'type'           => 'array',
-				// Legacy list (no 'home'): the fallback for existing prompts with no meta
-				// row, preserving their pre-existing behavior. New prompts receive the full
-				// default (including 'home') explicitly via popup_default_fields().
-				'default'        => Newspack_Popups_Model::get_legacy_default_archive_page_types(),
+				'default'        => Newspack_Popups_Model::get_archive_page_types_meta_default(),
 				'single'         => true,
 				'auth_callback'  => '__return_true',
 			]

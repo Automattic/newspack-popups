@@ -483,7 +483,7 @@ final class Newspack_Popups_Model {
 				'archive_insertion_is_repeating' => false,
 				'utm_suppression'                => null,
 				'post_types'                     => self::get_default_popup_post_types(),
-				'archive_page_types'             => self::get_legacy_default_archive_page_types(),
+				'archive_page_types'             => self::get_archive_page_types_meta_default(),
 				'additional_classes'             => '',
 				'excluded_categories'            => [],
 				'excluded_tags'                  => [],
@@ -636,12 +636,22 @@ final class Newspack_Popups_Model {
 	}
 
 	/**
-	 * Get the fallback archive page types for prompts saved before newer
-	 * options (like 'home') were introduced. Used when a prompt has no
-	 * archive_page_types meta, so it retains its pre-existing behavior.
+	 * Default value for the `archive_page_types` meta when a prompt has no
+	 * stored value.
+	 *
+	 * Returns the full default set minus opt-in additions (like 'home') so that
+	 * prompts created before a new page type was introduced keep their
+	 * pre-existing behavior — adding a new page type should never retroactively
+	 * widen where existing prompts render.
+	 *
+	 * Two call sites must stay in sync; both should keep calling this method
+	 * rather than inlining a value:
+	 *   - The `default` for the `archive_page_types` register_meta() call in
+	 *     Newspack_Popups::register_meta() (class-newspack-popups.php).
+	 *   - The wp_parse_args fallback in self::create_popup_options() above.
 	 */
-	public static function get_legacy_default_archive_page_types() {
-		return [ 'category', 'tag', 'author', 'date', 'post-type', 'taxonomy' ];
+	public static function get_archive_page_types_meta_default() {
+		return array_values( array_diff( self::get_default_popup_archive_page_types(), [ 'home' ] ) );
 	}
 
 	/**
