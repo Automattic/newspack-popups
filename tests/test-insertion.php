@@ -438,6 +438,300 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 	}
 
 	/**
+	 * Block theme archive insertion — inserts after Nth post item.
+	 */
+	public function test_block_theme_archive_insertion_basic() {
+		Newspack_Popups_Model::set_popup_options(
+			self::$popup_id,
+			[
+				'placement'                      => 'archives',
+				'frequency'                      => 'always',
+				'archive_insertion_posts_count'  => 2,
+				'archive_insertion_is_repeating' => false,
+			]
+		);
+
+		$block_content = '
+			<ul class="wp-block-post-template">
+				<li class="wp-block-post post-type-post">Post 1 content</li>
+				<li class="wp-block-post post-type-post">Post 2 content</li>
+				<li class="wp-block-post post-type-post">Post 3 content</li>
+			</ul>';
+
+		$block = [ 'blockName' => 'core/post-template' ];
+
+		// Create enough posts so $wp_query->post_count > archive_insertion_posts_count (2),
+		// preventing the end-of-list fallback from firing in unexpected positions.
+		$post_ids = self::factory()->post->create_many( 5 );
+
+		// Navigate to the blog home page (is_home() = true). This avoids any
+		// archive_page_types early-return since is_category() etc. are false on is_home().
+		$this->go_to( home_url() );
+
+		// Set up a post in the global context — simulates the state after the Query Loop
+		// block finishes rendering (global $post = last post in the loop).
+		$GLOBALS['post'] = get_post( end( $post_ids ) ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+
+		$result = Newspack_Popups_Inserter::insert_inline_prompt_in_block_theme_archives( $block_content, $block );
+
+		$pos_post2 = strpos( $result, 'Post 2 content' );
+		$pos_popup = strpos( $result, self::$popup_content );
+		$pos_post3 = strpos( $result, 'Post 3 content' );
+
+		self::assertNotFalse( $pos_popup, 'Campaign HTML is present in the output.' );
+		self::assertGreaterThan( $pos_post2, $pos_popup, 'Campaign appears after post 2.' );
+		self::assertLessThan( $pos_post3, $pos_popup, 'Campaign appears before post 3.' );
+	}
+
+	/**
+	 * Block theme archive insertion — repeating every N posts.
+	 */
+	public function test_block_theme_archive_insertion_repeating() {
+		Newspack_Popups_Model::set_popup_options(
+			self::$popup_id,
+			[
+				'placement'                      => 'archives',
+				'frequency'                      => 'always',
+				'archive_insertion_posts_count'  => 2,
+				'archive_insertion_is_repeating' => true,
+			]
+		);
+
+		$block_content = '
+			<ul class="wp-block-post-template">
+				<li class="wp-block-post post-type-post">Post 1</li>
+				<li class="wp-block-post post-type-post">Post 2</li>
+				<li class="wp-block-post post-type-post">Post 3</li>
+				<li class="wp-block-post post-type-post">Post 4</li>
+			</ul>';
+
+		$block = [ 'blockName' => 'core/post-template' ];
+
+		$post_ids = self::factory()->post->create_many( 5 );
+		$this->go_to( home_url() );
+		$GLOBALS['post'] = get_post( end( $post_ids ) ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+
+		$result = Newspack_Popups_Inserter::insert_inline_prompt_in_block_theme_archives( $block_content, $block );
+
+		self::assertSame(
+			2,
+			substr_count( $result, self::$popup_content ),
+			'Campaign appears twice in repeating mode (after posts 2 and 4).'
+		);
+	}
+
+	/**
+	 * Block theme archive insertion — prompt <li> must stay inside </ul>, not after it.
+	 *
+	 * Regression: preg_split's lookahead left </ul> in the last part, so the injected
+	 * prompt <li> was appended after the closing </ul> tag.
+	 */
+	public function test_block_theme_archive_insertion_prompt_inside_ul() {
+		Newspack_Popups_Model::set_popup_options(
+			self::$popup_id,
+			[
+				'placement'                      => 'archives',
+				'frequency'                      => 'always',
+				'archive_insertion_posts_count'  => 1,
+				'archive_insertion_is_repeating' => true,
+			]
+		);
+
+		$block_content = '<ul class="wp-block-post-template"><li class="wp-block-post post-type-post">Post 1</li><li class="wp-block-post post-type-post">Post 2</li></ul>';
+		$block         = [ 'blockName' => 'core/post-template' ];
+
+		$post_ids = self::factory()->post->create_many( 5 );
+		$this->go_to( home_url() );
+		$GLOBALS['post'] = get_post( end( $post_ids ) ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+
+		$result = Newspack_Popups_Inserter::insert_inline_prompt_in_block_theme_archives( $block_content, $block );
+
+		$pos_close_ul = strpos( $result, '</ul>' );
+		$pos_popup    = strrpos( $result, self::$popup_content );
+
+		self::assertNotFalse( $pos_popup, 'Campaign HTML is present in the output.' );
+		self::assertNotFalse( $pos_close_ul, 'Closing </ul> is present in the output.' );
+		self::assertLessThan( $pos_close_ul, $pos_popup, 'Last campaign insertion appears before </ul>, not after it.' );
+	}
+
+	/**
+	 * Block theme archive insertion — secondary (non-inherited) Query Loops are skipped.
+	 */
+	public function test_block_theme_archive_insertion_skips_secondary_query_loop() {
+		Newspack_Popups_Model::set_popup_options(
+			self::$popup_id,
+			[
+				'placement'                      => 'archives',
+				'frequency'                      => 'always',
+				'archive_insertion_posts_count'  => 1,
+				'archive_insertion_is_repeating' => false,
+			]
+		);
+
+		$block_content = '<ul class="wp-block-post-template"><li class="wp-block-post post-type-post">Post 1</li></ul>';
+		$block         = [ 'blockName' => 'core/post-template' ];
+
+		$post_ids = self::factory()->post->create_many( 3 );
+		$this->go_to( home_url() );
+		$GLOBALS['post'] = get_post( end( $post_ids ) ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+
+		// Simulate a secondary Query Loop (inherit=false, custom queryId).
+		$instance = new WP_Block(
+			$block,
+			[
+				'query'   => [ 'inherit' => false ],
+				'queryId' => 42,
+			]
+		);
+
+		$result = Newspack_Popups_Inserter::insert_inline_prompt_in_block_theme_archives( $block_content, $block, $instance );
+
+		self::assertSame( $block_content, $result, 'Secondary Query Loop content is returned unchanged.' );
+	}
+
+	/**
+	 * Block theme archive insertion — non-archive page is untouched.
+	 */
+	public function test_block_theme_archive_insertion_skips_non_archive() {
+		Newspack_Popups_Model::set_popup_options(
+			self::$popup_id,
+			[
+				'placement'                      => 'archives',
+				'frequency'                      => 'always',
+				'archive_insertion_posts_count'  => 1,
+				'archive_insertion_is_repeating' => false,
+			]
+		);
+
+		$block_content = '<ul class="wp-block-post-template"><li class="wp-block-post">Post 1</li></ul>';
+		$block         = [ 'blockName' => 'core/post-template' ];
+
+		$post_id = self::factory()->post->create();
+		$this->go_to( get_permalink( $post_id ) );
+
+		$result = Newspack_Popups_Inserter::insert_inline_prompt_in_block_theme_archives( $block_content, $block );
+
+		self::assertSame( $block_content, $result, 'Block content is unchanged on a single post page.' );
+	}
+
+	/**
+	 * Block theme archive insertion — non-post-template block is untouched.
+	 */
+	public function test_block_theme_archive_insertion_skips_other_blocks() {
+		$block_content = '<p>Some paragraph</p>';
+		$block         = [ 'blockName' => 'core/paragraph' ];
+
+		$this->go_to( home_url() );
+
+		$result = Newspack_Popups_Inserter::insert_inline_prompt_in_block_theme_archives( $block_content, $block );
+
+		self::assertSame( $block_content, $result, 'Non-post-template block content is returned unchanged.' );
+	}
+
+	/**
+	 * Block theme archive insertion — end-of-list fallback when post count < trigger count.
+	 *
+	 * The fallback path ($archive_insertion_posts_count >= $wp_query->post_count)
+	 * inserts a prompt at the very end of a short list. Verify that the prompt
+	 * still lands inside the <ul>, not after it.
+	 */
+	public function test_block_theme_archive_insertion_end_of_list_fallback() {
+		Newspack_Popups_Model::set_popup_options(
+			self::$popup_id,
+			[
+				'placement'                      => 'archives',
+				'frequency'                      => 'always',
+				'archive_insertion_posts_count'  => 10,
+				'archive_insertion_is_repeating' => false,
+			]
+		);
+
+		$block_content = '<ul class="wp-block-post-template"><li class="wp-block-post post-type-post">Post 1</li><li class="wp-block-post post-type-post">Post 2</li></ul>';
+		$block         = [ 'blockName' => 'core/post-template' ];
+
+		$post_ids = self::factory()->post->create_many( 2 );
+		$this->go_to( home_url() );
+		$GLOBALS['post'] = get_post( end( $post_ids ) ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+
+		// Force post_count to 2 so the fallback path fires
+		// ($archive_insertion_posts_count >= $wp_query->post_count).
+		global $wp_query;
+		$wp_query->post_count = 2;
+
+		$result = Newspack_Popups_Inserter::insert_inline_prompt_in_block_theme_archives( $block_content, $block );
+
+		$pos_popup    = strpos( $result, self::$popup_content );
+		$pos_close_ul = strpos( $result, '</ul>' );
+
+		self::assertNotFalse( $pos_popup, 'Campaign HTML is present via end-of-list fallback.' );
+		self::assertLessThan( $pos_close_ul, $pos_popup, 'End-of-list prompt appears before </ul>.' );
+	}
+
+	/**
+	 * Archive page type gate uses continue, not return — a skipped prompt does not
+	 * suppress subsequent prompts in the same loop iteration.
+	 */
+	public function test_archive_page_type_skip_does_not_suppress_other_prompts() {
+		$cat_id = self::factory()->term->create(
+			[
+				'name'     => 'News',
+				'taxonomy' => 'category',
+				'slug'     => 'news',
+			]
+		);
+
+		// Prompt A: restricted to 'tag' only — should be skipped on a category archive.
+		$popup_a_content = 'Prompt-A-tag-only';
+		$popup_a_id      = self::createPopup(
+			$popup_a_content,
+			[
+				'placement'                      => 'archives',
+				'frequency'                      => 'always',
+				'archive_insertion_posts_count'  => 1,
+				'archive_insertion_is_repeating' => false,
+				'archive_page_types'             => [ 'tag' ],
+			]
+		);
+
+		// Prompt B: restricted to 'category' — should render on a category archive.
+		$popup_b_content = 'Prompt-B-category';
+		$popup_b_id      = self::createPopup(
+			$popup_b_content,
+			[
+				'placement'                      => 'archives',
+				'frequency'                      => 'always',
+				'archive_insertion_posts_count'  => 1,
+				'archive_insertion_is_repeating' => false,
+				'archive_page_types'             => [ 'category' ],
+			]
+		);
+
+		// Remove the default popup so only A and B are active.
+		wp_delete_post( self::$popup_id );
+
+		$post_ids = self::factory()->post->create_many( 3 );
+		foreach ( $post_ids as $pid ) {
+			wp_set_post_terms( $pid, [ $cat_id ], 'category' );
+		}
+
+		$this->go_to( get_category_link( $cat_id ) );
+		$GLOBALS['post'] = get_post( end( $post_ids ) ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+
+		$output = Newspack_Popups_Inserter::get_inline_prompt_html_for_archive_pages( 1, 'li' );
+
+		self::assertStringNotContainsString(
+			$popup_a_content,
+			$output,
+			'Prompt restricted to tags is skipped on a category archive.'
+		);
+		self::assertStringContainsString(
+			$popup_b_content,
+			$output,
+			'Prompt restricted to categories still renders after a prior prompt was skipped.'
+		);
+	}
+
+	/**
 	 * Test tags exclusion has priority over inclusion.
 	 */
 	public function test_tags_exclusion_priority_over_inclusion() {
