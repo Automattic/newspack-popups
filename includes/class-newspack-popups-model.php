@@ -579,7 +579,7 @@ final class Newspack_Popups_Model {
 			],
 			[
 				'name'  => 'home',
-				/* translators: archive page */
+				/* translators: the "Posts page" configured under Settings > Reading when a static front page is set. */
 				'label' => __( 'Posts Page', 'newspack-popups' ),
 			],
 		];
