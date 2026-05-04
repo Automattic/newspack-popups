@@ -493,20 +493,11 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 	}
 
 	/**
-	 * Prompt restricted to categories does not appear on blog home (is_home()).
+	 * Configure a static front page with a separate posts page and navigate to it.
+	 *
+	 * @return int ID of the posts page.
 	 */
-	public function test_archive_prompt_skipped_on_home_when_not_in_page_types() {
-		Newspack_Popups_Model::set_popup_options(
-			self::$popup_id,
-			[
-				'placement'                      => 'archives',
-				'frequency'                      => 'always',
-				'archive_insertion_posts_count'  => 1,
-				'archive_insertion_is_repeating' => false,
-				'archive_page_types'             => [ 'category' ],
-			]
-		);
-
+	private function go_to_posts_page() {
 		self::factory()->post->create_many( 3 );
 
 		$page_on_front  = self::factory()->post->create(
@@ -525,6 +516,28 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 		update_option( 'page_on_front', $page_on_front );
 		update_option( 'page_for_posts', $page_for_posts );
 		$this->go_to( get_permalink( $page_for_posts ) );
+
+		return $page_for_posts;
+	}
+
+	/**
+	 * Prompt restricted to categories does not appear on blog home (is_home()).
+	 */
+	public function test_archive_prompt_skipped_on_home_when_not_in_page_types() {
+		// Remove the default popup so only the test fixture renders.
+		wp_delete_post( self::$popup_id );
+		self::createPopup(
+			null,
+			[
+				'placement'                      => 'archives',
+				'frequency'                      => 'always',
+				'archive_insertion_posts_count'  => 1,
+				'archive_insertion_is_repeating' => false,
+				'archive_page_types'             => [ 'category' ],
+			]
+		);
+
+		$this->go_to_posts_page();
 
 		ob_start();
 		Newspack_Popups_Inserter::insert_inline_prompt_in_archive_pages( 1 );
@@ -540,8 +553,10 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 	 * Prompt with 'home' in archive_page_types renders on blog home (is_home()).
 	 */
 	public function test_archive_prompt_rendered_on_home_when_in_page_types() {
-		Newspack_Popups_Model::set_popup_options(
-			self::$popup_id,
+		// Remove the default popup so only the test fixture renders.
+		wp_delete_post( self::$popup_id );
+		self::createPopup(
+			null,
 			[
 				'placement'                      => 'archives',
 				'frequency'                      => 'always',
@@ -551,24 +566,7 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 			]
 		);
 
-		self::factory()->post->create_many( 3 );
-
-		$page_on_front  = self::factory()->post->create(
-			[
-				'post_type'  => 'page',
-				'post_title' => 'Front Page',
-			]
-		);
-		$page_for_posts = self::factory()->post->create(
-			[
-				'post_type'  => 'page',
-				'post_title' => 'Blog',
-			]
-		);
-		update_option( 'show_on_front', 'page' );
-		update_option( 'page_on_front', $page_on_front );
-		update_option( 'page_for_posts', $page_for_posts );
-		$this->go_to( get_permalink( $page_for_posts ) );
+		$this->go_to_posts_page();
 
 		ob_start();
 		Newspack_Popups_Inserter::insert_inline_prompt_in_archive_pages( 1 );
@@ -588,8 +586,10 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 	 * start rendering on the posts page.
 	 */
 	public function test_archive_prompt_skipped_on_home_when_meta_missing() {
-		Newspack_Popups_Model::set_popup_options(
-			self::$popup_id,
+		// Remove the default popup so only the test fixture renders.
+		wp_delete_post( self::$popup_id );
+		$popup_id = self::createPopup(
+			null,
 			[
 				'placement'                      => 'archives',
 				'frequency'                      => 'always',
@@ -597,26 +597,9 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 				'archive_insertion_is_repeating' => false,
 			]
 		);
-		delete_post_meta( self::$popup_id, 'archive_page_types' );
+		delete_post_meta( $popup_id, 'archive_page_types' );
 
-		self::factory()->post->create_many( 3 );
-
-		$page_on_front  = self::factory()->post->create(
-			[
-				'post_type'  => 'page',
-				'post_title' => 'Front Page',
-			]
-		);
-		$page_for_posts = self::factory()->post->create(
-			[
-				'post_type'  => 'page',
-				'post_title' => 'Blog',
-			]
-		);
-		update_option( 'show_on_front', 'page' );
-		update_option( 'page_on_front', $page_on_front );
-		update_option( 'page_for_posts', $page_for_posts );
-		$this->go_to( get_permalink( $page_for_posts ) );
+		$this->go_to_posts_page();
 
 		ob_start();
 		Newspack_Popups_Inserter::insert_inline_prompt_in_archive_pages( 1 );
