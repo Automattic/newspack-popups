@@ -286,8 +286,8 @@ final class Newspack_Popups_Model {
 	/**
 	 * Retrieve popup preview CPT post.
 	 *
-	 * @param string $post_id Post id.
-	 * @return object|null Popup object, or null if the post id does not resolve to a post.
+	 * @param int|string $post_id Post id. Often a query-parameter string.
+	 * @return array|null Popup object array, or null if the post id does not resolve to a post.
 	 */
 	public static function retrieve_preview_popup( $post_id ) {
 		// Up-to-date post data is stored in an autosave.
