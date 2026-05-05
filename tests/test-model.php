@@ -238,6 +238,24 @@ class ModelTest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Tests retrieve_preview_popup with a post id that does not resolve to a post.
+	 *
+	 * Production sites get hit with bot traffic carrying garbage `pp` query params,
+	 * which previously fataled at `$post_object->ID = $post_id` when both
+	 * wp_get_post_autosave() and get_post() returned null.
+	 */
+	public function test_retrieve_preview_popup_with_invalid_id() {
+		self::assertNull(
+			Newspack_Popups_Model::retrieve_preview_popup( 'definitely-not-a-post-id' ),
+			'Invalid preview ids return null instead of fataling.'
+		);
+		self::assertNull(
+			Newspack_Popups_Model::retrieve_preview_popup( 999999999 ),
+			'Numeric ids that do not match any post return null.'
+		);
+	}
+
+	/**
 	 * Tests fetching default settings.
 	 */
 	public function test_settings() {
