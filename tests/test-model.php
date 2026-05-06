@@ -256,6 +256,23 @@ class ModelTest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Tests that an invalid `pp` query param does not produce a popup list with null entries,
+	 * which would cascade to "Trying to access array offset on null" warnings downstream.
+	 */
+	public function test_popups_for_post_with_invalid_preview_id() {
+		$_GET['pp'] = 'definitely-not-a-post-id';
+		try {
+			self::assertSame(
+				[],
+				Newspack_Popups_Inserter::popups_for_post(),
+				'Invalid preview ids result in an empty popup list, not [ null ].'
+			);
+		} finally {
+			unset( $_GET['pp'] );
+		}
+	}
+
+	/**
 	 * Tests fetching default settings.
 	 */
 	public function test_settings() {
