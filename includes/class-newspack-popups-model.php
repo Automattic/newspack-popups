@@ -286,13 +286,16 @@ final class Newspack_Popups_Model {
 	/**
 	 * Retrieve popup preview CPT post.
 	 *
-	 * @param string $post_id Post id.
-	 * @return object Popup object.
+	 * @param int|string $post_id Post id. Often a query-parameter string.
+	 * @return array|null Popup object array, or null if the post id does not resolve to a post.
 	 */
 	public static function retrieve_preview_popup( $post_id ) {
 		// Up-to-date post data is stored in an autosave.
 		$autosave    = wp_get_post_autosave( $post_id );
 		$post_object = $autosave ? $autosave : get_post( $post_id );
+		if ( ! $post_object ) {
+			return null;
+		}
 		// Setting proper id for correct API calls.
 		$post_object->ID = $post_id;
 
@@ -1094,7 +1097,10 @@ final class Newspack_Popups_Model {
 
 		// If previewing a single prompt, override saved settings with preview settings. Allow manual and custom placement prompts to be displayed as usual.
 		if ( $previewed_popup_id && ( ! $is_manual_or_custom_placement || $popup['id'] === $previewed_popup_id ) ) {
-			$popup = self::retrieve_preview_popup( $previewed_popup_id );
+			$preview_popup = self::retrieve_preview_popup( $previewed_popup_id );
+			if ( $preview_popup ) {
+				$popup = $preview_popup;
+			}
 		}
 		if ( Newspack_Popups::preset_popup_id() ) {
 			$popup = Newspack_Popups_Presets::retrieve_preset_popup( Newspack_Popups::preset_popup_id() );
