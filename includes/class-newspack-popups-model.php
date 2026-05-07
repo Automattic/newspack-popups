@@ -286,13 +286,16 @@ final class Newspack_Popups_Model {
 	/**
 	 * Retrieve popup preview CPT post.
 	 *
-	 * @param string $post_id Post id.
-	 * @return object Popup object.
+	 * @param int|string $post_id Post id. Often a query-parameter string.
+	 * @return array|null Popup object array, or null if the post id does not resolve to a post.
 	 */
 	public static function retrieve_preview_popup( $post_id ) {
 		// Up-to-date post data is stored in an autosave.
 		$autosave    = wp_get_post_autosave( $post_id );
 		$post_object = $autosave ? $autosave : get_post( $post_id );
+		if ( ! $post_object ) {
+			return null;
+		}
 		// Setting proper id for correct API calls.
 		$post_object->ID = $post_id;
 
@@ -483,7 +486,7 @@ final class Newspack_Popups_Model {
 				'archive_insertion_is_repeating' => false,
 				'utm_suppression'                => null,
 				'post_types'                     => self::get_default_popup_post_types(),
-				'archive_page_types'             => self::get_supported_archive_page_types(),
+				'archive_page_types'             => self::get_archive_page_types_meta_default(),
 				'additional_classes'             => '',
 				'excluded_categories'            => [],
 				'excluded_tags'                  => [],
@@ -550,32 +553,37 @@ final class Newspack_Popups_Model {
 			[
 				'name'  => 'category',
 				/* translators: archive page */
-				'label' => __( 'Categories' ),
+				'label' => __( 'Categories', 'newspack-popups' ),
 			],
 			[
 				'name'  => 'tag',
 				/* translators: archive page */
-				'label' => __( 'Tags' ),
+				'label' => __( 'Tags', 'newspack-popups' ),
 			],
 			[
 				'name'  => 'author',
 				/* translators: archive page */
-				'label' => __( 'Authors' ),
+				'label' => __( 'Authors', 'newspack-popups' ),
 			],
 			[
 				'name'  => 'date',
 				/* translators: archive page */
-				'label' => __( 'Date' ),
+				'label' => __( 'Date', 'newspack-popups' ),
 			],
 			[
 				'name'  => 'post-type',
 				/* translators: archive page */
-				'label' => __( 'Custom Post Types' ),
+				'label' => __( 'Custom Post Types', 'newspack-popups' ),
 			],
 			[
 				'name'  => 'taxonomy',
 				/* translators: archive page */
-				'label' => __( 'Taxonomies' ),
+				'label' => __( 'Taxonomies', 'newspack-popups' ),
+			],
+			[
+				'name'  => 'home',
+				/* translators: the "Posts page" configured under Settings > Reading when a static front page is set. */
+				'label' => __( 'Posts Page', 'newspack-popups' ),
 			],
 		];
 	}
@@ -627,7 +635,26 @@ final class Newspack_Popups_Model {
 	 * Get the default supported archive page types.
 	 */
 	public static function get_default_popup_archive_page_types() {
-		return [ 'category', 'tag', 'author', 'date', 'post-type', 'taxonomy' ];
+		return [ 'home', 'category', 'tag', 'author', 'date', 'post-type', 'taxonomy' ];
+	}
+
+	/**
+	 * Default value for the `archive_page_types` meta when a prompt has no
+	 * stored value.
+	 *
+	 * Returns the full default set minus opt-in additions (like 'home') so that
+	 * prompts created before a new page type was introduced keep their
+	 * pre-existing behavior — adding a new page type should never retroactively
+	 * widen where existing prompts render.
+	 *
+	 * Two call sites must stay in sync; both should keep calling this method
+	 * rather than inlining a value:
+	 *   - The `default` for the `archive_page_types` register_meta() call in
+	 *     Newspack_Popups::register_meta() (class-newspack-popups.php).
+	 *   - The wp_parse_args fallback in self::create_popup_options() above.
+	 */
+	public static function get_archive_page_types_meta_default() {
+		return array_values( array_diff( self::get_default_popup_archive_page_types(), [ 'home' ] ) );
 	}
 
 	/**
@@ -1070,7 +1097,10 @@ final class Newspack_Popups_Model {
 
 		// If previewing a single prompt, override saved settings with preview settings. Allow manual and custom placement prompts to be displayed as usual.
 		if ( $previewed_popup_id && ( ! $is_manual_or_custom_placement || $popup['id'] === $previewed_popup_id ) ) {
-			$popup = self::retrieve_preview_popup( $previewed_popup_id );
+			$preview_popup = self::retrieve_preview_popup( $previewed_popup_id );
+			if ( $preview_popup ) {
+				$popup = $preview_popup;
+			}
 		}
 		if ( Newspack_Popups::preset_popup_id() ) {
 			$popup = Newspack_Popups_Presets::retrieve_preset_popup( Newspack_Popups::preset_popup_id() );

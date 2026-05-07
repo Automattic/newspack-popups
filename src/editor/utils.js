@@ -93,6 +93,87 @@ const hexToRGB = hex =>
 		.match( /.{2}/g )
 		.map( x => parseInt( x, 16 ) );
 
+const EDITOR_CANVAS_SELECTOR = 'iframe[name="editor-canvas"]';
+
+/**
+ * Get the document context for the block editor. In WordPress 7.0+, the editor
+ * canvas is rendered inside an iframe, so querySelector on the parent document
+ * will not find editor elements. Falls back to the parent document for older
+ * versions, or when the iframe's contentDocument is not yet available (null).
+ *
+ * TODO: Once WP 6.9 is no longer supported, this can be simplified to always
+ * return the iframe's contentDocument.
+ *
+ * @return {Document} The editor's document context.
+ */
+export const getEditorDocument = () => {
+	const iframe = document.querySelector( EDITOR_CANVAS_SELECTOR );
+	return iframe?.contentDocument ?? document; // TODO: Remove `?? document` fallback when WP 6.9 support is dropped.
+};
+
+/**
+ * Calls `callback` once the editor canvas is available and returns a cleanup
+ * function suitable for use as a useEffect return value. Handles three cases:
+ *
+ * 1. Editor-canvas iframe exists and is fully loaded, or (WP 6.9 fallback) the
+ *    non-iframe editor is already rendered in the parent document — calls the
+ *    callback immediately.
+ * 2. Editor-canvas iframe exists but has not finished loading — waits for the
+ *    load event, then calls the callback.
+ * 3. Editor-canvas iframe has not been inserted yet — observes the DOM for its
+ *    insertion, then waits for its load event.
+ *
+ * Limitation: only fires once per call. If Gutenberg later unmounts and
+ * remounts the canvas iframe (e.g. toggling code-editor or fullscreen), the
+ * new iframe won't get the callback applied — EditorAdditions stays mounted
+ * as a top-level slot fill, so its effects don't re-run on swap. In practice
+ * the dependent effects in EditorAdditions reapply the glue whenever
+ * `background_color`, `overlay_size`, or `placement` change.
+ *
+ * TODO: Once WP 6.9 is no longer supported this can be simplified to cases 2/3
+ * only (the iframe is always used for the editor canvas).
+ *
+ * @param {Function} callback Function to invoke when the editor canvas is ready.
+ * @return {Function} Cleanup function that removes any pending listeners/observers.
+ */
+export const whenEditorReady = callback => {
+	const iframe = document.querySelector( EDITOR_CANVAS_SELECTOR );
+	if ( iframe ) {
+		// Case 1: iframe exists and is fully loaded.
+		if ( iframe.contentDocument?.readyState === 'complete' ) {
+			callback();
+			return () => {};
+		}
+		// Case 2: iframe exists but hasn't finished loading.
+		iframe.addEventListener( 'load', callback, { once: true } );
+		return () => iframe.removeEventListener( 'load', callback );
+	}
+
+	// WP 6.9 fallback: no iframe, editor renders directly in the parent document.
+	if ( document.querySelector( '.editor-styles-wrapper' ) ) {
+		callback();
+		return () => {};
+	}
+
+	// Case 3: iframe hasn't been inserted yet — watch for it.
+	let capturedIframe = null;
+	const observer = new MutationObserver( () => {
+		const newIframe = document.querySelector( EDITOR_CANVAS_SELECTOR );
+		if ( newIframe ) {
+			observer.disconnect();
+			capturedIframe = newIframe;
+			newIframe.addEventListener( 'load', callback, { once: true } );
+		}
+	} );
+	observer.observe( document.body, { childList: true, subtree: true } );
+	return () => {
+		observer.disconnect();
+		if ( capturedIframe ) {
+			capturedIframe.removeEventListener( 'load', callback );
+		}
+	};
+};
+
 /**
  * Set the background color meta field.
  * Based on https://github.com/Automattic/newspack-theme/blob/trunk/newspack-theme/inc/template-functions.php#L401-L431
@@ -120,8 +201,9 @@ export const updateEditorColors = backgroundColor => {
 
 	const foregroundColor = contrastRatio > 5 ? blackColor : whiteColor;
 
-	const editorStylesEl = document.querySelector( '.editor-styles-wrapper' );
-	const editorPostTitleEl = document.querySelector( '.wp-block.editor-post-title__block .editor-post-title__input' );
+	const editorDoc = getEditorDocument();
+	const editorStylesEl = editorDoc.querySelector( '.editor-styles-wrapper' );
+	const editorPostTitleEl = editorDoc.querySelector( '.wp-block.editor-post-title__block .editor-post-title__input' );
 	if ( editorStylesEl ) {
 		editorStylesEl.style.backgroundColor = backgroundColor;
 		editorStylesEl.style.color = foregroundColor;
