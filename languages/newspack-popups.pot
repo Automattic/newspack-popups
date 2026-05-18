@@ -2,14 +2,14 @@
 # This file is distributed under the same license as the Newspack Campaigns plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Newspack Campaigns 3.10.3\n"
+"Project-Id-Version: Newspack Campaigns 3.11.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/newspack-popups\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-04-13T17:18:22+00:00\n"
+"POT-Creation-Date: 2026-05-06T09:46:50+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: newspack-popups\n"
@@ -67,12 +67,12 @@ msgstr ""
 msgid "resetting every %s"
 msgstr ""
 
-#: includes/class-newspack-popups-inserter.php:825
-#: includes/class-newspack-popups-inserter.php:1125
+#: includes/class-newspack-popups-inserter.php:912
+#: includes/class-newspack-popups-inserter.php:1212
 msgid "Prompts Visible"
 msgstr ""
 
-#: includes/class-newspack-popups-inserter.php:826
+#: includes/class-newspack-popups-inserter.php:913
 msgid "Prompts Hidden"
 msgstr ""
 
@@ -93,35 +93,70 @@ msgstr ""
 msgid "Invalid placement value."
 msgstr ""
 
-#: includes/class-newspack-popups-model.php:523
+#: includes/class-newspack-popups-model.php:526
 msgid "Extra Small"
 msgstr ""
 
-#: includes/class-newspack-popups-model.php:527
+#: includes/class-newspack-popups-model.php:530
 msgid "Small"
 msgstr ""
 
-#: includes/class-newspack-popups-model.php:531
+#: includes/class-newspack-popups-model.php:534
 msgid "Medium"
 msgstr ""
 
-#: includes/class-newspack-popups-model.php:535
+#: includes/class-newspack-popups-model.php:538
 msgid "Large"
 msgstr ""
 
-#: includes/class-newspack-popups-model.php:539
+#: includes/class-newspack-popups-model.php:542
 msgid "Full-Width"
 msgstr ""
 
-#: includes/class-newspack-popups-model.php:873
+#. translators: archive page
+#: includes/class-newspack-popups-model.php:556
+msgid "Categories"
+msgstr ""
+
+#. translators: archive page
+#: includes/class-newspack-popups-model.php:561
+msgid "Tags"
+msgstr ""
+
+#. translators: archive page
+#: includes/class-newspack-popups-model.php:566
+msgid "Authors"
+msgstr ""
+
+#. translators: archive page
+#: includes/class-newspack-popups-model.php:571
+msgid "Date"
+msgstr ""
+
+#. translators: archive page
+#: includes/class-newspack-popups-model.php:576
+msgid "Custom Post Types"
+msgstr ""
+
+#. translators: archive page
+#: includes/class-newspack-popups-model.php:581
+msgid "Taxonomies"
+msgstr ""
+
+#. translators: the "Posts page" configured under Settings > Reading when a static front page is set.
+#: includes/class-newspack-popups-model.php:586
+msgid "Posts Page"
+msgstr ""
+
+#: includes/class-newspack-popups-model.php:900
 msgid "scheduled"
 msgstr ""
 
-#: includes/class-newspack-popups-model.php:874
+#: includes/class-newspack-popups-model.php:901
 msgid "draft"
 msgstr ""
 
-#: includes/class-newspack-popups-model.php:1162
+#: includes/class-newspack-popups-model.php:1192
 msgid "Close Pop-up"
 msgstr ""
 
@@ -278,28 +313,28 @@ msgstr ""
 msgid "No Prompts found in Trash."
 msgstr ""
 
-#: includes/class-newspack-popups.php:631
+#: includes/class-newspack-popups.php:632
 msgid "Campaigns"
 msgstr ""
 
-#: includes/class-newspack-popups.php:632
+#: includes/class-newspack-popups.php:633
 msgid "Campaign"
 msgstr ""
 
-#: includes/class-newspack-popups.php:633
+#: includes/class-newspack-popups.php:634
 msgid "Add Campaign"
 msgstr ""
 
-#: includes/class-newspack-popups.php:809
+#: includes/class-newspack-popups.php:810
 #: dist/editor.js:43
 #: src/editor/Sidebar.js:75
 msgid "Inline"
 msgstr ""
 
 #. translators: %s: Duplicate prompt title
-#: includes/class-newspack-popups.php:1215
-#: includes/class-newspack-popups.php:1221
-#: includes/class-newspack-popups.php:1248
+#: includes/class-newspack-popups.php:1217
+#: includes/class-newspack-popups.php:1223
+#: includes/class-newspack-popups.php:1250
 #, php-format
 msgid "%s copy"
 msgstr ""
@@ -1065,69 +1100,69 @@ msgstr ""
 
 #. translators: %s: custom placement name.
 #: dist/editor.js:31
-#: src/editor/utils.js:184
+#: src/editor/utils.js:266
 #, js-format
 msgid "The prompt will appear where %s is inserted using the Custom Placement block."
 msgstr ""
 
 #: dist/editor.js:31
-#: src/editor/utils.js:185
+#: src/editor/utils.js:267
 msgid "this custom placement"
 msgstr ""
 
 #: dist/editor.js:31
-#: src/editor/utils.js:191
+#: src/editor/utils.js:273
 msgid "The prompt will be displayed as an overlay at the center of the viewport."
 msgstr ""
 
 #: dist/editor.js:31
-#: src/editor/utils.js:193
+#: src/editor/utils.js:275
 msgid "The prompt will be displayed as an overlay at the center left of the viewport."
 msgstr ""
 
 #: dist/editor.js:31
-#: src/editor/utils.js:195
+#: src/editor/utils.js:277
 msgid "The prompt will be displayed as an overlay at the center right of the viewport."
 msgstr ""
 
 #: dist/editor.js:31
-#: src/editor/utils.js:197
+#: src/editor/utils.js:279
 msgid "The prompt will be displayed as an overlay at the top of the viewport."
 msgstr ""
 
 #: dist/editor.js:31
-#: src/editor/utils.js:199
+#: src/editor/utils.js:281
 msgid "The prompt will be displayed as an overlay at the top left of the viewport."
 msgstr ""
 
 #: dist/editor.js:31
-#: src/editor/utils.js:201
+#: src/editor/utils.js:283
 msgid "The prompt will be displayed as an overlay at the top right of the viewport."
 msgstr ""
 
 #: dist/editor.js:31
-#: src/editor/utils.js:203
+#: src/editor/utils.js:285
 msgid "The prompt will be displayed as an overlay at the bottom of the viewport."
 msgstr ""
 
 #: dist/editor.js:31
-#: src/editor/utils.js:205
+#: src/editor/utils.js:287
 msgid "The prompt will be displayed as an overlay at the bottom left of the viewport."
 msgstr ""
 
 #: dist/editor.js:31
-#: src/editor/utils.js:207
+#: src/editor/utils.js:289
 msgid "The prompt will be displayed as an overlay at the bottom right of the viewport."
 msgstr ""
 
 #: dist/editor.js:31
-#: src/editor/utils.js:209
+#: src/editor/utils.js:291
 msgid "The prompt will be automatically inserted at the very top of the page, above the header."
 msgstr ""
 
 #. translators: %s: blocks count until insertion.
 #: dist/editor.js:34
-#: src/editor/utils.js:214
+#: src/editor/utils.js:296
 #, js-format
 msgid "The prompt will be automatically inserted after %s block of content."
 msgid_plural "The prompt will be automatically inserted after %s blocks of content."
@@ -1136,32 +1171,32 @@ msgstr[1] ""
 
 #. translators: %s: article percentage count until insertion.
 #: dist/editor.js:37
-#: src/editor/utils.js:224
+#: src/editor/utils.js:306
 #, js-format
 msgid "The prompt will be automatically inserted about %s into article content."
 msgstr ""
 
 #. translators: %d: insertion period.
 #: dist/editor.js:40
-#: src/editor/utils.js:231
+#: src/editor/utils.js:313
 #, js-format
 msgid "The prompt will be automatically inserted every %d articles in the archive pages."
 msgstr ""
 
 #. translators: %d: insertion period articles count.
 #: dist/editor.js:43
-#: src/editor/utils.js:236
+#: src/editor/utils.js:318
 #, js-format
 msgid "The prompt will be automatically inserted after %d articles in the archive pages."
 msgstr ""
 
 #: dist/editor.js:43
-#: src/editor/utils.js:240
+#: src/editor/utils.js:322
 msgid "The prompt will appear only where inserted using the Single Prompt block or a shortcode."
 msgstr ""
 
 #: dist/editor.js:43
-#: src/editor/utils.js:242
+#: src/editor/utils.js:324
 msgid "The placement where the prompt can appear."
 msgstr ""
 
