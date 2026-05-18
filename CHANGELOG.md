@@ -1,3 +1,17 @@
+# [3.12.0](https://github.com/Automattic/newspack-popups/compare/v3.11.0...v3.12.0) (2026-05-18)
+
+
+### Bug Fixes
+
+* add is_home() gate to archive_page_types and fix return to continue ([#1551](https://github.com/Automattic/newspack-popups/issues/1551)) ([b6a51be](https://github.com/Automattic/newspack-popups/commit/b6a51be6fc08422d595e0c62ddf4f4e23c06f889))
+* ensure background colour, size work in iframed editor (NEWS-1707) ([#1550](https://github.com/Automattic/newspack-popups/issues/1550)) ([7ebf73e](https://github.com/Automattic/newspack-popups/commit/7ebf73e3f4a70e5f8ea85119e0456d5462dda5a4))
+* handle invalid post id in retrieve_preview_popup ([#1555](https://github.com/Automattic/newspack-popups/issues/1555)) ([a67ce47](https://github.com/Automattic/newspack-popups/commit/a67ce476036ba4408ac1cc5a045882af91aedb6d))
+
+
+### Features
+
+* add campaigns to block theme archives ([#1545](https://github.com/Automattic/newspack-popups/issues/1545)) ([f2944b0](https://github.com/Automattic/newspack-popups/commit/f2944b0a72a462cbb98f0b033cd396eccc61830e))
+
 # [3.11.0](https://github.com/Automattic/newspack-popups/compare/v3.10.3...v3.11.0) (2026-05-04)
 
 
