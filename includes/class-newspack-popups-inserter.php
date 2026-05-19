@@ -53,6 +53,15 @@ final class Newspack_Popups_Inserter {
 	private static $header_template_part_has_rendered = false;
 
 	/**
+	 * Overlay prompts queued for rendering at wp_footer, keyed by popup ID so a
+	 * popup that would otherwise be emitted from multiple injection points
+	 * (singular content, archive header, block-theme header) only renders once.
+	 *
+	 * @var array<int|string, array>
+	 */
+	private static $queued_overlays = [];
+
+	/**
 	 * Constructor.
 	 */
 	public function __construct() {
@@ -64,6 +73,11 @@ final class Newspack_Popups_Inserter {
 		add_action( 'after_archive_post', [ $this, 'insert_inline_prompt_in_archive_pages' ] );
 		add_filter( 'render_block', [ $this, 'insert_inline_prompt_in_block_theme_archives' ], 10, 3 );
 		add_action( 'wp_before_admin_bar_render', [ $this, 'add_preview_toggle' ] );
+
+		// Render overlay prompts as direct children of <body> so they escape any
+		// ancestor stacking context (transformed parents, ad wrappers, etc.) that
+		// would otherwise trap their z-index below sibling content.
+		add_action( 'wp_footer', [ $this, 'print_queued_overlays' ], 100 );
 
 		// Always enqueue scripts, since this plugin's scripts are handling pageview sending via GTAG.
 		add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
@@ -456,13 +470,20 @@ final class Newspack_Popups_Inserter {
 			}
 		}
 
-		// 4. Insert overlay prompts at the top of content.
-		// To leave the existing behavior (prepending each overlay) in place,
-		// we reverse our sorted overlays to ensure the most specific appear
-		// first in the DOM, and get priority for the single available slot.
-		$overlay_popups = array_reverse( self::sort_overlays_by_specificity( $overlay_popups ) );
-		foreach ( $overlay_popups as $overlay_popup ) {
-			$output = '<!-- wp:html -->' . Newspack_Popups_Model::generate_popup( $overlay_popup ) . '<!-- /wp:html -->' . $output;
+		// 4. Queue overlay prompts for footer rendering. Reverse the specificity
+		// sort so the most specific overlay is queued first and wins the single
+		// visible slot, matching the previous "prepend to content" DOM order.
+		// Scroll-triggered overlays carry a page-position marker which must
+		// remain inline in `.entry-content` so its percentage offset resolves
+		// against the article column (the marker drives IntersectionObserver
+		// reveal of the lightbox). Emit the marker inline and queue only the
+		// lightbox itself for the footer.
+		foreach ( array_reverse( self::sort_overlays_by_specificity( $overlay_popups ) ) as $overlay_popup ) {
+			self::queue_overlay( $overlay_popup );
+			$marker = Newspack_Popups_Model::generate_position_marker( $overlay_popup );
+			if ( '' !== $marker ) {
+				$output = '<!-- wp:html -->' . $marker . '<!-- /wp:html -->' . $output;
+			}
 		}
 		return $output;
 	}
@@ -564,10 +585,54 @@ final class Newspack_Popups_Inserter {
 				return Newspack_Popups_Model::should_be_inserted_in_page_content( $popup ) && Newspack_Popups_Model::is_overlay( $popup );
 			}
 		);
-		$popups = self::sort_overlays_by_specificity( array_values( $popups ) );
-		foreach ( $popups as $popup ) {
-			echo Newspack_Popups_Model::generate_popup( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		foreach ( self::sort_overlays_by_specificity( array_values( $popups ) ) as $popup ) {
+			self::queue_overlay( $popup );
 		}
+	}
+
+	/**
+	 * Queue an overlay popup for rendering at wp_footer.
+	 *
+	 * Overlays are deduped by popup ID, so the same overlay queued from multiple
+	 * injection points (singular content + above-header, archive header, etc.)
+	 * only renders once. Queue order is preserved, so the existing specificity
+	 * sort done by callers still controls which overlay wins the single visible
+	 * slot.
+	 *
+	 * @param array $popup Popup data as returned by Newspack_Popups_Model.
+	 */
+	private static function queue_overlay( $popup ) {
+		if ( empty( $popup['id'] ) ) {
+			return;
+		}
+		$id = $popup['id'];
+		if ( ! isset( self::$queued_overlays[ $id ] ) ) {
+			self::$queued_overlays[ $id ] = $popup;
+		}
+	}
+
+	/**
+	 * Print all queued overlay popups as direct children of <body>, via wp_footer.
+	 *
+	 * This decouples overlay output from any ancestor stacking context that the
+	 * popup would otherwise inherit when emitted inside post content or above
+	 * the site header — for example a transformed/scaled wrapper, a sticky ad
+	 * container, or any element with isolation:isolate. Inline popups remain
+	 * inline; only the overlay-typed placements are portaled.
+	 */
+	public static function print_queued_overlays() {
+		if ( empty( self::$queued_overlays ) ) {
+			return;
+		}
+		foreach ( self::$queued_overlays as $popup ) {
+			// Suppress the scroll-trigger page-position marker: for scroll-triggered
+			// overlays it was emitted inline at the content position so its
+			// percentage offset still resolves against `.entry-content`. For time-
+			// triggered overlays there is no marker to begin with. Emitting the
+			// marker here (at body level) would break scroll-trigger detection.
+			echo Newspack_Popups_Model::generate_popup( $popup, false ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		}
+		self::$queued_overlays = [];
 	}
 
 	/**
@@ -584,11 +649,16 @@ final class Newspack_Popups_Inserter {
 
 		// Sort only the overlay subset by specificity — above-header inline prompts are
 		// not subject to the single visible overlay slot constraint and are left in their
-		// original order.
+		// original order. Overlays are queued for footer rendering (escaping nested
+		// stacking contexts); only the inline prompts are emitted inline here.
 		$overlay_popups = self::sort_overlays_by_specificity(
 			array_values( array_filter( $before_header_popups, [ 'Newspack_Popups_Model', 'is_overlay' ] ) )
 		);
-		$inline_popups  = array_values(
+		foreach ( $overlay_popups as $popup ) {
+			self::queue_overlay( $popup );
+		}
+
+		$inline_popups = array_values(
 			array_filter(
 				$before_header_popups,
 				function( $popup ) {
@@ -598,9 +668,6 @@ final class Newspack_Popups_Inserter {
 		);
 
 		$markup = '';
-		foreach ( $overlay_popups as $popup ) {
-			$markup .= Newspack_Popups_Model::generate_popup( $popup );
-		}
 		foreach ( $inline_popups as $popup ) {
 			$markup .= Newspack_Popups_Model::generate_popup( $popup );
 		}
