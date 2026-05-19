@@ -59,7 +59,7 @@ class InsertionTest extends WP_UnitTestCase_PageWithPopups {
 		$popup_elements    = self::$dom_xpath->query( '//*[contains(@class,"newspack-popup-container")]' );
 		$found_overlay     = false;
 		foreach ( $popup_elements as $popup_element ) {
-			if ( false !== strpos( $popup_element->textContent, $overlay_content ) ) {
+			if ( false !== strpos( $popup_element->textContent, $overlay_content ) ) { // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- DOMNode property.
 				$found_overlay = true;
 				break;
 			}
