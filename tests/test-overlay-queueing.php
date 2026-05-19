@@ -130,25 +130,22 @@ class OverlayQueueingTest extends WP_UnitTestCase {
 	}
 
 	/**
-	 * The dedupe map is shared across injection points: queueing the same
-	 * overlay via `insert_popups_in_post_content` (singular content path) AND
-	 * `insert_before_header_in_template_part` (block-theme above-header path)
-	 * must still result in a single emission.
+	 * The dedupe map is shared across injection points: a popup reached from
+	 * `insert_popups_in_post_content` (singular content path) AND the helper
+	 * that backs the classic / block-theme above-header path must still result
+	 * in a single emission. The factory default trigger (`time`) is what would
+	 * normally route a popup through the above-header path in production; the
+	 * test here asserts the dedupe contract on `queue_overlay()` itself, not
+	 * the per-callsite eligibility filtering.
 	 */
 	public function test_dedupe_across_injection_points() {
 		$overlay_popup = self::create_overlay_popup_object( 'Cross-path overlay', 'time' );
-		// Mark the popup as "above_page_header" so the block-theme path queues it.
-		Newspack_Popups_Model::set_popup_options( $overlay_popup['id'], [ 'trigger_type' => 'time' ] );
-		$expected_id = 'id="' . Newspack_Popups_Model::canonize_popup_id( $overlay_popup['id'] ) . '"';
+		$expected_id   = 'id="' . Newspack_Popups_Model::canonize_popup_id( $overlay_popup['id'] ) . '"';
 
 		Newspack_Popups_Inserter::insert_popups_in_post_content( '<p>Body.</p>', [ $overlay_popup ] );
 
-		// Reach the queue from the block-theme above-header path too. The
-		// helper that backs both insert_before_header() and
-		// insert_before_header_in_template_part() filters popups via
-		// popups_for_post(), so simulate that by queueing directly: this test
-		// asserts the dedupe contract on queue_overlay() itself, not the
-		// per-callsite filtering.
+		// Reach the queue from a second path by invoking the private queue
+		// helper directly.
 		$reflection_method = new ReflectionMethod( 'Newspack_Popups_Inserter', 'queue_overlay' );
 		$reflection_method->setAccessible( true );
 		$reflection_method->invoke( null, $overlay_popup );

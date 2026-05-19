@@ -423,15 +423,6 @@ $width__tablet: 782px;
 				padding-right: 0;
 			}
 		}
-
-		@media only screen and ( min-width: $width__mobile ) {
-			.alignfull.wp-block-columns {
-				margin-left: -16px;
-				margin-right: -16px;
-				max-width: calc(100% + 32px);
-				width: calc(100% + 32px);
-			}
-		}
 	}
 }
 

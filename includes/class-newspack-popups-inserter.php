@@ -493,10 +493,14 @@ final class Newspack_Popups_Inserter {
 		// gates). Scroll-triggered overlays carry a page-position marker which
 		// must remain inline in `.entry-content` – its percentage `top` resolves
 		// against the article column and drives the IntersectionObserver that
-		// reveals the lightbox.
+		// reveals the lightbox. Wrap the marker in a wp:html block so any
+		// downstream block-parser pass over the_content output leaves it alone.
 		foreach ( self::sort_overlays_by_specificity( $overlay_popups ) as $overlay_popup ) {
 			self::queue_overlay( $overlay_popup );
-			$output = self::emit_position_marker_inline( $overlay_popup ) . $output;
+			$marker = self::emit_position_marker_inline( $overlay_popup );
+			if ( '' !== $marker ) {
+				$output = '<!-- wp:html -->' . $marker . '<!-- /wp:html -->' . $output;
+			}
 		}
 		return $output;
 	}
@@ -633,11 +637,14 @@ final class Newspack_Popups_Inserter {
 	 * Return the inline page-position marker markup for a popup, deduped by ID
 	 * across multiple emission paths so a single popup never produces duplicate
 	 * marker DOM nodes (which would break `document.getElementById` lookups in
-	 * the front-end reveal JS). Returns the empty string for non-scroll-triggered
+	 * the front-end reveal JS). Returns raw marker HTML; callers that emit into
+	 * a context where the result may be re-parsed by the block parser
+	 * (`the_content` output) are responsible for wrapping it in a `wp:html`
+	 * block themselves. Returns the empty string for non-scroll-triggered
 	 * popups and for popups whose marker has already been emitted this request.
 	 *
 	 * @param array<string, mixed> $popup Popup data as returned by Newspack_Popups_Model.
-	 * @return string Marker HTML, or '' when no marker should be emitted.
+	 * @return string Raw marker HTML, or '' when no marker should be emitted.
 	 */
 	private static function emit_position_marker_inline( array $popup ): string {
 		if ( empty( $popup['id'] ) || isset( self::$emitted_markers[ $popup['id'] ] ) ) {
@@ -648,9 +655,7 @@ final class Newspack_Popups_Inserter {
 			return '';
 		}
 		self::$emitted_markers[ $popup['id'] ] = true;
-		// Wrap in a wp:html block so any downstream block-parser pass leaves
-		// the raw HTML untouched.
-		return '<!-- wp:html -->' . $marker . '<!-- /wp:html -->';
+		return $marker;
 	}
 
 	/**
