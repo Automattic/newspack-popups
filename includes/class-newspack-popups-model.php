@@ -1091,46 +1091,54 @@ final class Newspack_Popups_Model {
 	 * The marker is a `position: absolute; top: X%` element whose position is
 	 * computed against its nearest `position: relative` ancestor (typically the
 	 * post's `.entry-content`). An IntersectionObserver on this marker is what
-	 * reveals the scroll-triggered overlay. When the lightbox itself is portaled
-	 * to wp_footer to escape an ancestor stacking context, the marker must remain
-	 * inline inside the article container so its percentage offset still
+	 * reveals the scroll-triggered overlay. The lightbox is portaled to
+	 * wp_footer to escape ancestor stacking-context traps, but the marker
+	 * stays inline at the article container so its percentage offset still
 	 * encodes "scroll progress through the article".
 	 *
 	 * Returns the empty string for popups that aren't scroll-triggered overlays.
 	 *
-	 * @param array $popup The popup object.
+	 * @param array<string, mixed> $popup A fully-hydrated popup object as returned
+	 *                                    by {@see create_popup_object()}.
 	 * @return string Marker HTML, or '' when no marker is needed.
 	 */
-	public static function generate_position_marker( $popup ) {
-		if ( ! self::is_overlay( $popup ) || 'scroll' !== $popup['options']['trigger_type'] ) {
+	public static function generate_position_marker( array $popup ): string {
+		if ( ! self::is_overlay( $popup ) ) {
+			return '';
+		}
+		$trigger_type = $popup['options']['trigger_type'] ?? '';
+		if ( 'scroll' !== $trigger_type ) {
 			return '';
 		}
 		$element_id = self::canonize_popup_id( $popup['id'] );
+		$progress   = absint( $popup['options']['trigger_scroll_progress'] ?? 0 );
 		return sprintf(
-			'<div id="page-position-marker_%1$s" class="page-position-marker" style="position: absolute; top: %2$s%%"></div>',
+			'<div id="page-position-marker_%1$s" class="page-position-marker" style="position: absolute; top: %2$d%%"></div>',
 			esc_attr( $element_id ),
-			esc_attr( $popup['options']['trigger_scroll_progress'] )
+			$progress
 		);
 	}
 
 	/**
 	 * Generate markup and styles for an overlay popup.
 	 *
-	 * @param string $popup                     The popup object.
-	 * @param bool   $include_position_marker   Whether to append the scroll-trigger
-	 *                                          page-position marker. Defaults to true
-	 *                                          for backward compatibility. Callers that
-	 *                                          portal the lightbox to a different DOM
-	 *                                          location (e.g. wp_footer) should pass
-	 *                                          false and emit the marker inline at the
-	 *                                          original content location separately via
-	 *                                          {@see generate_position_marker()}, since
-	 *                                          the marker positions itself as a percentage
-	 *                                          inside its `position: relative` ancestor
-	 *                                          (typically .entry-content).
+	 * @param array<string, mixed> $popup                    A fully-hydrated popup object.
+	 * @param bool                 $include_position_marker  When true (default), the
+	 *                                                       returned markup includes the
+	 *                                                       scroll-trigger page-position
+	 *                                                       marker. Pass false when the
+	 *                                                       marker is emitted separately
+	 *                                                       at the content position via
+	 *                                                       {@see generate_position_marker()},
+	 *                                                       so the marker's percentage `top`
+	 *                                                       resolves against its
+	 *                                                       `position: relative` ancestor
+	 *                                                       (typically `.entry-content`)
+	 *                                                       rather than against the portaled
+	 *                                                       lightbox's footer position.
 	 * @return string The generated markup.
 	 */
-	public static function generate_popup( $popup, $include_position_marker = true ) {
+	public static function generate_popup( $popup, bool $include_position_marker = true ) {
 		$previewed_popup_id            = Newspack_Popups::previewed_popup_id();
 		$is_manual_or_custom_placement = self::is_manual_only( $popup ) || Newspack_Popups_Custom_Placements::is_custom_placement_or_manual( $popup );
 

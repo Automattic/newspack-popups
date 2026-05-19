@@ -105,36 +105,114 @@ class OverlayQueueingTest extends WP_UnitTestCase {
 	 * Queueing the same overlay popup from multiple call paths (e.g. singular
 	 * content + above-header) must result in a single emission, deduped by ID.
 	 *
-	 * Compared via flushed-output length: queueing N times must produce the same
-	 * output length as queueing once. Length is robust against internal markup
-	 * structure (the lightbox emits the "newspack-lightbox" substring in
-	 * several child class names per popup).
+	 * Asserted by counting the number of outer lightbox containers (`id="id_<n>"`)
+	 * for the popup in question, not by total output length – more direct, and
+	 * stable against any future per-emission variability inside the markup.
 	 */
 	public function test_dedupe_by_id_across_multiple_queue_calls() {
 		$overlay_popup = self::create_overlay_popup_object();
-
-		Newspack_Popups_Inserter::insert_popups_in_post_content( '<p>Body.</p>', [ $overlay_popup ] );
-		ob_start();
-		Newspack_Popups_Inserter::print_queued_overlays();
-		$single_queue_output = ob_get_clean();
+		$expected_id   = 'id="' . Newspack_Popups_Model::canonize_popup_id( $overlay_popup['id'] ) . '"';
 
 		// Queue the SAME popup multiple times via repeated calls.
 		Newspack_Popups_Inserter::insert_popups_in_post_content( '<p>Body.</p>', [ $overlay_popup ] );
 		Newspack_Popups_Inserter::insert_popups_in_post_content( '<p>Body.</p>', [ $overlay_popup ] );
 		Newspack_Popups_Inserter::insert_popups_in_post_content( '<p>Body.</p>', [ $overlay_popup ] );
+
 		ob_start();
 		Newspack_Popups_Inserter::print_queued_overlays();
-		$repeat_queue_output = ob_get_clean();
+		$footer_output = ob_get_clean();
 
 		self::assertSame(
-			strlen( $single_queue_output ),
-			strlen( $repeat_queue_output ),
-			'Queueing the same popup multiple times must produce the same output as queueing once.'
+			1,
+			substr_count( $footer_output, $expected_id ),
+			'Queueing the same popup multiple times must still produce exactly one lightbox container.'
 		);
-		self::assertNotSame(
-			'',
-			$single_queue_output,
-			'Sanity check: the flushed output should not be empty for a queued overlay.'
+	}
+
+	/**
+	 * The dedupe map is shared across injection points: queueing the same
+	 * overlay via `insert_popups_in_post_content` (singular content path) AND
+	 * `insert_before_header_in_template_part` (block-theme above-header path)
+	 * must still result in a single emission.
+	 */
+	public function test_dedupe_across_injection_points() {
+		$overlay_popup = self::create_overlay_popup_object( 'Cross-path overlay', 'time' );
+		// Mark the popup as "above_page_header" so the block-theme path queues it.
+		Newspack_Popups_Model::set_popup_options( $overlay_popup['id'], [ 'trigger_type' => 'time' ] );
+		$expected_id = 'id="' . Newspack_Popups_Model::canonize_popup_id( $overlay_popup['id'] ) . '"';
+
+		Newspack_Popups_Inserter::insert_popups_in_post_content( '<p>Body.</p>', [ $overlay_popup ] );
+
+		// Reach the queue from the block-theme above-header path too. The
+		// helper that backs both insert_before_header() and
+		// insert_before_header_in_template_part() filters popups via
+		// popups_for_post(), so simulate that by queueing directly: this test
+		// asserts the dedupe contract on queue_overlay() itself, not the
+		// per-callsite filtering.
+		$reflection_method = new ReflectionMethod( 'Newspack_Popups_Inserter', 'queue_overlay' );
+		$reflection_method->setAccessible( true );
+		$reflection_method->invoke( null, $overlay_popup );
+
+		ob_start();
+		Newspack_Popups_Inserter::print_queued_overlays();
+		$footer_output = ob_get_clean();
+
+		self::assertSame(
+			1,
+			substr_count( $footer_output, $expected_id ),
+			'A popup queued from two different injection points must emit exactly once.'
+		);
+	}
+
+	/**
+	 * The `insert_popups_after_header` archive path (classic Newspack theme)
+	 * must still emit the scroll-trigger page-position marker inline – the
+	 * IntersectionObserver reveal mechanism needs it to find a marker DOM node
+	 * to observe. The lightbox itself is still queued for the footer flush.
+	 */
+	public function test_classic_archive_path_emits_marker_inline_for_scroll_triggered() {
+		$overlay_popup = self::create_overlay_popup_object( 'Archive scroll overlay', 'scroll' );
+
+		// Pretend we're rendering an archive page.
+		global $wp_query;
+		$prior_singular        = $wp_query ? $wp_query->is_singular : false;
+		$wp_query->is_singular = false;
+
+		// Force `popups_for_post()` to return our overlay rather than running
+		// the eligibility query, which depends on a fully bootstrapped request.
+		$reflection_class = new ReflectionClass( 'Newspack_Popups_Inserter' );
+		$popups_property  = $reflection_class->getProperty( 'popups' );
+		$popups_property->setAccessible( true );
+		$prior_popups = $popups_property->getValue();
+		$popups_property->setValue( null, [ $overlay_popup ] );
+
+		ob_start();
+		Newspack_Popups_Inserter::insert_popups_after_header();
+		$inline_output = ob_get_clean();
+
+		// Restore globals.
+		$popups_property->setValue( null, $prior_popups );
+		$wp_query->is_singular = $prior_singular;
+
+		self::assertStringContainsString(
+			'page-position-marker_',
+			$inline_output,
+			'Classic-theme archive scroll-triggered overlays must emit the page-position marker inline.'
+		);
+		self::assertStringNotContainsString(
+			'newspack-lightbox',
+			$inline_output,
+			'The lightbox markup must NOT be emitted inline from the archive path; it should be queued for the footer.'
+		);
+
+		ob_start();
+		Newspack_Popups_Inserter::print_queued_overlays();
+		$footer_output = ob_get_clean();
+
+		self::assertStringContainsString(
+			'newspack-lightbox',
+			$footer_output,
+			'The lightbox must be emitted at wp_footer for archive overlays.'
 		);
 	}
 
