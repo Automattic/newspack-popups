@@ -675,7 +675,14 @@ final class Newspack_Popups_Inserter {
 		foreach ( self::$queued_overlays as $popup ) {
 			echo Newspack_Popups_Model::generate_popup( $popup, false ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		}
+		// Drain both maps so a subsequent re-queue in the same request (e.g. a
+		// manual `apply_filters( 'the_content', ... )` after the footer flush)
+		// can re-emit the overlay *and* its inline scroll marker. Resetting the
+		// overlay queue alone would suppress the marker on the second pass, and
+		// `segmentation.js` would then have no `#page-position-marker_*` to
+		// observe – a scroll-triggered overlay that never reveals.
 		self::$queued_overlays = [];
+		self::$emitted_markers = [];
 	}
 
 	/**

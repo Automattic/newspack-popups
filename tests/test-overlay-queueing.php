@@ -380,4 +380,41 @@ class OverlayQueueingTest extends WP_UnitTestCase {
 			'Flushing the queue must drain it; a subsequent flush should be a no-op.'
 		);
 	}
+
+	/**
+	 * Regression: after a flush, re-queueing the same scroll-triggered overlay
+	 * in the same request (e.g. a downstream `apply_filters( 'the_content', ... )`
+	 * call) must re-emit both the lightbox AND the inline page-position marker.
+	 * The overlay-queue + emitted-markers maps drain together; otherwise the
+	 * second pass silently produces a lightbox without a marker and the
+	 * scroll-trigger observer in segmentation.js finds nothing to observe.
+	 */
+	public function test_marker_re_emits_after_flush_and_requeue() {
+		$overlay_popup = self::create_overlay_popup_object( 'Scroll overlay', 'scroll' );
+
+		$first_content = Newspack_Popups_Inserter::insert_popups_in_post_content(
+			"<!-- wp:paragraph -->\n<p>Body.</p>\n<!-- /wp:paragraph -->\n",
+			[ $overlay_popup ]
+		);
+		self::assertStringContainsString( 'page-position-marker_', $first_content, 'First pass must emit the inline scroll-trigger marker.' );
+
+		ob_start();
+		Newspack_Popups_Inserter::print_queued_overlays();
+		ob_end_clean();
+
+		$second_content = Newspack_Popups_Inserter::insert_popups_in_post_content(
+			"<!-- wp:paragraph -->\n<p>Body.</p>\n<!-- /wp:paragraph -->\n",
+			[ $overlay_popup ]
+		);
+		self::assertStringContainsString(
+			'page-position-marker_',
+			$second_content,
+			'After a flush, re-queueing the same scroll-triggered overlay must re-emit the inline marker (else a scroll overlay silently fails to reveal).'
+		);
+
+		ob_start();
+		Newspack_Popups_Inserter::print_queued_overlays();
+		$second_footer = ob_get_clean();
+		self::assertStringContainsString( 'newspack-lightbox', $second_footer, 'After a flush, the re-queued overlay must also re-emit its lightbox at the footer.' );
+	}
 }

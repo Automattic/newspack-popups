@@ -1251,9 +1251,11 @@ final class Newspack_Popups_Model {
 				<?php endif; ?>
 			<?php endif; ?>
 		</div>
-		<?php if ( $is_scroll_triggered && $include_position_marker ) : ?>
-			<div id="page-position-marker_<?php echo esc_attr( $element_id ); ?>" class="page-position-marker" style="position: absolute; top: <?php echo esc_attr( $popup['options']['trigger_scroll_progress'] ); ?>%"></div>
-		<?php endif; ?>
+		<?php
+		if ( $include_position_marker ) {
+			echo self::generate_position_marker( $popup ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		}
+		?>
 		<?php
 		self::$current_popup = null;
 
