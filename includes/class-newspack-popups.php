@@ -826,20 +826,28 @@ final class Newspack_Popups {
 	}
 
 	/**
-	 * Is it a preview request ? a single popup preview or using "view as" feature.
+	 * Is it a preview request? A single popup preview or using the "view as" feature.
 	 *
 	 * @return boolean Whether it's a preview request.
 	 */
 	public static function is_preview_request() {
-		static $result = null;
-		if ( null !== $result ) {
-			return $result;
-		}
-		$is_customizer_preview = is_customize_preview();
+		static $cache = [];
+		$previewed_popup_id = self::previewed_popup_id();
+		$preset_popup_id    = self::preset_popup_id();
 		// Used by the Newspack Plugin's Campaigns Wizard.
-		$is_view_as_preview = false != Newspack_Popups_View_As::viewing_as_spec();
-		$result = ! empty( self::previewed_popup_id() ) || ! empty( self::preset_popup_id() ) || $is_view_as_preview || $is_customizer_preview;
-		return $result;
+		$is_view_as_preview    = false != Newspack_Popups_View_As::viewing_as_spec();
+		$is_customizer_preview = is_customize_preview();
+
+		// Key on every input the result depends on, so cached user/query-param
+		// context from an earlier simulated request (e.g. PHPUnit's go_to())
+		// can't leak into a later one within the same PHP process.
+		$key = implode( ':', [ $previewed_popup_id, $preset_popup_id, $is_view_as_preview ? '1' : '0', $is_customizer_preview ? '1' : '0' ] );
+		if ( array_key_exists( $key, $cache ) ) {
+			return $cache[ $key ];
+		}
+
+		$cache[ $key ] = ! empty( $previewed_popup_id ) || ! empty( $preset_popup_id ) || $is_view_as_preview || $is_customizer_preview;
+		return $cache[ $key ];
 	}
 
 	/**
@@ -968,9 +976,12 @@ final class Newspack_Popups {
 	 * will not be fired for them.
 	 */
 	public static function is_user_admin() {
-		static $result = null;
-		if ( null !== $result ) {
-			return $result;
+		static $cache = [];
+		// Key on the current user ID so a cached result from an earlier user
+		// (e.g. after wp_set_current_user() in tests) can't leak into a later check.
+		$user_id = get_current_user_id();
+		if ( array_key_exists( $user_id, $cache ) ) {
+			return $cache[ $user_id ];
 		}
 		/**
 		 * Filter to allow other plugins to decide which capability should be checked
@@ -979,9 +990,9 @@ final class Newspack_Popups {
 		 * @param string $capability Capability to check. Default: edit_others_pages.
 		 * @return string Filtered capability string.
 		 */
-		$capability = apply_filters( 'newspack_popups_admin_user_capability', 'edit_others_pages' );
-		$result     = is_user_logged_in() && current_user_can( $capability );
-		return $result;
+		$capability        = apply_filters( 'newspack_popups_admin_user_capability', 'edit_others_pages' );
+		$cache[ $user_id ] = is_user_logged_in() && current_user_can( $capability );
+		return $cache[ $user_id ];
 	}
 
 	/**
