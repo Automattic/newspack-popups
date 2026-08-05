@@ -1,3 +1,3 @@
-# newspack-popups
+# Newspack Campaigns
 
-Inline and overlay non-editorial content with advanced segmentation.
+This repository has been deprecated and archived. This extension now lives in our monorepo at https://github.com/Automattic/newspack-workspace.

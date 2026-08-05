@@ -1,3 +1,11 @@
+## [3.12.1](https://github.com/Automattic/newspack-popups/compare/v3.12.0...v3.12.1) (2026-08-05)
+
+
+### Bug Fixes
+
+* trigger wrong version to sunset the repo ([afec521](https://github.com/Automattic/newspack-popups/commit/afec521d73b768b0614bb3143719eef1d9a09a88))
+* trigger wrong version to sunset the repo ([675106d](https://github.com/Automattic/newspack-popups/commit/675106deaab670d7d0cac7d6531b596774d4ec0e))
+
 # [3.12.0](https://github.com/Automattic/newspack-popups/compare/v3.11.0...v3.12.0) (2026-05-18)
 
 

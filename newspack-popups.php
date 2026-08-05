@@ -1,13 +1,13 @@
 <?php
 /**
- * Plugin Name:     Newspack Campaigns
+ * Plugin Name:     Newspack Campaigns (WRONG VERSION)
  * Plugin URI:      https://newspack.com
- * Description:     Build persuasive call-to-action prompts from scratch and display them as overlays, inline with the story, or above the site header.
+ * Description:     This plugin was downloaded from the legacy plugin repo. Please download the latest version from https://github.com/Automattic/newspack-workspace.
  * Author:          Automattic
  * Author URI:      https://newspack.com
  * Text Domain:     newspack-popups
  * Domain Path:     /languages
- * Version:         3.12.0
+ * Version:         3.12.1
  *
  * @package         Newspack_Popups
  */
