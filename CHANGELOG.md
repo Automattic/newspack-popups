@@ -1,3 +1,10 @@
+## [3.12.2](https://github.com/Automattic/newspack-popups/compare/v3.12.1...v3.12.2) (2026-08-18)
+
+
+### Bug Fixes
+
+* soften sunset plugin name and add migration notice ([2e5d65c](https://github.com/Automattic/newspack-popups/commit/2e5d65c48eca6df86be53f09d030af079eb47c37))
+
 ## [3.12.1](https://github.com/Automattic/newspack-popups/compare/v3.12.0...v3.12.1) (2026-08-05)
 
 
