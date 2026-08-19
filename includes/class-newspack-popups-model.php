@@ -25,6 +25,17 @@ final class Newspack_Popups_Model {
 	 */
 	protected static $inline_placements = [ 'inline', 'above_header', 'archives' ];
 
+	const CACHE_GROUP          = 'newspack_popups';
+	const CACHE_KEY_ELIGIBLE   = 'eligible_popups';
+	const CACHE_EXPIRY_ELIGIBLE = 600; // 10 minutes.
+
+	/**
+	 * Clear the eligible popups cache.
+	 */
+	public static function clear_popup_cache() {
+		wp_cache_delete( self::CACHE_KEY_ELIGIBLE, self::CACHE_GROUP );
+	}
+
 	/**
 	 * List of hooks that can be used to insert hidden inputs in forms that will be rendered inside a popup.
 	 *
@@ -215,7 +226,18 @@ final class Newspack_Popups_Model {
 			self::$overlay_placements,
 			self::$inline_placements
 		);
-		$args             = [
+
+		// Only cache the default frontend query (published, no campaign filter, default placements).
+		$use_cache = ! $include_unpublished && false === $campaign_id && null === $placements;
+
+		if ( $use_cache ) {
+			$cached = wp_cache_get( self::CACHE_KEY_ELIGIBLE, self::CACHE_GROUP );
+			if ( false !== $cached ) {
+				return $cached;
+			}
+		}
+
+		$args = [
 			'post_type'      => Newspack_Popups::NEWSPACK_POPUPS_CPT,
 			'post_status'    => $include_unpublished ? [ 'draft', 'pending', 'future', 'publish' ] : 'publish',
 			'posts_per_page' => 100,
@@ -239,7 +261,13 @@ final class Newspack_Popups_Model {
 			$args['tax_query'] = [ $tax_query ]; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
 		}
 
-		return self::retrieve_popups_with_query( new WP_Query( $args ) );
+		$result = self::retrieve_popups_with_query( new WP_Query( $args ) );
+
+		if ( $use_cache ) {
+			wp_cache_set( self::CACHE_KEY_ELIGIBLE, $result, self::CACHE_GROUP, self::CACHE_EXPIRY_ELIGIBLE ); // phpcs:ignore WordPressVIPMinimum.Performance.LowExpiryCacheTime.CacheTimeUndetermined
+		}
+
+		return $result;
 	}
 
 	/**

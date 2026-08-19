@@ -30,6 +30,8 @@ final class Newspack_Popups_Inserter {
 	 */
 	protected static $segments = [];
 
+	const PARSED_BLOCKS_CACHE_EXPIRY = 3600; // 1 hour.
+
 	/**
 	 * Whether we've already inserted prompts into the content.
 	 * If we've already inserted popups into the content, don't try to do it again.
@@ -299,6 +301,30 @@ final class Newspack_Popups_Inserter {
 	}
 
 	/**
+	 * Parse blocks from content, using object cache when available.
+	 *
+	 * Caches the result of parse_blocks() + convert_classic_blocks() keyed
+	 * by the content hash so that repeated processing of the same content
+	 * (across page loads with persistent cache) is avoided.
+	 *
+	 * @param string $content Post content.
+	 * @return array Parsed block array.
+	 */
+	private static function get_parsed_blocks( $content ) {
+		$cache_key = 'parsed_blocks_' . md5( $content );
+		$cached    = wp_cache_get( $cache_key, Newspack_Popups_Model::CACHE_GROUP );
+		if ( false !== $cached ) {
+			return $cached;
+		}
+
+		$parsed_blocks = self::convert_classic_blocks( parse_blocks( $content ) );
+
+		wp_cache_set( $cache_key, $parsed_blocks, Newspack_Popups_Model::CACHE_GROUP, self::PARSED_BLOCKS_CACHE_EXPIRY ); // phpcs:ignore WordPressVIPMinimum.Performance.LowExpiryCacheTime.CacheTimeUndetermined
+
+		return $parsed_blocks;
+	}
+
+	/**
 	 * Insert popups in a post content.
 	 *
 	 * @param string $content The post content.
@@ -310,7 +336,7 @@ final class Newspack_Popups_Inserter {
 		// For these blocks, let's ignore their length for purposes of inserting prompts.
 		$length_ignored_blocks = [ 'jetpack/slideshow', 'newspack-blocks/carousel', 'newspack-popups/single-prompt' ];
 
-		$parsed_blocks = self::convert_classic_blocks( parse_blocks( $content ) );
+		$parsed_blocks = self::get_parsed_blocks( $content );
 
 		// List of blocks that require innerHTML to render content.
 		$blocks_to_skip_empty = [
