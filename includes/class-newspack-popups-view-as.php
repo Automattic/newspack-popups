@@ -34,15 +34,31 @@ final class Newspack_Popups_View_As {
 	/**
 	 * Get the "view as" feature specification.
 	 *
-	 * @return string "View as" specification.
+	 * @return string|false "View as" specification, or false if not applicable.
 	 */
 	public static function viewing_as_spec() {
+		static $cache = [];
+		$raw_view_as = isset( $_GET['view_as'] ) ? $_GET['view_as'] : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+
+		// Key on the current user ID and the raw view_as value, so a cached
+		// result from an earlier user/query context (e.g. after
+		// wp_set_current_user() or go_to() in tests) can't leak into a later
+		// call within the same PHP process.
+		$key = get_current_user_id() . ':' . $raw_view_as;
+		if ( array_key_exists( $key, $cache ) ) {
+			return $cache[ $key ];
+		}
+
 		if ( ! Newspack_Popups::is_user_admin() ) {
+			$cache[ $key ] = false;
 			return false;
 		}
-		if ( isset( $_GET['view_as'] ) && $_GET['view_as'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-			return sanitize_text_field( $_GET['view_as'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( $raw_view_as ) {
+			$cache[ $key ] = sanitize_text_field( $raw_view_as );
+			return $cache[ $key ];
 		}
+		$cache[ $key ] = false;
+		return false;
 	}
 
 	/**
